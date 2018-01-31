@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -21,7 +21,10 @@ import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.DocumentEvent;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -31,6 +34,7 @@ import org.openvpms.web.echo.event.DocumentListener;
 import org.openvpms.web.echo.factory.ListBoxFactory;
 import org.openvpms.web.echo.popup.DropDown;
 import org.openvpms.web.echo.text.TextField;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 
@@ -41,12 +45,17 @@ import static org.openvpms.web.echo.style.Styles.FULL_WIDTH;
  *
  * @author Tim Anderson
  */
-abstract class AddressSelector extends AbstractModifiable {
+public abstract class AddressSelector extends AbstractModifiable {
 
     /**
      * The address formatter.
      */
     private final AddressFormatter formatter;
+
+    /**
+     * The listeners.
+     */
+    private final ModifiableListeners listeners = new ModifiableListeners();
 
     /**
      * The address field.
@@ -64,18 +73,13 @@ abstract class AddressSelector extends AbstractModifiable {
     private ListBox listBox;
 
     /**
-     * The listeners.
-     */
-    private final ModifiableListeners listeners = new ModifiableListeners();
-
-    /**
      * Determines if the field has been modified.
      */
     private boolean modified = false;
 
     /**
      * Constructs an {@link AddressSelector}.
-     * <p/>
+     * <p>
      * The {@link #setField(TextField)} method must be invoked post construction.
      *
      * @param contacts  the contacts
@@ -93,8 +97,8 @@ abstract class AddressSelector extends AbstractModifiable {
      * @param field     the field
      */
     public AddressSelector(List<Contact> contacts, AddressFormatter formatter, TextField field) {
-        setField(field);
         this.formatter = formatter;
+        setField(field);
         if (!contacts.isEmpty()) {
             listBox = ListBoxFactory.create(contacts);
             // don't default the selection as per OVPMS-1295
@@ -153,6 +157,16 @@ abstract class AddressSelector extends AbstractModifiable {
     public abstract Contact getSelected();
 
     /**
+     * Returns the address.
+     *
+     * @return the address. May be {@code null}
+     */
+    public String getAddress() {
+        Contact selected = getSelected();
+        return (selected != null) ? getFormatter().getNameAddress(selected, true) : null;
+    }
+
+    /**
      * Returns the text field.
      *
      * @return the text field
@@ -199,7 +213,7 @@ abstract class AddressSelector extends AbstractModifiable {
 
     /**
      * Adds a listener to be notified when this changes.
-     * <p/>
+     * <p>
      * Listeners will be notified in the order they were registered.
      *
      * @param listener the listener to add
@@ -247,6 +261,55 @@ abstract class AddressSelector extends AbstractModifiable {
     @Override
     public ErrorListener getErrorListener() {
         return null;
+    }
+
+    /**
+     * Helper to return a contact with matching address.
+     *
+     * @param contacts the contacts
+     * @param address  the email address
+     * @return the corresponding contact, or {@code null} if none is found
+     */
+    public static Contact getContact(List<Contact> contacts, String address) {
+        EmailAddress emailAddress = EmailAddress.parse(address);
+        if (emailAddress != null) {
+            address = emailAddress.getAddress();
+            for (Contact contact : contacts) {
+                IMObjectBean bean = new IMObjectBean(contact);
+                if (StringUtils.equalsIgnoreCase(address, bean.getString("emailAddress"))) {
+                    return contact;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Creates an email contact, if the address is valid.
+     *
+     * @param address the address
+     * @return a new contact, or {@code null} if it is invalid
+     */
+    public static Contact createContact(String address) {
+        EmailAddress parsed = EmailAddress.parse(address);
+        return (parsed != null) ? createContact(parsed) : null;
+    }
+
+    /**
+     * Creates an email contact.
+     *
+     * @param address the address
+     * @return a new contact
+     */
+    public static Contact createContact(EmailAddress address) {
+        Contact contact = (Contact) ServiceHelper.getArchetypeService().create(ContactArchetypes.EMAIL);
+        String name = address.getName();
+        if (name != null) {
+            contact.setName(name);
+        }
+        IMObjectBean bean = new IMObjectBean(contact);
+        bean.setValue("emailAddress", address.getAddress());
+        return contact;
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.job;
@@ -108,9 +108,9 @@ public class DocumentLoaderJobConfigurationEditor extends AbstractJobConfigurati
         boolean valid = false;
 
         if (!file.exists()) {
-            validator.add(property, new ValidatorError(property, Messages.format("docload.dir.notfound", file)));
+            validator.add(property, new ValidatorError(property, Messages.format("dir.notfound", file.getPath())));
         } else if (!file.isDirectory()) {
-            validator.add(property, new ValidatorError(property, Messages.format("docload.dir.notdir", file)));
+            validator.add(property, new ValidatorError(property, Messages.format("dir.notdir", file.getPath())));
         } else {
             valid = true;
         }

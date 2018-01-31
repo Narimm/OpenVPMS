@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.report;
@@ -25,8 +25,10 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.util.Variables;
+import org.openvpms.report.ReportFactory;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ReloadingContext;
+import org.openvpms.web.component.im.doc.FileNameFormatter;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserListener;
@@ -43,8 +45,8 @@ import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.reporting.AbstractReportingWorkspace;
-import org.openvpms.web.workspace.reporting.ReportQuery;
 
+import javax.sql.DataSource;
 import java.util.List;
 
 
@@ -174,7 +176,11 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
                 ILookupService lookups = ServiceHelper.getLookupService();
                 DocumentTemplate template = new DocumentTemplate(entity, service);
                 Context context = getContext();
-                SQLReportPrinter printer = new SQLReportPrinter(template, context, service);
+                ReportFactory factory = ServiceHelper.getBean(ReportFactory.class);
+                FileNameFormatter formatter = ServiceHelper.getBean(FileNameFormatter.class);
+                DataSource dataSource = ServiceHelper.getBean("reportingDataSource", DataSource.class);
+                SQLReportPrinter printer = new SQLReportPrinter(template, context, factory, formatter, dataSource,
+                                                                service);
                 HelpContext help = getHelpContext().subtopic("run");
                 Variables variables = new MacroVariables(new ReloadingContext(context), service, lookups);
                 InteractiveSQLReportPrinter iPrinter = new InteractiveSQLReportPrinter(

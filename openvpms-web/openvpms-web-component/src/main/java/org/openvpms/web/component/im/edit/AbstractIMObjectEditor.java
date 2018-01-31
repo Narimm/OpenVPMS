@@ -701,16 +701,6 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     }
 
     /**
-     * Removes listeners associated with lookup nodes.
-     */
-    private void disposeLookups() {
-        for (Map.Entry<PropertyEditor, ModifiableListener> entry : lookups.entrySet()) {
-            entry.getKey().removeModifiableListener(entry.getValue());
-        }
-        lookups.clear();
-    }
-
-    /**
      * Returns the layout context.
      *
      * @return the layout context
@@ -945,6 +935,44 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
                 ((StringPropertyTransformer) transformer).setExpandMacros(false);
             }
         }
+    }
+
+    /**
+     * Helper to add a validation error for a required property.
+     *
+     * @param name      the required property name
+     * @param validator the validator
+     * @return {@code false}
+     */
+    protected boolean reportRequired(String name, Validator validator) {
+        Property property = getProperty(name);
+        if (property != null) {
+            reportRequired(property, validator);
+        }
+        return false;
+    }
+
+    /**
+     * Helper to add a validation error for a required property.
+     *
+     * @param property  the required property
+     * @param validator the validator
+     * @return {@code false}
+     */
+    protected boolean reportRequired(Property property, Validator validator) {
+        String message = Messages.format("property.error.required", property.getDisplayName());
+        validator.add(property, new ValidatorError(property, message));
+        return false;
+    }
+
+    /**
+     * Removes listeners associated with lookup nodes.
+     */
+    private void disposeLookups() {
+        for (Map.Entry<PropertyEditor, ModifiableListener> entry : lookups.entrySet()) {
+            entry.getKey().removeModifiableListener(entry.getValue());
+        }
+        lookups.clear();
     }
 
     private class ComponentFactory extends NodeEditorFactory {

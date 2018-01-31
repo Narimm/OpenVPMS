@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.layout;
@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -455,6 +456,66 @@ public class ArchetypeNodes {
      */
     public static ArchetypeNodes none() {
         return new ArchetypeNodes(false, false);
+    }
+
+    /**
+     * Returns the named property.
+     *
+     * @param properties the properties to search
+     * @param name       the property name
+     * @return the property, or {@code null} if none is found
+     */
+    public static Property find(List<Property> properties, String name) {
+        for (Property property : properties) {
+            if (property.getName().equals(name)) {
+                return property;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Removes and returns the named property from the supplied list.
+     *
+     * @param properties the properties to search
+     * @param name       the property name
+     * @return the property, or {@code null} if none is found
+     */
+    public static Property remove(List<Property> properties, String name) {
+        Iterator<Property> iterator = properties.iterator();
+        while (iterator.hasNext()) {
+            Property property = iterator.next();
+            if (property.getName().equals(name)) {
+                iterator.remove();
+                return property;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Removes and returns the named properties from the supplied list.
+     *
+     * @param properties the properties to search
+     * @param names      the names to remove
+     * @return the property, or {@code null} if none is found
+     */
+    public static List<Property> removeAll(List<Property> properties, String... names) {
+        List<Property> result = new ArrayList<>();
+        List<String> keys = new ArrayList<>(Arrays.asList(names));
+        Iterator<Property> iterator = properties.iterator();
+        while (iterator.hasNext()) {
+            Property property = iterator.next();
+            String name = property.getName();
+            if (keys.remove(name)) {
+                result.add(property);
+                iterator.remove();
+                if (keys.isEmpty()) {
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     /**

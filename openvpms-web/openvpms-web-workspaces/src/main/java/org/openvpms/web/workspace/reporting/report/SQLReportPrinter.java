@@ -32,7 +32,6 @@ import org.openvpms.web.component.im.doc.FileNameFormatter;
 import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.print.AbstractPrinter;
-import org.openvpms.web.system.ServiceHelper;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -70,51 +69,70 @@ public class SQLReportPrinter extends AbstractPrinter {
     private final Context context;
 
     /**
-     * The report parameters.
+     * The file name formatter.
      */
-    private Map<String, Object> parameters = Collections.emptyMap();
+    private final FileNameFormatter formatter;
+
+    /**
+     * The data source.
+     */
+    private final DataSource dataSource;
 
     /**
      * The connection parameter name.
      */
     private final String connectionName;
 
+    /**
+     * The report parameters.
+     */
+    private Map<String, Object> parameters = Collections.emptyMap();
+
 
     /**
      * Constructs an {@link SQLReportPrinter} to print a report.
      *
-     * @param template the template
-     * @param context  the context
-     * @param service  the archetype service
+     * @param template   the template
+     * @param context    the context
+     * @param factory    the report factory
+     * @param formatter  the file name formatter
+     * @param dataSource the data source
+     * @param service    the archetype service
      * @throws SQLReportException        for any report error
      * @throws ArchetypeServiceException for any archetype service error
      * @throws DocumentException         if the document template can't be found
      */
-    public SQLReportPrinter(DocumentTemplate template, Context context, IArchetypeService service) {
-        this(template, template.getDocument(), context, service);
+    public SQLReportPrinter(DocumentTemplate template, Context context, ReportFactory factory,
+                            FileNameFormatter formatter, DataSource dataSource, IArchetypeService service) {
+        this(template, template.getDocument(), context, factory, formatter, dataSource, service);
     }
 
     /**
      * Constructs an {@link SQLReportPrinter}.
      *
-     * @param template the template
-     * @param document the document
-     * @param context  the context
-     * @param service  the archetype service
+     * @param template   the template
+     * @param document   the document
+     * @param context    the context
+     * @param factory    the report factory
+     * @param formatter  the file name formatter
+     * @param dataSource the data source
+     * @param service    the archetype service
      * @throws SQLReportException        for any report error
      * @throws ArchetypeServiceException for any archetype service error
      * @throws DocumentException         if the document template can't be found
      */
     protected SQLReportPrinter(DocumentTemplate template, Document document, Context context,
+                               ReportFactory factory, FileNameFormatter formatter, DataSource dataSource,
                                IArchetypeService service) {
         super(service);
         if (document == null) {
             throw new DocumentException(TemplateHasNoDocument, template.getName());
         }
-        ReportFactory factory = ServiceHelper.getBean(ReportFactory.class);
         report = factory.createReport(document);
         this.template = template;
         this.context = context;
+        this.formatter = formatter;
+        this.dataSource = dataSource;
         ParameterType connectionParam = getConnectionParameter();
         if (connectionParam == null) {
             throw new SQLReportException(NoQuery);
@@ -161,14 +179,12 @@ public class SQLReportPrinter extends AbstractPrinter {
      * @throws OpenVPMSException for any error
      */
     public void print(String printer) {
-        Connection connection = null;
         Map<String, Object> params = getParameters(false);
-        try {
-            connection = getConnection();
+        try (Connection connection = dataSource.getConnection()){
             params.put(connectionName, connection);
             report.print(params, ReportContextFactory.create(context), getProperties(printer));
-        } finally {
-            closeConnection(connection);
+        } catch (SQLException exception) {
+            throw new SQLReportException(ConnectionError, exception);
         }
     }
 
@@ -204,18 +220,15 @@ public class SQLReportPrinter extends AbstractPrinter {
      */
     public Document getDocument(String mimeType, boolean email) {
         Map<String, Object> params = getParameters(email);
-        Connection connection = null;
-        try {
-            connection = getConnection();
+        try (Connection connection = dataSource.getConnection()) {
             params.put(connectionName, connection);
             Document document = report.generate(params, ReportContextFactory.create(context), mimeType);
-            FileNameFormatter formatter = ServiceHelper.getBean(FileNameFormatter.class);
             String fileName = formatter.format(template.getName(), null, template);
             String extension = FilenameUtils.getExtension(document.getName());
             document.setName(fileName + "." + extension);
             return document;
-        } finally {
-            closeConnection(connection);
+        } catch (SQLException exception) {
+            throw new SQLReportException(ConnectionError, exception);
         }
     }
 
@@ -240,36 +253,6 @@ public class SQLReportPrinter extends AbstractPrinter {
             }
         }
         return null;
-    }
-
-    /**
-     * Helper to return a new connection.
-     *
-     * @return a new connection
-     * @throws SQLReportException if the connection can't be established
-     */
-    private Connection getConnection() {
-        try {
-            DataSource ds = ServiceHelper.getBean("reportingDataSource", DataSource.class);
-            return ds.getConnection();
-        } catch (SQLException exception) {
-            throw new SQLReportException(ConnectionError, exception);
-        }
-    }
-
-    /**
-     * Helper to close a connection.
-     *
-     * @param connection the connection. May be {@code null}
-     */
-    private void closeConnection(Connection connection) {
-        try {
-            if (connection != null) {
-                connection.close();
-            }
-        } catch (SQLException ignore) {
-            // do nothing
-        }
     }
 
     /**

@@ -1,0 +1,207 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="entity.jobScheduledReport.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.common.Entity" displayName="Scheduled Report">
+        <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
+        <node name="report" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="1" maxCardinality="1" filter="entityLink.jobScheduledReportTemplate"/>
+        <node name="name" path="/name" type="java.lang.String" minCardinality="1" maxLength="100"/>
+        <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="class" path="/details/class" type="java.lang.String" minCardinality="1" readOnly="true"
+              hidden="true" defaultValue="'org.openvpms.web.jobs.scheduledreport.ScheduledReportJob'"/>
+        <node name="location" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="1" maxCardinality="1" filter="entityLink.jobScheduledReportLocation"/>
+        <node name="file" path="/details/file" minCardinality="0" maxCardinality="1" type="java.lang.Boolean"/>
+        <node name="directory" path="/details/directory" minCardinality="0" maxCardinality="1" type="java.lang.String"/>
+        <node name="fileType" path="/details/fileType" minCardinality="1" maxCardinality="1" type="java.lang.String"
+              defaultValue="'PDF'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="PDF" value="PDF"/>
+                    <property name="CSV" value="Comma-separated values"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="email" path="/details/email" minCardinality="0" maxCardinality="1" type="java.lang.Boolean"/>
+        <node name="emailFrom" path="/details/emailFrom" minCardinality="0" maxCardinality="1" type="java.lang.String"/>
+        <node name="emailTo0" displayName="Email To" path="/details/emailTo0" minCardinality="0" maxCardinality="1"
+              type="java.lang.String"/>
+        <node name="emailTo1" displayName="Email To" path="/details/emailTo1" minCardinality="0" maxCardinality="1"
+              type="java.lang.String"/>
+        <node name="emailTo2" displayName="Email To" path="/details/emailTo2" minCardinality="0" maxCardinality="1"
+              type="java.lang.String"/>
+        <node name="emailTo3" displayName="Email To" path="/details/emailTo3" minCardinality="0" maxCardinality="1"
+              type="java.lang.String"/>
+        <node name="emailTo4" displayName="Email To" path="/details/emailTo4" minCardinality="0" maxCardinality="1"
+              type="java.lang.String"/>
+        <node name="attachmentType" path="/details/attachmentType" minCardinality="1" maxCardinality="1"
+              type="java.lang.String"
+              defaultValue="'PDF'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="PDF" value="PDF"/>
+                    <property name="CSV" value="Comma-separated values"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="print" path="/details/print" minCardinality="0" maxCardinality="1" type="java.lang.Boolean"/>
+        <node name="printer" path="/details/printer" minCardinality="0" maxCardinality="1" type="java.lang.String"/>
+        <node name="minutes" path="/details/minutes" type="java.lang.String" minCardinality="1" maxLength="50"
+              defaultValue="'*/30'"/>
+        <node name="hours" path="/details/hours" type="java.lang.String" minCardinality="1" maxLength="50"
+              defaultValue="'*'"/>
+        <node name="dayOfMonth" path="/details/dayOfMonth" type="java.lang.String" minCardinality="1" maxLength="50"
+              defaultValue="'?'"/>
+        <node name="month" path="/details/month" type="java.lang.String" minCardinality="1" maxLength="50"
+              defaultValue="'*'"/>
+        <node name="dayOfWeek" path="/details/dayOfWeek" type="java.lang.String" minCardinality="1" maxLength="50"
+              defaultValue="'mon-fri'"/>
+        <node name="expression" path="/details/expression" type="java.lang.String" minCardinality="1" derived="true"
+              derivedValue="concat('0 ', /details/minutes,' ', /details/hours,' ',/details/dayOfMonth,' ',/details/month,' ',/details/dayOfWeek)"
+              hidden="true"/>
+        <node name="runAs" path="/sourceEntityRelationships"
+              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="1" maxCardinality="1"
+              filter="entityRelationship.jobUser"/>
+        <node name="notify" path="/sourceEntityRelationships"
+              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="1"
+              filter="entityRelationship.jobUserGroup"/>
+        <node name="notifyOnSuccess" path="/details/notifyOnSuccess" type="java.lang.Boolean"
+              minCardinality="1" defaultValue="true()"/>
+        <node name="paramName0" path="/details/paramName0" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramDisplayName0" path="/details/paramDisplayName0" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramType0" path="/details/paramType0" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramValue0" path="/details/paramValue0" minCardinality="0" maxCardinality="1"
+              type="java.lang.Object" hidden="true" readOnly="true"/>
+        <node name="paramName1" path="/details/paramName1" minCardinality="0" maxCardinality="1" type="java.lang.String"
+              hidden="true" readOnly="true"/>
+        <node name="paramDisplayName1" path="/details/paramDisplayName1" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramType1" path="/details/paramType1" minCardinality="0" maxCardinality="1" type="java.lang.String"
+              hidden="true" readOnly="true"/>
+        <node name="paramValue1" path="/details/paramValue1" minCardinality="0" maxCardinality="1"
+              type="java.lang.Object" hidden="true" readOnly="true"/>
+        <node name="paramName2" path="/details/paramName2" minCardinality="0" maxCardinality="1" type="java.lang.String"
+              hidden="true" readOnly="true"/>
+        <node name="paramDisplayName2" path="/details/paramDisplayName2" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramType2" path="/details/paramType2" minCardinality="0" maxCardinality="1" type="java.lang.String"
+              hidden="true" readOnly="true"/>
+        <node name="paramValue2" path="/details/paramValue2" minCardinality="0" maxCardinality="1"
+              type="java.lang.Object" hidden="true" readOnly="true"/>
+        <node name="paramName3" path="/details/paramName3" minCardinality="0" maxCardinality="1" type="java.lang.String"
+              hidden="true" readOnly="true"/>
+        <node name="paramDisplayName3" path="/details/paramDisplayName3" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramType3" path="/details/paramType3" minCardinality="0" maxCardinality="1" type="java.lang.String"
+              hidden="true" readOnly="true"/>
+        <node name="paramValue3" path="/details/paramValue3" minCardinality="0" maxCardinality="1"
+              type="java.lang.Object" hidden="true" readOnly="true"/>
+        <node name="paramName4" path="/details/paramName4" minCardinality="0" maxCardinality="1" type="java.lang.String"
+              hidden="true" readOnly="true"/>
+        <node name="paramDisplayName4" path="/details/paramDisplayName4" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramType4" path="/details/paramType4" minCardinality="0" maxCardinality="1" type="java.lang.String"
+              hidden="true" readOnly="true"/>
+        <node name="paramValue4" path="/details/paramValue4" minCardinality="0" maxCardinality="1"
+              type="java.lang.Object" hidden="true" readOnly="true"/>
+        <node name="paramName5" path="/details/paramName5" minCardinality="0" maxCardinality="1" type="java.lang.String"
+              hidden="true" readOnly="true"/>
+        <node name="paramDisplayName5" path="/details/paramDisplayName5" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramType5" path="/details/paramType5" minCardinality="0" maxCardinality="1" type="java.lang.String"
+              hidden="true" readOnly="true"/>
+        <node name="paramValue5" path="/details/paramValue5" minCardinality="0" maxCardinality="1"
+              type="java.lang.Object" hidden="true" readOnly="true"/>
+        <node name="paramName6" path="/details/paramName6" minCardinality="0" maxCardinality="1" type="java.lang.String"
+              hidden="true" readOnly="true"/>
+        <node name="paramDisplayName6" path="/details/paramDisplayName6" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramType6" path="/details/paramType6" minCardinality="0" maxCardinality="1" type="java.lang.String"
+              hidden="true" readOnly="true"/>
+        <node name="paramValue6" path="/details/paramValue6" minCardinality="0" maxCardinality="1"
+              type="java.lang.Object" hidden="true" readOnly="true"/>
+        <node name="paramName7" path="/details/paramName7" minCardinality="0" maxCardinality="1" type="java.lang.String"
+              hidden="true" readOnly="true"/>
+        <node name="paramDisplayName7" path="/details/paramDisplayName7" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramType7" path="/details/paramType7" minCardinality="0" maxCardinality="1" type="java.lang.String"
+              readOnly="true"/>
+        <node name="paramValue7" path="/details/paramValue7" minCardinality="0" maxCardinality="1"
+              type="java.lang.Object" hidden="true" readOnly="true"/>
+        <node name="paramName8" path="/details/paramName8" minCardinality="0" maxCardinality="1" type="java.lang.String"
+              hidden="true" readOnly="true"/>
+        <node name="paramDisplayName8" path="/details/paramDisplayName8" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramType8" path="/details/paramType8" minCardinality="0" maxCardinality="1" type="java.lang.String"
+              hidden="true" readOnly="true"/>
+        <node name="paramValue8" path="/details/paramValue8" minCardinality="0" maxCardinality="1"
+              type="java.lang.Object" hidden="true" readOnly="true"/>
+        <node name="paramName9" path="/details/paramName9" minCardinality="0" maxCardinality="1" type="java.lang.String"
+              hidden="true" readOnly="true"/>
+        <node name="paramDisplayName9" path="/details/paramDisplayName9" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramType9" path="/details/paramType9" minCardinality="0" maxCardinality="1" type="java.lang.String"
+              hidden="true" readOnly="true"/>
+        <node name="paramValue9" path="/details/paramValue9" minCardinality="0" maxCardinality="1"
+              type="java.lang.Object" hidden="true" readOnly="true"/>
+        <node name="paramName10" path="/details/paramName10" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramDisplayName10" path="/details/paramDisplayName10" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramType10" path="/details/paramType10" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramValue10" path="/details/paramValue10" minCardinality="0" maxCardinality="1"
+              type="java.lang.Object" hidden="true" readOnly="true"/>
+        <node name="paramName11" path="/details/paramName11" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramDisplayName11" path="/details/paramDisplayName11" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramType11" path="/details/paramType11" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramValue11" path="/details/paramValue11" minCardinality="0" maxCardinality="1"
+              type="java.lang.Object" hidden="true" readOnly="true"/>
+        <node name="paramName12" path="/details/paramName12" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramDisplayName12" path="/details/paramDisplayName12" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramType12" path="/details/paramType12" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramValue12" path="/details/paramValue12" minCardinality="0" maxCardinality="1"
+              type="java.lang.Object" hidden="true" readOnly="true"/>
+        <node name="paramName13" path="/details/paramName13" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramDisplayName13" path="/details/paramDisplayName13" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramType13" path="/details/paramType13" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramValue13" path="/details/paramValue13" minCardinality="0" maxCardinality="1"
+              type="java.lang.Object" hidden="true" readOnly="true"/>
+        <node name="paramName14" path="/details/paramName14" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramDisplayName14" path="/details/paramDisplayName14" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramType14" path="/details/paramType14" minCardinality="0" maxCardinality="1"
+              type="java.lang.String" hidden="true" readOnly="true"/>
+        <node name="paramValue14" path="/details/paramValue14" minCardinality="0" maxCardinality="1"
+              type="java.lang.Object" hidden="true" readOnly="true"/>
+    </archetype>
+</archetypes>

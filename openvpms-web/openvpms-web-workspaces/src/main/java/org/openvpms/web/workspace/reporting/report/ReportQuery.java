@@ -11,19 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.workspace.reporting;
+package org.openvpms.web.workspace.reporting.report;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.lookup.LookupField;
@@ -32,13 +33,12 @@ import org.openvpms.web.component.im.lookup.LookupQuery;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.query.AbstractIMObjectQuery;
 import org.openvpms.web.component.im.query.EntityResultSet;
-import org.openvpms.web.component.im.query.IMObjectListResultSet;
+import org.openvpms.web.component.im.query.FilteredResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.focus.FocusHelper;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -99,9 +99,7 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
     @Override
     public ResultSet<Entity> query(SortConstraint[] sort) {
         ResultSet<Entity> templates;
-        List<Entity> result = new ArrayList<>();
         int userReportLevel;
-        int templateUserLevel;
 
         // Get the current user's level
         if (user == null) {
@@ -111,35 +109,30 @@ public class ReportQuery extends AbstractIMObjectQuery<Entity> {
             userReportLevel = userBean.getInt("userLevel", 0);
         }
         // Do the initial archetype query
-        templates = new EntityResultSet<>(getArchetypes(), getValue(), false, getConstraints(), null, getMaxResults(),
+        templates = new EntityResultSet<>(getArchetypes(), getValue(), false, getConstraints(), sort, getMaxResults(),
                                           isDistinct());
-
         // Now filter for Reports, user Level and selected type
-        while (templates.hasNext()) {
-            IPage<Entity> page = templates.next();
-            for (Entity object : page.getResults()) {
-                EntityBean template = new EntityBean(object);
-                String templateArchetype = template.getString("archetype", "");
-                templateUserLevel = template.getInt("userLevel", 9);
-                String reportType = template.getString("reportType", "");
-                if (templateArchetype.equalsIgnoreCase("REPORT") && (templateUserLevel <= userReportLevel)) {
-                    if (getReportType() == null || getReportType().equals("") ||
-                        (reportType.equalsIgnoreCase(getReportType()))) {
-                        result.add(object);
+        return new FilteredResultSet<Entity>(templates) {
+            @Override
+            protected void filter(Entity object, List<Entity> results) {
+                IMObjectBean template = new IMObjectBean(object);
+                if ("REPORT".equals(template.getString("archetype"))) {
+                    int templateUserLevel = template.getInt("userLevel", 9);
+                    String reportType = template.getString("reportType");
+                    if (templateUserLevel <= userReportLevel) {
+                        if (getReportType() == null || StringUtils.equals(getReportType(), reportType)) {
+                            results.add(object);
+                        }
                     }
                 }
             }
-        }
-
-        IMObjectListResultSet<Entity> set = new IMObjectListResultSet<>(result, getMaxResults());
-        set.sort(sort);
-        return set;
+        };
     }
 
     /**
      * Determines if the query should be run automatically.
      *
-     * @return {@code true} if the query should be run automaticaly; otherwie {@code false}
+     * @return {@code true} if the query should be run automatically; otherwise {@code false}
      */
     @Override
     public boolean isAuto() {

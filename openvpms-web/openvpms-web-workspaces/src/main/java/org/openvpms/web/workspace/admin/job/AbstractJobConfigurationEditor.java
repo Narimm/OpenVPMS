@@ -11,12 +11,11 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.job;
 
-import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
@@ -33,7 +32,6 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.system.ServiceHelper;
 import org.quartz.CronExpression;
 
 import java.text.ParseException;
@@ -53,6 +51,11 @@ public abstract class AbstractJobConfigurationEditor extends AbstractIMObjectEdi
     private static final String RUN_AS = "runAs";
 
     /**
+     * The notify node name.
+     */
+    private static final String NOTIFY = "notify";
+
+    /**
      * Constructs an {@link AbstractJobConfigurationEditor}.
      *
      * @param object        the object to edit
@@ -62,7 +65,11 @@ public abstract class AbstractJobConfigurationEditor extends AbstractIMObjectEdi
     public AbstractJobConfigurationEditor(Entity object, IMObject parent, LayoutContext layoutContext) {
         super(object, parent, layoutContext);
         if (object.isNew()) {
-            initServiceUser();
+            User user = layoutContext.getContext().getUser();
+            if (user != null) {
+                initRunAs(user);
+                initNotify(user);
+            }
         }
     }
 
@@ -120,16 +127,26 @@ public abstract class AbstractJobConfigurationEditor extends AbstractIMObjectEdi
     }
 
     /**
-     * Initialises the runAs node from the practice service user, if one is present.
+     * Initialises the runAs node from the specified user.
+     *
+     * @param user the user
      */
-    protected void initServiceUser() {
+    protected void initRunAs(User user) {
         if (getProperty(RUN_AS) != null) {
-            PracticeService service = ServiceHelper.getBean(PracticeService.class);
-            User user = service.getServiceUser();
-            if (user != null) {
-                IMObjectBean bean = new IMObjectBean(getObject());
-                bean.addNodeTarget(RUN_AS, user);
-            }
+            IMObjectBean bean = new IMObjectBean(getObject());
+            bean.setTarget(RUN_AS, user);
+        }
+    }
+
+    /**
+     * Initialises the notify node from the specified user.
+     *
+     * @param user the user
+     */
+    protected void initNotify(User user) {
+        if (getProperty(NOTIFY) != null) {
+            IMObjectBean bean = new IMObjectBean(getObject());
+            bean.setTarget(NOTIFY, user);
         }
     }
 

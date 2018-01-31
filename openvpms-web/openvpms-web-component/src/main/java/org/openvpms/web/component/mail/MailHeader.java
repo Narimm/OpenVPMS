@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -91,7 +91,7 @@ public class MailHeader extends AbstractModifiable {
     /**
      * The from-address selector.
      */
-    private AddressSelector from;
+    private FromAddressSelector from;
 
     /**
      * The header component.
@@ -194,8 +194,7 @@ public class MailHeader extends AbstractModifiable {
      * @return the from address
      */
     public String getFrom() {
-        AddressFormatter formatter = from.getFormatter();
-        return formatter.getNameAddress(from.getSelected(), true);
+        return from.getAddress();
     }
 
     /**

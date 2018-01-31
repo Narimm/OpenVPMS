@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.type;
@@ -112,8 +112,7 @@ public class ReminderCountEditor extends AbstractIMObjectEditor {
      */
     private void addTemplateRequired(Validator validator) {
         Property property = getProperty("template");
-        String message = Messages.format("property.error.required", property.getDisplayName());
-        validator.add(property, new ValidatorError(property, message));
+        reportRequired(property, validator);
     }
 
     /**

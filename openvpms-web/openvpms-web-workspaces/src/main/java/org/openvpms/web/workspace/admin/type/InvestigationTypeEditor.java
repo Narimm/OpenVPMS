@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.type;
@@ -24,10 +24,7 @@ import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.EditableIMObjectCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityLinkEditor;
-import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
-import org.openvpms.web.component.property.ValidatorError;
-import org.openvpms.web.resource.i18n.Messages;
 
 /**
  * Editor for <em>entity.investigationType</em>.
@@ -136,24 +133,11 @@ public class InvestigationTypeEditor extends AbstractIMObjectEditor {
         String id = getUniversalServiceIdentifier();
         Entity laboratory = getLaboratory();
         if (id != null && laboratory == null) {
-            addRequired(validator, LABORATORY);
-            valid = false;
+            valid = reportRequired(LABORATORY, validator);
         } else if (id == null && laboratory != null) {
-            addRequired(validator, SERVICE_IDENTIFIER);
-            valid = false;
+            valid = reportRequired(SERVICE_IDENTIFIER, validator);
         }
         return valid;
     }
 
-    /**
-     * Helper to add a validation error for a required property.
-     *
-     * @param validator the validator
-     * @param name      the required property anem
-     */
-    private void addRequired(Validator validator, String name) {
-        Property property = getProperty(name);
-        String message = Messages.format("property.error.required", property.getDisplayName());
-        validator.add(property, new ValidatorError(property, message));
-    }
 }

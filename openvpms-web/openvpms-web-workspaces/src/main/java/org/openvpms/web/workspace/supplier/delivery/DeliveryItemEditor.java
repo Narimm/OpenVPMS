@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.delivery;
@@ -28,8 +28,6 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
-import org.openvpms.web.component.property.ValidatorError;
-import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.supplier.SupplierStockItemEditor;
 
 
@@ -151,9 +149,7 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
         boolean result = true;
         Property property = getProperty("product");
         if (getProductRef() == null) {
-            String message = Messages.format("property.error.required", property.getDisplayName());
-            validator.add(property, new ValidatorError(property, message));
-            result = false;
+            result = reportRequired(property, validator);
         }
         return result;
     }
@@ -169,9 +165,7 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
         Property property = getProperty("packageSize");
         Number size = (Number) property.getValue();
         if (size.intValue() <= 0) {
-            String message = Messages.format("property.error.required", property.getDisplayName());
-            validator.add(property, new ValidatorError(property, message));
-            result = false;
+            result = reportRequired(property, validator);
         }
         return result;
     }
@@ -187,9 +181,7 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
         Property property = getProperty("packageUnits");
         String units = (String) property.getValue();
         if (units == null) {
-            String message = Messages.format("property.error.required", property.getDisplayName());
-            validator.add(property, new ValidatorError(property, message));
-            result = false;
+            result = reportRequired(property, validator);
         }
         return result;
     }

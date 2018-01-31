@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -71,11 +71,9 @@ public class OnlineBookingTimesEditor extends AbstractIMObjectEditor {
                 Date startTime = start.getDate();
                 Date endTime = end.getDate();
                 if (startTime == null) {
-                    reportRequired(validator, start);
-                    valid = false;
+                    valid = reportRequired(start, validator);
                 } else if (endTime == null) {
-                    reportRequired(validator, end);
-                    valid = false;
+                    valid = reportRequired(end, validator);
                 } else if (startTime.compareTo(endTime) >= 0) {
                     String message = Messages.format("workflow.scheduling.onlinebooking.invalidtimes",
                                                      start.getDisplayName(), end.getDisplayName());
@@ -88,17 +86,6 @@ public class OnlineBookingTimesEditor extends AbstractIMObjectEditor {
             }
         }
         return valid;
-    }
-
-    /**
-     * Reports a validation error if a required property is missing.
-     *
-     * @param validator the validator
-     * @param property  the property
-     */
-    private void reportRequired(Validator validator, Property property) {
-        validator.add(property, new ValidatorError(property, Messages.format("property.error.required",
-                                                                             property.getDisplayName())));
     }
 
 }

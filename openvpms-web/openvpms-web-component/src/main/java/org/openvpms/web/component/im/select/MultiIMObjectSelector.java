@@ -42,7 +42,7 @@ import org.openvpms.web.echo.focus.FocusCommand;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.text.TextField;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -69,11 +69,6 @@ public class MultiIMObjectSelector<T extends IMObject> {
     private final String type;
 
     /**
-     * Determines if objects may be created.
-     */
-    private boolean allowCreate;
-
-    /**
      * The layout context.
      */
     private final LayoutContext context;
@@ -82,6 +77,16 @@ public class MultiIMObjectSelector<T extends IMObject> {
      * Update listener for the text field.
      */
     private final DocumentListener textListener;
+
+    /**
+     * The focus group.
+     */
+    private final FocusGroup focusGroup;
+
+    /**
+     * Determines if objects may be created.
+     */
+    private boolean allowCreate;
 
     /**
      * The listener. May be {@code null}
@@ -109,11 +114,6 @@ public class MultiIMObjectSelector<T extends IMObject> {
      * after an update listener within the same web request.
      */
     private boolean onTextChangedInvoked;
-
-    /**
-     * The focus group.
-     */
-    private final FocusGroup focusGroup;
 
 
     /**
@@ -168,8 +168,7 @@ public class MultiIMObjectSelector<T extends IMObject> {
      * @param object the object
      */
     public void setObject(T object) {
-        List<T> objects = new ArrayList<T>();
-        objects.add(object);
+        List<T> objects = (object == null) ? Collections.<T>emptyList() : Collections.singletonList(object);
         setObjects(objects);
     }
 
@@ -300,7 +299,7 @@ public class MultiIMObjectSelector<T extends IMObject> {
 
     /**
      * Pops up a dialog to select an object.
-     * <p/>
+     * <p>
      * Only pops up a dialog if one isn't already visible.
      */
     protected void onSelect() {
@@ -425,7 +424,7 @@ public class MultiIMObjectSelector<T extends IMObject> {
 
     /**
      * Queries the supplied text.
-     * <p/>
+     * <p>
      * If there is a single match, the selected object is updated at the specified index.
      * If there are no matches, or multiple matches, then a browser is displayed.
      *
@@ -500,7 +499,7 @@ public class MultiIMObjectSelector<T extends IMObject> {
 
     /**
      * Invoked when the field is cleared.
-     * <p/>
+     * <p>
      * Clears the internal state and notifies any registered listener.
      */
     private void clear() {
@@ -511,9 +510,9 @@ public class MultiIMObjectSelector<T extends IMObject> {
 
     /**
      * Invoked by the action listener associated with the text field.
-     * <p/>
+     * <p>
      * This is provided to handle Enter being pressed in the field to display a search dialog.
-     * <p/>
+     * <p>
      * Note:
      * <ul>
      * <li>that {@link #onTextChanged} will have been invoked just prior to this method if the text was updated.</li>
