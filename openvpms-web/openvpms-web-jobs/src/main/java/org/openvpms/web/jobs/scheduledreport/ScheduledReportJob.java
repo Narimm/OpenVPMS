@@ -20,6 +20,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.practice.PracticeService;
@@ -90,6 +91,11 @@ public class ScheduledReportJob implements InterruptableJob {
     private final EmailTemplateEvaluator emailTemplateEvaluator;
 
     /**
+     * The document handlers.
+     */
+    private final DocumentHandlers handlers;
+
+    /**
      * The practice service.
      */
     private final PracticeService practiceService;
@@ -155,6 +161,7 @@ public class ScheduledReportJob implements InterruptableJob {
         this.reportFactory = reportFactory;
         this.mailerFactory = new DefaultMailerFactory(mailService, handlers);
         this.emailTemplateEvaluator = emailTemplateEvaluator;
+        this.handlers = handlers;
         this.practiceService = practiceService;
         this.formatter = formatter;
         this.dataSource = dataSource;
@@ -282,7 +289,8 @@ public class ScheduledReportJob implements InterruptableJob {
         }
         Document document = printer.getDocument(mimeType, false);
         File file = new File(config.getString(ScheduledReportJobConfigurationEditor.DIRECTORY), document.getName());
-        FileUtils.writeByteArrayToFile(file, document.getContents());
+        DocumentHandler handler = handlers.get(document);
+        FileUtils.copyInputStreamToFile(handler.getContent(document), file);
         state.setFile(file);
     }
 
