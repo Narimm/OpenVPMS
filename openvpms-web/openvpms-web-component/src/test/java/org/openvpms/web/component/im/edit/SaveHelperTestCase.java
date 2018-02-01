@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -168,15 +168,6 @@ public class SaveHelperTestCase extends AbstractAppTest {
         errors = new ArrayList<>();
 
         // register an ErrorHandler to collect errors
-        ErrorHandler.setInstance(new ErrorHandler() {
-            @Override
-            public void error(Throwable cause) {
-                errors.add(cause.getMessage());
-            }
-
-            public void error(String title, String message, Throwable cause, WindowPaneListener listener) {
-                errors.add(message);
-            }
-        });
+        initErrorHandler(errors);
     }
 }

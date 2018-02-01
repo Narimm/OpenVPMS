@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.reminder;
@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.test.AbstractAppTest;
@@ -87,7 +88,7 @@ public class ReminderEditorTestCase extends AbstractAppTest {
         Act reminder = (Act) create(ReminderArchetypes.REMINDER);
 
         ReminderEditor editor = createEditor(reminder, reminderType);
-        editor.save();
+        SaveHelper.save(editor);
 
         existing = get(existing);
         assertEquals(ActStatus.COMPLETED, existing.getStatus());
@@ -111,7 +112,7 @@ public class ReminderEditorTestCase extends AbstractAppTest {
 
         ReminderEditor editor = createEditor(reminder, reminderType);
         editor.setMarkMatchingRemindersCompleted(false);
-        editor.save();
+        SaveHelper.save(editor);
 
         existing = get(existing);
         assertEquals(ActStatus.IN_PROGRESS, existing.getStatus());
@@ -139,7 +140,7 @@ public class ReminderEditorTestCase extends AbstractAppTest {
         assertEquals(ActStatus.IN_PROGRESS, editor.getStatus());
         assertTrue(rules.shouldCancel(reminder, new Date()));
 
-        editor.save();
+        SaveHelper.save(editor);
         assertEquals(ActStatus.COMPLETED, reminder.getStatus());
     }
 

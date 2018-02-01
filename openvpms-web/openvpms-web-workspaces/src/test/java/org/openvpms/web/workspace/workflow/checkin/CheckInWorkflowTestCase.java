@@ -16,7 +16,6 @@
 
 package org.openvpms.web.workspace.workflow.checkin;
 
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.apache.commons.collections.CollectionUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,7 +45,6 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
-import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditorTest;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
@@ -574,16 +572,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         context.setUser(user);
 
         // register an ErrorHandler to collect errors
-        ErrorHandler.setInstance(new ErrorHandler() {
-            @Override
-            public void error(Throwable cause) {
-                errors.add(cause.getMessage());
-            }
-
-            public void error(String title, String message, Throwable cause, WindowPaneListener listener) {
-                errors.add(message);
-            }
-        });
+        initErrorHandler(errors);
     }
 
     /**

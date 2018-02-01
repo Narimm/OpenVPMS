@@ -878,7 +878,14 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             log.debug("productModified: " + debugString(true, fixedProductPrice, unitProductPrice));
         }
 
+        getProperty(FIXED_PRICE).addModifiableListener(discountListener);
+        getProperty(QUANTITY).addModifiableListener(discountListener);
+        getProperty(UNIT_PRICE).addModifiableListener(discountListener);
+        getProperty(TOTAL).addModifiableListener(totalListener);
+
         updatePatientMedication(product);
+        // NOTE this can update the quantity, if the product is dispensed from a prescription
+
         updateInvestigations(product);
         updateReminders(product);
         updateAlerts(product);
@@ -899,10 +906,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         updateLayout(product, showPrint, false);
 
         notifyProductListener(product);
-        getProperty(FIXED_PRICE).addModifiableListener(discountListener);
-        getProperty(QUANTITY).addModifiableListener(discountListener);
-        getProperty(UNIT_PRICE).addModifiableListener(discountListener);
-        getProperty(TOTAL).addModifiableListener(totalListener);
     }
 
     /**

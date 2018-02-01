@@ -11,13 +11,11 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.otc;
 
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -34,7 +32,6 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.payment.PaymentItemEditor;
 import org.openvpms.web.echo.dialog.PopupDialog;
-import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditorTest;
 import org.openvpms.web.workspace.workflow.WorkflowTestHelper;
 
@@ -243,19 +240,7 @@ public class OverTheCounterWorkflowTestCase extends AbstractCustomerChargeActEdi
         context.setTill(till);
 
         // register an ErrorHandler to collect errors
-        ErrorHandler.setInstance(new ErrorHandler() {
-            @Override
-            public void error(Throwable cause) {
-                errors.add(cause.getMessage());
-            }
-
-            public void error(String title, String message, Throwable cause, WindowPaneListener listener) {
-                errors.add(message);
-                if (listener != null) {
-                    listener.windowPaneClosing(new WindowPaneEvent(this));
-                }
-            }
-        });
+        initErrorHandler(errors);
     }
 
     /**

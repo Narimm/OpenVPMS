@@ -16,7 +16,6 @@
 
 package org.openvpms.web.workspace.customer.charge;
 
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -57,7 +56,6 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.transaction.TransactionStatus;
@@ -109,16 +107,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         customer = TestHelper.createCustomer();
 
         // register an ErrorHandler to collect errors
-        ErrorHandler.setInstance(new ErrorHandler() {
-            @Override
-            public void error(Throwable cause) {
-                errors.add(cause.getMessage());
-            }
-
-            public void error(String title, String message, Throwable cause, WindowPaneListener listener) {
-                errors.add(message);
-            }
-        });
+        initErrorHandler(errors);
         context = new LocalContext();
         context.setPractice(getPractice());
         Party location = TestHelper.createLocation(true); // enable stock control
@@ -466,7 +455,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
     /**
      * Tests a product with a 10% discount where discounts are disabled at the practice location.
-     * <p/>
+     * <p>
      * The calculated discount should be zero.
      */
     @Test
@@ -636,7 +625,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
     /**
      * Verifies that the editor is invalid if a quantity is less than a minimum quantity.
-     * <p/>
+     * <p>
      * Note that in practice, the minimum quantity is set by expanding a template or invoicing an estimate.
      */
     @Test
@@ -674,7 +663,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
     /**
      * Verifies that a user with the appropriate user type can override minimum quantities.
-     * <p/>
+     * <p>
      * Note that in practice, the minimum quantity is set by expanding a template or invoicing an estimate.
      */
     @Test
@@ -1163,7 +1152,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
     /**
      * Checks populating a charge item with a template product.
-     * <p/>
+     * <p>
      * NOTE: currently, charge items with template products validate correctly, but fail to save.
      * <p/>This is because the charge item relationship editor will only expand templates if the charge item itself
      * is valid - marking the item invalid for having a template would prevent this.
@@ -1291,7 +1280,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
      * @param charge the charge
      * @param item   the charge item
      */
-    protected void checkProductDose(FinancialAct charge, FinancialAct item) {
+    private void checkProductDose(FinancialAct charge, FinancialAct item) {
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         Party patient = TestHelper.createPatient();
         PatientTestHelper.createWeight(patient, new Date(), new BigDecimal("4.2"), WeightUnits.KILOGRAMS);
@@ -1395,7 +1384,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
         /**
          * Constructs a {@link TestCustomerChargeActItemEditor}.
-         * <p/>
+         * <p>
          * This recalculates the tax amount.
          *
          * @param act           the act to edit

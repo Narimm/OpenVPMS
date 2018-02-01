@@ -11,13 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.test;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Window;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import nextapp.echo2.app.event.WindowPaneListener;
 import org.junit.After;
 import org.junit.Before;
 import org.mockito.Mockito;
@@ -32,6 +34,9 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.prefs.UserPreferences;
+import org.openvpms.web.echo.error.ErrorHandler;
+
+import java.util.List;
 
 
 /**
@@ -41,6 +46,9 @@ import org.openvpms.web.component.prefs.UserPreferences;
  */
 public abstract class AbstractAppTest extends ArchetypeServiceTest {
 
+    /**
+     * The practice service.
+     */
     private PracticeService practiceService;
 
     /**
@@ -92,6 +100,9 @@ public abstract class AbstractAppTest extends ArchetypeServiceTest {
         app.doInit();
     }
 
+    /**
+     * Cleans up after the test.
+     */
     @After
     public void tearDown() {
         if (practiceService != null) {
@@ -112,4 +123,25 @@ public abstract class AbstractAppTest extends ArchetypeServiceTest {
         return Mockito.mock(PreferenceService.class);
     }
 
+    /**
+     * Initialises the error handler, so that errors are collected in the supplied array.
+     *
+     * @param errors the list to correct errors in
+     */
+    protected void initErrorHandler(List<String> errors) {
+        // register an ErrorHandler to collect errors
+        ErrorHandler.setInstance(new ErrorHandler() {
+            @Override
+            public void error(Throwable cause) {
+                errors.add(cause.getMessage());
+            }
+
+            public void error(String title, String message, Throwable cause, WindowPaneListener listener) {
+                errors.add(message);
+                if (listener != null) {
+                    listener.windowPaneClosing(new WindowPaneEvent(this));
+                }
+            }
+        });
+    }
 }
