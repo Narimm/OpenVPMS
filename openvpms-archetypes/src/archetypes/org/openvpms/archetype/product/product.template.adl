@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -22,7 +22,7 @@
         <node name="name" path="/name" type="java.lang.String" minCardinality="1"  maxLength="100">
             <assertion name="propercase"/>
         </node>
-        <node name="description" type="java.lang.String" path="/description"/>
+        <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
         <node name="printedName" path="/details/printedName" type="java.lang.String" minCardinality="0"/>
         <node name="printAggregate" path="/details/printAggregate" type="java.lang.Boolean" defaultValue="false()"
               minCardinality="0"/>

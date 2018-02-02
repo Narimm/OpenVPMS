@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.layout;
@@ -82,7 +82,7 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
     @Test
     public void testSimple() {
         ArchetypeNodes nodes = ArchetypeNodes.allSimple();
-        checkSimple(archetype, nodes, "id", "name", "printedName", "drugSchedule", "activeIngredients",
+        checkSimple(archetype, nodes, "id", "name", "description", "printedName", "drugSchedule", "activeIngredients",
                     "concentration", "concentrationUnits", "sellingUnits", "dispensingUnits", "dispensingVerb", "label",
                     "dispInstructions", "type", "pharmacy", "templateOnly", "patientIdentity", "active", "usageNotes");
         checkComplex(archetype, nodes);
