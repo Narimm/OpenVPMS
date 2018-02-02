@@ -1861,6 +1861,19 @@
     </style>
 
     <!-- =================================================================== -->
+    <!--  Remove Button                                                      -->
+    <!-- =================================================================== -->
+
+    <style name="button.remove" type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/${dialog.closeicon}"/>
+            </property>
+            <property name="insets" value="0px"/>
+        </properties>
+    </style>
+
+    <!-- =================================================================== -->
     <!--  Download Buttons                                                   -->
     <!-- =================================================================== -->
 

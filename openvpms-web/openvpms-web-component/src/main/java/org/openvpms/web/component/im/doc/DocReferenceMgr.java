@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -46,7 +46,12 @@ class DocReferenceMgr {
     /**
      * The set of references to manage.
      */
-    private LinkedList<IMObjectReference> references = new LinkedList<IMObjectReference>();
+    private LinkedList<IMObjectReference> references = new LinkedList<>();
+
+    /**
+     * Determines if all documents should be deleted.
+     */
+    private boolean deleteAll;
 
     /**
      * Constructs a {@link DocReferenceMgr}.
@@ -78,6 +83,18 @@ class DocReferenceMgr {
      */
     public void add(IMObjectReference reference) {
         references.add(reference);
+        setDeleteAll(false);
+    }
+
+    /**
+     * Determines if all documents should be deleted.
+     * <p/>
+     * If {@code true} and a document is subsequently added, the flag will be set {@code false}.
+     *
+     * @param all if {@code true}, delete all documents, otherwise delete all but the last
+     */
+    public void setDeleteAll(boolean all) {
+        this.deleteAll = all;
     }
 
     /**
@@ -90,12 +107,13 @@ class DocReferenceMgr {
     }
 
     /**
-     * Commits the changes. Every document bar the most recent will be removed.
+     * Commits the changes.
      *
      * @throws ArchetypeServiceException for any error
      */
     public void commit() {
-        while (references.size() > 1) {
+        int size = (deleteAll) ? 0 : 1;
+        while (references.size() > size) {
             delete(references.removeFirst());
         }
     }
