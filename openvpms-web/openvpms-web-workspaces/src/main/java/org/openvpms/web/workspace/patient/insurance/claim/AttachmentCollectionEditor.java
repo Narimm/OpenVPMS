@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.insurance.claim;
@@ -33,7 +33,7 @@ import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.im.query.MultiSelectBrowserDialog;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
@@ -171,12 +171,14 @@ class AttachmentCollectionEditor extends ActRelationshipCollectionEditor impleme
         CustomerPatientDocumentBrowser browser = new CustomerPatientDocumentBrowser(customer, patient, false,
                                                                                     null, null, layout);
         String title = Messages.get("patient.insurance.attach.title");
-        final BrowserDialog<Act> dialog = new BrowserDialog<>(title, browser, layout.getHelpContext());
+        final MultiSelectBrowserDialog<Act> dialog = new MultiSelectBrowserDialog<>(title, browser,
+                                                                                    layout.getHelpContext());
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {
-                DocumentAct document = (DocumentAct) dialog.getSelected();
-                addDocument(document);
+                for (Act document : browser.getSelections()) {
+                    addDocument((DocumentAct) document);
+                }
             }
         });
         dialog.show();

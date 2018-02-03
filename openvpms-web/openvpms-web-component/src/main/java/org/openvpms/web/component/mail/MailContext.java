@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -19,7 +19,7 @@ package org.openvpms.web.component.mail;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.system.common.util.Variables;
-import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.MultiSelectBrowser;
 
 import java.util.List;
 
@@ -57,7 +57,7 @@ public interface MailContext {
      *
      * @return a new browser. May be {@code null}
      */
-    Browser<Act> createAttachmentBrowser();
+    MultiSelectBrowser<Act> createAttachmentBrowser();
 
     /**
      * Returns the object to evaluate macros against.

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.document;
@@ -20,21 +20,24 @@ import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
+import org.openvpms.web.component.im.query.MultiSelectBrowser;
+import org.openvpms.web.component.im.query.MultiSelectTableBrowser;
 import org.openvpms.web.component.im.query.TabbedBrowser;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.patient.mr.PatientDocumentQuery;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 
 /**
  * A browser for customer and patient documents.
  *
  * @author Tim Anderson
  */
-public class CustomerPatientDocumentBrowser extends TabbedBrowser<Act> {
+public class CustomerPatientDocumentBrowser extends TabbedBrowser<Act> implements MultiSelectBrowser<Act> {
 
     /**
      * The customer. May be {@code null}
@@ -69,12 +72,12 @@ public class CustomerPatientDocumentBrowser extends TabbedBrowser<Act> {
     /**
      * The customer document browser.
      */
-    private Browser<Act> customerDocuments;
+    private MultiSelectTableBrowser<Act> customerDocuments;
 
     /**
      * The patient document browser.
      */
-    private Browser<Act> patientDocuments;
+    private MultiSelectTableBrowser<Act> patientDocuments;
 
     /**
      * Constructs a {@link CustomerPatientDocumentBrowser}.
@@ -124,12 +127,48 @@ public class CustomerPatientDocumentBrowser extends TabbedBrowser<Act> {
     }
 
     /**
+     * Returns the selections from each browser.
+     *
+     * @return the selections
+     */
+    public Collection<Act> getSelections() {
+        List<Act> result = new ArrayList<>();
+        if (customerFirst) {
+            addSelections(result, customerDocuments);
+            addSelections(result, patientDocuments);
+        } else {
+            addSelections(result, patientDocuments);
+            addSelections(result, customerDocuments);
+        }
+        return result;
+    }
+
+    /**
+     * Clears the selections.
+     */
+    @Override
+    public void clearSelections() {
+        if (customerDocuments != null) {
+            customerDocuments.clearSelections();
+        }
+        if (patientDocuments != null) {
+            patientDocuments.clearSelections();
+        }
+    }
+
+    private void addSelections(List<Act> documents, MultiSelectTableBrowser<Act> browser) {
+        if (browser != null) {
+            documents.addAll(browser.getSelections());
+        }
+    }
+
+    /**
      * Adds the customer browser, if it the customer exists.
      */
     private void addCustomerBrowser() {
         if (customerDocuments == null && customer != null) {
             CustomerDocumentQuery<Act> query = init(new CustomerDocumentQuery<>(customer));
-            customerDocuments = BrowserFactory.create(query, context);
+            customerDocuments = new MultiSelectTableBrowser<>(query, context);
             addBrowser(Messages.get("customer.documentbrowser.customer"), customerDocuments);
         }
     }
@@ -140,7 +179,7 @@ public class CustomerPatientDocumentBrowser extends TabbedBrowser<Act> {
     private void addPatientBrowser() {
         if (patientDocuments == null && patient != null) {
             PatientDocumentQuery<Act> query = init(new PatientDocumentQuery<>(patient));
-            patientDocuments = BrowserFactory.create(query, context);
+            patientDocuments = new MultiSelectTableBrowser<>(query, context);
             addBrowser(Messages.get("customer.documentbrowser.patient"), patientDocuments);
         }
     }

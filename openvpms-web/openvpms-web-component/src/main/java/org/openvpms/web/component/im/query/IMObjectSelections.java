@@ -80,4 +80,11 @@ public class IMObjectSelections<T extends IMObject> implements MultiSelectTableB
     public boolean canSelect(T object) {
         return true;
     }
+
+    /**
+     * Clears all selections.
+     */
+    public void clear() {
+        objects.clear();
+    }
 }

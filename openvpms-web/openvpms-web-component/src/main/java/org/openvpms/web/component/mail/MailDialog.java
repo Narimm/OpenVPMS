@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -38,6 +38,8 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.query.BrowserFactory;
+import org.openvpms.web.component.im.query.MultiSelectBrowser;
+import org.openvpms.web.component.im.query.MultiSelectBrowserDialog;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -52,7 +54,6 @@ import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.event.VetoListener;
 import org.openvpms.web.echo.event.Vetoable;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
@@ -84,12 +85,17 @@ public class MailDialog extends PopupDialog {
     /**
      * The document browser. May be {@code null}
      */
-    private final Browser<Act> documents;
+    private final MultiSelectBrowser<Act> documents;
 
     /**
      * The layout context.
      */
     private final LayoutContext context;
+
+    /**
+     * Edit button identifier.
+     */
+    private static String EDIT_ID = "button.edit";
 
     /**
      * Template button identifier.
@@ -100,11 +106,6 @@ public class MailDialog extends PopupDialog {
      * Don't send button identifier.
      */
     private static final String DONT_SEND_ID = "button.dontSend";
-
-    /**
-     * Edit button identifier.
-     */
-    private static String EDIT_ID = "button.edit";
 
     /**
      * Attach button identifier.
@@ -152,7 +153,8 @@ public class MailDialog extends PopupDialog {
      * @param documents   the document browser. May be {@code null}
      * @param context     the layout context
      */
-    public MailDialog(MailContext mailContext, Contact preferred, Browser<Act> documents, LayoutContext context) {
+    public MailDialog(MailContext mailContext, Contact preferred, MultiSelectBrowser<Act> documents,
+                      LayoutContext context) {
         this(Messages.get("mail.write"), mailContext, preferred, documents, context);
     }
 
@@ -165,7 +167,7 @@ public class MailDialog extends PopupDialog {
      * @param documents   the document browser. May be {@code null}
      * @param context     the layout context
      */
-    public MailDialog(String title, MailContext mailContext, Contact preferred, Browser<Act> documents,
+    public MailDialog(String title, MailContext mailContext, Contact preferred, MultiSelectBrowser<Act> documents,
                       LayoutContext context) {
         this(title, new MailEditor(mailContext, preferred, context), documents, context);
     }
@@ -177,7 +179,7 @@ public class MailDialog extends PopupDialog {
      * @param documents the document browser. May be {@code null}
      * @param context   the layout context
      */
-    public MailDialog(MailEditor editor, Browser<Act> documents, LayoutContext context) {
+    public MailDialog(MailEditor editor, MultiSelectBrowser<Act> documents, LayoutContext context) {
         this(Messages.get("mail.write"), editor, documents, context);
     }
 
@@ -189,7 +191,7 @@ public class MailDialog extends PopupDialog {
      * @param documents the document browser. May be {@code null}
      * @param context   the layout context
      */
-    public MailDialog(String title, MailEditor editor, Browser<Act> documents, LayoutContext context) {
+    public MailDialog(String title, MailEditor editor, MultiSelectBrowser<Act> documents, LayoutContext context) {
         super(title, "MailDialog", documents != null ? NEW_SEND_ATTACH_ALL_CANCEL : NEW_SEND_ATTACH_FILE_CANCEL,
               context.getHelpContext());
         setModal(true);
@@ -200,11 +202,7 @@ public class MailDialog extends PopupDialog {
 
         getLayout().add(editor.getComponent());
         getFocusGroup().add(editor.getFocusGroup());
-        setCancelListener(new VetoListener() {
-            public void onVeto(Vetoable action) {
-                onCancel(action);
-            }
-        });
+        setCancelListener(this::onCancel);
         ButtonSet buttons = getButtons();
         buttons.addKeyListener(KeyStrokes.ALT_MASK | KeyStrokes.VK_M, new ActionListener() {
             public void onAction(ActionEvent event) {
@@ -267,25 +265,6 @@ public class MailDialog extends PopupDialog {
             }
         } else {
             super.onButton(button);
-        }
-    }
-
-    /**
-     * Displays a popup of available email templates.
-     * <p>
-     * If there is already text presents, displays a  warning before proceeding.
-     */
-    private void newFromTemplate() {
-        if (!StringUtils.isBlank(editor.getMessage())) {
-            ConfirmationDialog.show(Messages.get("mail.replace.title"), Messages.get("mail.replace.message"),
-                                    ConfirmationDialog.YES_NO, new PopupDialogListener() {
-                        @Override
-                        public void onYes() {
-                            onTemplate();
-                        }
-                    });
-        } else {
-            onTemplate();
         }
     }
 
@@ -359,6 +338,25 @@ public class MailDialog extends PopupDialog {
     }
 
     /**
+     * Displays a popup of available email templates.
+     * <p>
+     * If there is already text presents, displays a  warning before proceeding.
+     */
+    private void newFromTemplate() {
+        if (!StringUtils.isBlank(editor.getMessage())) {
+            ConfirmationDialog.show(Messages.get("mail.replace.title"), Messages.get("mail.replace.message"),
+                                    ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                        @Override
+                        public void onYes() {
+                            onTemplate();
+                        }
+                    });
+        } else {
+            onTemplate();
+        }
+    }
+
+    /**
      * Displays a popup of available email templates to select from.
      */
     private void onTemplate() {
@@ -383,17 +381,18 @@ public class MailDialog extends PopupDialog {
      */
     private void attach() {
         final FocusCommand focus = new FocusCommand();
-        final BrowserDialog<Act> dialog = new BrowserDialog<>(Messages.get("mail.attach.title"), documents,
-                                                              getHelpContext().subtopic("attach"));
+        String title = Messages.get("mail.attach.title");
+        HelpContext help = getHelpContext().subtopic("attach");
+        MultiSelectBrowserDialog<Act> dialog = new MultiSelectBrowserDialog<>(title, documents, help);
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 focus.restore();
                 if (BrowserDialog.OK_ID.equals(dialog.getAction())) {
-                    DocumentAct selected = (DocumentAct) documents.getSelected();
-                    if (selected != null) {
-                        attachDocument(selected);
+                    for (Act act : documents.getSelections()) {
+                        attachDocument((DocumentAct) act);
                     }
                 }
+                documents.clearSelections();
             }
         });
         documents.query();

@@ -32,10 +32,9 @@ import org.openvpms.web.component.app.ContextMailContext;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.MultiSelectBrowser;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.AddressFormatter;
-import org.openvpms.web.component.mail.AttachmentBrowserFactory;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.ToAddressFormatter;
 import org.openvpms.web.echo.help.HelpContext;
@@ -79,16 +78,14 @@ public class CustomerMailContext extends ContextMailContext {
         super(context);
         final DefaultLayoutContext layout = new DefaultLayoutContext(context, help);
 
-        setAttachmentBrowserFactory(new AttachmentBrowserFactory() {
-            public Browser<Act> createBrowser(MailContext context) {
-                Browser<Act> result = null;
-                Party customer = getContext().getCustomer();
-                Party patient = getContext().getPatient();
-                if (customer != null || patient != null) {
-                    result = new CustomerPatientDocumentBrowser(customer, patient, layout);
-                }
-                return result;
+        setAttachmentBrowserFactory(mailContext -> {
+            MultiSelectBrowser<Act> result = null;
+            Party customer = getContext().getCustomer();
+            Party patient = getContext().getPatient();
+            if (customer != null || patient != null) {
+                result = new CustomerPatientDocumentBrowser(customer, patient, layout);
             }
+            return result;
         });
     }
 

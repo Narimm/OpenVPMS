@@ -37,7 +37,8 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class MultiSelectTableBrowser<T extends IMObject> extends IMObjectTableBrowser<T> {
+public class MultiSelectTableBrowser<T extends IMObject> extends IMObjectTableBrowser<T>
+        implements MultiSelectBrowser<T> {
 
     /**
      * The set of selected objects.
@@ -76,6 +77,14 @@ public class MultiSelectTableBrowser<T extends IMObject> extends IMObjectTableBr
     }
 
     /**
+     * Clears the selections.
+     */
+    @Override
+    public void clearSelections() {
+        ((MultiSelectTableModel) getTableModel()).clearSelected();
+    }
+
+    /**
      * Returns the selection tracker.
      *
      * @return the selection tracker
@@ -109,26 +118,24 @@ public class MultiSelectTableBrowser<T extends IMObject> extends IMObjectTableBr
 
     /**
      * Notifies listeners when an object is selected.
-     * <p>
-     * This implementation toggles the checkbox.
      *
      * @param selected the selected object
      */
     @Override
     protected void notifySelected(T selected) {
-        ((MultiSelectTableModel) getTableModel()).toggleSelection(selected);
+        ((MultiSelectTableModel) getTableModel()).setSelected(selected);
         super.notifySelected(selected);
     }
 
     /**
      * Invoked when a check box is toggled.
      * <p>
-     * This notifies listeners.
+     * This implementation delegates to {@link #notifyBrowsed(Object)}.
      *
      * @param selected the selected object
      */
     protected void notifyToggled(T selected) {
-        super.notifySelected(selected);
+        super.notifyBrowsed(selected);
     }
 
     public interface SelectionTracker<T> {
@@ -163,6 +170,11 @@ public class MultiSelectTableBrowser<T extends IMObject> extends IMObjectTableBr
          * @return {@code true} if the object can be selected
          */
         boolean canSelect(T object);
+
+        /**
+         * Clears all selections.
+         */
+        void clear();
     }
 
     protected class MultiSelectTableModel extends DelegatingIMTableModel<T, T> {
@@ -243,19 +255,41 @@ public class MultiSelectTableBrowser<T extends IMObject> extends IMObjectTableBr
             return result;
         }
 
+        /**
+         * Clears all selections.
+         */
+        public void clearSelected() {
+            for (CheckBox check : selections) {
+                check.setSelected(false);
+            }
+            tracker.clear();
+        }
 
+        /**
+         * Returns the value found at the given coordinate within the table.
+         * Column and row values are 0-based.
+         * <strong>WARNING: Take note that the column is the first parameter
+         * passed to this method, and the row is the second parameter.</strong>
+         *
+         * @param column the column index (0-based)
+         * @param row    the row index (0-based)
+         */
         @Override
         public Object getValueAt(int column, int row) {
             return (column == selectionColumn.getModelIndex()) ? selections.get(row) : super.getValueAt(column, row);
         }
 
-        public void toggleSelection(T object) {
+        /**
+         * Selects an object.
+         *
+         * @param object the object to select
+         */
+        public void setSelected(T object) {
             int index = getObjects().indexOf(object);
             if (index != -1) {
                 CheckBox checkBox = selections.get(index);
-                boolean isSelected = checkBox.isSelected();
-                checkBox.setSelected(!isSelected);
-                tracker.setSelected(object, !isSelected);
+                checkBox.setSelected(true);
+                tracker.setSelected(object, true);
             }
         }
     }

@@ -14,24 +14,26 @@
  * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.mail;
+package org.openvpms.web.component.im.query;
 
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.im.query.MultiSelectBrowser;
-
+import java.util.Collection;
 
 /**
- * A factory for attachment browser instances.
+ * A {@link Browser} that supports multiple object selection.
  *
  * @author Tim Anderson
  */
-public interface AttachmentBrowserFactory {
+public interface MultiSelectBrowser<T> extends Browser<T> {
 
     /**
-     * Constructs an attachment browser.
+     * Returns the selections.
      *
-     * @param context the mail context.
-     * @return a new attachment browser
+     * @return the selections
      */
-    MultiSelectBrowser<Act> createBrowser(MailContext context);
+    Collection<T> getSelections();
+
+    /**
+     * Clears the selections.
+     */
+    void clearSelections();
 }
