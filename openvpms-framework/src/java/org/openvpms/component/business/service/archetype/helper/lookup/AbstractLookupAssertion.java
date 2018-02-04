@@ -268,6 +268,12 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
 
         String[] types = ndesc.getArchetypeRange();
         if (types.length == 0) {
+            String type = ndesc.getFilter();
+            if (type != null) {
+                types = new String[]{type};
+            }
+        }
+        if (types.length == 0) {
             throw new LookupHelperException(NoArchetypeRangeInLookupRelationship, new Object[]{relationship, node});
         }
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -37,6 +37,7 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -143,6 +144,26 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
         } else {
             getTarget().setValue(target != null ? target.getObjectReference() : null);
         }
+    }
+
+    /**
+     * Determines if the editor is empty.
+     *
+     * @return {@code true} if there are only two editable nodes (source and target), and the non-primary node is empty
+     */
+    public boolean isEmpty() {
+        boolean result = false;
+        List<Property> editable = new ArrayList<>(getProperties().getEditable());
+        editable.remove(getSource());
+        editable.remove(getTarget());
+        if (editable.isEmpty()) {
+            if (getSourceEditor() != null) {
+                result = getSource().getValue() == null;
+            } else if (getTargetEditor() != null) {
+                result = getTarget().getValue() == null;
+            }
+        }
+        return result;
     }
 
     /**

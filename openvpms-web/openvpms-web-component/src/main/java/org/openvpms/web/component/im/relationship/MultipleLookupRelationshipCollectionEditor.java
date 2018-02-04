@@ -18,37 +18,31 @@ package org.openvpms.web.component.im.relationship;
 
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
-import org.openvpms.web.component.im.edit.AbstractEditableIMObjectCollectionEditor;
-import org.openvpms.web.component.im.edit.DelegatingCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 
 
 /**
- * Editor for collections of {@link LookupRelationship}s.
+ * Editor for collections of {@link LookupRelationship}s with cardinality > 1, or that have multiple archetypes.
+ * <p>
+ * If the relationships have a <em>sequence</em> node, the collection will be ordered on it, and controls displayed to
+ * move relationships up or down within the collection.
  *
  * @author Tim Anderson
  */
-public class LookupRelationshipCollectionEditor extends DelegatingCollectionEditor {
-
+public class MultipleLookupRelationshipCollectionEditor
+        extends MultipleSequencedRelationshipCollectionEditor {
 
     /**
-     * Constructs a {@link LookupRelationshipCollectionEditor}.
+     * Constructs a {@link MultipleLookupRelationshipCollectionEditor}.
      *
      * @param property the collection property
      * @param object   the object being edited
      * @param context  the layout context
      */
-    public LookupRelationshipCollectionEditor(CollectionProperty property, Lookup object, LayoutContext context) {
-        String[] shortNames = property.getArchetypeRange();
-        int max = property.getMaxCardinality();
-        AbstractEditableIMObjectCollectionEditor editor;
-        if (max == 1 && shortNames.length == 1) {
-            editor = new SingleLookupRelationshipCollectionEditor(property, object, context);
-        } else {
-            editor = new MultipleLookupRelationshipCollectionEditor(property, object, context);
-        }
-        setEditor(editor);
+    public MultipleLookupRelationshipCollectionEditor(CollectionProperty property, Lookup object,
+                                                      LayoutContext context) {
+        super(new LookupRelationshipCollectionPropertyEditor(property, object), object, context);
     }
 
 }

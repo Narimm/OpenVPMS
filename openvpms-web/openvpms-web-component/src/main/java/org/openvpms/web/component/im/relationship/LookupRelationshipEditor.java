@@ -16,25 +16,25 @@
 
 package org.openvpms.web.component.im.relationship;
 
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 /**
- * An editor for {@link EntityRelationship}s.
+ * An editor for {@link LookupRelationship}s.
  *
  * @author Tim Anderson
  */
-public class EntityRelationshipEditor extends AbstractRelationshipEditor {
+public class LookupRelationshipEditor extends AbstractRelationshipEditor {
 
     /**
-     * Constructs an {@link EntityRelationshipEditor}.
+     * Constructs an {@link LookupRelationshipEditor}.
      *
      * @param relationship the relationship
      * @param parent       the parent object
      * @param context      the layout context
      */
-    public EntityRelationshipEditor(EntityRelationship relationship, IMObject parent, LayoutContext context) {
+    public LookupRelationshipEditor(LookupRelationship relationship, IMObject parent, LayoutContext context) {
         super(relationship, parent, context);
     }
 
