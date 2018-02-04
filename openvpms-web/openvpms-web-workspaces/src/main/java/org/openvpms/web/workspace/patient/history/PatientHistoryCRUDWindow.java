@@ -33,11 +33,13 @@ import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.HospitalizationService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.report.ReporterFactory;
+import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -52,6 +54,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.PatientMedicalRecordLinker;
 import org.openvpms.web.workspace.patient.info.PatientContextHelper;
+import org.openvpms.web.workspace.patient.mr.PatientVisitNoteEditor;
 
 
 /**
@@ -62,14 +65,14 @@ import org.openvpms.web.workspace.patient.info.PatientContextHelper;
 public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
 
     /**
-     * The current query.
-     */
-    private PatientHistoryQuery query;
-
-    /**
      * The Smart Flow Sheet service factory.
      */
     private final FlowSheetServiceFactory flowSheetServiceFactory;
+
+    /**
+     * The current query.
+     */
+    private PatientHistoryQuery query;
 
     /**
      * Import flow sheet documents button identifier.
@@ -114,7 +117,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
 
     /**
      * Sets the current patient clinical event.
-     * <p/>
+     * <p>
      * This updates the context.
      *
      * @param event the current event
@@ -293,17 +296,19 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     }
 
     /**
-     * Adds a new <em>act.patientClinicalNote</em>.
+     * Adds a new <em>act.patientClinicalVisit</em> and <em>act.patientClinicalNote</em>.
      */
     protected void onAddNote() {
-        setEvent(null);     // event will be created in onSaved()
-        Archetypes<Act> archetypes = new Archetypes<>(PatientArchetypes.CLINICAL_NOTE, Act.class);
-        onCreate(archetypes);
+        Act event = (Act) IMObjectCreator.create(PatientArchetypes.CLINICAL_EVENT);
+        HelpContext help = getHelpContext().subtopic("visitnote");
+        LayoutContext layoutContext = createLayoutContext(help);
+        PatientVisitNoteEditor editor = new PatientVisitNoteEditor(event, layoutContext);
+        edit(editor, null);
     }
 
     /**
      * Invoked when the patient weight changes or a weight record is deleted.
-     * <p/>
+     * <p>
      * If the act is for the current visit, registered listeners will be notified via
      * the {@link PatientInformationService}.
      *

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.patient;
@@ -35,7 +35,7 @@ public class PatientActEditor extends AbstractActEditor {
 
     /**
      * Constructs a {@link PatientActEditor}.
-     * <p/>
+     * <p>
      * If a parent act is specified, the following applies:
      * <ul>
      * <li>if {@code act} is new, its start time defaults to that of the parent</li>
@@ -116,5 +116,14 @@ public class PatientActEditor extends AbstractActEditor {
      */
     public void setClinician(IMObjectReference clinician) {
         setParticipant("clinician", clinician);
+    }
+
+    /**
+     * Returns the clinician reference.
+     *
+     * @return the clinician reference. May be {@code null}
+     */
+    public IMObjectReference getClinicianRef() {
+        return getParticipantRef("clinician");
     }
 }
