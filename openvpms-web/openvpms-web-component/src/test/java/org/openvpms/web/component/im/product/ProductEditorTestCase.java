@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -19,6 +19,8 @@ package org.openvpms.web.component.im.product;
 import org.junit.Test;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceTestHelper;
+import org.openvpms.archetype.rules.product.ProductRules;
+import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -31,6 +33,7 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.relationship.EntityLinkEditor;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
@@ -137,6 +140,29 @@ public class ProductEditorTestCase extends AbstractAppTest {
 
         // verify the editor has adjusted the dates to be the same
         assertEquals(fromDate, unit1.getToDate());
+    }
+
+    /**
+     * Verifies the product is invalid if there are multiple preferred suppliers.
+     */
+    @Test
+    public void testMultiplePreferredSuppliers() {
+        ProductRules rules = ServiceHelper.getBean(ProductRules.class);
+
+        Party supplier = TestHelper.createSupplier();
+        Product product = TestHelper.createProduct();
+        ProductSupplier relationship1 = rules.createProductSupplier(product, supplier);
+        ProductSupplier relationship2 = rules.createProductSupplier(product, supplier);
+        relationship1.setPreferred(true);
+        relationship2.setPreferred(true);
+        save(product);
+
+        ProductEditor editor1 = createEditor(product);
+        assertFalse(editor1.isValid());
+
+        relationship2.setPreferred(false);
+        ProductEditor editor2 = createEditor(product);
+        assertTrue(editor2.isValid());
     }
 
     /**
