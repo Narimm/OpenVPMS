@@ -29,7 +29,7 @@
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<field name="target.reason" class="java.lang.String"/>
-	<field name="target.notes" class="java.lang.String"/>
+	<field name="target.description" class="java.lang.String"/>
 	<sortField name="target.startTime"/>
 	<variable name="taxR" class="java.math.BigDecimal">
 		<variableExpression><![CDATA[$F{target.tax}.setScale(2, BigDecimal.ROUND_HALF_UP)]]></variableExpression>
@@ -120,7 +120,7 @@
 				<reportElement x="6" y="0" width="292" height="13" uuid="10644272-603a-45ee-9837-a3f4faf5674a">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
-				<textFieldExpression><![CDATA[$F{target.reason}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{target.reason} != null ? $F{target.reason} : $F{target.description}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
 				<reportElement x="444" y="1" width="103" height="13" uuid="7440e37f-7fbb-42f9-9490-1d73afa9e18d"/>
@@ -128,8 +128,10 @@
 				<textFieldExpression><![CDATA[$F{target.amount}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement x="19" y="14" width="279" height="38" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="7ad9de4f-4411-409a-86d9-c8cee682954c"/>
-				<textFieldExpression><![CDATA[$F{target.notes}]]></textFieldExpression>
+				<reportElement stretchType="RelativeToBandHeight" x="19" y="14" width="279" height="38" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="7ad9de4f-4411-409a-86d9-c8cee682954c">
+					<printWhenExpression><![CDATA[$F{target.reason} != null]]></printWhenExpression>
+				</reportElement>
+				<textFieldExpression><![CDATA[$F{target.description}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
