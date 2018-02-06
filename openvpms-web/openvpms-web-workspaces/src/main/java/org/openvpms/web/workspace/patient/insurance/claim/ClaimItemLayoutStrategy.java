@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.insurance.claim;
@@ -96,8 +96,6 @@ public class ClaimItemLayoutStrategy extends AbstractClaimLayoutStrategy {
         statusRow.add(euthanasiaReason.getComponent());
         addComponent(new ComponentState(statusRow, statusState.getProperty()));
         setShowEuthanasiaReason(ClaimItemStatus.EUTHANASED.equals(status.getString()));
-
-        addComponent(createNotes(object, properties, context));
         return super.apply(object, properties, parent, context);
     }
 

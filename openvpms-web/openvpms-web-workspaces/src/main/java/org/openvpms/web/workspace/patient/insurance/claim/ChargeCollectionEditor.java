@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.insurance.claim;
@@ -92,13 +92,13 @@ public class ChargeCollectionEditor extends IMObjectTableCollectionEditor {
     }
 
     /**
-     * Determines if a charge has been claimed.
+     * Determines if an invoice item can be claimed.
      *
-     * @param charge the charge
-     * @return {@code true} if the charge has been claimed
+     * @param item the invoice item
+     * @return {@code true} if the item can be claimed, otherwise {@code false}
      */
-    public boolean isClaimed(Act charge) {
-        return charges.contains(charge);
+    public boolean canClaim(Act item) {
+        return charges.canClaimItem(item);
     }
 
     /**

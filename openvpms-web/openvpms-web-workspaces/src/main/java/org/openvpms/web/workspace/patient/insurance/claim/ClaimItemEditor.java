@@ -11,19 +11,22 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.insurance.claim;
 
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.insurance.ClaimItemStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.property.Modifiable;
-import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
+import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.Date;
 import java.util.List;
@@ -56,19 +59,11 @@ public class ClaimItemEditor extends AbstractClaimEditor {
         super(act, parent, "total", context);
         this.charges = new ChargeCollectionEditor(getCollectionProperty("items"), act, customer, patient, charges,
                                                   attachments, context);
-        this.charges.addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onItemsChanged();
-            }
-        });
+        this.charges.addModifiableListener(modifiable -> onItemsChanged());
         getEditors().add(this.charges);
+
         addStartEndTimeListeners();
-        getProperty("status").addModifiableListener(new ModifiableListener() {
-            @Override
-            public void modified(Modifiable modifiable) {
-                onStatusChanged();
-            }
-        });
+        getProperty("status").addModifiableListener(modifiable -> onStatusChanged());
     }
 
     /**
@@ -81,12 +76,12 @@ public class ClaimItemEditor extends AbstractClaimEditor {
     }
 
     /**
-     * Adds a charge, if it hasn't already been claimed.
+     * Adds a charge, if it can be claimed..
      *
      * @param charge the charge to add
      */
     public void addCharge(Act charge) {
-        if (!charges.isClaimed(charge)) {
+        if (charges.canClaim(charge)) {
             charges.add(charge);
         }
     }
@@ -143,6 +138,30 @@ public class ClaimItemEditor extends AbstractClaimEditor {
         IMObjectLayoutStrategy strategy = super.createLayoutStrategy();
         strategy.addComponent(new ComponentState(charges));
         return strategy;
+    }
+
+    /**
+     * Validates the object.
+     * <p>
+     * This extends validation by ensuring that the start time is less than the end time, if non-null.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        boolean valid = super.doValidation(validator);
+        if (valid) {
+            Property reason = getProperty("reason");
+            Property description = getProperty("description");
+            valid = reason.getValue() != null || !StringUtils.isEmpty(description.getString());
+            if (!valid) {
+                String message = Messages.format("patient.insurance.item.incomplete", reason.getDisplayName(),
+                                                 description.getDisplayName());
+                validator.add(this, new ValidatorError(message));
+            }
+        }
+        return valid;
     }
 
     /**

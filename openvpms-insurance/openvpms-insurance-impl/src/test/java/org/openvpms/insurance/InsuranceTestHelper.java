@@ -141,7 +141,7 @@ public class InsuranceTestHelper {
         item.setReason(TestHelper.getLookup("lookup.diagnosisVeNom", diagnosis).getCode());
         item.setActivityStartTime(startTime);
         item.setActivityEndTime(endTime);
-        bean.setValue("notes", "some notes");
+        item.setDescription("Condition description");
         for (FinancialAct invoiceItem : invoiceItems) {
             total = total.add(invoiceItem.getTotal());
             tax = tax.add(invoiceItem.getTaxAmount());

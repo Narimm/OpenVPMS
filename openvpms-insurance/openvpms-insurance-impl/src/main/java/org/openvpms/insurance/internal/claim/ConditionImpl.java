@@ -18,6 +18,7 @@ package org.openvpms.insurance.internal.claim;
 
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.lookup.Lookup;
@@ -25,6 +26,7 @@ import org.openvpms.component.model.object.Reference;
 import org.openvpms.insurance.claim.Condition;
 import org.openvpms.insurance.claim.Invoice;
 import org.openvpms.insurance.claim.Item;
+import org.openvpms.insurance.claim.Note;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -52,6 +54,11 @@ public class ConditionImpl implements Condition {
     private final Act act;
 
     /**
+     * The patient.
+     */
+    private final Party patient;
+
+    /**
      * The archetype service.
      */
     private final IArchetypeRuleService service;
@@ -62,13 +69,20 @@ public class ConditionImpl implements Condition {
     private List<Invoice> invoices;
 
     /**
+     * The consultation notes.
+     */
+    private List<Note> notes;
+
+    /**
      * Constructs a {@link ConditionImpl}
      *
      * @param act     the condition act
+     * @param patient the patient
      * @param service the archetype service
      */
-    public ConditionImpl(Act act, IArchetypeRuleService service) {
+    public ConditionImpl(Act act, Party patient, IArchetypeRuleService service) {
         this.condition = service.getBean(act);
+        this.patient = patient;
         this.act = act;
         this.service = service;
     }
@@ -104,6 +118,18 @@ public class ConditionImpl implements Condition {
     }
 
     /**
+     * Returns the condition description.
+     * <p>
+     * This can provide a short summary of the condition.
+     *
+     * @return the condition description. May be {@code null}
+     */
+    @Override
+    public String getDescription() {
+        return condition.getObject().getDescription();
+    }
+
+    /**
      * Returns the status of the animal as a result of this condition.
      *
      * @return the status of the animal
@@ -121,6 +147,22 @@ public class ConditionImpl implements Condition {
     @Override
     public String getEuthanasiaReason() {
         return condition.getString("euthanasiaReason");
+    }
+
+
+    /**
+     * Returns the consultation notes.
+     *
+     * @return the consultation notes
+     */
+    @Override
+    public List<Note> getConsultationNotes() {
+        if (notes == null) {
+            Date from = DateRules.getDate(act.getActivityStartTime());
+            Date to = DateRules.getNextDate(act.getActivityEndTime());
+            notes = new NotesQuery(service).query(patient, from, to);
+        }
+        return notes;
     }
 
     /**
@@ -231,4 +273,5 @@ public class ConditionImpl implements Condition {
         Collections.sort(result, (o1, o2) -> DateRules.compareTo(o1.getDate(), o2.getDate()));
         return result;
     }
+
 }

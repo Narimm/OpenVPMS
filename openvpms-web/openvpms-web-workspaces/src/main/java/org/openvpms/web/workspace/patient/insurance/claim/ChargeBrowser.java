@@ -11,12 +11,11 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.insurance.claim;
 
-import net.sf.jasperreports.engine.util.ObjectUtils;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
@@ -29,20 +28,13 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
-import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.CachingReadOnlyArchetypeService;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
-import org.openvpms.component.system.common.cache.IMObjectCache;
-import org.openvpms.component.system.common.cache.SoftRefIMObjectCache;
-import org.openvpms.insurance.claim.Claim;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.AbstractBrowserListener;
 import org.openvpms.web.component.im.query.Browser;
@@ -60,7 +52,6 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -103,21 +94,6 @@ public class ChargeBrowser {
     private final Charges charges;
 
     /**
-     * The balance calculator.
-     */
-    private final CustomerAccountRules rules;
-
-    /**
-     * Caches claims and invoices.
-     */
-    private final IMObjectCache cache;
-
-    /**
-     * Caches objects returned by the archetype service.
-     */
-    private final IArchetypeService cachingService;
-
-    /**
      * The item table.
      */
     private final PagedIMTable<Act> table;
@@ -156,10 +132,6 @@ public class ChargeBrowser {
         this.patient = patient;
         this.patientRef = patient.getObjectReference();
         this.charges = charges;
-        rules = ServiceHelper.getBean(CustomerAccountRules.class);
-        IArchetypeRuleService service = ServiceHelper.getArchetypeService();
-        cache = new SoftRefIMObjectCache(service);
-        cachingService = new CachingReadOnlyArchetypeService(cache, service);
         DateRangeActQuery<FinancialAct> query = new DefaultActQuery<>(customer, "customer",
                                                                       CustomerArchetypes.CUSTOMER_PARTICIPATION,
                                                                       ARCHETYPES, STATUSES);
@@ -237,23 +209,20 @@ public class ChargeBrowser {
         List<Act> matches = new ArrayList<>();
         ActBean bean = new ActBean(invoice);
         boolean claimed = false;
-        boolean reversed = rules.isReversed(invoice);
+        boolean reversed = charges.isReversed(invoice);
         boolean allocated = false;
         if (!reversed) {
-            allocated = rules.isAllocated(invoice);
+            allocated = charges.isPaid(invoice);
             if (allocated) {
-                for (IMObjectReference itemRef : bean.getNodeTargetObjectRefs("items")) {
+                for (Reference itemRef : bean.getTargetRefs("items")) {
                     if (!charges.contains(itemRef)) {
-                        FinancialAct item = (FinancialAct) cache.get(itemRef);
+                        Act item = charges.getItem(itemRef, patientRef);
                         if (item != null) {
-                            ActBean itemBean = new ActBean(item);
-                            if (ObjectUtils.equals(patientRef, itemBean.getNodeParticipantRef("patient"))) {
-                                if (!isClaimed(item)) {
-                                    matches.add(item);
-                                    selected.put(item, Boolean.TRUE);
-                                } else {
-                                    claimed = true;
-                                }
+                            if (!charges.isClaimed(item)) {
+                                matches.add(item);
+                                selected.put(item, Boolean.TRUE);
+                            } else {
+                                claimed = true;
                             }
                         }
                     } else {
@@ -287,30 +256,6 @@ public class ChargeBrowser {
             container.add(wrapper);
         }
     }
-
-    /**
-     * Determines if a charge item has been claimed already by another insurance claim.
-     *
-     * @param item the charge item
-     * @return {@code true} if the charge item has a relationship to an insurance claim that isn't CANCELLED or DECLINED
-     */
-    private boolean isClaimed(FinancialAct item) {
-        boolean result = false;
-        ActBean chargeBean = new ActBean(item, cachingService);
-        for (Act claimItem : chargeBean.getSourceActs(InsuranceArchetypes.CLAIM_INVOICE_ITEM)) {
-            ActBean bean = new ActBean(claimItem, cachingService);
-            Act claim = (Act) bean.getNodeSourceObject("claim");
-            if (claim != null) {
-                String status = claim.getStatus();
-                if (!Claim.Status.CANCELLED.isA(status) && !Claim.Status.DECLINED.isA(status)) {
-                    result = true;
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-
 
     private static class ItemTableModel extends AbstractActTableModel {
 

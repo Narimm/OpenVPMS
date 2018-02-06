@@ -33,17 +33,21 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.insurance.InsuranceTestHelper;
 import org.openvpms.insurance.claim.Claim;
+import org.openvpms.insurance.claim.ClaimHandler;
 import org.openvpms.insurance.claim.Condition;
 import org.openvpms.insurance.claim.Invoice;
 import org.openvpms.insurance.claim.Item;
 import org.openvpms.insurance.claim.Note;
+import org.openvpms.insurance.policy.Animal;
 import org.openvpms.insurance.policy.Policy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -117,6 +121,11 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
     private Party patient;
 
     /**
+     * Patient date of birth.
+     */
+    private Date dateOfBirth;
+
+    /**
      * The test clinician.
      */
     private User clinician;
@@ -127,6 +136,16 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
     private Party location;
 
     /**
+     * Practice location phone.
+     */
+    private Contact locationPhone;
+
+    /**
+     * Practice location email.
+     */
+    private Contact locationEmail;
+
+    /**
      * The claim handler.
      */
     private User user;
@@ -135,6 +154,7 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
      * The policy.
      */
     private Act policyAct;
+
 
     /**
      * Sets up the test case.
@@ -147,7 +167,12 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         handlers = new DocumentHandlers(getArchetypeService());
 
         // practice location
-        location = TestHelper.createLocation("5123456", "vetsrus@test.com", false);
+        locationPhone = TestHelper.createPhoneContact(null, "5123456", false);
+        locationEmail = TestHelper.createEmailContact("vetsrus@test.com");
+        location = TestHelper.createLocation();
+        location.addContact(locationEmail);
+        location.addContact(locationPhone);
+        save(location);
 
         // clinician
         clinician = TestHelper.createClinician();
@@ -156,7 +181,7 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         user = TestHelper.createUser("Z", "Smith");
 
         // patient
-        Date dateOfBirth = DateRules.getDate(DateRules.getToday(), -1, DateUnits.YEARS);
+        dateOfBirth = DateRules.getDate(DateRules.getToday(), -1, DateUnits.YEARS);
         patient = createPatient("Fido", "CANINE", "PUG", "MALE", dateOfBirth, "123454321", "BLACK", customer);
 
         // patient history
@@ -187,9 +212,12 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testClaim() {
-
         Date treatFrom1 = getDate("2017-09-27");
         Date treatTo1 = getDate("2017-09-29");
+
+        Act note4 = createNote(treatFrom1, patient, clinician, "Note 4");
+        createEvent(treatFrom1, treatTo1, patient, clinician, note4);
+
         Product product1 = TestHelper.createProduct();
         Product product2 = TestHelper.createProduct();
         Product product3 = TestHelper.createProduct();
@@ -225,6 +253,8 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         save(policyAct, claimAct, item1Act);
 
         Claim claim = createClaim(claimAct);
+
+        // check the claim
         assertEquals(claimAct.getId(), claim.getId());
         assertEquals("CLM987654", claim.getInsurerId());
         assertEquals(Claim.Status.PENDING, claim.getStatus());
@@ -232,10 +262,46 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         assertNotNull(policy);
         assertEquals("POL123456", policy.getInsurerId());
 
+        ClaimHandler handler = claim.getClaimHandler();
+        assertNotNull(handler);
+        assertEquals(user.getName(), handler.getName());
+        assertEquals(locationEmail, handler.getEmail());
+        assertEquals(locationPhone, handler.getPhone());
+
+        // check the animal
+        Animal animal = claim.getAnimal();
+        assertEquals(patient.getId(), animal.getId());
+        assertEquals(patient.getName(), animal.getName());
+        assertEquals(dateOfBirth, animal.getDateOfBirth());
+        assertEquals("Canine", animal.getSpecies());
+        assertEquals("Pug", animal.getBreed());
+        assertEquals(Animal.Sex.MALE, animal.getSex());
+        assertEquals("Black", animal.getColour());
+        assertEquals("123454321", animal.getMicrochip());
+        assertEquals(new IMObjectBean(patient).getDate("createdDate"), animal.getCreatedDate());
+
+        // check the condition
         assertEquals(1, claim.getConditions().size());
         Condition condition1 = claim.getConditions().get(0);
         checkCondition(condition1, treatFrom1, treatTo1, "VENOM_328");
         assertEquals(2, condition1.getInvoices().size());
+
+        BigDecimal conditionDiscount = discount1.add(discount2).add(discount3);
+        BigDecimal conditionDiscountTax = discountTax1.add(discountTax2).add(discountTax3);
+        BigDecimal conditionTotal = total1.add(total2).add(total3);
+        BigDecimal conditionTax = tax1.add(tax2).add(tax3);
+
+        checkEquals(conditionDiscount, condition1.getDiscount());
+        checkEquals(conditionDiscountTax, condition1.getDiscountTax());
+        checkEquals(conditionTotal, condition1.getTotal());
+        checkEquals(conditionTax, condition1.getTotalTax());
+
+        assertNull(condition1.getEuthanasiaReason());
+
+        // check the consultation notes
+        List<Note> notes = condition1.getConsultationNotes();
+        assertEquals(1, notes.size());
+        checkNote(notes.get(0), treatFrom1, clinician, "Note 4", 0);
 
         // check the first invoice
         Invoice invoice1 = condition1.getInvoices().get(0);
@@ -255,19 +321,20 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         assertEquals(1, items2.size());
         checkItem(items2.get(0), invoiceItem3.getId(), itemDate3, product3, discount3, discountTax3, tax3, total3);
 
-        assertEquals(total1.add(total2).add(total3), claim.getTotal());
-        assertEquals(tax1.add(tax2).add(tax3), claim.getTotalTax());
-        assertEquals(discount1.add(discount2).add(discount3), claim.getDiscount());
+        assertEquals(conditionTotal, claim.getTotal());
+        assertEquals(conditionTax, claim.getTotalTax());
+        assertEquals(conditionDiscount, claim.getDiscount());
         assertEquals(discountTax1.add(discountTax2).add(discountTax3), claim.getDiscountTax());
 
         // check the history
         List<Note> history = claim.getClinicalHistory();
-        assertEquals(3, history.size());
+        assertEquals(4, history.size());
         checkNote(history.get(0), getDate("2015-05-01"), clinician, "Note 1", 0);
         checkNote(history.get(1), getDate("2015-05-02"), clinician, "Note 2", 0);
         Note note3 = checkNote(history.get(2), getDate("2015-07-01"), clinician, "Note 3", 2);
         checkNote(note3.getNotes().get(0), getDate("2015-07-03"), clinician, "Note 3 addendum 1", 0);
         checkNote(note3.getNotes().get(1), getDate("2015-07-04"), clinician, "Note 3 addendum 2", 0);
+        checkNote(history.get(3), treatFrom1, clinician, "Note 4", 0);
     }
 
     /**

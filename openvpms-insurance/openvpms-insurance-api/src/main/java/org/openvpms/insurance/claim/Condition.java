@@ -52,10 +52,21 @@ public interface Condition {
 
     /**
      * Returns the diagnosis.
+     * <p>
+     * If no diagnosis is provided, a {@link #getDescription() description} is required.
      *
-     * @return the diagnosis
+     * @return the diagnosis. May be {@code null}
      */
     Lookup getDiagnosis();
+
+    /**
+     * Returns the condition description.
+     * <p>
+     * This can provide a short summary of the condition.
+     *
+     * @return the condition description. May be {@code null}
+     */
+    String getDescription();
 
     /**
      * Returns the status of the animal as a result of this condition.
@@ -70,6 +81,13 @@ public interface Condition {
      * @return the reason for euthanasing the animal
      */
     String getEuthanasiaReason();
+
+    /**
+     * Returns the consultation notes.
+     *
+     * @return the consultation notes
+     */
+    List<Note> getConsultationNotes();
 
     /**
      * Returns the discount amount, including tax.

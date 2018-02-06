@@ -19,7 +19,6 @@ package org.openvpms.insurance.internal.claim;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.party.CustomerRules;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
@@ -30,9 +29,6 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.lookup.Lookup;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.Constraints;
-import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.insurance.claim.Attachment;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.claim.ClaimHandler;
@@ -52,11 +48,6 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-
-import static org.openvpms.component.system.common.query.Constraints.eq;
-import static org.openvpms.component.system.common.query.Constraints.join;
-import static org.openvpms.component.system.common.query.Constraints.lte;
-import static org.openvpms.component.system.common.query.Constraints.sort;
 
 /**
  * Default implementation of {@link Claim}.
@@ -488,8 +479,9 @@ public class ClaimImpl implements Claim {
      */
     protected List<Condition> collectConditions() {
         List<Condition> result = new ArrayList<>();
+        Party patient = getPatient();
         for (Act act : claim.getTargets("items", Act.class)) {
-            result.add(new ConditionImpl(act, service));
+            result.add(new ConditionImpl(act, patient, service));
         }
         return result;
     }
@@ -500,25 +492,8 @@ public class ClaimImpl implements Claim {
      * @return the clinical history
      */
     protected List<Note> collectHistory() {
-        List<Note> result = new ArrayList<>();
-        Party patient = ((PolicyImpl) getPolicy()).getPatient();
-        ArchetypeQuery query = new ArchetypeQuery(Constraints.shortName("note", PatientArchetypes.CLINICAL_NOTE));
-        Date startTime = act.getActivityStartTime();
-        query.add(join("event", "e").add(
-                join("source", "event")
-                        .add(join("patient").add(eq("entity", patient)))
-                        .add(lte("event.startTime", startTime))))
-                .add(lte("note.startTime", startTime));
-        query.add(sort("event.startTime"));
-        query.add(sort("event.id"));
-        query.add(sort("note.startTime"));
-        query.add(sort("note.id"));
-        IMObjectQueryIterator<Act> iterator = new IMObjectQueryIterator<>(service, query);
-        while (iterator.hasNext()) {
-            Act note = iterator.next();
-            result.add(new NoteImpl(note, service));
-        }
-        return result;
+        Party patient = getPatient();
+        return new NotesQuery(service).query(patient, null, act.getActivityStartTime());
     }
 
     /**
@@ -541,6 +516,15 @@ public class ClaimImpl implements Claim {
      */
     protected ActIdentity getIdentity() {
         return claim.getObject("insurerId", ActIdentity.class);
+    }
+
+    /**
+     * Returns the patient.
+     *
+     * @return the patient
+     */
+    private Party getPatient() {
+        return ((PolicyImpl) getPolicy()).getPatient();
     }
 
     /**

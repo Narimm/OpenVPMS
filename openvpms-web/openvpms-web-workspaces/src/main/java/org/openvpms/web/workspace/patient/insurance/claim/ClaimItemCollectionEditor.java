@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.patient.insurance.claim;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -25,8 +26,8 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.web.component.im.edit.AbstractRemoveConfirmationHandler;
@@ -35,6 +36,7 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -44,8 +46,13 @@ import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
+import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 import org.openvpms.web.workspace.patient.problem.ProblemBrowser;
 import org.openvpms.web.workspace.patient.problem.ProblemQuery;
+
+import java.util.function.Consumer;
 
 /**
  * Editor for a collection of <em>act.patientInsuranceClaimItem</em> acts.
@@ -73,6 +80,11 @@ class ClaimItemCollectionEditor extends ActRelationshipCollectionEditor {
      * The attachments.
      */
     private final AttachmentCollectionEditor attachments;
+
+    /**
+     * Add visit button id.
+     */
+    private static final String ADD_VISIT = "button.addvisit";
 
     /**
      * Add problem button id.
@@ -138,6 +150,7 @@ class ClaimItemCollectionEditor extends ActRelationshipCollectionEditor {
     @Override
     protected void enableNavigation(ButtonSet buttons, boolean enable, boolean enableAdd) {
         super.enableNavigation(buttons, enable, enableAdd);
+        buttons.setEnabled(ADD_VISIT, enableAdd);
         buttons.setEnabled(ADD_PROBLEM, enableAdd);
     }
 
@@ -151,14 +164,32 @@ class ClaimItemCollectionEditor extends ActRelationshipCollectionEditor {
     protected ButtonRow createControls(FocusGroup focus) {
         ButtonRow row = super.createControls(focus);
         ButtonSet buttons = row.getButtons();
-        Button button = buttons.create(ADD_PROBLEM, new ActionListener() {
+        Button visit = buttons.create(ADD_VISIT, new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                onAddVisit();
+            }
+        });
+        buttons.add(visit, 1);
+        Button problem = buttons.create(ADD_PROBLEM, new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
                 onAddProblem();
             }
         });
-        buttons.add(button, 1);
+        buttons.add(problem, 2);
         return row;
+    }
+
+
+    /**
+     * Invoked when the 'Add Visit' is pressed. Displays a browser to select a visit.
+     */
+    protected void onAddVisit() {
+        LayoutContext context = getContext();
+        PatientHistoryQuery query = new PatientHistoryQuery(patient, context.getPreferences());
+        PatientHistoryBrowser browser = new PatientHistoryBrowser(query, context);
+        selectFromBrowser(browser, PatientArchetypes.CLINICAL_EVENT, this::addVisit);
     }
 
     /**
@@ -168,24 +199,36 @@ class ClaimItemCollectionEditor extends ActRelationshipCollectionEditor {
         LayoutContext context = getContext();
         ProblemQuery query = new ProblemQuery(patient, context.getPreferences());
         ProblemBrowser browser = new ProblemBrowser(query, context);
-        String title = Messages.format("imobject.select.title",
-                                       DescriptorHelper.getDisplayName(PatientArchetypes.CLINICAL_PROBLEM));
-        final BrowserDialog<Act> dialog = new BrowserDialog<Act>(title, BrowserDialog.OK_CANCEL, browser,
-                                                                 context.getHelpContext()) {
-            @Override
-            public boolean isSelected() {
-                return TypeHelper.isA(getSelected(), PatientArchetypes.CLINICAL_PROBLEM);
+        selectFromBrowser(browser, PatientArchetypes.CLINICAL_PROBLEM, this::addProblem);
+    }
+
+    /**
+     * Adds a visit.
+     */
+    protected void addVisit(Act visit) {
+        Act object = (Act) create();
+        if (object != null) {
+            object.setActivityStartTime(visit.getActivityStartTime());
+            object.setActivityEndTime(visit.getActivityEndTime());
+            IMObjectBean bean = new IMObjectBean(visit);
+            addAttachments(bean);
+            String description = visit.getTitle();
+            if (StringUtils.isEmpty(description)) {
+                description = ServiceHelper.getLookupService().getName(visit, "reason");
             }
-        };
-        dialog.setCloseOnSelection(false);
-        dialog.addWindowPaneListener(new PopupDialogListener() {
-            @Override
-            public void onOK() {
-                Act problem = dialog.getSelected();
-                addProblem(problem);
+            object.setDescription(description);
+            IMObjectEditor editor = getEditor(object);
+            if (editor instanceof ClaimItemEditor) {
+                ClaimItemEditor claimItemEditor = (ClaimItemEditor) editor;
+                for (Act charge : bean.getTargets("chargeItems", Act.class)) {
+                    claimItemEditor.addCharge(charge);
+                }
             }
-        });
-        dialog.show();
+        }
+        add(object);
+        refresh();
+        setSelected(object);
+        edit(object);
     }
 
     /**
@@ -194,7 +237,8 @@ class ClaimItemCollectionEditor extends ActRelationshipCollectionEditor {
      * This creates a new claim item and:
      * <ul>
      * <li>sets the treatment dates to that of the problem</li>
-     * <li>sets the diagnosis if it is a VeNom diagnosis</li>
+     * <li>sets the diagnosis</li>
+     * <li>sets the description to the presenting complaint</li>
      * <li>sets the status from the problem</li>
      * <li>adds any patient documents</li>
      * <li>adds all charges from the associated visits</li>
@@ -207,33 +251,25 @@ class ClaimItemCollectionEditor extends ActRelationshipCollectionEditor {
         if (object != null) {
             object.setActivityStartTime(problem.getActivityStartTime());
             object.setActivityEndTime(problem.getActivityEndTime());
-            ActBean source = new ActBean(problem);
-            ActBean target = new ActBean(object);
-            Lookup diagnosis = source.getLookup("reason");
-            if (TypeHelper.isA(diagnosis, PatientArchetypes.DIAGNOSIS_VENOM)) {
+            IMObjectBean bean = new IMObjectBean(problem);
+            Lookup diagnosis = bean.getLookup("reason");
+            if (diagnosis != null) {
                 object.setReason(diagnosis.getCode());
-            } else if (diagnosis != null) {
-                // the diagnosis isn't a VeNom diagnosis.
-                target.setValue("notes", Messages.format("patient.insurance.diagnosis", diagnosis.getName()));
             }
-            target.setStatus(source.getStatus());
-            for (IMObjectReference ref : source.getNodeTargetObjectRefs("items")) {
-                if (TypeHelper.isA(ref, PatientArchetypes.DOCUMENT_FORM, PatientArchetypes.DOCUMENT_IMAGE,
-                                   PatientArchetypes.DOCUMENT_LETTER, PatientArchetypes.DOCUMENT_ATTACHMENT,
-                                   InvestigationArchetypes.PATIENT_INVESTIGATION)) {
-                    DocumentAct document = (DocumentAct) IMObjectHelper.getObject(ref);
-                    if (document != null) {
-                        attachments.addDocument(document);
-                    }
-                }
+            Lookup presentingComplaint = bean.getLookup("presentingComplaint");
+            if (presentingComplaint != null) {
+                object.setDescription(presentingComplaint.getName());
             }
+
+            object.setStatus(problem.getStatus());
+            addAttachments(bean);
             add(object);
             IMObjectEditor editor = getEditor(object);
             if (editor instanceof ClaimItemEditor) {
                 ClaimItemEditor claimItemEditor = (ClaimItemEditor) editor;
-                for (IMObject event : source.getNodeSourceObjects("events")) {
-                    ActBean eventBean = new ActBean((Act) event);
-                    for (Act charge : eventBean.getNodeActs("chargeItems")) {
+                for (Act event : bean.getSources("events", Act.class)) {
+                    IMObjectBean eventBean = new IMObjectBean(event);
+                    for (Act charge : eventBean.getTargets("chargeItems", Act.class)) {
                         claimItemEditor.addCharge(charge);
                     }
                 }
@@ -252,6 +288,51 @@ class ClaimItemCollectionEditor extends ActRelationshipCollectionEditor {
     protected void remove(ClaimItemEditor editor) {
         for (Act charge : editor.getCharges()) {
             charges.remove(charge);
+        }
+    }
+
+    /**
+     * Selects an act of the specified archetype from a browser, notifying the supplied consumer on selection.
+     *
+     * @param browser   the browser
+     * @param archetype the type of act to select
+     * @param consumer  the consumer to notify
+     */
+    private void selectFromBrowser(Browser<Act> browser, String archetype, Consumer<Act> consumer) {
+        String title = Messages.format("imobject.select.title",
+                                       DescriptorHelper.getDisplayName(archetype));
+        BrowserDialog<Act> dialog = new BrowserDialog<Act>(title, BrowserDialog.OK_CANCEL, browser,
+                                                           getContext().getHelpContext()) {
+            @Override
+            public boolean isSelected() {
+                return TypeHelper.isA(getSelected(), archetype);
+            }
+        };
+        dialog.setCloseOnSelection(false);
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onOK() {
+                consumer.accept(dialog.getSelected());
+            }
+        });
+        dialog.show();
+    }
+
+    /**
+     * Adds attachments to the claim that have been linked from a visit or problem.
+     *
+     * @param bean a bean wrapping the visit/problem
+     */
+    private void addAttachments(IMObjectBean bean) {
+        for (IMObjectReference ref : bean.getNodeTargetObjectRefs("items")) {
+            if (TypeHelper.isA(ref, PatientArchetypes.DOCUMENT_FORM, PatientArchetypes.DOCUMENT_IMAGE,
+                               PatientArchetypes.DOCUMENT_LETTER, PatientArchetypes.DOCUMENT_ATTACHMENT,
+                               InvestigationArchetypes.PATIENT_INVESTIGATION)) {
+                DocumentAct document = (DocumentAct) IMObjectHelper.getObject(ref);
+                if (document != null) {
+                    attachments.addDocument(document);
+                }
+            }
         }
     }
 

@@ -27,7 +27,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -55,8 +54,6 @@ import org.openvpms.web.workspace.patient.history.PatientHistoryIterator;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -232,11 +229,11 @@ class AttachmentGenerator {
      * @param original the original document
      * @return {@code true} if the document was generated successfully
      */
-    private boolean generateDocument(ActBean bean, Act original) {
+    private boolean generateDocument(IMObjectBean bean, Act original) {
         boolean result = false;
-        ActBean source = new ActBean(original);
+        IMObjectBean source = new IMObjectBean(original);
         try {
-            IMObjectReference docRef = source.getReference("document");
+            IMObjectReference docRef = source.hasNode("document") ? source.getReference("document") : null;
             if (docRef == null) {
                 ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(original, context);
                 Reporter<Act> reporter = factory.create(original, locator, TemplatedReporter.class);
@@ -327,7 +324,7 @@ class AttachmentGenerator {
      * @param bean     the attachment
      * @param reporter the reporter used to generate the document
      */
-    private boolean save(ActBean bean, Reporter<Act> reporter) {
+    private boolean save(IMObjectBean bean, Reporter<Act> reporter) {
         reporter.setFields(ReportContextFactory.create(context));
         Document document = reporter.getDocument(DocFormats.PDF_TYPE, false);
         return save(bean, document);
@@ -340,7 +337,7 @@ class AttachmentGenerator {
      * @param document the document to copy
      * @return {@code true} if the attachment was saved
      */
-    private boolean copy(ActBean bean, Document document) {
+    private boolean copy(IMObjectBean bean, Document document) {
         DocumentHandler handler = ServiceHelper.getBean(DocumentHandlers.class).get(document);
         InputStream content = handler.getContent(document);
         Document copy = handler.create(document.getName(), content, document.getMimeType(), document.getDocSize());
@@ -354,16 +351,15 @@ class AttachmentGenerator {
      * @param document the document
      * @return {@code true} if it was successfully saved
      */
-    private boolean save(ActBean bean, Document document) {
+    private boolean save(IMObjectBean bean, Document document) {
         boolean result = false;
         try {
-            bean.setStatus(Attachment.Status.PENDING.name());
+            bean.setValue("status", Attachment.Status.PENDING.name());
             bean.setValue("error", null);
             bean.setValue("document", document.getObjectReference());
             bean.setValue("fileName", document.getName());
             bean.setValue("mimeType", document.getMimeType());
-            List<IMObject> objects = Arrays.asList(bean.getAct(), document);
-            ServiceHelper.getArchetypeService().save(objects);
+            bean.save(document);
             result = true;
         } catch (Throwable exception) {
             setStatus(bean, Attachment.Status.ERROR, exception.getMessage());
@@ -378,8 +374,8 @@ class AttachmentGenerator {
      * @param status  the status
      * @param message the message. May be {@code null}
      */
-    private void setStatus(ActBean bean, Attachment.Status status, String message) {
-        bean.setStatus(status.name());
+    private void setStatus(IMObjectBean bean, Attachment.Status status, String message) {
+        bean.setValue("status", status.name());
         if (message != null) {
             message = StringUtils.abbreviate(message, NodeDescriptor.DEFAULT_MAX_LENGTH);
         }
