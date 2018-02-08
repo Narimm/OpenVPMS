@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
@@ -312,4 +313,13 @@ public interface IArchetypeService {
      * @param listener  the listener to remove
      */
     void removeListener(String shortName, IArchetypeServiceListener listener);
+
+    /**
+     * Returns a bean for an object.
+     *
+     * @param object the object
+     * @return the bean
+     */
+    IMObjectBean getBean(org.openvpms.component.model.object.IMObject object);
+
 }

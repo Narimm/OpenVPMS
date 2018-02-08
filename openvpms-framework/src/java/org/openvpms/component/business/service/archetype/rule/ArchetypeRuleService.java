@@ -25,7 +25,6 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.ruleengine.IRuleEngine;
 import org.openvpms.component.business.service.ruleengine.RuleSetUriHelper;
-import org.openvpms.component.model.bean.IMObjectBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -152,17 +151,6 @@ public class ArchetypeRuleService extends DelegatingArchetypeService implements 
                 getService().remove(object);
             }
         });
-    }
-
-    /**
-     * Returns a bean for an object.
-     *
-     * @param object the object
-     * @return the bean
-     */
-    @Override
-    public IMObjectBean getBean(org.openvpms.component.model.object.IMObject object) {
-        return new org.openvpms.component.business.service.archetype.helper.IMObjectBean(object, this);
     }
 
     /**

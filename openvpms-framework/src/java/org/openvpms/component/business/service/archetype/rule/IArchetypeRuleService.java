@@ -20,7 +20,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
-import org.openvpms.component.model.bean.IMObjectBean;
 
 import java.util.Collection;
 
@@ -89,12 +88,5 @@ public interface IArchetypeRuleService extends IArchetypeService {
      */
     void remove(IMObject object);
 
-    /**
-     * Returns a bean for an object.
-     *
-     * @param object the object
-     * @return the bean
-     */
-    IMObjectBean getBean(org.openvpms.component.model.object.IMObject object);
 
 }

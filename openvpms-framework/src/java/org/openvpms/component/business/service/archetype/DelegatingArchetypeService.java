@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.service.archetype.ValidationError;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
@@ -414,6 +415,19 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
     @Override
     public void removeListener(String shortName, IArchetypeServiceListener listener) {
         service.removeListener(shortName, listener);
+    }
+
+    /**
+     * Returns a bean for an object.
+     *
+     * @param object the object
+     * @return the bean
+     */
+    @Override
+    public IMObjectBean getBean(org.openvpms.component.model.object.IMObject object) {
+        // NOTE: has to use this instance, to ensure that any constraints defined by subclasses
+        // are not bypassed.
+        return new org.openvpms.component.business.service.archetype.helper.IMObjectBean(object, this);
     }
 
     /**

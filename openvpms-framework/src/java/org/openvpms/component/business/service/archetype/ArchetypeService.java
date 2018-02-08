@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import org.openvpms.component.business.service.ruleengine.IRuleEngine;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
@@ -663,6 +664,23 @@ public class ArchetypeService implements IArchetypeService {
                 }
             }
         }
+    }
+
+    /**
+     * Returns a bean for an object.
+     * <p/>
+     * NOTE: this method throws an {@link UnsupportedOperationException} if invoked as any bean returned would
+     * bypass proxies of the service, thus skipping any authority checks.
+     * <p/>
+     * There are ways around this, but this service should not be used directly. TODO see OBF-251
+     *
+     * @param object the object
+     * @return the bean
+     * @throws UnsupportedOperationException if invoked
+     */
+    @Override
+    public IMObjectBean getBean(org.openvpms.component.model.object.IMObject object) {
+        throw new UnsupportedOperationException("getBean() is not supported by this implementation");
     }
 
     /**
