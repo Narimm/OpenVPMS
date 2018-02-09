@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.patient.history;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
 import org.openvpms.archetype.rules.prefs.Preferences;
@@ -156,6 +157,27 @@ public abstract class AbstractPatientHistoryQuery extends DateRangeActQuery<Act>
      */
     public boolean isSortAscending() {
         return sortAscending;
+    }
+
+    /**
+     * Returns the value being queried on.
+     * <p/>
+     * This implementation does not append wildcards; all searches are 'contains'.
+     *
+     * @return the value. May be {@code null}
+     */
+    @Override
+    public String getValue() {
+        return StringUtils.trimToNull(getSearchField().getText());
+    }
+
+    /**
+     * Invoked when the search field changes. Invokes {@link #onQuery} and resets the focus back to the search field.
+     */
+    @Override
+    protected void onSearchFieldChanged() {
+        super.onSearchFieldChanged();
+        FocusHelper.setFocus(getSearchField());
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.problem;
@@ -114,6 +114,7 @@ public class ProblemQuery extends AbstractPatientHistoryQuery {
         container.add(shortNameSelector);
         Button sort = getSort();
         container.add(sort);
+        addSearchField(container);
         FocusGroup focusGroup = getFocusGroup();
         focusGroup.add(shortNameSelector);
         focusGroup.add(sort);

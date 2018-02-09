@@ -20,7 +20,10 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -356,7 +359,15 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      * @return a new printer
      */
     private IMObjectReportPrinter<Act> createPrinter(Context context) {
-        PatientHistoryFilter filter = new PatientHistoryFilter(query.getSelectedItemShortNames());
+        String value = query.getValue();
+        TextSearch search = null;
+        if (!StringUtils.isEmpty(value)) {
+            Preferences preferences = ServiceHelper.getPreferences();
+            boolean showClinician = preferences.getBoolean(PreferenceArchetypes.HISTORY, "showClinician", false);
+            boolean showBatches = preferences.getBoolean(PreferenceArchetypes.HISTORY, "showBatches", false);
+            search = new TextSearch(value, showClinician, showBatches, ServiceHelper.getArchetypeService());
+        }
+        PatientHistoryFilter filter = new PatientHistoryFilter(query.getSelectedItemShortNames(), search, true);
         // need to use maxDepth=3 so that addendum records appear after the records they link to.
         PatientHistoryIterator summary = new PatientHistoryIterator(query, filter, 3);
         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,

@@ -27,6 +27,7 @@ import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.Relationship;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -474,4 +475,26 @@ public class ProductTestHelper {
         bean.save();
     }
 
+    /**
+     * Creates a new batch.
+     *
+     * @param batchNumber    the batch number
+     * @param product        the product
+     * @param expiryDate     the expiry date. May be {@code null}
+     * @param stockLocations the stock locations
+     * @return a new batch
+     */
+    public static Entity createBatch(String batchNumber, Product product, Date expiryDate, Party... stockLocations) {
+        Entity batch = (Entity) create(ProductArchetypes.PRODUCT_BATCH);
+        IMObjectBean bean = new IMObjectBean(batch);
+        bean.setValue("name", batchNumber);
+        Relationship relationship = bean.addTarget("product", product);
+        IMObjectBean relBean = new IMObjectBean(relationship);
+        relBean.setValue("activeEndTime", expiryDate);
+        for (Party stockLocation : stockLocations) {
+            bean.addTarget("stockLocations", stockLocation);
+        }
+        save(batch, product);
+        return batch;
+    }
 }

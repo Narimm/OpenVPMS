@@ -23,6 +23,8 @@ import nextapp.echo2.app.button.ButtonGroup;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -61,6 +63,7 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.PatientMedicalRecordLinker;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryActions;
+import org.openvpms.web.workspace.patient.history.TextSearch;
 
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.join;
@@ -341,7 +344,15 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      * @return a new printer
      */
     private IMObjectReportPrinter<Act> createPrinter(Context context) {
-        ProblemFilter filter = new ProblemFilter(query.getSelectedItemShortNames(), query.isSortAscending());
+        TextSearch search = null;
+        String value = query.getValue();
+        if (!StringUtils.isEmpty(value)) {
+            Preferences preferences = ServiceHelper.getPreferences();
+            boolean showClinician = preferences.getBoolean(PreferenceArchetypes.HISTORY, "showClinician", false);
+            boolean showBatches = preferences.getBoolean(PreferenceArchetypes.HISTORY, "showBatches", false);
+            search = new TextSearch(value, showClinician, showBatches, ServiceHelper.getArchetypeService());
+        }
+        ProblemFilter filter = new ProblemFilter(query.getSelectedItemShortNames(), search, query.isSortAscending());
         Iterable<Act> summary = new ProblemHierarchyIterator(query, filter);
         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_PROBLEM,
                                                                              context);

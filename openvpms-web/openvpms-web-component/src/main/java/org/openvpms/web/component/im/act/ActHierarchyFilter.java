@@ -91,7 +91,7 @@ public class ActHierarchyFilter<T extends Act> extends ActFilter<T> {
         List<T> result = new ArrayList<>();
         if (include(act)) {
             List<T> items = getChildren(act, root, acts);
-            items = filter(act, items);
+            items = filter(act, items, acts);
             if (include(act, items)) {
                 result.addAll(items);
             }
@@ -112,7 +112,7 @@ public class ActHierarchyFilter<T extends Act> extends ActFilter<T> {
 
     /**
      * Determine if items should be sorted on ascending timestamp.
-     * <p/>
+     * <p>
      * Defaults to {@code true}.
      *
      * @param ascending if {@code true} sort items on ascending timestamp; otherwise sort on descending timestamp
@@ -154,7 +154,7 @@ public class ActHierarchyFilter<T extends Act> extends ActFilter<T> {
 
     /**
      * Determines if an act should be included.
-     * <p/>
+     * <p>
      * This implementation always returns {@code true}
      *
      * @param act the act
@@ -166,21 +166,22 @@ public class ActHierarchyFilter<T extends Act> extends ActFilter<T> {
 
     /**
      * Filters child acts.
-     * <p/>
+     * <p>
      * This implementation returns {@code children} unmodified.
      *
      * @param parent   the parent act
      * @param children the child acts
+     * @param acts     the set of visited acts, keyed on reference
      * @return the filtered acts
      */
-    protected List<T> filter(T parent, List<T> children) {
+    protected List<T> filter(T parent, List<T> children, Map<IMObjectReference, T> acts) {
         return children;
     }
 
     /**
      * Determines if an act should be included, after the child items have
      * been determined.
-     * <p/>
+     * <p>
      * This implementation always returns {@code true}
      *
      * @param parent   the top level act
@@ -193,7 +194,7 @@ public class ActHierarchyFilter<T extends Act> extends ActFilter<T> {
 
     /**
      * Determines if a child act should be included.
-     * <p/>
+     * <p>
      * This implementation always returns {@code true}
      *
      * @param child  the child act
@@ -207,7 +208,7 @@ public class ActHierarchyFilter<T extends Act> extends ActFilter<T> {
 
     /**
      * Returns the immediate children of an act.
-     * <p/>
+     * <p>
      * Each child is passed to {@link #include(Act, Act, Act)} to determine if it should be included.
      *
      * @param act  the parent act
@@ -230,7 +231,7 @@ public class ActHierarchyFilter<T extends Act> extends ActFilter<T> {
 
     /**
      * Returns the immediate children of an act.
-     * <p/>
+     * <p>
      * This implementation returns the targets of the relationships from {@link #getRelationships(Act)}.
      *
      * @param act  the parent act

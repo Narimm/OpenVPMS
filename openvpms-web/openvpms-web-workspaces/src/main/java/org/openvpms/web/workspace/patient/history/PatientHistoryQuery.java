@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -47,7 +47,7 @@ import org.openvpms.web.echo.focus.FocusGroup;
 
 /**
  * Patient medical record history query.
- * <p/>
+ * <p>
  * This returns <em>act.patientClinicalEvent</em> acts within a date range.
  * <br/>
  * It provides a selector to filter acts items; filtering must be performed by the caller.
@@ -89,30 +89,10 @@ public class PatientHistoryQuery extends AbstractPatientHistoryQuery {
         init(charges);
     }
 
-    protected void init(boolean charges) {
-        String[] actItemShortNames = RelationshipHelper.getTargetShortNames(PatientArchetypes.CLINICAL_EVENT_ITEM);
-        String[] shortNames = (String[]) ArrayUtils.addAll(actItemShortNames, DOC_VERSION_SHORT_NAMES);
-        setItemShortNames(shortNames);
-        if (charges) {
-            setSelectedItemShortNames((String[]) ArrayUtils.add(shortNames, CustomerAccountArchetypes.INVOICE_ITEM));
-        } else {
-            setSelectedItemShortNames(shortNames);
-        }
-        includeCharges = CheckBoxFactory.create("patient.record.query.includeCharges", charges);
-
-        includeCharges.addActionListener(new ActionListener() {
-            @Override
-            public void onAction(ActionEvent event) {
-                onIncludeChargesChanged();
-                onQuery();
-            }
-        });
-    }
-
     /**
      * Constructs a {@link PatientHistoryQuery}.
      *
-     * @param patient     the patient to query
+     * @param patient the patient to query
      * @param charges if {@code true}, include charges
      */
     public PatientHistoryQuery(Party patient, boolean charges) {
@@ -149,6 +129,31 @@ public class PatientHistoryQuery extends AbstractPatientHistoryQuery {
     }
 
     /**
+     * Initialises the query.
+     *
+     * @param charges if {@code true}, display charges
+     */
+    protected void init(boolean charges) {
+        String[] actItemShortNames = RelationshipHelper.getTargetShortNames(PatientArchetypes.CLINICAL_EVENT_ITEM);
+        String[] shortNames = (String[]) ArrayUtils.addAll(actItemShortNames, DOC_VERSION_SHORT_NAMES);
+        setItemShortNames(shortNames);
+        if (charges) {
+            setSelectedItemShortNames((String[]) ArrayUtils.add(shortNames, CustomerAccountArchetypes.INVOICE_ITEM));
+        } else {
+            setSelectedItemShortNames(shortNames);
+        }
+        includeCharges = CheckBoxFactory.create("patient.record.query.includeCharges", charges);
+
+        includeCharges.addActionListener(new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                onIncludeChargesChanged();
+                onQuery();
+            }
+        });
+    }
+
+    /**
      * Lays out the component in a container, and sets focus on the instance name.
      *
      * @param container the container
@@ -166,6 +171,7 @@ public class PatientHistoryQuery extends AbstractPatientHistoryQuery {
         focusGroup.add(shortNameSelector);
         focusGroup.add(includeCharges);
         focusGroup.add(sort);
+        addSearchField(container);
         super.doLayout(container);
     }
 
@@ -210,7 +216,7 @@ public class PatientHistoryQuery extends AbstractPatientHistoryQuery {
 
     /**
      * Invoked when the include charges flag is changed.
-     * <p/>
+     * <p>
      * This updates the selected short names, and the session preferences.
      */
     private void onIncludeChargesChanged() {
