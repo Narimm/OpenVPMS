@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -22,12 +22,8 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.BrowserListener;
-import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 
@@ -38,18 +34,13 @@ import java.util.List;
  * A CRUD workspace that provides a {@link IMObjectSelector selector} to
  * select the parent object, a {@link Browser} to display related child objects,
  * and a {@link CRUDWindow} to view/edit the child objects.
- * <p/>
+ * <p>
  * The selector is optional.
  *
  * @author Tim Anderson
  */
 public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extends IMObject>
         extends AbstractCRUDWorkspace<Parent, Child> {
-
-    /**
-     * The query.
-     */
-    private Query<Child> query;
 
     /**
      * The browser.
@@ -64,7 +55,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
 
     /**
      * Constructs a {@link BrowserCRUDWorkspace}, with a selector to select the parent object.
-     * <p/>
+     * <p>
      * The {@link #setArchetypes} and {@link #setChildArchetypes} methods must
      * be invoked to set archetypes that the workspace supports, before
      * performing any operations.
@@ -78,7 +69,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
 
     /**
      * Constructs a {@link BrowserCRUDWorkspace}.
-     * <p/>
+     * <p>
      * The {@link #setArchetypes} and {@link #setChildArchetypes} methods must * be invoked to set archetypes that the
      * workspace supports, before performing any operations.
      *
@@ -92,14 +83,14 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
 
     /**
      * Constructs a {@link BrowserCRUDWorkspace}, with a selector for the parent object.
-     * <p/>
+     * <p>
      * The {@link #setChildArchetypes} method must be invoked to set archetypes
      * that the workspace supports, before performing any operations.
      *
-     * @param id           the workspace identifier
-     * @param archetypes   the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
-     *                     method must be invoked to set a non-null value before performing any operation
-     * @param context      the context
+     * @param id         the workspace identifier
+     * @param archetypes the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
+     *                   method must be invoked to set a non-null value before performing any operation
+     * @param context    the context
      */
     public BrowserCRUDWorkspace(String id, Archetypes<Parent> archetypes, Context context) {
         this(id, archetypes, null, context);
@@ -150,6 +141,13 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
     }
 
     /**
+     * Creates a new browser.
+     *
+     * @return the browser
+     */
+    protected abstract Browser<Child> createBrowser();
+
+    /**
      * Returns the browser.
      *
      * @return the browser, or {@code null} if none has been registered
@@ -184,46 +182,8 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
     }
 
     /**
-     * Creates a new browser.
-     *
-     * @param query the query
-     * @return a new browser
-     */
-    protected Browser<Child> createBrowser(Query<Child> query) {
-        return BrowserFactory.create(query, new DefaultLayoutContext(getContext(), getHelpContext()));
-    }
-
-    /**
-     * Returns the query used to populate the browser.
-     *
-     * @return the query, or {@code null} if none is registered
-     */
-    protected Query<Child> getQuery() {
-        return query;
-    }
-
-    /**
-     * Registers a browser query.
-     *
-     * @param query the browser query. May be {@code null}
-     */
-    protected void setQuery(Query<Child> query) {
-        this.query = query;
-    }
-
-    /**
-     * Creates a new query to populate the browser.
-     *
-     * @return a new query
-     */
-    protected Query<Child> createQuery() {
-        Archetypes shortNames = getChildArchetypes();
-        return QueryFactory.create(shortNames.getShortNames(), getContext(), shortNames.getType());
-    }
-
-    /**
      * Invoked when a browser object is selected.
-     * <p/>
+     * <p>
      * This implementation sets the object in the CRUD window.
      *
      * @param object the selected object
@@ -234,7 +194,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
 
     /**
      * Invoked when a browser object is viewed (aka 'browsed').
-     * <p/>
+     * <p>
      * This implementation sets the object in the CRUD window.
      *
      * @param object the selected object
@@ -337,17 +297,9 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
                 setWorkspace(getWorkspace());
                 browser.query();
             } else {
-                Query<Child> query = createQuery();
-                setQuery(query);
-                setBrowser(createBrowser(query));
-                setCRUDWindow(createCRUDWindow());
-                setWorkspace(createWorkspace());
-                if (query.isAuto()) {
-                    onBrowserQuery();
-                }
+                recreateWorkspace();
             }
         } else {
-            setQuery(null);
             setBrowser(null);
             setCRUDWindow(null);
             if (workspace != null) {
@@ -355,6 +307,15 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
                 workspace = null;
             }
         }
+    }
+
+    /**
+     * Recreates the workspace.
+     */
+    protected void recreateWorkspace() {
+        setBrowser(createBrowser());
+        setCRUDWindow(createCRUDWindow());
+        setWorkspace(createWorkspace());
     }
 
     /**
@@ -393,7 +354,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
     /**
      * Determines if the a property change notification containing
      * {@link #SUMMARY_PROPERTY} should be made when a child updates.
-     * <p/>
+     * <p>
      * This implementation always returns {@code true}.
      *
      * @return {@code true} if a notification should be made, otherwise
@@ -406,11 +367,11 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
     /**
      * Determines if the parent object is optional (i.e may be {@code null},
      * when laying out the workspace.
-     * <p/>
+     * <p>
      * If the parent object is optional, the browser and CRUD window will be
      * displayed if there is no parent object. If it is mandatory, the
      * browser and CRUD window will only be displayed if it is present.
-     * <p/>
+     * <p>
      * This implementation always returns {@code false}.
      *
      * @return {@code true} if the parent object is optional, otherwise

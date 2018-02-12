@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -77,7 +78,19 @@ public class QueryTestHelper {
      * @param query   the query
      * @param objects the expected objects
      */
+    @SafeVarargs
     public static <T extends IMObject> void checkExists(Query<T> query, T... objects) {
+        checkExists(query, Arrays.asList(objects), true);
+    }
+
+    /**
+     * Verifies that a query selects objects.
+     *
+     * @param query   the query
+     * @param objects the expected objects
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends IMObject> void checkExists(Query<T> query, List<T> objects) {
         checkExists(query, objects, true);
     }
 
@@ -87,8 +100,9 @@ public class QueryTestHelper {
      * @param query   the query
      * @param objects the expected objects
      */
+    @SafeVarargs
     public static <T extends IMObject> void checkNotExists(Query<T> query, T... objects) {
-        checkExists(query, objects, false);
+        checkExists(query, Arrays.asList(objects), false);
     }
 
     /**
@@ -128,7 +142,7 @@ public class QueryTestHelper {
      * @return the matching object's references
      */
     public static <T extends IMObject> List<IMObjectReference> getObjectRefs(ResultSet<T> set) {
-        List<IMObjectReference> result = new ArrayList<IMObjectReference>();
+        List<IMObjectReference> result = new ArrayList<>();
         ResultSetIterator<T> iterator = new ResultSetIterator<T>(set);
         while (iterator.hasNext()) {
             result.add(iterator.next().getObjectReference());
@@ -143,7 +157,7 @@ public class QueryTestHelper {
      * @param objects the objects to check
      * @param exists  determines if the objects should exist or not
      */
-    private static <T extends IMObject> void checkExists(Query<T> query, T[] objects, boolean exists) {
+    private static <T extends IMObject> void checkExists(Query<T> query, List<T> objects, boolean exists) {
         List<IMObjectReference> matches = getObjectRefs(query);
         for (T object : objects) {
             checkExists(object, query, matches, exists);

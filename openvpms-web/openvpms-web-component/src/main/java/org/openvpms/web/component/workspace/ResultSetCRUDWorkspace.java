@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -32,7 +32,7 @@ import org.openvpms.web.echo.util.DoubleClickMonitor;
  *
  * @author Tim Anderson
  */
-public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends BrowserCRUDWorkspace<T, T> {
+public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends QueryBrowserCRUDWorkspace<T, T> {
 
     /**
      * The double click monitor.
