@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
@@ -55,7 +53,7 @@ public class ObjectSetResultCollector
     /**
      * The results.
      */
-    private final List<ObjectSet> result = new ArrayList<ObjectSet>();
+    private final List<ObjectSet> result = new ArrayList<>();
 
     /**
      * A map of type aliases to their corresponding sbort names.
@@ -112,15 +110,16 @@ public class ObjectSetResultCollector
             }
             for (int i = 0; i < names.length;) {
                 if (refColumnNames != null && refColumnNames[i] != null) {
+                    IMObjectReference ref = null;
                     ArchetypeId archetypeId = (ArchetypeId) values[i];
-                    Long id = (Long) values[i + 1];
-                    if (id == null) {
-                        id = -1L; // should never happen
+                    if (archetypeId != null) {
+                        Long id = (Long) values[i + 1];
+                        if (id == null) {
+                            id = -1L; // should never happen
+                        }
+                        String linkId = (String) values[i + 2];
+                        ref = new IMObjectReference(archetypeId, id, linkId);
                     }
-                    String linkId = (String) values[i + 2];
-
-                    IMObjectReference ref = new IMObjectReference(
-                            archetypeId, id, linkId);
                     set.set(refColumnNames[i], ref);
                     i += 3;
                 } else {
