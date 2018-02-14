@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.IPage;
@@ -302,7 +303,7 @@ public class ArchetypeQueryHelper {
      * @param reference the object reference. May be {@code null}
      * @return the name or {@code null} if none exists
      */
-    public static String getName(IMObjectReference reference, IArchetypeService service) {
+    public static String getName(Reference reference, IArchetypeService service) {
         String result = null;
         if (reference != null) {
             ObjectRefConstraint constraint = new ObjectRefConstraint("o", reference);

@@ -111,7 +111,7 @@ public class ArchetypeDescriptor extends Descriptor
      */
     @Override
     public String getArchetypeType() {
-        return type == null ? null : type.getQualifiedName();
+        return type == null ? null : type.getShortName();
     }
 
     /**

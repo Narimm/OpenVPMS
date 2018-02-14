@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.insurance;
@@ -31,12 +31,10 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.ActCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
-import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
@@ -109,11 +107,11 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
     @Override
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
-        buttons.add(run(CLAIM_ID, POLICY, this::claim, "patient.insurance.claim.title"));
-        buttons.add(run(SUBMIT_ID, CLAIM, this::submit, "patient.insurance.submit.title"));
-        buttons.add(run(CANCEL_CLAIM_ID, CLAIM, this::cancelClaim, "patient.insurance.cancel.title"));
-        buttons.add(run(SETTLE_CLAIM_ID, CLAIM, this::settleClaim, "patient.insurance.settle.title"));
-        buttons.add(run(DECLINE_CLAIM_ID, CLAIM, this::declineClaim, "patient.insurance.decline.title"));
+        buttons.add(CLAIM_ID, action(POLICY, this::claim, "patient.insurance.claim.title"));
+        buttons.add(SUBMIT_ID, action(CLAIM, this::submit, "patient.insurance.submit.title"));
+        buttons.add(CANCEL_CLAIM_ID, action(CLAIM, this::cancelClaim, "patient.insurance.cancel.title"));
+        buttons.add(SETTLE_CLAIM_ID, action(CLAIM, this::settleClaim, "patient.insurance.settle.title"));
+        buttons.add(DECLINE_CLAIM_ID, action(CLAIM, this::declineClaim, "patient.insurance.decline.title"));
         buttons.add(createPrintButton());
     }
 
@@ -307,41 +305,6 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
             }
             InsuranceCRUDWindow.this.onRefresh(object);
         };
-    }
-
-    /**
-     * Creates a button that runs an action when clicked.
-     * <p>
-     * The action is run with the latest instance of the selected object, but only if it matches the supplied archetype.
-     *
-     * @param buttonId  the button identifier
-     * @param archetype the archetype
-     * @param action    the action to execute, when the selected object is an instance of {@code archetype}
-     * @param title     the title resource bundle key, used when displaying an error dialog if the action fails
-     * @return a new listener
-     */
-    private Button run(String buttonId, String archetype, Consumer<Act> action, String title) {
-        return ButtonFactory.create(buttonId, new ActionListener() {
-            @Override
-            public void onAction(ActionEvent event) {
-                Act object = getObject();
-                if (TypeHelper.isA(object, archetype)) {
-                    try {
-                        Act latest = IMObjectHelper.reload(object);
-                        if (latest != null) {
-                            action.accept(latest);
-                        } else {
-                            String displayName = DescriptorHelper.getDisplayName(object);
-                            ErrorDialog.show(Messages.get(title), Messages.format("imobject.noexist", displayName));
-                            onRefresh(object);
-                        }
-                    } catch (Throwable exception) {
-                        String displayName = DescriptorHelper.getDisplayName(object);
-                        ErrorHelper.show(Messages.get(title), displayName, object, exception);
-                    }
-                }
-            }
-        });
     }
 
     private static class InsuranceActions extends ActActions<Act> {

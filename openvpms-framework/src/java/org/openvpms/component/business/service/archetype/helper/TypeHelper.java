@@ -17,39 +17,36 @@
 package org.openvpms.component.business.service.archetype.helper;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.archetype.ArchetypeDescriptor;
 import org.openvpms.component.model.object.IMObject;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.util.StringUtilities;
 
 
 /**
  * Archetype helper methods.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @author Tim Anderson
  */
 public class TypeHelper {
 
     /**
      * Determines if an object is an instance of a particular archetype.
      *
-     * @param object    the object. May be <tt>null</tt>
+     * @param object    the object. May be {@code null}
      * @param shortName the archetype short name. May contain wildcards
-     * @return <tt>true</tt> if object is an instance of <tt>shortName</tt>
+     * @return {@code true} if object is an instance of {@code shortName}
      */
     public static boolean isA(IMObject object, String shortName) {
-        if (object != null) {
-            return matches(object.getArchetype(), shortName);
-        }
-        return false;
+        return object != null && matches(object.getArchetype(), shortName);
     }
 
     /**
      * Determines if an object is one of a set of archetypes.
      *
-     * @param object     the object. May be <tt>null</tt>
+     * @param object     the object. May be {@code null}
      * @param shortNames the archetype short names. May contain wildcards
-     * @return <tt>true</tt> if object is one of <tt>shortNames</tt>
+     * @return {@code true} if object is one of {@code shortNames}
      */
     public static boolean isA(IMObject object, String ... shortNames) {
         if (object != null) {
@@ -65,12 +62,11 @@ public class TypeHelper {
     /**
      * Determines if a reference is one of a set of archetypes.
      *
-     * @param reference  the reference. May be <tt>null</tt>
+     * @param reference  the reference. May be {@code null}
      * @param shortNames the archetype short names. May contain wildcards
-     * @return <tt>true</tt> if object is one of <tt>shortNames</tt>
+     * @return {@code true} if object is one of {@code shortNames}
      */
-    public static boolean isA(IMObjectReference reference,
-                              String ... shortNames) {
+    public static boolean isA(Reference reference, String ... shortNames) {
         if (reference != null) {
             for (String shortName : shortNames) {
                 if (isA(reference, shortName)) {
@@ -85,16 +81,12 @@ public class TypeHelper {
      * Determines if an object reference refers to an instance of a particular
      * archetype.
      *
-     * @param reference the object. May be <tt>null</tt>
+     * @param reference the object. May be {@code null}
      * @param shortName the archetype short name. May contain wildcards
-     * @return <tt>true</tt> if the reference refers to an instance of
-     *         <tt>shortName</tt>
+     * @return {@code true} if the reference refers to an instance of {@code shortName}
      */
-    public static boolean isA(IMObjectReference reference, String shortName) {
-        if (reference != null) {
-            return matches(reference.getArchetypeId(), shortName);
-        }
-        return false;
+    public static boolean isA(Reference reference, String shortName) {
+        return reference != null && matches(reference.getArchetype(), shortName);
     }
 
     /**
@@ -102,7 +94,7 @@ public class TypeHelper {
      *
      * @param id         the archetype identifier
      * @param shortNames the archetype short names. May contain wildcards
-     * @return <tt>true</tt> if object is one of <tt>shortNames</tt>
+     * @return {@code true} if object is one of {@code shortNames}
      */
     public static boolean isA(ArchetypeId id, String ... shortNames) {
         if (id != null) {
@@ -120,7 +112,7 @@ public class TypeHelper {
      *
      * @param id         the archetype identifier
      * @param shortNames the archetype short names. May contain wildcards
-     * @return <tt>true</tt> if object is one of <tt>shortNames</tt>
+     * @return {@code true} if object is one of {@code shortNames}
      */
     public static boolean isA(String id, String ... shortNames) {
         if (id != null) {
@@ -137,16 +129,14 @@ public class TypeHelper {
      * Determines if an archetype descriptor matches one of a set of
      * archetype short names.
      *
-     * @param descriptor the descriptor. May be <tt>null</tt>
+     * @param descriptor the descriptor. May be {@code null}
      * @param shortNames the archetype short names. May contain wildcards
-     * @return <tt>true</tt> if the descriptor short name matches one of
-     *         <tt>shortNames</tt>
+     * @return {@code true} if the descriptor short name matches one of {@code shortNames}
      */
-    public static boolean isA(ArchetypeDescriptor descriptor,
-                              String ... shortNames) {
+    public static boolean isA(ArchetypeDescriptor descriptor, String ... shortNames) {
         if (descriptor != null) {
             for (String shortName : shortNames) {
-                if (matches(descriptor.getShortName(), shortName)) {
+                if (matches(descriptor.getArchetypeType(), shortName)) {
                     return true;
                 }
             }
@@ -157,15 +147,13 @@ public class TypeHelper {
     /**
      * Determines if an archetype descriptor matches a short name.
      *
-     * @param descriptor the descriptor. May be <tt>null</tt>
+     * @param descriptor the descriptor. May be {@code null}
      * @param shortName  the archetype short name. May contain wildcards
-     * @return <tt>true</tt> if the descriptor short name matches
-     *         <tt>shortName</tt>
+     * @return {@code true} if the descriptor short name matches {@code shortName}
      */
-    public static boolean isA(ArchetypeDescriptor descriptor,
-                              String shortName) {
+    public static boolean isA(ArchetypeDescriptor descriptor, String shortName) {
         if (descriptor != null) {
-            if (matches(descriptor.getShortName(), shortName)) {
+            if (matches(descriptor.getArchetypeType(), shortName)) {
                 return true;
             }
         }
