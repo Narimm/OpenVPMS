@@ -8,9 +8,8 @@
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
-	<import value="org.openvpms.component.business.domain.im.party.Party"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="7"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" hImageAlign="Left" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" fontSize="7"/>
 	<parameter name="incTax" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
@@ -116,7 +115,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 					<textElement>
 						<font size="7" isBold="false"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{target.patient.entity.id}!=null?$F{target.patient.entity.name}+"  (id:"+$F{target.patient.entity.id}+")":"-patient not specified-"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{target.patient.entity.id}!=null?$F{target.patient.entity.name}+"  (ID:"+$F{target.patient.entity.id}+")":"-patient not specified-"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -139,7 +138,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 					</textElement>
 					<text><![CDATA[Patient Total]]></text>
 				</staticText>
-				<textField evaluationTime="Group" evaluationGroup="patientGroup" pattern="¤#,##0.##" isBlankWhenNull="false">
+				<textField evaluationTime="Group" evaluationGroup="patientGroup" pattern="¤#,##0.00" isBlankWhenNull="false">
 					<reportElement key="textField-6" x="343" y="1" width="33" height="10" isRemoveLineWhenBlank="true" uuid="b13c40c5-ca21-4b0e-9b51-8f05e8449713">
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					</reportElement>
@@ -160,7 +159,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 				</line>
-				<textField evaluationTime="Group" evaluationGroup="patientGroup" pattern="¤#,##0.##" isBlankWhenNull="false">
+				<textField evaluationTime="Group" evaluationGroup="patientGroup" pattern="¤#,##0.00" isBlankWhenNull="false">
 					<reportElement key="textField-6" x="308" y="1" width="33" height="10" isRemoveLineWhenBlank="true" uuid="14dbcb7c-738a-4c7b-8e8b-d3ed71f29d09">
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					</reportElement>
@@ -211,7 +210,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{tmplPrint Name}]]></textFieldExpression>
 				</textField>
-				<textField pattern="¤#,##0.##" isBlankWhenNull="false">
+				<textField pattern="¤#,##0.00" isBlankWhenNull="false">
 					<reportElement key="textField" x="308" y="0" width="33" height="9" uuid="6f8fb1e1-32a3-421e-8777-f52f4db6fc82"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -222,7 +221,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 					<textElement textAlignment="Right"/>
 					<textFieldExpression><![CDATA[$V{templateLowTotal}]]></textFieldExpression>
 				</textField>
-				<textField pattern="¤#,##0.##" isBlankWhenNull="false">
+				<textField pattern="¤#,##0.00" isBlankWhenNull="false">
 					<reportElement key="textField" x="343" y="0" width="33" height="9" uuid="6ace5a59-121e-4ca2-8bd0-0022b7c691d3"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -409,7 +408,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{prodPrint Name}]]></textFieldExpression>
 			</textField>
-			<textField pattern="¤#,##0.##" isBlankWhenNull="false">
+			<textField pattern="¤#,##0.00" isBlankWhenNull="false">
 				<reportElement key="textField" x="308" y="0" width="33" height="9" uuid="35789d85-0d09-4680-8d00-0c63492ec47d"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -420,7 +419,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA[$F{target.lowTotal}]]></textFieldExpression>
 			</textField>
-			<textField pattern="¤#,##0.##" isBlankWhenNull="false">
+			<textField pattern="¤#,##0.00" isBlankWhenNull="false">
 				<reportElement key="textField" x="343" y="0" width="33" height="9" uuid="f8122f56-30bf-4f33-9aae-202de3952fd4">
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
@@ -492,7 +491,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 				</textElement>
 				<text><![CDATA[TOTAL]]></text>
 			</staticText>
-			<textField evaluationTime="Band" pattern="¤#,##0.##" isBlankWhenNull="false">
+			<textField evaluationTime="Band" pattern="¤#,##0.00" isBlankWhenNull="false">
 				<reportElement key="textField" x="306" y="4" width="35" height="12" uuid="b219f106-87a9-4db9-9b9a-3c777056aa13"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -503,7 +502,7 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 				<textElement textAlignment="Right"/>
 				<textFieldExpression><![CDATA[$V{SUM_target.lowTotal}]]></textFieldExpression>
 			</textField>
-			<textField evaluationTime="Band" pattern="¤#,##0.##" isBlankWhenNull="false">
+			<textField evaluationTime="Band" pattern="¤#,##0.00" isBlankWhenNull="false">
 				<reportElement key="textField" x="343" y="4" width="33" height="12" uuid="497f46b5-49b0-40d6-a36f-a98984cdcf08"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
