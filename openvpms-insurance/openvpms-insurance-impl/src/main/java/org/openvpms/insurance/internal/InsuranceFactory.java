@@ -95,6 +95,17 @@ public class InsuranceFactory {
      * @return the corresponding claim
      */
     public Claim createClaim(Act claim) {
+        return createClaim(claim, service);
+    }
+
+    /**
+     * Creates a claim, given an <em>act.patientInsuranceClaim</em>
+     *
+     * @param claim   the claim act
+     * @param service the archetype service to use
+     * @return the corresponding claim
+     */
+    public Claim createClaim(Act claim, IArchetypeRuleService service) {
         return new ClaimImpl(claim, service, customerRules, patientRules, handlers, transactionManager);
     }
 }

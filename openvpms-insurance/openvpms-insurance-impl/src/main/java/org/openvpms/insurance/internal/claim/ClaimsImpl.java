@@ -11,20 +11,28 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.insurance.internal.claim;
 
 import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.business.service.security.RunAs;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.claim.Claims;
 import org.openvpms.insurance.internal.InsuranceFactory;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.join;
@@ -41,7 +49,7 @@ public class ClaimsImpl implements Claims {
     /**
      * The archetype service.
      */
-    private final IArchetypeService service;
+    private final IArchetypeRuleService service;
 
     /**
      * The insurance factory.
@@ -49,14 +57,27 @@ public class ClaimsImpl implements Claims {
     private final InsuranceFactory factory;
 
     /**
+     * The practice service.
+     */
+    private final PracticeService practiceService;
+
+    /**
+     * A proxy for the archetype service that ensures that
+     */
+    private final IArchetypeRuleService proxy;
+
+    /**
      * Constructs a {@link ClaimsImpl}.
      *
-     * @param service the archetype service
-     * @param factory the insurance factory
+     * @param service         the archetype service
+     * @param factory         the insurance factory
+     * @param practiceService the practice service
      */
-    public ClaimsImpl(IArchetypeService service, InsuranceFactory factory) {
+    public ClaimsImpl(IArchetypeRuleService service, InsuranceFactory factory, PracticeService practiceService) {
         this.service = service;
         this.factory = factory;
+        this.practiceService = practiceService;
+        proxy = createProxy();
     }
 
     /**
@@ -81,6 +102,33 @@ public class ClaimsImpl implements Claims {
         query.add(sort("id"));
         query.setMaxResults(1);
         IMObjectQueryIterator<Act> iterator = new IMObjectQueryIterator<>(service, query);
-        return (iterator.hasNext()) ? factory.createClaim(iterator.next()) : null;
+
+        return (iterator.hasNext()) ? factory.createClaim(iterator.next(), proxy) : null;
     }
+
+    /**
+     * Proxies the archetype service so that calls are made in the security context of the practice service user.
+     * <p>
+     * TODO - this is a workaround as the PluginArchetypeService cannot be used until IArchetypeService extends
+     * org.openvpms.component.service.archetype.ArchetypeService.
+     *
+     * @return the archetype service proxy
+     */
+    private IArchetypeRuleService createProxy() {
+        InvocationHandler handler = (proxy, method, args) -> {
+            User user = practiceService.getServiceUser();
+            if (user == null) {
+                throw new IllegalStateException(
+                        "Cannot invoke ArchetypeService operation as no Service User has been configured");
+            }
+
+            if (method.getName().equals("getBean")) {
+                return new IMObjectBean((IMObject) args[0], (IArchetypeRuleService) proxy);
+            }
+            return RunAs.run(user, () -> method.invoke(service, args));
+        };
+        Class<IArchetypeRuleService> type = IArchetypeRuleService.class;
+        return (IArchetypeRuleService) Proxy.newProxyInstance(type.getClassLoader(), new Class[]{type}, handler);
+    }
+
 }

@@ -42,7 +42,8 @@
 
     <bean id="claims" class="org.openvpms.insurance.internal.claim.ClaimsImpl">
         <plugin:service/>
-        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="insuranceFactory"/>
+        <constructor-arg ref="practiceService"/>
     </bean>
 </beans>
