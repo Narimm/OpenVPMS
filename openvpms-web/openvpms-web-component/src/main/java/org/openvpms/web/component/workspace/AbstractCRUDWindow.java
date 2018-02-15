@@ -64,6 +64,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 
 /**
@@ -876,6 +877,40 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
         } else {
             context.setObject(shortName, null);
         }
+    }
+
+    /**
+     * Creates an action listener that runs an action against the selected object when clicked.
+     * <p>
+     * The action is run with the latest instance of the selected object, but only if it matches the supplied archetype.
+     *
+     * @param archetype the archetype. May contain wildcards
+     * @param action    the action to execute, when the selected object is an instance of {@code archetype}
+     * @param title     the title resource bundle key, used when displaying an error dialog if the action fails
+     * @return a new listener
+     */
+    protected ActionListener action(final String archetype, final Consumer<T> action, final String title) {
+        return new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                T object = getObject();
+                if (TypeHelper.isA(object, archetype)) {
+                    try {
+                        T latest = IMObjectHelper.reload(object);
+                        if (latest != null) {
+                            action.accept(latest);
+                        } else {
+                            String displayName = DescriptorHelper.getDisplayName(object);
+                            ErrorDialog.show(Messages.get(title), Messages.format("imobject.noexist", displayName));
+                            onRefresh(object);
+                        }
+                    } catch (Throwable exception) {
+                        String displayName = DescriptorHelper.getDisplayName(object);
+                        ErrorHelper.show(Messages.get(title), displayName, object, exception);
+                    }
+                }
+            }
+        };
     }
 
     /**

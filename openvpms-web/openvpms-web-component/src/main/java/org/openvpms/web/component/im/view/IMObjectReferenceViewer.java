@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -23,7 +23,7 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.app.DefaultContextSwitchListener;
@@ -36,7 +36,7 @@ import org.openvpms.web.resource.i18n.Messages;
 
 
 /**
- * Viewer for {@link IMObjectReference}s.
+ * Viewer for {@link Reference}s.
  *
  * @author Tim Anderson
  */
@@ -45,7 +45,7 @@ public class IMObjectReferenceViewer {
     /**
      * The reference to view.
      */
-    private final IMObjectReference reference;
+    private final Reference reference;
 
     /**
      * The name.
@@ -79,49 +79,48 @@ public class IMObjectReferenceViewer {
 
 
     /**
-     * Constructs an {@code IMObjectReferenceViewer}.
+     * Constructs a {@link IMObjectReferenceViewer}.
      *
      * @param reference the reference to view. May be {@code null}
      * @param link      if {@code true} enable an hyperlink to the object
      * @param context   the context
      */
-    public IMObjectReferenceViewer(IMObjectReference reference, boolean link, Context context) {
+    public IMObjectReferenceViewer(Reference reference, boolean link, Context context) {
         this(reference, null, link, context);
     }
 
     /**
-     * Constructs an {@code IMObjectReferenceViewer}.
+     * Constructs a {@link IMObjectReferenceViewer}.
      *
      * @param reference the reference to view. May be {@code null}
      * @param listener  the listener to notify. May be {@code null}
      * @param context   the context
      */
-    public IMObjectReferenceViewer(IMObjectReference reference, ContextSwitchListener listener, Context context) {
+    public IMObjectReferenceViewer(Reference reference, ContextSwitchListener listener, Context context) {
         this(reference, null, listener, context);
     }
 
     /**
-     * Constructs an {@code IMObjectReferenceViewer}.
+     * Constructs a {@link IMObjectReferenceViewer}.
      *
      * @param reference the reference to view. May be {@code null}
      * @param name      the object name. May be {@code null}
      * @param link      if {@code true} enable an hyperlink to the object
      * @param context   the context
      */
-    public IMObjectReferenceViewer(IMObjectReference reference, String name, boolean link, Context context) {
+    public IMObjectReferenceViewer(Reference reference, String name, boolean link, Context context) {
         this(reference, name, (link) ? DefaultContextSwitchListener.INSTANCE : null, context);
     }
 
     /**
-     * Constructs an {@code IMObjectReferenceViewer}.
+     * Constructs a {@link IMObjectReferenceViewer}.
      *
      * @param reference the reference to view. May be {@code null}
      * @param name      the object name. May be {@code null}
      * @param listener  the listener to notify. May be {@code null}
      * @param context   the context
      */
-    public IMObjectReferenceViewer(IMObjectReference reference, String name, ContextSwitchListener listener,
-                                   Context context) {
+    public IMObjectReferenceViewer(Reference reference, String name, ContextSwitchListener listener, Context context) {
         this.reference = reference;
         this.name = name;
         this.listener = listener;
@@ -139,16 +138,14 @@ public class IMObjectReferenceViewer {
 
 
     /**
-     * Create a new {@code IMObjectReferenceViewer} that invokes an action listener
-     * when the reference is selected.
+     * Constructs a {@link IMObjectReferenceViewer} that invokes an action listenerwhen the reference is selected.
      *
      * @param reference the reference to view. May be {@code null}
      * @param name      the object name. May be {@code null}
      * @param listener  the listener to notify. May be {@code null}
      * @param context   the context
      */
-    public IMObjectReferenceViewer(IMObjectReference reference, String name, final ActionListener listener,
-                                   Context context) {
+    public IMObjectReferenceViewer(Reference reference, String name, final ActionListener listener, Context context) {
         this.reference = reference;
         this.name = name;
         this.listener = null;
@@ -217,18 +214,8 @@ public class IMObjectReferenceViewer {
      *
      * @return the object reference. May be {@code null}
      */
-    public IMObjectReference getReference() {
+    public Reference getReference() {
         return reference;
-    }
-
-    /**
-     * Views the object.
-     */
-    protected void onView() {
-        IMObject object = IMObjectHelper.getObject(reference, context);
-        if (object != null) {
-            listener.switchTo(object);
-        }
     }
 
     /**
@@ -247,6 +234,16 @@ public class IMObjectReferenceViewer {
      */
     public int getWidth() {
         return width;
+    }
+
+    /**
+     * Views the object.
+     */
+    protected void onView() {
+        IMObject object = IMObjectHelper.getObject(reference, context);
+        if (object != null) {
+            listener.switchTo(object);
+        }
     }
 
     /**
