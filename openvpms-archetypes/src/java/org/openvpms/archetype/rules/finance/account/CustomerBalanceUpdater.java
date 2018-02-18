@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -91,7 +91,7 @@ public class CustomerBalanceUpdater {
 
     /**
      * Verifies that a customer has no account acts.
-     * <p/>
+     * <p>
      * This should be invoked prior to saving an initial balance act for the first time.
      *
      * @param initialBalance the initial balance act
@@ -109,7 +109,7 @@ public class CustomerBalanceUpdater {
 
     /**
      * Adds an act to the customer balance.
-     * <p/>
+     * <p>
      * Should be invoked prior to the act being saved.
      *
      * @param act the act to add
@@ -165,14 +165,26 @@ public class CustomerBalanceUpdater {
 
     /**
      * Calculates the balance for a customer.
+     * <p/>
+     * This saves the updated acts.
      *
-     * @param act         the act that triggered the update.
-     *                    May be {@code null}
+     * @param act         the act that triggered the update. May be {@code null}
      * @param unallocated the unallocated acts
      * @return a list of the acts that were updated
      */
-    public List<FinancialAct> updateBalance(
-            FinancialAct act, Iterator<FinancialAct> unallocated) {
+    public List<FinancialAct> updateBalance(FinancialAct act, Iterator<FinancialAct> unallocated) {
+        return updateBalance(act, unallocated, true);
+    }
+
+    /**
+     * Calculates the balance for a customer.
+     *
+     * @param act         the act that triggered the update. May be {@code null}
+     * @param unallocated the unallocated acts
+     * @param save        if {@code true}, save the updated acts
+     * @return a list of the acts that were updated
+     */
+    public List<FinancialAct> updateBalance(FinancialAct act, Iterator<FinancialAct> unallocated, boolean save) {
         List<BalanceAct> debits = new ArrayList<>();
         List<BalanceAct> credits = new ArrayList<>();
 
@@ -208,7 +220,7 @@ public class CustomerBalanceUpdater {
                 modified.add(credit.getAct());
             }
         }
-        if (!modified.isEmpty()) {
+        if (save && !modified.isEmpty()) {
             // save all updates in the one transaction
             service.save(modified);
         }

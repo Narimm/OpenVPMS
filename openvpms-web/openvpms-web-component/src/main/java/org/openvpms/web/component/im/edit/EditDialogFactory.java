@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.edit;
 
@@ -85,8 +85,8 @@ public class EditDialogFactory {
      */
     private static synchronized ArchetypeHandlers<EditDialog> getDialogs() {
         if (dialogs == null) {
-            dialogs = new ArchetypeHandlers<>("EditDialogFactory.properties", EditDialog.class,
-                                              ArchetypeServiceHelper.getArchetypeService());
+            dialogs = new ArchetypeHandlers<>("EditDialogFactory.properties", "DefaultEditDialogFactory.properties",
+                                              EditDialog.class, ArchetypeServiceHelper.getArchetypeService());
         }
         return dialogs;
     }
