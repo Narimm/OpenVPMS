@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -85,7 +85,7 @@ public class RelationshipCollectionEditor
         PagedIMTable<RelationshipState> table = getTable();
         table.setSelected(state);
 
-        enableNavigation(table.getSelected() != null);
+        enableNavigation(table.getSelected() != null, true);
     }
 
     /**

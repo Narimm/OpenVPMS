@@ -116,7 +116,7 @@ public class ChargeCollectionEditor extends IMObjectTableCollectionEditor {
      */
     @Override
     protected void onSelected() {
-        enableNavigation(getSelected() != null);
+        enableNavigation(getSelected() != null, true);
     }
 
     /**
