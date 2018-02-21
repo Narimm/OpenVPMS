@@ -552,13 +552,11 @@ public class InteractivePrinter implements Printer {
                 if (MailDialog.SEND_ID.equals(dialog.getAction())) {
                     // close the parent dialog. This will notify registered listeners of the action taken,
                     // so need to propagate the action to the parent.
-                    parent.setDefaultCloseAction(MailDialog.SEND_ID);
-                    parent.close();
+                    parent.close(MailDialog.SEND_ID);
                 }
             }
         });
         show(dialog);
-        dialog.show();
     }
 
     /**

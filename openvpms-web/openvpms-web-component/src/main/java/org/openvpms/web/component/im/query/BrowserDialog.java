@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -126,7 +126,7 @@ public class BrowserDialog<T> extends PopupDialog {
 
     /**
      * Constructs a {@link BrowserDialog}.
-     * <p/>
+     * <p>
      * Subclasses may use this constructor to lazily initialise the browser. They can invoke {@link #init} to
      * initialise it after construction.
      *
@@ -150,7 +150,7 @@ public class BrowserDialog<T> extends PopupDialog {
 
     /**
      * Determines if the dialog should close on selection.
-     * <p/>
+     * <p>
      * Defaults to {@code true}.
      *
      * @param close if {@code true}, close the dialog when an object is selected
@@ -197,8 +197,27 @@ public class BrowserDialog<T> extends PopupDialog {
     }
 
     /**
+     * Sets the action and closes the window.
+     * <p>
+     * If the action isn't {@link #CANCEL_ID}, the browser's state will be saved.
+     * <p>
+     * If the action is {@link #CANCEL_ID} any selection will be discarded.
+     *
+     * @param action the action
+     */
+    @Override
+    public void close(String action) {
+        if (CANCEL_ID.equals(action)) {
+            setSelected(null);
+        } else {
+            BrowserStates.getInstance().add(browser);
+        }
+        super.close(action);
+    }
+
+    /**
      * Initialise the dialog.
-     * <p/>
+     * <p>
      * This method may only be invoked once.
      *
      * @param browser the browser
@@ -249,25 +268,6 @@ public class BrowserDialog<T> extends PopupDialog {
         if (isSelected()) {
             super.onOK();
         }
-    }
-
-    /**
-     * Sets the action and closes the window.
-     * <p/>
-     * If the action isn't {@link #CANCEL_ID}, the browser's state will be saved.
-     * <p/>
-     * If the action is {@link #CANCEL_ID} any selection will be discarded.
-     *
-     * @param action the action
-     */
-    @Override
-    protected void close(String action) {
-        if (CANCEL_ID.equals(action)) {
-            setSelected(null);
-        } else {
-            BrowserStates.getInstance().add(browser);
-        }
-        super.close(action);
     }
 
     /**
