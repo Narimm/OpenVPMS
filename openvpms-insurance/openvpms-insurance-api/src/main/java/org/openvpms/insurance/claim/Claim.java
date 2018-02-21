@@ -16,6 +16,7 @@
 
 package org.openvpms.insurance.claim;
 
+import org.openvpms.component.model.party.Party;
 import org.openvpms.component.model.user.User;
 import org.openvpms.insurance.exception.InsuranceException;
 import org.openvpms.insurance.policy.Animal;
@@ -187,6 +188,13 @@ public interface Claim {
      * @return the claim handler
      */
     ClaimHandler getClaimHandler();
+
+    /**
+     * Returns the location where the claim was created.
+     *
+     * @return the practice location
+     */
+    Party getLocation();
 
     /**
      * Sets a message on the claim. This may be used by insurance service to convey to users the status of the claim,

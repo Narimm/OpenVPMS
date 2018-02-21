@@ -367,7 +367,7 @@ public class ClaimImpl implements Claim {
     public ClaimHandler getClaimHandler() {
         if (handler == null) {
             final User user = claim.getTarget("user", User.class);
-            final Party location = claim.getTarget("location", Party.class);
+            Party location = getLocation();
             if (user == null) {
                 throw new IllegalStateException("Claim has no user");
             }
@@ -389,6 +389,16 @@ public class ClaimImpl implements Claim {
             };
         }
         return handler;
+    }
+
+    /**
+     * Returns the location where the claim was created.
+     *
+     * @return the practice location
+     */
+    @Override
+    public Party getLocation() {
+        return claim.getTarget("location", Party.class);
     }
 
     /**
