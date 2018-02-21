@@ -73,6 +73,7 @@
                     <property name="SUBREPORT" value="Sub Report"/>
                     <property name="PATIENT_MAILING_LABELS" value="Patient Mailing Labels"/>
                     <property name="INSURANCE_CLAIM_INVOICE" value="Insurance Claim Invoice"/>
+                    <property name="INSURANCE_CLAIM_MEDICAL_RECORDS" value="Insurance Claim Medical Records"/>
                     <property name="INSURANCE_CLAIM" value="Insurance Claim - Custom"/>
                 </propertyList>
             </assertion>

@@ -289,7 +289,7 @@ class AttachmentGenerator {
         PatientHistoryQuery query = new PatientHistoryQuery(patient, true);
         PatientHistoryFilter filter = new PatientHistoryFilter(query.getSelectedItemShortNames());
         PatientHistoryIterator summary = new PatientHistoryIterator(query, filter, 3);
-        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,
+        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator("INSURANCE_CLAIM_MEDICAL_RECORDS",
                                                                              context);
         Reporter<Act> reporter = factory.create(summary, locator, TemplatedReporter.class);
         return save(bean, reporter);
