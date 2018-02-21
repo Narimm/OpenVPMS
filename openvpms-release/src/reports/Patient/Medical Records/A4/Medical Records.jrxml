@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2017-09-30T10:19:15 -->
+<!-- Created with Jaspersoft Studio version 6.1.1.final using JasperReports Library version 5.5.2  -->
+<!-- 2018-02-16T14:00:55 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Medical Records" pageWidth="595" pageHeight="842" columnWidth="539" leftMargin="28" rightMargin="28" topMargin="28" bottomMargin="28" resourceBundle="localisation.reports" uuid="fe7895c1-122c-4fcb-934c-8b7ab03d9d16">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -19,7 +19,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
+	<style name="Base" isDefault="true" hAlign="Left" vAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
 		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
 		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
@@ -35,15 +35,27 @@
 	<field name="displayName" class="java.lang.String"/>
 	<field name="note" class="java.lang.String"/>
 	<field name="description" class="java.lang.String"/>
-	<field name="patient.entity.description" class="java.lang.String"/>
-	<field name="patient.entity.name" class="java.lang.String"/>
+	<field name="OpenVPMS.patient.description" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="OpenVPMS.patient.name" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
 	<field name="endTime" class="java.util.Date"/>
-	<field name="[openvpms:get(party:getPatientOwner(openvpms:get(.,&apos;patient.entity&apos;)), &apos;name&apos;)]" class="java.lang.String"/>
-	<field name="[openvpms:get(party:getPatientOwner(openvpms:get(.,&apos;patient.entity&apos;)), &apos;id&apos;)]" class="java.lang.Long"/>
-	<field name="[openvpms:get(party:getPatientOwner(openvpms:get(.,&apos;patient.entity&apos;)), &apos;description&apos;)]" class="java.lang.String"/>
+	<field name="[openvpms:get(party:getPatientOwner($OpenVPMS.patient), &apos;name&apos;)]" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="[openvpms:get(party:getPatientOwner($OpenVPMS.patient), &apos;id&apos;)]" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="[openvpms:get(party:getPatientOwner($OpenVPMS.patient), &apos;description&apos;)]" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
 	<field name="quantity" class="java.math.BigDecimal"/>
 	<field name="label" class="java.lang.String"/>
-	<field name="patient.entity.id" class="java.lang.Long"/>
+	<field name="OpenVPMS.patient.id" class="java.lang.Long">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
 	<field name="title" class="java.lang.String"/>
 	<field name="OpenVPMS.location.letterhead.target.subreport" class="java.lang.String"/>
 	<field name="clinician.entity.id" class="java.lang.Long"/>
@@ -98,7 +110,7 @@
 				<subreportParameter name="pageNo">
 					<subreportParameterExpression><![CDATA[$V{PAGE_NUMBER}]]></subreportParameterExpression>
 				</subreportParameter>
-				<dataSourceExpression><![CDATA[$P{dataSource}.getDataSource("patient")]]></dataSourceExpression>
+				<dataSourceExpression><![CDATA[$P{dataSource}.getExpressionDataSource("$OpenVPMS.patient")]]></dataSourceExpression>
 				<subreportExpression><![CDATA[(($F{OpenVPMS.location.letterhead.target.subreport}==null)?"Letterhead":$F{OpenVPMS.location.letterhead.target.subreport})+(($P{JASPER_REPORT}.getPageWidth()<450)?"-A5":"")+".jrxml"]]></subreportExpression>
 			</subreport>
 			<textField evaluationTime="Master">
@@ -135,7 +147,7 @@
 				<textElement>
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{patient.entity.description}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{OpenVPMS.patient.description}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="false">
 				<reportElement key="textField" positionType="Float" x="56" y="76" width="358" height="13" uuid="24778de1-307b-4a5b-92f8-bce986c550de">
@@ -151,7 +163,7 @@
 				<textElement>
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{patient.entity.name}+" (Id: "+$F{patient.entity.id}+")"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{OpenVPMS.patient.name}+" (Id: "+$F{OpenVPMS.patient.id}+")"]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement key="staticText-16" positionType="Float" x="1" y="63" width="50" height="13" uuid="0c2b000d-8ea3-426f-bc6f-dd7e1b1800f3">
@@ -181,7 +193,7 @@
 				<textElement>
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'name')]}+" (Id: "+$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'id')]}+")"]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{[openvpms:get(party:getPatientOwner($OpenVPMS.patient), 'name')]}+" (Id: "+$F{[openvpms:get(party:getPatientOwner($OpenVPMS.patient), 'id')]}+")"]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
 				<reportElement key="textField" positionType="Float" x="56" y="113" width="358" height="56" uuid="790bb580-3d7a-4910-83f6-a349de3574bc">
@@ -197,7 +209,7 @@
 				<textElement textAlignment="Left" verticalAlignment="Top">
 					<font size="10"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{[openvpms:get(party:getPatientOwner(openvpms:get(.,'patient.entity')), 'description')]}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{[openvpms:get(party:getPatientOwner($OpenVPMS.patient), 'description')]}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement key="staticText-16" positionType="Float" x="1" y="100" width="50" height="13" uuid="f905712e-f784-4a52-87e5-c2b78ac125b2">
