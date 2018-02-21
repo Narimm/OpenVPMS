@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -71,7 +71,6 @@
                     <property name="GROUPED_REMINDERS" value="Grouped Reminders"/>
                     <property name="REPORT" value="Report"/>
                     <property name="SUBREPORT" value="Sub Report"/>
-                    <property name="PATIENT_MAILING_LABELS" value="Patient Mailing Labels"/>
                     <property name="INSURANCE_CLAIM_INVOICE" value="Insurance Claim Invoice"/>
                     <property name="INSURANCE_CLAIM_MEDICAL_RECORDS" value="Insurance Claim Medical Records"/>
                     <property name="INSURANCE_CLAIM" value="Insurance Claim - Custom"/>

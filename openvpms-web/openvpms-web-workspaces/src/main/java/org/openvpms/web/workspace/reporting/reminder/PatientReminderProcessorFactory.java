@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -272,7 +272,7 @@ public class PatientReminderProcessorFactory {
      */
     protected ReminderBatchProcessor createBatchPrintProcessor(ReminderItemSource query) {
         ReminderPrintProcessor processor = createPrintProcessor();
-        return new ReminderPrintProgressBarProcessor(query, processor, getPrinterFactory(), help);
+        return new ReminderPrintProgressBarProcessor(query, processor);
     }
 
     /**
