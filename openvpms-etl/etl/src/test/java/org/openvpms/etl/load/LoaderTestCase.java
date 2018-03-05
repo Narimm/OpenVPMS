@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.load;
@@ -23,7 +23,6 @@ import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -31,6 +30,7 @@ import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.openvpms.component.model.lookup.LookupRelationship;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -376,7 +376,7 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
 
     /**
      * Tests mapping references.
-     * <p/>
+     * <p>
      * This adds two prices to an existing product.
      */
     @Test
@@ -634,8 +634,7 @@ public class LoaderTestCase extends AbstractJUnit4SpringContextTests {
         assertEquals(species.getObjectReference(), s.getSource());
         assertEquals(breed.getObjectReference(), s.getTarget());
 
-        Set<LookupRelationship> breedRelationships
-                = breed.getLookupRelationships();
+        Set<LookupRelationship> breedRelationships = breed.getLookupRelationships();
         assertEquals(1, breedRelationships.size());
         LookupRelationship b = breedRelationships.iterator().next();
         assertEquals(species.getObjectReference(), b.getSource());

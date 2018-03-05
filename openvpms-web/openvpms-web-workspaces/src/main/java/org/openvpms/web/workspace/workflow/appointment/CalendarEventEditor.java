@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -26,7 +26,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.ComponentGrid;
@@ -47,7 +47,6 @@ import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSerie
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatCondition;
 import org.openvpms.web.workspace.workflow.appointment.repeat.RepeatExpression;
 import org.openvpms.web.workspace.workflow.scheduling.AbstractScheduleActEditor;
-import org.openvpms.web.workspace.workflow.scheduling.SchedulingHelper;
 
 import java.util.Calendar;
 import java.util.Collections;
@@ -316,7 +315,7 @@ public abstract class CalendarEventEditor extends AbstractScheduleActEditor {
     protected void onStartTimeChanged() {
         Date start = getStartTime();
         if (start != null && slotSize != 0) {
-            Date rounded = SchedulingHelper.getSlotTime(start, slotSize, false);
+            Date rounded = rules.getSlotTime(start, slotSize, false);
             if (DateRules.compareTo(start, rounded) != 0) {
                 setStartTime(rounded, true);
             }
@@ -345,7 +344,7 @@ public abstract class CalendarEventEditor extends AbstractScheduleActEditor {
             if (end.compareTo(start) < 0) {
                 calculateEndTime();
             } else if (slotSize != 0) {
-                Date rounded = SchedulingHelper.getSlotTime(end, slotSize, true);
+                Date rounded = rules.getSlotTime(end, slotSize, true);
                 if (DateRules.compareTo(end, rounded) != 0) {
                     setEndTime(rounded, true);
                 }

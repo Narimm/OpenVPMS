@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -27,7 +27,7 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -195,8 +195,8 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
     @Override
     protected void doDelete() {
         if (deleteAct) {
-            super.deleteChildren();
             ServiceHelper.getArchetypeService().remove(act);
+            deleteChildren();
         } else {
             super.doDelete();
         }

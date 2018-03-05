@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -20,12 +20,15 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientInformationService;
@@ -33,10 +36,13 @@ import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.HospitalizationService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ReporterFactory;
+import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -51,6 +57,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.PatientMedicalRecordLinker;
 import org.openvpms.web.workspace.patient.info.PatientContextHelper;
+import org.openvpms.web.workspace.patient.mr.PatientVisitNoteEditor;
 
 
 /**
@@ -61,14 +68,14 @@ import org.openvpms.web.workspace.patient.info.PatientContextHelper;
 public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
 
     /**
-     * The current query.
-     */
-    private PatientHistoryQuery query;
-
-    /**
      * The Smart Flow Sheet service factory.
      */
     private final FlowSheetServiceFactory flowSheetServiceFactory;
+
+    /**
+     * The current query.
+     */
+    private PatientHistoryQuery query;
 
     /**
      * Import flow sheet documents button identifier.
@@ -113,7 +120,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
 
     /**
      * Sets the current patient clinical event.
-     * <p/>
+     * <p>
      * This updates the context.
      *
      * @param event the current event
@@ -292,17 +299,19 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     }
 
     /**
-     * Adds a new <em>act.patientClinicalNote</em>.
+     * Adds a new <em>act.patientClinicalVisit</em> and <em>act.patientClinicalNote</em>.
      */
     protected void onAddNote() {
-        setEvent(null);     // event will be created in onSaved()
-        Archetypes<Act> archetypes = new Archetypes<>(PatientArchetypes.CLINICAL_NOTE, Act.class);
-        onCreate(archetypes);
+        Act event = (Act) IMObjectCreator.create(PatientArchetypes.CLINICAL_EVENT);
+        HelpContext help = getHelpContext().subtopic("visitnote");
+        LayoutContext layoutContext = createLayoutContext(help);
+        PatientVisitNoteEditor editor = new PatientVisitNoteEditor(event, layoutContext);
+        edit(editor, null);
     }
 
     /**
      * Invoked when the patient weight changes or a weight record is deleted.
-     * <p/>
+     * <p>
      * If the act is for the current visit, registered listeners will be notified via
      * the {@link PatientInformationService}.
      *
@@ -350,12 +359,21 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      * @return a new printer
      */
     private IMObjectReportPrinter<Act> createPrinter(Context context) {
-        PatientHistoryFilter filter = new PatientHistoryFilter(query.getSelectedItemShortNames());
+        String value = query.getValue();
+        TextSearch search = null;
+        if (!StringUtils.isEmpty(value)) {
+            Preferences preferences = ServiceHelper.getPreferences();
+            boolean showClinician = preferences.getBoolean(PreferenceArchetypes.HISTORY, "showClinician", false);
+            boolean showBatches = preferences.getBoolean(PreferenceArchetypes.HISTORY, "showBatches", false);
+            search = new TextSearch(value, showClinician, showBatches, ServiceHelper.getArchetypeService());
+        }
+        PatientHistoryFilter filter = new PatientHistoryFilter(query.getSelectedItemShortNames(), search, true);
         // need to use maxDepth=3 so that addendum records appear after the records they link to.
         PatientHistoryIterator summary = new PatientHistoryIterator(query, filter, 3);
         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,
                                                                              context);
-        return new IMObjectReportPrinter<>(summary, locator, context);
+        ReporterFactory factory = ServiceHelper.getBean(ReporterFactory.class);
+        return new IMObjectReportPrinter<>(summary, locator, context, factory);
     }
 
     /**
@@ -368,7 +386,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
             PatientContext context = ServiceHelper.getBean(PatientContextFactory.class).createContext(visit, location);
             if (context != null) {
                 FlowSheetServiceFactory factory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
-                HospitalizationService service = factory.getHospitalisationService(location);
+                HospitalizationService service = factory.getHospitalizationService(location);
                 if (service.exists(context)) {
                     FlowSheetReportsDialog dialog = new FlowSheetReportsDialog(context);
                     dialog.addWindowPaneListener(new WindowPaneListener() {

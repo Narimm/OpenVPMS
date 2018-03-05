@@ -47,10 +47,9 @@
 	<field name="target.product.entity.type.target.detailInvoice" class="java.lang.Boolean"/>
 	<field name="target.template.entity.type.target.name" class="java.lang.String"/>
 	<field name="target.template.entity.type.target.sortOrder" class="java.lang.Integer"/>
-	<field name="[date:format(openvpms:get(.,&quot;target.startTime&quot;),&quot;yyyyMMdd&quot;)]" class="java.lang.String"/>
 	<field name="target.product.entity.sellingUnits.printedName" class="java.lang.String"/>
 	<sortField name="target.patient.entity.name"/>
-	<sortField name="[date:format(openvpms:get(.,&quot;target.startTime&quot;),&quot;yyyyMMdd&quot;)]"/>
+	<sortField name="sortDate" type="Variable"/>
 	<sortField name="showTemplate" order="Descending" type="Variable"/>
 	<sortField name="prodTypeOrder" type="Variable"/>
 	<sortField name="sortName" type="Variable"/>
@@ -123,6 +122,9 @@ $F{target.product.entity.type.target.sortOrder}]]></variableExpression>
 	</variable>
 	<variable name="units" class="java.lang.String">
 		<variableExpression><![CDATA[$F{target.product.entity.sellingUnits.printedName}==null?" ":$F{target.product.entity.sellingUnits.printedName}]]></variableExpression>
+	</variable>
+	<variable name="sortDate" class="java.lang.String">
+		<variableExpression><![CDATA[DATEFORMAT($F{target.startTime}, "yyyyMMdd")]]></variableExpression>
 	</variable>
 	<group name="patientGroup" minHeightToStartNewPage="50">
 		<groupExpression><![CDATA[$F{target.patient.entity.name}]]></groupExpression>

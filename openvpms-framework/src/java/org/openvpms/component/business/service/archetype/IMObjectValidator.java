@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
@@ -75,8 +75,8 @@ class IMObjectValidator {
      * @param object the object to validate
      * @return a list of validation errors encountered. Empty if no errors were found
      */
-    public List<ValidationError> validate(IMObject object) {
-        List<ValidationError> errors = new ArrayList<>();
+    public List<org.openvpms.component.service.archetype.ValidationError> validate(IMObject object) {
+        List<org.openvpms.component.service.archetype.ValidationError> errors = new ArrayList<>();
         validate(object, errors);
         return errors;
     }
@@ -87,7 +87,8 @@ class IMObjectValidator {
      * @param object the object to validate
      * @param errors the list to add validation errors to
      */
-    protected void validate(IMObject object, List<ValidationError> errors) {
+    @SuppressWarnings("unchecked")
+    protected void validate(IMObject object, List<org.openvpms.component.service.archetype.ValidationError> errors) {
         ArchetypeId id = object.getArchetypeId();
         if (log.isDebugEnabled()) {
             log.debug("Validating object of type " + id.getShortName() + " with id " + object.getId()
@@ -101,9 +102,10 @@ class IMObjectValidator {
         } else {
             // if there are nodes attached to the archetype then validate the
             // associated assertions
-            if (archetype.getNodeDescriptors().size() > 0) {
+            Map nodeDescriptors = archetype.getNodeDescriptors();
+            if (nodeDescriptors.size() > 0) {
                 JXPathContext context = JXPathHelper.newContext(object);
-                validateNodes(object, context, archetype, archetype.getNodeDescriptors(), errors);
+                validateNodes(object, context, archetype, (Map<String, NodeDescriptor>) nodeDescriptors, errors);
             }
         }
     }
@@ -118,7 +120,8 @@ class IMObjectValidator {
      * @param errors    the list to add validation errors to
      */
     protected void validateNodes(IMObject parent, JXPathContext context, ArchetypeDescriptor archetype,
-                                 Map<String, NodeDescriptor> nodes, List<ValidationError> errors) {
+                                 Map<String, NodeDescriptor> nodes,
+                                 List<org.openvpms.component.service.archetype.ValidationError> errors) {
         for (NodeDescriptor node : nodes.values()) {
             validateNode(parent, context, archetype, node, errors);
         }
@@ -134,7 +137,8 @@ class IMObjectValidator {
      * @param errors    the list to add validation errors to
      */
     protected void validateNode(IMObject parent, JXPathContext context, ArchetypeDescriptor archetype,
-                                NodeDescriptor node, List<ValidationError> errors) {
+                                NodeDescriptor node,
+                                List<org.openvpms.component.service.archetype.ValidationError> errors) {
         Object value;
         try {
             value = node.getValue(context);
@@ -182,7 +186,8 @@ class IMObjectValidator {
      * @param value  the node value to check
      * @param errors the list to add validation errors to
      */
-    protected void checkSimpleValue(IMObject parent, NodeDescriptor node, Object value, List<ValidationError> errors) {
+    protected void checkSimpleValue(IMObject parent, NodeDescriptor node, Object value,
+                                    List<org.openvpms.component.service.archetype.ValidationError> errors) {
         int min = node.getMinCardinality();
         if (min == 1 && (value == null || value instanceof String && StringUtils.isEmpty((String) value))) {
             addError(errors, parent, node, "value is required");
@@ -201,7 +206,8 @@ class IMObjectValidator {
      * @param value  the node value to check
      * @param errors the list to add validation errors to
      */
-    protected void checkCollection(IMObject parent, NodeDescriptor node, Object value, List<ValidationError> errors) {
+    protected void checkCollection(IMObject parent, NodeDescriptor node, Object value,
+                                   List<org.openvpms.component.service.archetype.ValidationError> errors) {
         int min = node.getMinCardinality();
         int max = node.getMaxCardinality();
         Collection collection = node.toCollection(value);
@@ -237,7 +243,8 @@ class IMObjectValidator {
      * @param value  the node value to check
      * @param errors the list to add validation errors to
      */
-    protected void checkAssertions(IMObject parent, NodeDescriptor node, Object value, List<ValidationError> errors) {
+    protected void checkAssertions(IMObject parent, NodeDescriptor node, Object value,
+                                   List<org.openvpms.component.service.archetype.ValidationError> errors) {
         for (AssertionDescriptor assertion : node.getAssertionDescriptorsAsArray()) {
             checkAssertion(parent, node, value, assertion, errors);
         }
@@ -253,7 +260,7 @@ class IMObjectValidator {
      * @param errors    the list to add validation errors to
      */
     protected void checkAssertion(IMObject parent, NodeDescriptor node, Object value, AssertionDescriptor assertion,
-                                  List<ValidationError> errors) {
+                                  List<org.openvpms.component.service.archetype.ValidationError> errors) {
         try {
             if (!assertion.validate(value, parent, node)) {
                 String message = assertion.getErrorMessage();
@@ -276,7 +283,8 @@ class IMObjectValidator {
      * @param value  the string to check
      * @param errors the errors to add to if the string is invalid
      */
-    protected void checkControlChars(IMObject parent, NodeDescriptor node, Object value, List<ValidationError> errors) {
+    protected void checkControlChars(IMObject parent, NodeDescriptor node, Object value,
+                                     List<org.openvpms.component.service.archetype.ValidationError> errors) {
         if (CNTRL_CHARS.matcher((String) value).matches()) {
             addError(errors, parent, node, " contains invalid characters");
         }
@@ -290,10 +298,11 @@ class IMObjectValidator {
      * @param node    the node that validation failed for. May be {@code null}
      * @param message the error message
      */
-    private void addError(List<ValidationError> errors, IMObject object, NodeDescriptor node, String message) {
+    private void addError(List<org.openvpms.component.service.archetype.ValidationError> errors, IMObject object,
+                          NodeDescriptor node, String message) {
         String shortName = object.getArchetypeId().getShortName();
         String nodeName = (node != null) ? node.getName() : null;
-        errors.add(new ValidationError(shortName, nodeName, message));
+        errors.add(new ValidationError(object.getObjectReference(), nodeName, message));
         if (log.isDebugEnabled()) {
             log.debug("Validation failed: archetype=" + shortName + ", node=" + nodeName + ", message=" +
                       message);

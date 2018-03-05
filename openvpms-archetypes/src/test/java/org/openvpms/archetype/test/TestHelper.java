@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.test;
@@ -27,6 +27,8 @@ import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.component.business.domain.im.act.ActIdentity;
+import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
@@ -42,6 +44,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.openvpms.component.model.object.Relationship;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -119,7 +122,7 @@ public class TestHelper {
     }
 
     /**
-     * Creates a new customer.
+     * Creates a new customer with default contacts.
      *
      * @param firstName the customer's first name
      * @param lastName  the customer's surname
@@ -127,10 +130,25 @@ public class TestHelper {
      * @return a new customer
      */
     public static Party createCustomer(String firstName, String lastName, boolean save) {
+        return createCustomer(firstName, lastName, true, save);
+    }
+
+    /**
+     * Creates a new customer.
+     *
+     * @param firstName       the customer's first name
+     * @param lastName        the customer's surname
+     * @param defaultContacts if {@code true}, add default contacts
+     * @param save            if {@code true} make the customer persistent
+     * @return a new customer
+     */
+    public static Party createCustomer(String firstName, String lastName, boolean defaultContacts, boolean save) {
         Party customer = (Party) create(CustomerArchetypes.PERSON);
-        PartyRules rules = new PartyRules(ArchetypeServiceHelper.getArchetypeService(),
-                                          LookupServiceHelper.getLookupService());
-        customer.setContacts(rules.getDefaultContacts());
+        if (defaultContacts) {
+            PartyRules rules = new PartyRules(ArchetypeServiceHelper.getArchetypeService(),
+                                              LookupServiceHelper.getLookupService());
+            customer.setContacts(rules.getDefaultContacts());
+        }
         IMObjectBean bean = new IMObjectBean(customer);
         bean.setValue("firstName", firstName);
         bean.setValue("lastName", lastName);
@@ -150,13 +168,87 @@ public class TestHelper {
     }
 
     /**
+     * Creates and saves a new customer, with the specified contacts.
+     *
+     * @param contacts the contacts
+     * @return a new customer
+     */
+    public static Party createCustomer(Contact... contacts) {
+        return createCustomer("MR", "J", randomName("Zoo-"), contacts);
+    }
+
+    /**
+     * Creates and saves a new customer, with the specified contacts.
+     *
+     * @param titleCode the <em>lookup.personTitle</em> code. May be {@code null}
+     * @param firstName the customer's first name
+     * @param lastName  the customer's surname
+     * @param contacts  the contacts
+     * @return a new customer
+     */
+    public static Party createCustomer(String titleCode, String firstName, String lastName, Contact... contacts) {
+        Party customer = createCustomer(firstName, lastName, false, false);
+        if (titleCode != null) {
+            IMObjectBean bean = new IMObjectBean(customer);
+            bean.setValue("title", getLookup("lookup.personTitle", titleCode).getCode());
+        }
+        for (Contact contact : contacts) {
+            customer.addContact(contact);
+        }
+        save(customer);
+        return customer;
+    }
+
+    /**
+     * Creates and saves a new customer.
+     *
+     * @param titleCode   the <em>lookup.personTitle</em> code. May be {@code null}
+     * @param firstName   the first name
+     * @param lastName    the last name
+     * @param address     the address
+     * @param suburbCode  the <em>lookup.suburb</em> code
+     * @param stateCode   the <em>lookup.state</em> code
+     * @param postCode    the post code
+     * @param homePhone   the home phone. May be {@code null}
+     * @param workPhone   the work phone. May be {@code null}
+     * @param mobilePhone the mobile phone. May be {@code null}
+     * @param email       the email address. May be {@code null}
+     * @return a new customer
+     */
+    public static Party createCustomer(String titleCode, String firstName, String lastName,
+                                       String address, String suburbCode, String stateCode, String postCode,
+                                       String homePhone, String workPhone, String mobilePhone, String email) {
+        Party customer = createCustomer(firstName, lastName, false, false);
+        IMObjectBean bean = new IMObjectBean(customer);
+        if (titleCode != null) {
+            bean.setValue("title", getLookup("lookup.personTitle", titleCode).getCode());
+        }
+        customer.addContact(createLocationContact(address, suburbCode, stateCode, postCode));
+
+        if (homePhone != null) {
+            customer.addContact(createPhoneContact(null, homePhone, false, false, ContactArchetypes.HOME_PURPOSE));
+        }
+        if (workPhone != null) {
+            customer.addContact(createPhoneContact(null, workPhone, false, false, ContactArchetypes.WORK_PURPOSE));
+        }
+        if (mobilePhone != null) {
+            customer.addContact(createPhoneContact(null, mobilePhone, true));
+        }
+        if (email != null) {
+            customer.addContact(createEmailContact(email));
+        }
+        save(customer);
+        return customer;
+    }
+
+    /**
      * Creates a new customer.
      *
      * @param save if {@code true} make the customer persistent
      * @return a new customer
      */
     public static Party createCustomer(boolean save) {
-        return createCustomer("J", "Zoo-" + nextId(), save);
+        return createCustomer("J", randomName("Zoo-"), save);
     }
 
     /**
@@ -175,7 +267,7 @@ public class TestHelper {
 
     /**
      * Creates a new <em>contact.location</em>
-     * <p/>
+     * <p>
      * Any required lookups will be created and saved.
      *
      * @param address    the street address
@@ -207,18 +299,49 @@ public class TestHelper {
      * @return a new phone contact
      */
     public static Contact createPhoneContact(String areaCode, String number) {
+        return createPhoneContact(areaCode, number, false);
+    }
+
+    /**
+     * Creates a new <em>contact.phoneNumber</em>
+     *
+     * @param areaCode the area code
+     * @param number   the phone number
+     * @param sms      if {@code true}, allow SMS
+     * @return a new phone contact
+     */
+    public static Contact createPhoneContact(String areaCode, String number, boolean sms) {
+        return createPhoneContact(areaCode, number, sms, true, null);
+    }
+
+    /**
+     * Creates a new <em>contact.phoneNumber</em>
+     *
+     * @param areaCode  the area code
+     * @param number    the phone number
+     * @param sms       if {@code true}, allow SMS
+     * @param preferred if {@code true}, flags the contact as preferred
+     * @param purpose   the contact purpose. May be {@code null}
+     * @return a new phone contact
+     */
+    public static Contact createPhoneContact(String areaCode, String number, boolean sms, boolean preferred,
+                                             String purpose) {
         Contact contact = (Contact) create(ContactArchetypes.PHONE);
         IMObjectBean bean = new IMObjectBean(contact);
         bean.setValue("areaCode", areaCode);
         bean.setValue("telephoneNumber", number);
-        bean.setValue("preferred", true);
+        bean.setValue("sms", sms);
+        bean.setValue("preferred", preferred);
+        if (purpose != null) {
+            contact.addClassification(getLookup(ContactArchetypes.PURPOSE, purpose));
+        }
         return contact;
     }
 
     /**
      * Creates a new <em>contact.email</em>
      *
-     * @param address the phone number
+     * @param address the email address
      * @return a new email contact
      */
     public static Contact createEmailContact(String address) {
@@ -228,7 +351,7 @@ public class TestHelper {
     /**
      * Creates a new <em>contact.email</em>
      *
-     * @param address   the phone number
+     * @param address   the email address
      * @param preferred if {@code true}, flags the contact as preferred
      * @param purpose   the contact purpose. May be {@code null}
      * @return a new email contact
@@ -246,7 +369,7 @@ public class TestHelper {
 
     /**
      * Creates and saves a new <em>contact.location</em>
-     * <p/>
+     * <p>
      * Any required lookups will be created and saved.
      *
      * @param address    the street address
@@ -275,9 +398,20 @@ public class TestHelper {
      * @return a new patient
      */
     public static Party createPatient(boolean save) {
+        return createPatient(randomName("XPatient-"), save);
+    }
+
+    /**
+     * Creates a new patient, with species='CANINE'.
+     *
+     * @param name the patient name
+     * @param save if {@code true} make the patient persistent
+     * @return a new patient
+     */
+    public static Party createPatient(String name, boolean save) {
         Party patient = (Party) create(PatientArchetypes.PATIENT);
         EntityBean bean = new EntityBean(patient);
-        bean.setValue("name", "XPatient-" + nextId());
+        bean.setValue("name", name);
         bean.setValue("species", "CANINE");
         bean.setValue("deceased", false);
         if (save) {
@@ -304,11 +438,23 @@ public class TestHelper {
      * @return a new patient
      */
     public static Party createPatient(Party owner, boolean save) {
-        Party patient = createPatient(save);
+        return createPatient(randomName("XPatient-"), owner, save);
+    }
+
+    /**
+     * Creates a new patient, owned by the specified customer.
+     *
+     * @param name  the patient name
+     * @param owner the patient owner
+     * @param save  if {@code true}, make the patient persistent
+     * @return a new patient
+     */
+    public static Party createPatient(String name, Party owner, boolean save) {
+        Party patient = createPatient(name, save);
         PatientRules rules = new PatientRules(null, ArchetypeServiceHelper.getArchetypeService(), null, null);
         rules.addPatientOwnerRelationship(owner, patient);
         if (save) {
-            save(patient);
+            save(owner, patient);
         }
         return patient;
     }
@@ -320,7 +466,7 @@ public class TestHelper {
      * @return a new user
      */
     public static User createUser() {
-        return createUser("zuser" + nextId(), true);
+        return createUser(randomName("zuser"), true);
     }
 
     /**
@@ -331,10 +477,39 @@ public class TestHelper {
      * @return a new user
      */
     public static User createUser(String username, boolean save) {
+        return createUser(username, null, null, save);
+    }
+
+    /**
+     * Creates a new user.
+     *
+     * @param firstName the first name
+     * @param lastName  the last name
+     * @return a new user
+     */
+    public static User createUser(String firstName, String lastName) {
+        return createUser(randomName("user"), firstName, lastName, true);
+    }
+
+    /**
+     * Creates a new user.
+     *
+     * @param username  the login name
+     * @param firstName the first name. May be {@code null}
+     * @param lastName  the last name. May be {@code null}
+     * @param save      if {@code true} make the user persistent
+     * @return a new user
+     */
+    public static User createUser(String username, String firstName, String lastName, boolean save) {
         User user = (User) create(UserArchetypes.USER);
-        EntityBean bean = new EntityBean(user);
+        IMObjectBean bean = new IMObjectBean(user);
         bean.setValue("name", username);
         bean.setValue("username", username);
+        bean.setValue("firstName", firstName);
+        bean.setValue("lastName", lastName);
+        if (!StringUtils.isEmpty(firstName) && !StringUtils.isEmpty(lastName)) {
+            bean.setValue("name", firstName + " " + lastName);
+        }
         bean.setValue("password", username);
         if (save) {
             bean.save();
@@ -358,7 +533,7 @@ public class TestHelper {
      * @return a new user
      */
     public static User createClinician(boolean save) {
-        String username = "zuser" + nextId();
+        String username = randomName("zuser");
         User user = createUser(username, false);
         user.addClassification(getLookup("lookup.userType", "CLINICIAN"));
         if (save) {
@@ -409,11 +584,10 @@ public class TestHelper {
      * @param save      if {@code true}, save the product
      * @return a new product
      */
-    public static Product createProduct(String shortName, String species,
-                                        boolean save) {
+    public static Product createProduct(String shortName, String species, boolean save) {
         Product product = (Product) create(shortName);
         EntityBean bean = new EntityBean(product);
-        String name = "XProduct-" + ((species != null) ? species : "") + nextId();
+        String name = randomName("XProduct-" + ((species != null) ? species : ""));
         bean.setValue("name", name);
         if (species != null) {
             Lookup classification
@@ -481,11 +655,11 @@ public class TestHelper {
     /**
      * Returns the <em>party.organisationPractice</em> singleton,
      * creating one if it doesn't exist.
-     * <p/>
+     * <p>
      * If it exists, any tax rates will be removed.
-     * <p/>
+     * <p>
      * The practice currency is set to <em>AUD</em>.
-     * <p/>
+     * <p>
      * Default contacts are added.
      *
      * @return the practice
@@ -520,6 +694,7 @@ public class TestHelper {
         IMObjectBean bean = new IMObjectBean(party);
         bean.setValue("currency", currency.getCode());
         bean.setValue("useLocationProducts", false);
+        bean.setValue("useLoggedInClinician", true);
         bean.save();
         return party;
     }
@@ -558,7 +733,7 @@ public class TestHelper {
     }
 
     /**
-     * Creates a new <em>party.organisationLocation}.
+     * Creates a new <em>party.organisationLocation</em>.
      *
      * @return a new location
      */
@@ -567,22 +742,37 @@ public class TestHelper {
     }
 
     /**
-     * Creates a new <em>party.organisationLocation}.
+     * Creates a new <em>party.organisationLocation</em>.
      *
      * @param stockControl if {@code true}, enable stock control for the location
      * @return a new location
      */
     public static Party createLocation(boolean stockControl) {
-        Party party = (Party) create(PracticeArchetypes.LOCATION);
-        party.setName("XLocation");
-        Contact contact = (Contact) create(ContactArchetypes.PHONE);
-        party.addContact(contact);
-        IMObjectBean bean = new IMObjectBean(party);
-        bean.setValue("stockControl", stockControl);
-        bean.save();
-        return party;
+        return createLocation(null, null, stockControl);
     }
 
+    /**
+     * Creates a new <em>party.organisationLocation</em>.
+     *
+     * @param phone        the phone number. May be {@code null}
+     * @param email        the email address. May be {@code null}
+     * @param stockControl if {@code true}, enable stock control for the location
+     * @return a new location
+     */
+    public static Party createLocation(String phone, String email, boolean stockControl) {
+        Party location = (Party) create(PracticeArchetypes.LOCATION);
+        location.setName("XLocation");
+        IMObjectBean bean = new IMObjectBean(location);
+        bean.setValue("stockControl", stockControl);
+        if (phone != null) {
+            location.addContact(createPhoneContact(null, phone, false));
+        }
+        if (email != null) {
+            location.addContact(createEmailContact(email));
+        }
+        save(location);
+        return location;
+    }
 
     /**
      * Creates a new till.
@@ -636,7 +826,7 @@ public class TestHelper {
 
     /**
      * Returns a lookup, creating it if it doesn't exist.
-     * <p/>
+     * <p>
      * If the lookup exists, but the name is different, the name will be updated.
      *
      * @param shortName the lookup short name
@@ -698,7 +888,7 @@ public class TestHelper {
     public static Lookup getLookup(String shortName, String code, String name, Lookup source,
                                    String relationshipShortName) {
         Lookup target = getLookup(shortName, code, name, true);
-        for (LookupRelationship relationship : source.getLookupRelationships()) {
+        for (Relationship relationship : source.getLookupRelationships()) {
             if (relationship.getTarget().equals(target.getObjectReference())) {
                 return target;
             }
@@ -741,6 +931,32 @@ public class TestHelper {
     }
 
     /**
+     * Creates a new act identity.
+     *
+     * @param archetype the identity archetype
+     * @param id        the identity
+     * @return a new act identity
+     */
+    public static ActIdentity createActIdentity(String archetype, String id) {
+        ActIdentity identity = (ActIdentity) create(archetype);
+        identity.setIdentity(id);
+        return identity;
+    }
+
+    /**
+     * Creates a new entity identity.
+     *
+     * @param archetype the identity archetype
+     * @param id        the identity
+     * @return a new entity identity
+     */
+    public static EntityIdentity createEntityIdentity(String archetype, String id) {
+        EntityIdentity identity = (EntityIdentity) create(archetype);
+        identity.setIdentity(id);
+        return identity;
+    }
+
+    /**
      * Helper to create a date-time given a string of the form
      * <em>yyyy-mm-dd hh:mm:ss</em>.
      *
@@ -775,8 +991,14 @@ public class TestHelper {
         }
     }
 
-    private static int nextId() {
-        return Math.abs(random.nextInt());
+    /**
+     * Creates a name starting with the specified prefix, with a random numerical suffix.
+     *
+     * @param prefix the prefix
+     * @return a random name
+     */
+    public static String randomName(String prefix) {
+        return prefix + Math.abs(random.nextInt());
     }
 
 }

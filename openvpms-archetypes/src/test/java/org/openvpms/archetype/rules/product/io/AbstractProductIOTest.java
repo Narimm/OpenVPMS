@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -112,7 +112,7 @@ public class AbstractProductIOTest extends ArchetypeServiceTest {
         Date expectedTo = expected.getToDate();
         boolean isDefault = bean.hasNode("default") && bean.getBoolean("default");
 
-        String shortName = expected.getArchetypeId().getShortName();
+        String shortName = expected.getArchetype();
         checkPrice(product, shortName, expectedPrice, expectedCost, expectedMarkup, expectedMaxDiscount, expectedFrom,
                    expectedTo, isDefault);
     }
@@ -171,9 +171,9 @@ public class AbstractProductIOTest extends ArchetypeServiceTest {
                               BigDecimal expectedMarkup, BigDecimal expectedMaxDiscount, Date expectedFrom,
                               Date expectedTo, boolean expectedDefault) {
         boolean found = false;
-        for (ProductPrice price : product.getProductPrices()) {
+        for (org.openvpms.component.model.product.ProductPrice price : product.getProductPrices()) {
             IMObjectBean priceBean = new IMObjectBean(price);
-            if (price.getArchetypeId().getShortName().equals(shortName)
+            if (price.getArchetype().equals(shortName)
                 && price.getPrice().compareTo(expectedPrice) == 0
                 && priceBean.getBigDecimal("cost").compareTo(expectedCost) == 0
                 && priceBean.getBigDecimal("markup").compareTo(expectedMarkup) == 0

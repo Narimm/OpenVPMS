@@ -1,24 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.entity;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -28,6 +25,11 @@ import org.openvpms.component.business.service.archetype.ValidationException;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Random;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -114,7 +116,7 @@ public class PersonContactTestCase extends AbstractArchetypeServiceTest {
         // retrieve and remove the first contact and update
         person = get(person);
         assertTrue(person.getContacts().size() == 3);
-        Contact contact = person.getContacts().iterator().next();
+        Contact contact = (Contact) person.getContacts().iterator().next();
         person.getContacts().remove(contact);
         assertTrue(person.getContacts().size() == 2);
         save(person);

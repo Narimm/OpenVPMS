@@ -1,26 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.entity;
 
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -31,6 +27,9 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.Date;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 
 /**
@@ -62,7 +61,7 @@ public class EntityRelationshipTestCase extends AbstractArchetypeServiceTest {
         // exists
         pet = (Party) get(pet.getObjectReference());
         assertEquals(1, pet.getEntityRelationships().size());
-        validateObject(person.getEntityRelationships().iterator().next());
+        validateObject((EntityRelationship) person.getEntityRelationships().iterator().next());
     }
 
     /**
@@ -112,7 +111,7 @@ public class EntityRelationshipTestCase extends AbstractArchetypeServiceTest {
         assertEquals(1, pet.getEntityRelationships().size());
 
         // retrieve the entity relationship
-        rel = person.getEntityRelationships().iterator().next();
+        rel = (EntityRelationship) person.getEntityRelationships().iterator().next();
         person.removeEntityRelationship(rel);
         save(person);
 
@@ -231,7 +230,7 @@ public class EntityRelationshipTestCase extends AbstractArchetypeServiceTest {
         // exists
         person = (Party) get(person.getObjectReference());
         assertEquals(1, person.getEntityRelationships().size());
-        rel = person.getEntityRelationships().iterator().next();
+        rel = (EntityRelationship) person.getEntityRelationships().iterator().next();
         assertNotNull(rel);
         Party samePerson = (Party) get(rel.getSource());
         assertEquals(person.getId(), samePerson.getId());

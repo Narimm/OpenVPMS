@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -19,12 +19,10 @@ package org.openvpms.report.jasper;
 import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRRewindableDataSource;
 import org.apache.commons.jxpath.Functions;
-import org.apache.commons.jxpath.JXPathContext;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.report.Parameters;
 
@@ -102,13 +100,13 @@ public abstract class AbstractDataSource implements DataSource {
      * Returns a data source for the given jxpath expression.
      *
      * @param object     the object
-     * @param expression the expression. Must return an {@code Iterable}returning {@link IMObject}s
+     * @param expression the expression. Must return a single {@link IMObject}, or an {@code Iterable} returning
+     *                   {@link IMObject}s
      * @return the data source
      * @throws JRException for any error
      */
     protected JRRewindableDataSource getExpressionDataSource(Object object, String expression) throws JRException {
-        JXPathContext context = JXPathHelper.newContext(object, getFunctions());
-        Object value = context.getValue(expression);
+        Object value = evaluate(object, expression);
         return getCollectionDataSource(value, expression);
     }
 

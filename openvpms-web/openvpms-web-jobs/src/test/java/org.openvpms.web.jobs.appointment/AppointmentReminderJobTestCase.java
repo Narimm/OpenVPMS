@@ -200,7 +200,7 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
         // start sending reminders 3 days prior to the first reminder. The first 6 appointments flagged should be sent
         final Date startDate = DateRules.getDate(dateFrom, -3, DateUnits.DAYS);
 
-        SMSService smsService = Mockito.mock(SMSService.class);
+        SMSService smsService = createSMSService();
 
         runJob(config, startDate, smsService);
         for (int i = 0; i < appointments.size(); ++i) {
@@ -241,7 +241,7 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
 
         // start sending reminders 2 days prior to the first reminder. All schedule2 reminders should be sent
         final Date startDate = DateRules.getDate(dateFrom, -2, DateUnits.DAYS);
-        SMSService smsService = Mockito.mock(SMSService.class);
+        SMSService smsService = createSMSService();
         runJob(config, startDate, smsService);
 
         for (int i = 0; i < appointments.size(); ++i) {
@@ -275,7 +275,7 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
         Act appointment2 = createAppointment(dateFrom, schedule1, customer2, true);
 
         final Date startDate = DateRules.getDate(dateFrom, -2, DateUnits.DAYS);
-        SMSService smsService = Mockito.mock(SMSService.class);
+        SMSService smsService = createSMSService();
         runJob(config, startDate, smsService);
 
         checkSent(appointment1);
@@ -303,7 +303,7 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
         Act appointment3 = createAppointment(dateFrom, schedule1, customer1, patient3, true);
 
         final Date startDate = DateRules.getDate(dateFrom, -2, DateUnits.DAYS);
-        SMSService smsService = Mockito.mock(SMSService.class);
+        SMSService smsService = createSMSService();
         runJob(config, startDate, smsService);
 
         checkSent(appointment1);
@@ -327,7 +327,7 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
         Act appointment2 = createAppointment(dateFrom, schedule1, customer2, true);
 
         final Date startDate = DateRules.getDate(dateFrom, -2, DateUnits.DAYS);
-        SMSService smsService = Mockito.mock(SMSService.class);
+        SMSService smsService = createSMSService();
         runJob(config, startDate, smsService);
 
         checkSent(appointment1);
@@ -347,7 +347,7 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
         Act appointment2 = createAppointment(dateFrom, schedule2, true);
 
         final Date startDate = DateRules.getDate(dateFrom, -2, DateUnits.DAYS);
-        SMSService smsService = Mockito.mock(SMSService.class);
+        SMSService smsService = createSMSService();
 
         IArchetypeRuleService archetypeService = (IArchetypeRuleService) getArchetypeService();
         LocationRules locationRules = new LocationRules(getArchetypeService());
@@ -400,7 +400,7 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
 
 
         final Date startDate = DateRules.getDate(dateFrom, -2, DateUnits.DAYS);
-        SMSService smsService = Mockito.mock(SMSService.class);
+        SMSService smsService = createSMSService();
         runJob(config, startDate, smsService);
 
         checkSent(appointment1);
@@ -421,7 +421,7 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
 
 
         final Date startDate = DateRules.getDate(dateFrom, -2, DateUnits.DAYS);
-        SMSService smsService = Mockito.mock(SMSService.class);
+        SMSService smsService = createSMSService();
         runJob(config, startDate, smsService);
 
         checkNotSent(appointment1, "Generated SMS text was empty");
@@ -440,10 +440,21 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
         Act appointment1 = createAppointment(dateFrom, schedule1, true);
 
         final Date startDate = DateRules.getDate(dateFrom, -2, DateUnits.DAYS);
-        SMSService smsService = Mockito.mock(SMSService.class);
+        SMSService smsService = createSMSService();
         runJob(config, startDate, smsService);
 
-        checkNotSent(appointment1, "SMS text exceeds 160 characters: " + text);
+        checkNotSent(appointment1, "SMS is too long: " + text);
+    }
+
+    /**
+     * Creates a mock SMS service.
+     *
+     * @return a new service
+     */
+    private SMSService createSMSService() {
+        SMSService smsService = Mockito.mock(SMSService.class);
+        Mockito.when(smsService.getMaxParts()).thenReturn(1);
+        return smsService;
     }
 
     /**

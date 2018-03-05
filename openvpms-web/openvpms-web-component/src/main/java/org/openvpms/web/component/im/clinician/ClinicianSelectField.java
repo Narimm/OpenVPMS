@@ -11,28 +11,25 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.clinician;
 
 import nextapp.echo2.app.SelectField;
+import org.openvpms.archetype.rules.user.ClinicianQueryFactory;
 import org.openvpms.archetype.rules.user.UserArchetypes;
-import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
-import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
+import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.echo.factory.ComponentFactory;
-import org.openvpms.web.system.ServiceHelper;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -71,7 +68,7 @@ public class ClinicianSelectField extends SelectField {
     @SuppressWarnings("unchecked")
     public List<User> getObjects() {
         List objects = ((IMObjectListModel) getModel()).getObjects();
-        return (List<User>)objects;
+        return (List<User>) objects;
     }
 
     /**
@@ -96,6 +93,7 @@ public class ClinicianSelectField extends SelectField {
             setSelectedIndex(index);
         }
     }
+
     /**
      * Sets the selected clinician by reference.
      *
@@ -113,18 +111,13 @@ public class ClinicianSelectField extends SelectField {
      * @return a new model
      */
     private static IMObjectListModel createModel(boolean all) {
-        UserRules rules = ServiceHelper.getBean(UserRules.class);
-        List<IMObject> clinicians = new ArrayList<>();
         ArchetypeQuery query = new ArchetypeQuery(UserArchetypes.USER, true, true);
+        ClinicianQueryFactory.addClinicianConstraint(query);
         query.add(Constraints.sort("name"));
+        query.add(Constraints.sort("id"));
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        Iterator<User> iter = new IMObjectQueryIterator<User>(query);
-        while (iter.hasNext()) {
-            User user = iter.next();
-            if (rules.isClinician(user)) {
-                clinicians.add(user);
-            }
-        }
+
+        List<IMObject> clinicians = QueryHelper.query(query);
         return new IMObjectListModel(clinicians, all, false);
     }
 

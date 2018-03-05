@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.reporting.report;
 
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.app.Context;
@@ -71,7 +72,8 @@ public class InteractiveSQLReportPrinter extends InteractiveExportPrinter {
     protected PrintDialog createDialog() {
         final SQLReportPrinter printer = getPrinter();
         Set<ParameterType> parameterTypes = replaceVariables(printer.getParameterTypes());
-        return new SQLReportDialog(getTitle(), parameterTypes, variables, getHelpContext()) {
+        Party location = getContext().getLocation();
+        return new SQLReportDialog(getTitle(), parameterTypes, variables, location, getHelpContext()) {
 
             @Override
             protected void doPrint() {

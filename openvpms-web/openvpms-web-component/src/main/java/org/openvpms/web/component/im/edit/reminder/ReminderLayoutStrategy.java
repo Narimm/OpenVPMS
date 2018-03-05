@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.reminder;
@@ -57,6 +57,19 @@ public class ReminderLayoutStrategy extends AbstractLayoutStrategy {
         }
         ArchetypeNodes nodes = (showProduct) ? DEFAULT_NODES : new ArchetypeNodes().exclude("product");
         setArchetypeNodes(nodes);
+        if (context.isEdit()) {
+            int reminderCount = properties.get("reminderCount").getInt();
+            if (reminderCount != 0) {
+                // don't allow editing the 'Reminder Type' or 'First Due Date' for anything but the original Reminder
+                // Count
+                addComponent(createComponent(createReadOnly(properties.get("reminderType")), object, context));
+                addComponent(createComponent(createReadOnly(properties.get("endTime")), object, context));
+            } else {
+                // don't allow editing of the 'Next Due Date' for the original Reminder Count, as it is the same
+                // as the First Due Date
+                addComponent(createComponent(createReadOnly(properties.get("startTime")), object, context));
+            }
+        }
         return super.apply(object, properties, parent, context);
     }
 

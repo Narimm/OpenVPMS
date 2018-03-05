@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin;
 
+import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -42,7 +43,7 @@ public class OrganisationWorkspace extends ResultSetCRUDWorkspace<Entity> {
     public OrganisationWorkspace(Context context) {
         super("admin.organisation", context);
         setArchetypes(Entity.class, "party.organisation*", "entity.organisation*", "entity.SMSConfig*",
-                      "entity.job*", "entity.mailServer");
+                      "entity.mailServer", InsuranceArchetypes.INSURANCE_SERVICES);
     }
 
     /**

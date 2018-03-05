@@ -1,34 +1,32 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.common;
 
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
-import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.ObjectNotFound;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.object.Reference;
+
+import static org.openvpms.component.business.dao.im.common.IMObjectDAOException.ErrorCode.ObjectNotFound;
 
 
 /**
  * Base class for assemblers.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class AbstractAssembler {
 
@@ -61,8 +59,7 @@ public class AbstractAssembler {
      * @param context the assembly context
      * @return the assembled object, or <tt>null</tt> if <tt>source</tt> is null
      */
-    protected <DO extends IMObjectDO, T extends IMObject> T
-            getObject(DO source, Class<T> type, Context context) {
+    protected <DO extends IMObjectDO, T extends IMObject> T getObject(DO source, Class<T> type, Context context) {
         if (source == null) {
             return null;
         }
@@ -82,11 +79,10 @@ public class AbstractAssembler {
      * @param impl      the data object implementation type
      * @param context   the assembly context
      * @return the data object, or <tt>null</tt> if it doesn't exist or
-     *         <tt>reference</tt> is null
+     * <tt>reference</tt> is null
      */
     protected <DO extends IMObjectDO, Impl extends IMObjectDOImpl> DOState
-            get(IMObjectReference reference, Class<DO> type, Class<Impl> impl,
-                Context context) {
+    get(Reference reference, Class<DO> type, Class<Impl> impl, Context context) {
         if (reference == null) {
             return null;
         }
@@ -114,9 +110,8 @@ public class AbstractAssembler {
      * @return the corresponding data object
      * @throws IMObjectDAOException if the object doesn't exist
      */
-    protected <DO extends IMObjectDO, Impl extends IMObjectDOImpl> DO
-            load(IMObjectReference reference, Class<DO> type, Class<Impl> impl,
-                 Context context) {
+    protected <DO extends IMObjectDO, Impl extends IMObjectDOImpl> DO load(Reference reference, Class<DO> type,
+                                                                           Class<Impl> impl, Context context) {
         DOState result = get(reference, type, impl, context);
         if (result == null) {
             throw new IMObjectDAOException(ObjectNotFound, reference);

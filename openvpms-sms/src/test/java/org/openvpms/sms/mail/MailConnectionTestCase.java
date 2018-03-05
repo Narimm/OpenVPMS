@@ -12,15 +12,10 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.sms.mail;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.openvpms.sms.Connection;
 import org.openvpms.sms.ConnectionFactory;
@@ -37,12 +32,15 @@ import javax.mail.internet.MimeMessage;
 import java.net.ConnectException;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
+
 
 /**
  * Tests the {@link MailConnection}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class MailConnectionTestCase {
 
@@ -186,8 +184,8 @@ public class MailConnectionTestCase {
     /**
      * Helper to create a {@link MailMessageFactory} that returns messages with the specified from and to addresses.
      *
-     * @param from the from address. May be <tt>null</tt>
-     * @param to   the to address. May be <tt>null</tt>
+     * @param from the from address. May be {@code null}
+     * @param to   the to address. May be {@code null}
      * @return a new factory
      */
     private MailMessageFactory createMailMessageFactory(final String from, final String to) {
@@ -198,6 +196,10 @@ public class MailConnectionTestCase {
                 message.setFrom(from);
                 message.setText(text);
                 return message;
+            }
+            @Override
+            public int getMaxParts() {
+                return 1;
             }
         };
     }

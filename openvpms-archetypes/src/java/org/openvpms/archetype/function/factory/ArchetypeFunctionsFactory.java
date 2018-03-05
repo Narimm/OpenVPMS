@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.factory;
@@ -20,9 +20,13 @@ import org.apache.commons.jxpath.ClassFunctions;
 import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.Functions;
 import org.apache.commons.lang.WordUtils;
+import org.openvpms.archetype.function.contact.AddressFunctions;
+import org.openvpms.archetype.function.contact.EmailFunctions;
+import org.openvpms.archetype.function.contact.PhoneFunctions;
 import org.openvpms.archetype.function.date.DateFunctions;
 import org.openvpms.archetype.function.expression.ExpressionFunctions;
 import org.openvpms.archetype.function.history.HistoryFunctions;
+import org.openvpms.archetype.function.insurance.InsuranceFunctions;
 import org.openvpms.archetype.function.list.ListFunctions;
 import org.openvpms.archetype.function.lookup.LookupFunctions;
 import org.openvpms.archetype.function.math.MathFunctions;
@@ -32,6 +36,7 @@ import org.openvpms.archetype.function.reminder.ReminderFunctions;
 import org.openvpms.archetype.function.supplier.SupplierFunctions;
 import org.openvpms.archetype.function.user.CachingUserFunctions;
 import org.openvpms.archetype.function.user.UserFunctions;
+import org.openvpms.archetype.rules.contact.AddressFormatter;
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientAgeFormatter;
@@ -88,23 +93,27 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
      */
     public FunctionLibrary create(IArchetypeService service, boolean cache) {
         ILookupService lookups = getLookupService();
-        PatientAgeFormatter formatter = getPatientAgeFormatter();
+        PatientAgeFormatter ageFormatter = getPatientAgeFormatter();
+        AddressFormatter addressFormatter = getAddressFormatter();
 
+        PracticeService practiceService = getPracticeService();
         PracticeRules rules = new PracticeRules(service, getCurrencies());
-        PatientRules patientRules = new PatientRules(rules, service, lookups, formatter);
-        CustomerRules customerRules = new CustomerRules(service, lookups);
+        PatientRules patientRules = new PatientRules(rules, service, lookups, ageFormatter);
+        CustomerRules customerRules = new CustomerRules(service, lookups, addressFormatter);
         ReminderRules reminderRules = new ReminderRules(service, patientRules);
         SupplierRules supplierRules = new SupplierRules(service);
-        PracticeService practiceService = getPracticeService();
         FunctionLibrary library = new FunctionLibrary();
         library.addFunctions(create("date", new DateFunctions()));
         library.addFunctions(new ExpressionFunctions("expr"));
         library.addFunctions(new HistoryFunctions(service));
-        library.addFunctions(create("list", new ListFunctions(service, lookups)));
+        library.addFunctions(new ListFunctions(service, lookups));
         library.addFunctions(create("lookup", LookupFunctions.class));
         library.addFunctions(create("math", new MathFunctions()));
         library.addFunctions(create("openvpms", new ArchetypeServiceFunctions(service, lookups)));
-        library.addFunctions(create("party", new PartyFunctions(service, lookups, patientRules)));
+        library.addFunctions(create("party", new PartyFunctions(service, lookups, patientRules, addressFormatter)));
+        library.addFunctions(create("address", new AddressFunctions(customerRules)));
+        library.addFunctions(create("email", new EmailFunctions(customerRules, service)));
+        library.addFunctions(create("phone", new PhoneFunctions(customerRules)));
         library.addFunctions(new ProductFunctions(new ProductPriceRules(service), practiceService, service));
         library.addFunctions(create("supplier", new SupplierFunctions(supplierRules)));
         library.addFunctions(new ReminderFunctions(service, reminderRules, customerRules));
@@ -113,6 +122,7 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
         } else {
             library.addFunctions(new UserFunctions(service, practiceService, lookups, library));
         }
+        library.addFunctions(create("insurance", new InsuranceFunctions(service)));
         library.addFunctions(create("word", WordUtils.class));
         return library;
     }
@@ -144,6 +154,13 @@ public abstract class ArchetypeFunctionsFactory implements FunctionsFactory {
      * @return the currencies
      */
     protected abstract Currencies getCurrencies();
+
+    /**
+     * Returns the address formatter.
+     *
+     * @return the address formatter
+     */
+    protected abstract AddressFormatter getAddressFormatter();
 
     /**
      * Returns the patient age formatter.

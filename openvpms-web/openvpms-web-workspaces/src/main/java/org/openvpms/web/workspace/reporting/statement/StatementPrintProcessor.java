@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -23,12 +23,13 @@ import org.openvpms.archetype.rules.finance.statement.Statement;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.echo.event.VetoListener;
@@ -47,6 +48,11 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
      * The batch processor to invoke to process the next statement, when printing interactively.
      */
     private final StatementProgressBarProcessor processor;
+
+    /**
+     * The reporter factory.
+     */
+    private final ReporterFactory factory;
 
     /**
      * The listener to cancel processing.
@@ -85,18 +91,21 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
     private static final Log log = LogFactory.getLog(StatementPrintProcessor.class);
 
     /**
-     * Constructs a {@code StatementPrintProcessor}.
+     * Constructs a {@link StatementPrintProcessor}.
      *
      * @param processor      the batch processor to invoke to process the next
      *                       statement, when printing interactively.
+     * @param factory        the reporter factory
      * @param cancelListener the listener to cancel processing
      * @param practice       the practice
      * @param mailContext    the mail context. May be {@code null}
      */
-    public StatementPrintProcessor(StatementProgressBarProcessor processor, VetoListener cancelListener,
+    public StatementPrintProcessor(StatementProgressBarProcessor processor, ReporterFactory factory,
+                                   VetoListener cancelListener,
                                    Party practice, Context context, MailContext mailContext, HelpContext help) {
         super(practice);
         this.processor = processor;
+        this.factory = factory;
         this.cancelListener = cancelListener;
         this.context = context;
         this.mailContext = mailContext;
@@ -122,7 +131,8 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
     public void process(final Statement statement) {
         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(CustomerAccountArchetypes.OPENING_BALANCE,
                                                                              context);
-        IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(statement.getActs(), locator, context);
+        Iterable<Act> acts = statement.getActs();
+        IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<>(acts, locator, context, factory);
         printer.setParameters(getParameters(statement));
         print(printer, statement);
     }

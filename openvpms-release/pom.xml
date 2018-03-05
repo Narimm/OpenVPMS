@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.openvpms</groupId>
         <artifactId>openvpms</artifactId>
-        <version>1.9.4-SNAPSHOT</version>
+        <version>2.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>openvpms-release</artifactId>
@@ -33,6 +33,14 @@
     <name>OpenVPMS Release</name>
     <description>The OpenVPMS Release Distribution
     </description>
+
+    <!-- ========================================================================================================== -->
+    <!-- Report generation notes                                                                                    -->
+    <!--                                                                                                            -->
+    <!-- JasperReports are scaled from A4 to A5 and US-Letter versions using via an Ant script, build-reports.xml   -->
+    <!-- This must be invoked manually using:                                                                       -->
+    <!-- > maven antrun:run                                                                                         -->
+    <!-- ========================================================================================================== -->
 
     <dependencies>
         <dependency>
@@ -46,6 +54,12 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-reports</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-felix</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
@@ -65,13 +79,18 @@
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>jasperreports-scaler</artifactId>
-            <version>1.3</version>
+            <version>1.4</version>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-etl-plugin</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-db</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -117,6 +136,13 @@
                             <outputDirectory>target/archetypes</outputDirectory>
                             <includes>org/**/*.adl</includes>
                         </artifactItem>
+                        <artifactItem>
+                            <groupId>org.openvpms</groupId>
+                            <artifactId>openvpms-felix</artifactId>
+                            <version>${project.version}</version>
+                            <type>zip</type>
+                            <outputDirectory>target/plugins</outputDirectory>
+                        </artifactItem>
                     </artifactItems>
                 </configuration>
             </plugin>
@@ -128,134 +154,6 @@
                         <phase>process-resources</phase>
                         <goals>
                             <goal>resources</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <!-- drop and create the openvpms database -->
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>sql-maven-plugin</artifactId>
-                <version>1.1</version>
-
-                <dependencies>
-                    <dependency>
-                        <groupId>${jdbc.groupId}</groupId>
-                        <artifactId>${jdbc.artifactId}</artifactId>
-                        <version>${jdbc.version}</version>
-                    </dependency>
-                </dependencies>
-
-                <!-- common configuration shared by all executions -->
-                <configuration>
-                    <driver>${build.jdbc.driverClassName}</driver>
-                    <url>${build.jdbc.server}</url>
-                    <username>${jdbc.admin.username}</username>
-                    <password>${jdbc.admin.password}</password>
-                </configuration>
-
-                <executions>
-                    <execution>
-                        <id>drop-db</id>
-                        <phase>test-compile</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <autocommit>true</autocommit>
-                            <sqlCommand>drop database `${build.jdbc.db}`</sqlCommand>
-                            <onError>continue</onError>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>create-db</id>
-                        <phase>test-compile</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <sqlCommand>create database `${build.jdbc.db}`</sqlCommand>
-                            <keepFormat>true</keepFormat>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <!-- generate the database schema -->
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>hibernate3-maven-plugin</artifactId>
-                <version>2.2</version>
-                <configuration>
-                    <componentProperties>
-                        <jdk5>true</jdk5>
-                        <configurationfile>target/classes/hibernate.cfg.xml</configurationfile>
-                    </componentProperties>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>hbm2ddl</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>${jdbc.groupId}</groupId>
-                        <artifactId>${jdbc.artifactId}</artifactId>
-                        <version>${jdbc.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <!-- load archetypes -->
-                <groupId>org.openvpms</groupId>
-                <artifactId>openvpms-archetype-maven-plugin</artifactId>
-                <version>${project.version}</version>
-                <configuration>
-                    <dir>target/archetypes/org/openvpms</dir>
-                    <assertionTypes>target/archetypes/org/openvpms/archetype/assertionTypes.xml</assertionTypes>
-                    <dialect>${build.hibernate.dialect}</dialect>
-                    <driver>${build.jdbc.driverClassName}</driver>
-                    <url>${build.jdbc.url}</url>
-                    <username>${build.jdbc.username}</username>
-                    <password>${build.jdbc.password}</password>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>load</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <dependencies>
-                    <dependency>
-                        <groupId>${jdbc.groupId}</groupId>
-                        <artifactId>${jdbc.artifactId}</artifactId>
-                        <version>${jdbc.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.2</version>
-                <configuration>
-                    <tasks>
-                        <echo message="Dumping database"/>
-                        <!-- todo - need alternative dump for other databases -->
-                        <mkdir dir="target/db"/>
-                        <exec executable="mysqldump" output="target/db/db.sql" failOnError="true" logError="true">
-                            <arg line="${build.jdbc.db} -u ${jdbc.admin.username} --password=${jdbc.admin.password}"/>
-                        </exec>
-                    </tasks>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>run</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -303,6 +201,46 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>hibernate3-maven-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <componentProperties>
+                        <drop>true</drop>
+                        <jdk5>true</jdk5>
+                        <configurationfile>target/classes/hibernate.cfg.xml</configurationfile>
+                    </componentProperties>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>${jdbc.groupId}</groupId>
+                        <artifactId>${jdbc.artifactId}</artifactId>
+                        <version>${jdbc.version}</version>
+                    </dependency>
+                    <dependency>
+                        <!-- this dependency is required to get hibernate to
+                             work with cobertura during site generation
+                             see http://jira.codehaus.org/browse/MCOBERTURA-26
+                         -->
+                        <groupId>net.sourceforge.cobertura</groupId>
+                        <artifactId>cobertura</artifactId>
+                        <version>1.9.2</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <configuration>
+                    <tasks>
+                        <property name="compile_classpath" refid="maven.compile.classpath"/>
+                        <ant antfile="${basedir}/build-reports.xml">
+                            <target name="scale"/>
+                        </ant>
+                    </tasks>
+                </configuration>
+            </plugin>
         </plugins>
         <resources>
             <resource>
@@ -311,10 +249,5 @@
             </resource>
         </resources>
     </build>
-
-    <properties>
-        <jdbc.admin.username>root</jdbc.admin.username>
-        <jdbc.admin.password>root</jdbc.admin.password>
-    </properties>
 
 </project>

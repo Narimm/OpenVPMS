@@ -11,27 +11,29 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.list.DefaultListModel;
+import nextapp.echo2.app.list.ListCellRenderer;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.bound.BoundSelectFieldFactory;
 import org.openvpms.web.component.edit.AbstractPropertyEditor;
-import org.openvpms.web.component.im.list.AbstractListCellRenderer;
+import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
+import org.openvpms.web.component.im.list.SimpleListModel;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.resource.i18n.Messages;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,8 +51,6 @@ public class SelectFieldIMObjectReferenceEditor<T extends IMObject>
      */
     private final Map<IMObjectReference, T> map = new LinkedHashMap<>();
 
-    private final boolean all;
-
     /**
      * The select field.
      */
@@ -61,19 +61,34 @@ public class SelectFieldIMObjectReferenceEditor<T extends IMObject>
      */
     private final FocusGroup focus;
 
+    /**
+     * The field renderer.
+     */
+    private DelegatingRenderer renderer;
 
     /**
      * Constructs an {@link SelectFieldIMObjectReferenceEditor}.
      *
      * @param property the property being edited
+     * @param all      if {@code true}, add a localised 'All'
      */
     public SelectFieldIMObjectReferenceEditor(Property property, List<T> objects, boolean all) {
         super(property);
-        this.all = all;
-        field = BoundSelectFieldFactory.create(property, new DefaultListModel());
+        field = BoundSelectFieldFactory.create(property, new SimpleListModel<IMObjectReference>(all, false));
         setObjects(objects);
-        field.setCellRenderer(new Renderer());
+
+        renderer = new DelegatingRenderer();
+        field.setCellRenderer(renderer);
         focus = new FocusGroup("SelectFieldIMObjectReferenceEditor", field);
+    }
+
+    /**
+     * Sets the renderer for the select field.
+     *
+     * @param renderer the renderer
+     */
+    public void setListCellRenderer(ListCellRenderer renderer) {
+        this.renderer.setCellRenderer(renderer);
     }
 
     /**
@@ -81,18 +96,17 @@ public class SelectFieldIMObjectReferenceEditor<T extends IMObject>
      *
      * @param objects the objects
      */
+    @SuppressWarnings("unchecked")
     public void setObjects(List<T> objects) {
-        DefaultListModel model = (DefaultListModel) field.getModel();
-        model.removeAll();
+        SimpleListModel<IMObjectReference> model = (SimpleListModel<IMObjectReference>) field.getModel();
         map.clear();
-        if (all) {
-            model.add(null);
-        }
+        List<IMObjectReference> list = new ArrayList<>();
         for (T object : objects) {
             IMObjectReference reference = object.getObjectReference();
             map.put(reference, object);
-            model.add(reference);
+            list.add(reference);
         }
+        model.setObjects(list);
     }
 
     /**
@@ -111,6 +125,15 @@ public class SelectFieldIMObjectReferenceEditor<T extends IMObject>
             modified = property.setValue(null);
         }
         return modified;
+    }
+
+    /**
+     * Returns the selected object.
+     *
+     * @return the selected object, or {@code null} if none is selected
+     */
+    public T getObject() {
+        return map.get(getProperty().getReference());
     }
 
     /**
@@ -152,7 +175,6 @@ public class SelectFieldIMObjectReferenceEditor<T extends IMObject>
     @Override
     public void setAllowCreate(boolean create) {
         // no-op
-
     }
 
     /**
@@ -209,54 +231,31 @@ public class SelectFieldIMObjectReferenceEditor<T extends IMObject>
         return result;
     }
 
-    private class Renderer extends AbstractListCellRenderer<IMObjectReference> {
+    private class DelegatingRenderer implements ListCellRenderer {
 
-        public Renderer() {
-            super(IMObjectReference.class);
+        private ListCellRenderer renderer;
+
+        public DelegatingRenderer() {
+            setCellRenderer(IMObjectListCellRenderer.NAME);
+        }
+
+        public void setCellRenderer(ListCellRenderer renderer) {
+            this.renderer = renderer;
         }
 
         /**
-         * Renders an object.
+         * Renders an item in a list.
          *
-         * @param list   the list component
-         * @param object the object to render. May be <tt>null</tt>
-         * @param index  the object index
-         * @return the rendered object
+         * @param list  the list component
+         * @param value the item value
+         * @param index the item index
+         * @return the rendered form of the list cell
          */
         @Override
-        protected Object getComponent(Component list, IMObjectReference object, int index) {
-            T value = map.get(object);
-            String result =  value != null ? value.getName() : null;
-            if (result == null) {
-                result = "";
-            }
-            return result;
-        }
-
-        /**
-         * Determines if an object represents 'All'.
-         *
-         * @param list   the list component
-         * @param object the object. May be <tt>null</tt>
-         * @param index  the object index
-         * @return <code>true</code> if the object represents 'All'.
-         */
-        @Override
-        protected boolean isAll(Component list, IMObjectReference object, int index) {
-            return all && index == 0;
-        }
-
-        /**
-         * Determines if an object represents 'None'.
-         *
-         * @param list   the list component
-         * @param object the object. May be <tt>null</tt>
-         * @param index  the object index
-         * @return <code>true</code> if the object represents 'None'.
-         */
-        @Override
-        protected boolean isNone(Component list, IMObjectReference object, int index) {
-            return false;
+        public Object getListCellRendererComponent(Component list, Object value, int index) {
+            IMObjectReference reference = (IMObjectReference) value;
+            T object = map.get(reference);
+            return renderer.getListCellRendererComponent(list, object, index);
         }
     }
 }

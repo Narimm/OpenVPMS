@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -103,6 +103,15 @@ public abstract class AbstractMonitoringIMObjectCache<T extends IMObject> implem
     }
 
     /**
+     * Returns the archetypes being monitored.
+     *
+     * @return the archetypes
+     */
+    protected String[] getArchetypes() {
+        return shortNames;
+    }
+
+    /**
      * Loads objects from the archetype service.
      */
     protected void load() {
@@ -115,7 +124,7 @@ public abstract class AbstractMonitoringIMObjectCache<T extends IMObject> implem
 
     /**
      * Adds an object to the cache.
-     * <p/>
+     * <p>
      * Implementations may ignore the object if it is older than any cached instance, or is inactive
      *
      * @param object the object to add

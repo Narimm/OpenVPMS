@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.app;
@@ -20,10 +20,10 @@ import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.Date;
 
@@ -431,7 +431,7 @@ public interface Context {
      * @param reference the object reference
      * @return the context object whose reference matches {@code reference}, or {@code null} if there are no matches
      */
-    IMObject getObject(IMObjectReference reference);
+    IMObject getObject(Reference reference);
 
     /**
      * Sets a context object.

@@ -8,9 +8,8 @@
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
-	<import value="org.openvpms.component.business.domain.im.party.Party"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" hImageAlign="Left" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
 	<parameter name="incTax" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
@@ -85,7 +84,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 					<textElement verticalAlignment="Middle">
 						<font size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{target.patient.entity.id}!=null?$F{target.patient.entity.name}+"  (id:"+$F{target.patient.entity.id}+")":"-patient not specified-"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{target.patient.entity.id}!=null?$F{target.patient.entity.name}+"  (ID:"+$F{target.patient.entity.id}+")":"-patient not specified-"]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -108,7 +107,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 					</textElement>
 					<text><![CDATA[Patient Total]]></text>
 				</staticText>
-				<textField evaluationTime="Group" evaluationGroup="patientGroup" pattern="¤#,##0.##" isBlankWhenNull="false">
+				<textField evaluationTime="Group" evaluationGroup="patientGroup" pattern="¤#,##0.00" isBlankWhenNull="false">
 					<reportElement key="textField-6" x="496" y="2" width="48" height="12" isRemoveLineWhenBlank="true" uuid="31d18577-4ffd-42c0-b22e-0be46799a562"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -127,7 +126,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 				</line>
-				<textField evaluationTime="Group" evaluationGroup="patientGroup" pattern="¤#,##0.##" isBlankWhenNull="false">
+				<textField evaluationTime="Group" evaluationGroup="patientGroup" pattern="¤#,##0.00" isBlankWhenNull="false">
 					<reportElement key="textField-6" x="444" y="2" width="49" height="12" isRemoveLineWhenBlank="true" uuid="95f584de-a858-4ced-9902-60d80fa48f03"/>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -170,7 +169,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 					</textElement>
 					<textFieldExpression><![CDATA[($F{target.template.entity.printedName} == null) ? $F{target.template.entity.name}: $F{target.template.entity.printedName}]]></textFieldExpression>
 				</textField>
-				<textField evaluationTime="Group" evaluationGroup="templateGroup" pattern="¤#,##0.##">
+				<textField evaluationTime="Group" evaluationGroup="templateGroup" pattern="¤#,##0.00">
 					<reportElement x="444" y="0" width="49" height="12" uuid="a4f8c807-4476-444d-841d-c2bbd832b82e">
 						<property name="local_mesure_unitheight" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -183,7 +182,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 					</textElement>
 					<textFieldExpression><![CDATA[$V{templateLowTotal}]]></textFieldExpression>
 				</textField>
-				<textField evaluationTime="Group" evaluationGroup="templateGroup" pattern="¤#,##0.##">
+				<textField evaluationTime="Group" evaluationGroup="templateGroup" pattern="¤#,##0.00">
 					<reportElement x="496" y="0" width="48" height="12" uuid="4d34afa5-474f-4763-b472-e5f3ac366e05">
 						<property name="local_mesure_unitheight" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -386,7 +385,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{target.highQty}]]></textFieldExpression>
 			</textField>
-			<textField pattern="¤#,##0.##" isBlankWhenNull="false">
+			<textField pattern="¤#,##0.00" isBlankWhenNull="false">
 				<reportElement key="textField" x="444" y="0" width="49" height="12" uuid="4bad6e0d-6f85-4b8d-91a6-02da4862ddeb">
 					<property name="local_mesure_unitheight" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
@@ -402,7 +401,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{target.lowTotal}]]></textFieldExpression>
 			</textField>
-			<textField pattern="¤#,##0.##" isBlankWhenNull="false">
+			<textField pattern="¤#,##0.00" isBlankWhenNull="false">
 				<reportElement key="textField" x="496" y="0" width="48" height="12" uuid="7d845de5-2121-4aad-9b7a-f98dfd88c6fd">
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 					<property name="local_mesure_unitwidth" value="pixel"/>
@@ -462,7 +461,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 				</textElement>
 				<text><![CDATA[TOTAL]]></text>
 			</staticText>
-			<textField evaluationTime="Band" pattern="¤#,##0.##" isBlankWhenNull="false">
+			<textField evaluationTime="Band" pattern="¤#,##0.00" isBlankWhenNull="false">
 				<reportElement key="textField" x="444" y="4" width="49" height="17" uuid="9a285343-711f-4332-9077-2d7999f13111"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -475,7 +474,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{SUM_target.lowTotal}]]></textFieldExpression>
 			</textField>
-			<textField evaluationTime="Band" pattern="¤#,##0.##" isBlankWhenNull="false">
+			<textField evaluationTime="Band" pattern="¤#,##0.00" isBlankWhenNull="false">
 				<reportElement key="textField" x="496" y="4" width="48" height="17" uuid="387f2aa6-15f0-4508-a9c4-161118443509">
 					<property name="local_mesure_unitwidth" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="px"/>

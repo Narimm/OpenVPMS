@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.lookup;
@@ -115,10 +115,11 @@ class LookupReplaceHelper {
             IMObjectCopier copier = new IMObjectCopier(new LookupRelationshipCopyHandler());
 
             IMObjectReference targetRef = target.getObjectReference();
-            Set<LookupRelationship> srcRels = source.getSourceLookupRelationships();
+            Set<org.openvpms.component.model.lookup.LookupRelationship> srcRels = source.getSourceLookupRelationships();
             for (LookupRelationship relationship : srcRels.toArray(new LookupRelationship[srcRels.size()])) {
                 boolean found = false;
-                for (LookupRelationship check : target.getSourceLookupRelationships()) {
+                for (org.openvpms.component.model.lookup.LookupRelationship check :
+                        target.getSourceLookupRelationships()) {
                     if (ObjectUtils.equals(check.getTarget(), relationship.getTarget())) {
                         found = true;
                         break;
@@ -139,10 +140,11 @@ class LookupReplaceHelper {
                 }
             }
 
-            Set<LookupRelationship> tgtRels = source.getTargetLookupRelationships();
+            Set<org.openvpms.component.model.lookup.LookupRelationship> tgtRels = source.getTargetLookupRelationships();
             for (LookupRelationship relationship : tgtRels.toArray(new LookupRelationship[tgtRels.size()])) {
                 boolean found = false;
-                for (LookupRelationship check : target.getTargetLookupRelationships()) {
+                for (org.openvpms.component.model.lookup.LookupRelationship check
+                        : target.getTargetLookupRelationships()) {
                     if (ObjectUtils.equals(check.getSource(), relationship.getSource())) {
                         found = true;
                         break;

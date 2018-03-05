@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.app;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.system.common.util.Variables;
-import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.MultiSelectBrowser;
 import org.openvpms.web.component.mail.AddressFormatter;
 import org.openvpms.web.component.mail.AttachmentBrowserFactory;
 import org.openvpms.web.component.mail.FromAddressFormatter;
@@ -48,7 +48,7 @@ public abstract class AbstractMailContext implements MailContext {
      *
      * @return a browser. May be {@code null}
      */
-    public Browser<Act> createAttachmentBrowser() {
+    public MultiSelectBrowser<Act> createAttachmentBrowser() {
         return (factory != null) ? factory.createBrowser(this) : null;
     }
 

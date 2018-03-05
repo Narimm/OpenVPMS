@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.processor;
@@ -24,12 +24,12 @@ import nextapp.echo2.app.TaskQueueHandle;
 import nextapp.echo2.webcontainer.ContainerContext;
 import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.component.processor.AbstractAsynchronousBatchProcessor;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.echo.event.Vetoable;
 import org.openvpms.web.echo.servlet.SessionMonitor;
 import org.openvpms.web.system.ServiceHelper;
 
-import java.util.Collection;
+import java.util.Iterator;
 
 
 /**
@@ -40,11 +40,6 @@ import java.util.Collection;
 public abstract class ProgressBarProcessor<T>
         extends AbstractAsynchronousBatchProcessor<T>
         implements BatchProcessorComponent {
-
-    /**
-     * The items to process.
-     */
-    private Iterable<T> items;
 
     /**
      * Determines how often the progress bar is updated.
@@ -95,16 +90,6 @@ public abstract class ProgressBarProcessor<T>
     /**
      * Constructs a {@code ProgressBarProcessor}.
      *
-     * @param items the items to process
-     * @param title the processor title. May be <tt>null</tt>
-     */
-    public ProgressBarProcessor(Collection<T> items, String title) {
-        this(items, items.size(), title);
-    }
-
-    /**
-     * Constructs a {@code ProgressBarProcessor}.
-     *
      * @param items the items
      * @param size  the expected no. of items. This need not be exact
      * @param title the progress bar title
@@ -118,7 +103,7 @@ public abstract class ProgressBarProcessor<T>
      * Constructs a {@code ProgressBarProcessor}.
      * The {@link #setItems} method must be invoked prior to starting processing.
      *
-     * @param title the progress bar title. May be <tt>null</tt>
+     * @param title the progress bar title. May be {@code null}
      */
     public ProgressBarProcessor(String title) {
         bar = new ProgressBar();
@@ -131,7 +116,7 @@ public abstract class ProgressBarProcessor<T>
     /**
      * Returns the processor title.
      *
-     * @return the processor title. May be <tt>null</tt>
+     * @return the processor title. May be {@code null}
      */
     public String getTitle() {
         return title;
@@ -144,14 +129,6 @@ public abstract class ProgressBarProcessor<T>
      */
     public Component getComponent() {
         return bar;
-    }
-
-    /**
-     * Restarts processing.
-     */
-    public void restart() {
-        setIterator(items.iterator());
-        lastRefresh = 0;
     }
 
     /**
@@ -197,8 +174,17 @@ public abstract class ProgressBarProcessor<T>
      * @param size  the expected no. of items. This need not be exact
      */
     protected void setItems(Iterable<T> items, int size) {
-        this.items = items;
-        setIterator(items.iterator());
+        setItems(items.iterator(), size);
+    }
+
+    /**
+     * Sets the items to iterate.
+     *
+     * @param items the items.
+     * @param size  the expected no. of items. This need not be exact
+     */
+    protected void setItems(Iterator<T> items, int size) {
+        setIterator(items);
         bar.setMaximum(size);
         step = size / 10;
         if (step == 0) {

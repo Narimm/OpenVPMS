@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.app;
@@ -43,7 +43,7 @@ public abstract class ContextMailContext extends AbstractMailContext {
     private Variables variables;
 
     /**
-     * Constructs a {@code ContextMailContext}.
+     * Constructs a {@link ContextMailContext}.
      *
      * @param context the context
      */
@@ -64,6 +64,16 @@ public abstract class ContextMailContext extends AbstractMailContext {
             result = ContactHelper.getEmailContacts(context.getPractice());
         }
         return result;
+    }
+
+    /**
+     * Returns the preferred to address.
+     *
+     * @return the preferred to address. May be {@code null}
+     */
+    @Override
+    public Contact getPreferredToAddress() {
+        return null;
     }
 
     /**

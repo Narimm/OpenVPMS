@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -264,6 +264,11 @@
         <constructor-arg ref="archetypeService"/>
     </bean>
 
+    <bean id="insuranceRules" class="org.openvpms.archetype.rules.patient.insurance.InsuranceRules">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="txnManager"/>
+    </bean>
+
     <bean id="locationRules" class="org.openvpms.archetype.rules.practice.LocationRules">
         <constructor-arg ref="archetypeService"/>
     </bean>
@@ -278,6 +283,7 @@
 
     <bean id="productRules" class="org.openvpms.archetype.rules.product.ProductRules">
         <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
     </bean>
 
     <bean id="medicalRecordRules" class="org.openvpms.archetype.rules.patient.MedicalRecordRules">
@@ -436,16 +442,23 @@
         <constructor-arg value="org.openvpms.hl7.laboratory.LaboratoryOrderService"/>
     </bean>
 
+    <bean id="scheduleColours" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.openvpms.web.workspace.workflow.scheduling.ScheduleColours"/>
+    </bean>
 
     <!-- ================================================================== -->
     <!--                        REPORTING                                   -->
     <!-- ================================================================== -->
 
-    <!-- the Document handlers -->
+    <bean id="imageDocumentHandler" class="org.openvpms.archetype.rules.doc.ImageDocumentHandler">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
     <bean id="documentHandlers" class="org.openvpms.archetype.rules.doc.DocumentHandlers">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg>
             <list>
+                <ref bean="imageDocumentHandler"/>
                 <bean class="org.openvpms.report.jasper.JRXMLDocumentHandler">
                     <constructor-arg ref="archetypeService"/>
                 </bean>
@@ -467,6 +480,16 @@
         <property name="password" value="${jdbc.password}"/>
     </bean>
 
+    <bean id="fileNameFormatter" class="org.openvpms.web.component.im.doc.FileNameFormatter">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="patientRules"/>
+    </bean>
+
+    <bean id="converter" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.openvpms.report.openoffice.Converter"/>
+    </bean>
+
     <!-- ================================================================== -->
     <!--                        MACROS                                      -->
     <!-- ================================================================== -->
@@ -481,9 +504,40 @@
     <!-- ================================================================== -->
     <!--                        FACTORIES                                   -->
     <!-- ================================================================== -->
-    <bean id="editorFactory" class="org.openvpms.web.component.im.edit.IMObjectEditorFactory"/>
+    <bean id="editorFactory" class="org.openvpms.web.component.im.edit.IMObjectEditorFactory">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
     <bean id="viewLayoutStrategyFactory" class="org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory"/>
+
     <bean class="org.openvpms.web.workspace.patient.summary.DefaultCustomerPatientSummaryFactory"/>
+
+    <bean class="org.openvpms.web.component.im.doc.DocumentGeneratorFactory">
+        <constructor-arg ref="fileNameFormatter"/>
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+    </bean>
+
+    <bean id="reporterFactory" class="org.openvpms.web.component.im.report.ReporterFactory">
+        <constructor-arg ref="reportFactory"/>
+        <constructor-arg ref="fileNameFormatter"/>
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="converter"/>
+    </bean>
+
+    <bean class="org.openvpms.web.component.im.print.IMPrinterFactory">
+        <constructor-arg ref="reporterFactory"/>
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
+    <bean id="deletionHandlerFactory" class="org.openvpms.web.component.im.delete.IMObjectDeletionHandlerFactory">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
+    <bean id="confirmingDeleter" class="org.openvpms.web.component.im.delete.ConfirmingDeleter">
+        <constructor-arg ref="deletionHandlerFactory"/>
+    </bean>
 
     <!-- =========================================================================================================== -->
     <!-- Medical Record Locking                                                                                      -->

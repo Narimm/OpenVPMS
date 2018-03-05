@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
 
+import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -26,9 +27,10 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
+import org.openvpms.smartflow.client.FlowSheetException;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.HospitalizationService;
 import org.openvpms.web.component.workflow.AbstractTask;
@@ -36,6 +38,8 @@ import org.openvpms.web.component.workflow.InformationTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.Tasks;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
+import org.openvpms.web.echo.error.ErrorHandler;
+import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -79,6 +83,11 @@ public class NewFlowSheetTask extends Tasks {
     private final FlowSheetServiceFactory factory;
 
     /**
+     * If {@code false} don't display a note if a hospitalisation already exists.
+     */
+    private final boolean ignoreExisting;
+
+    /**
      * The patient context.
      */
     private PatientContext patientContext;
@@ -87,11 +96,6 @@ public class NewFlowSheetTask extends Tasks {
      * The patient visit.
      */
     private Act visit;
-
-    /**
-     * If {@code false} don't display a note if a hospitalisation already exists.
-     */
-    private final boolean ignoreExisting;
 
     /**
      * The hospitalisation service.
@@ -161,7 +165,7 @@ public class NewFlowSheetTask extends Tasks {
                 context.setLocation(location);
                 context.setPatient(patient);
                 context.addObject(visit);
-                client = factory.getHospitalisationService(location);
+                client = factory.getHospitalizationService(location);
                 patientContext = getPatientContext(visit);
                 if (!client.exists(patientContext)) {
                     Weight weight = patientContext.getWeight();
@@ -231,14 +235,29 @@ public class NewFlowSheetTask extends Tasks {
                 // no weight entered
                 notifyCancelled();
             } else {
-                final FlowSheetEditDialog dialog = new FlowSheetEditDialog(factory, location, null, getDays(), false);
+                final FlowSheetEditDialog dialog = new FlowSheetEditDialog(factory, location, -1, null, getDays(),
+                                                                           false);
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
                     public void onOK() {
                         int days = dialog.getExpectedStay();
+                        int departmentId = dialog.getDepartmentId();
                         String template = dialog.getTemplate();
-                        client.add(patientContext, days, template);
-                        notifyCompleted();
+                        try {
+                            client.add(patientContext, days, departmentId, template);
+                            notifyCompleted();
+                        } catch (FlowSheetException exception) {
+                            // want to display the SFS exception, not the root cause
+                            ErrorHandler.getInstance().error(exception.getMessage(), exception,
+                                                             new WindowPaneListener() {
+                                                                 @Override
+                                                                 public void onClose(WindowPaneEvent event) {
+                                                                     notifyCancelled();
+                                                                 }
+                                                             });
+                        } catch (Exception exception) {
+                            notifyCancelledOnError(exception);
+                        }
                     }
 
                     @Override

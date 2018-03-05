@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -22,7 +22,6 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -36,7 +35,6 @@ import org.openvpms.web.component.im.select.SelectedObjects;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.system.ServiceHelper;
 
 import static org.openvpms.component.system.common.query.Constraints.sort;
 
@@ -111,7 +109,7 @@ class MultiContactSelector extends MultiIMObjectSelector<Contact> {
 
     /**
      * Queries the supplied text.
-     * <p/>
+     * <p>
      * If there is a single match, the selected object is updated at the specified index.
      * If there are no matches, or multiple matches, then a browser is displayed.
      *
@@ -133,12 +131,8 @@ class MultiContactSelector extends MultiIMObjectSelector<Contact> {
         }
         if (text.indexOf('@') != -1) {
             // have an email address. Just create a dummy contact
-            Contact contact = (Contact) ServiceHelper.getArchetypeService().create(ContactArchetypes.EMAIL);
-            if (name != null) {
-                contact.setName(name);
-            }
-            IMObjectBean bean = new IMObjectBean(contact);
-            bean.setValue("emailAddress", text);
+            EmailAddress address = new EmailAddress(text, name);
+            Contact contact = AddressSelector.createContact(address);
             setObject(index, contact);
             result = true;
         } else {
@@ -222,7 +216,7 @@ class MultiContactSelector extends MultiIMObjectSelector<Contact> {
          * @param ascending if <tt>true</tt> sort in ascending order; otherwise
          *                  sort in <tt>descending</tt> order
          * @return the sort criteria, or <tt>null</tt> if the column isn't
-         *         sortable
+         * sortable
          */
         @Override
         public SortConstraint[] getSortConstraints(int column, boolean ascending) {
@@ -246,7 +240,7 @@ class MultiContactSelector extends MultiIMObjectSelector<Contact> {
             switch (column.getModelIndex()) {
                 case NAME_INDEX:
                     result = formatter.getQualifiedName(object);
-                    if (object == null) {
+                    if (result == null) {
                         result = formatter.getAddress(object);
                     }
                     break;

@@ -16,12 +16,15 @@
 
 package org.openvpms.web.component.im.doc;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
+import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -29,7 +32,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.web.test.AbstractAppTest;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -39,7 +42,27 @@ import static org.junit.Assert.assertNull;
  *
  * @author Tim Anderson
  */
-public class FileNameFormatterTestCase extends AbstractAppTest {
+public class FileNameFormatterTestCase extends ArchetypeServiceTest {
+
+    /**
+     * The patient rules.
+     */
+    @Autowired
+    private PatientRules patientRules;
+
+    /**
+     * The formatter.
+     */
+    private FileNameFormatter formatter;
+
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        formatter = new FileNameFormatter(getArchetypeService(), getLookupService(), patientRules);
+    }
 
     /**
      * Tests formatting when there is no context object.
@@ -47,7 +70,6 @@ public class FileNameFormatterTestCase extends AbstractAppTest {
     @Test
     public void testSimpleFormat() {
         DocumentTemplate template = createTemplate("$file");
-        FileNameFormatter formatter = new FileNameFormatter();
         assertEquals("foo", formatter.format("foo.txt", null, template));
     }
 
@@ -61,7 +83,6 @@ public class FileNameFormatterTestCase extends AbstractAppTest {
         IMObjectBean bean = new IMObjectBean(customer);
         bean.setValue("title", null);
         bean.save();
-        FileNameFormatter formatter = new FileNameFormatter();
         Act act = (Act) create(CustomerArchetypes.DOCUMENT_LETTER);
         ActBean actBean = new ActBean(act);
         actBean.setNodeParticipant("customer", customer);
@@ -77,7 +98,6 @@ public class FileNameFormatterTestCase extends AbstractAppTest {
         Party patient = TestHelper.createPatient();
         patient.setName("Fido");
         save(patient);
-        FileNameFormatter formatter = new FileNameFormatter();
         Act act = (Act) create(PatientArchetypes.DOCUMENT_LETTER);
         ActBean bean = new ActBean(act);
         bean.setNodeParticipant("patient", patient);
@@ -94,7 +114,6 @@ public class FileNameFormatterTestCase extends AbstractAppTest {
         Party patient = TestHelper.createPatient(customer);
         patient.setName("Fido");
         save(patient);
-        FileNameFormatter formatter = new FileNameFormatter();
         Act act = (Act) create(PatientArchetypes.DOCUMENT_LETTER);
         ActBean bean = new ActBean(act);
         bean.setNodeParticipant("patient", patient);
@@ -110,7 +129,6 @@ public class FileNameFormatterTestCase extends AbstractAppTest {
         Party supplier = (Party) create(SupplierArchetypes.SUPPLIER_VET_PRACTICE);
         supplier.setName("Eastside");
         save(supplier);
-        FileNameFormatter formatter = new FileNameFormatter();
         Act act = (Act) create(SupplierArchetypes.DOCUMENT_LETTER);
         ActBean bean = new ActBean(act);
         bean.setNodeParticipant("supplier", supplier);
@@ -126,7 +144,6 @@ public class FileNameFormatterTestCase extends AbstractAppTest {
         Party patient = TestHelper.createPatient();
         patient.setName("\\/:*?<>|");
         save(patient);
-        FileNameFormatter formatter = new FileNameFormatter();
         Act act = (Act) create(PatientArchetypes.DOCUMENT_LETTER);
         ActBean bean = new ActBean(act);
         bean.setNodeParticipant("patient", patient);

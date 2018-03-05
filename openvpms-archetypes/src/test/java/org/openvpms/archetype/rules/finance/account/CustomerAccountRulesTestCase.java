@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -38,10 +38,12 @@ import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.ruleengine.RuleEngineException;
+import org.openvpms.component.service.archetype.ValidationError;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -1203,6 +1205,49 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         // the information.
         checkEquals(rounded, cash.getBigDecimal("tendered"));
         checkEquals(ZERO, cash.getBigDecimal("change"));
+    }
+
+    /**
+     * Verifies that customer account acts cannot be created with negative amounts.
+     */
+    @Test
+    public void testNegativeAmountsUnsupported() {
+        BigDecimal minusOne = new BigDecimal(-1);
+        checkNegativeAmounts(createChargesInvoice(minusOne));
+        checkNegativeAmounts(createChargesCounter(minusOne));
+        checkNegativeAmounts(createChargesCredit(minusOne));
+        checkNegativeAmounts(createPayment(minusOne));
+        checkNegativeAmounts(createRefund(minusOne));
+        checkNegativeAmounts(createCreditAdjust(minusOne));
+        checkNegativeAmounts(createDebitAdjust(minusOne));
+        checkNegativeAmounts(createInitialBalance(minusOne));
+        checkNegativeAmounts(createBadDebt(minusOne));
+    }
+
+    /**
+     * Verifies that a customer account act cannot be created with a negative amount.
+     *
+     * @param act the act to check
+     */
+    private void checkNegativeAmounts(FinancialAct act) {
+        checkNegativeAmounts(Collections.singletonList(act));
+    }
+
+    /**
+     * Verifies that a customer account act cannot be created with a negative amount.
+     *
+     * @param acts the acts to check
+     */
+    private void checkNegativeAmounts(List<FinancialAct> acts) {
+        try {
+            save(acts);
+            fail("Expected save of negative " + acts.get(0).getArchetypeId().getShortName() + " to fail");
+        } catch (ValidationException expected) {
+            List<ValidationError> errors = expected.getErrors();
+            assertEquals(1, errors.size());
+            String message = errors.get(0).getMessage();
+            assertTrue("Value must be >= 0.0".equals(message) || "Value must be > 0.0".equals(message));
+        }
     }
 
     /**

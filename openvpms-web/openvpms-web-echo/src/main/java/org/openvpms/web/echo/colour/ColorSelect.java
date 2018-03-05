@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.echo.colour;
 
@@ -19,13 +19,15 @@ import nextapp.echo2.app.Color;
 
 
 /**
- * Workaround for a bug in the echo2 ColorSelect javascript implementation.
- * </p>
- * This should be used instead of the echo2 class.
- * <p/>
+ * An extension to the Echo ColorSelect class that:
+ * <ul>
+ * <li>allows the colour code to be edited</li>
+ * <li>works around a bug in the ColorSelect javascript implementation.<br/>
  * This exists to enable {@link ColorSelectPeer} to be used to specify a corrected javascript file,
- * <em>org/openvpms/web/resource/js/ColorSelect.js</em>.
- * The binding is specified in <em>META-INF\nextapp\echo2\SynchronizePeerBindings.properties</em>
+ * <em>org/openvpms/web/resource/js/ColorSelect.js</em>.<br/>
+ * The binding is specified in <em>META-INF/nextapp/echo2/SynchronizePeerBindings.properties</em>
+ * </li>
+ * </ul>
  *
  * @author Tim Anderson
  */

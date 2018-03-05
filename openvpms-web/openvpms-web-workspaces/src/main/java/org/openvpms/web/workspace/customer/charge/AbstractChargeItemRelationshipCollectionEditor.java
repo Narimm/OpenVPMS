@@ -11,12 +11,11 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
 import org.openvpms.archetype.rules.prefs.Preferences;
@@ -32,6 +31,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.button.CheckBox;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.CheckBoxFactory;
@@ -115,8 +115,8 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
      * @return the row of controls
      */
     @Override
-    protected Row createControls(FocusGroup focus) {
-        Row controls = super.createControls(focus);
+    protected ButtonRow createControls(FocusGroup focus) {
+        ButtonRow controls = super.createControls(focus);
         final Preferences preferences = getContext().getPreferences();
         boolean showBatch = preferences.getBoolean(PreferenceArchetypes.CHARGE, "showBatch", false);
         boolean showTemplate = preferences.getBoolean(PreferenceArchetypes.CHARGE, "showTemplate", false);

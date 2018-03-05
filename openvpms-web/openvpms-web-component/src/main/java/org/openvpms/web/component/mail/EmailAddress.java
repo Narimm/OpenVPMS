@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -100,6 +100,27 @@ public class EmailAddress {
             result = address;
         }
         return result;
+    }
+
+    /**
+     * Parses an email address.
+     *
+     * @param address the address. May be {@code null}
+     * @return the email address, or {@code null} if the address is invalid
+     */
+    public static EmailAddress parse(String address) {
+        String name = null;
+        int less = address.indexOf('<');
+        if (less != -1) {
+            name = address.substring(0, less).trim();
+            name = StringUtils.removeStart(name, "\"");
+            name = StringUtils.removeEnd(name, "\"");
+            int greater = address.indexOf('>', less);
+            if (greater != -1) {
+                address = address.substring(less + 1, greater);
+            }
+        }
+        return (address.indexOf('@') != -1) ? new EmailAddress(address, name) : null;
     }
 
 }

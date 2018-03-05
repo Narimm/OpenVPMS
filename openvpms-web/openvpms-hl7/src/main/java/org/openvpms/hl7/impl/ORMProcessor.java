@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -20,6 +20,7 @@ import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.v25.message.ORM_O01;
 import ca.uhn.hl7v2.model.v25.segment.ORC;
 import ca.uhn.hl7v2.model.v25.segment.PID;
+import org.openvpms.archetype.rules.finance.order.CustomerOrder;
 import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
@@ -62,7 +63,7 @@ public class ORMProcessor extends OrderMessageProcessor {
      */
     public List<Act> process(ORM_O01 message, IMObjectReference location) throws HL7Exception {
         PID pid = message.getPATIENT().getPID();
-        OrderState state = createState(pid, location);
+        CustomerOrder state = createState(pid, location);
         ORC orc = message.getORDER().getORC();
         String orderControl = orc.getOrderControl().getValue();
         if (!"CA".equals(orderControl)) {
@@ -78,7 +79,7 @@ public class ORMProcessor extends OrderMessageProcessor {
      * @param item  the order group
      * @param state the state
      */
-    private void addItem(ORC item, OrderState state) {
+    private void addItem(ORC item, CustomerOrder state) {
         ActBean bean = state.getReturn();
         ActBean itemBean = state.createReturnItem();
         Act investigation = getOrder(InvestigationArchetypes.PATIENT_INVESTIGATION, item, bean, state);
@@ -93,15 +94,15 @@ public class ORMProcessor extends OrderMessageProcessor {
     }
 
     @Override
-    protected OrderState createState(Party patient, Party customer, String note, IMObjectReference location,
+    protected CustomerOrder createState(Party patient, Party customer, String note, IMObjectReference location,
                                      IArchetypeService service) {
         return new State(patient, customer, note, location, service);
     }
 
-    private class State extends OrderState {
+    private class State extends CustomerOrder {
 
         /**
-         * Constructs a {@link OrderState}.
+         * Constructs a {@link CustomerOrder}.
          *
          * @param patient  the patient. May be {@code null}
          * @param customer the customer. May be {@code null}

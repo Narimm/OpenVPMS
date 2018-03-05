@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.print;
@@ -19,7 +19,7 @@ package org.openvpms.web.component.print;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
@@ -28,6 +28,7 @@ import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.report.StaticDocumentTemplateLocator;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Iterator;
 import java.util.List;
@@ -165,7 +166,8 @@ public abstract class BatchPrinter<T extends IMObject> implements PrinterListene
                     locator = createDocumentTemplateLocator(object, context);
                 }
 
-                IMPrinter<T> printer = IMPrinterFactory.create(object, locator, context);
+                IMPrinterFactory factory = ServiceHelper.getBean(IMPrinterFactory.class);
+                IMPrinter<T> printer = factory.create(object, locator, context);
                 InteractiveIMPrinter<T> iPrinter = createInteractivePrinter(printer);
                 iPrinter.print();
             } catch (OpenVPMSException exception) {

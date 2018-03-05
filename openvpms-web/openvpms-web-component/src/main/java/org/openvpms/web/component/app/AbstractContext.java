@@ -11,23 +11,22 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.app;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -44,6 +43,11 @@ import java.util.Set;
 public abstract class AbstractContext implements Context {
 
     /**
+     * The context objects.
+     */
+    private final Map<String, IMObject> objects = new HashMap<>();
+
+    /**
      * The object being viewed/edited.
      */
     private IMObject current;
@@ -54,9 +58,14 @@ public abstract class AbstractContext implements Context {
     private User user;
 
     /**
-     * The context objects.
+     * The current schedule date.
      */
-    private final Map<String, IMObject> objects = new HashMap<String, IMObject>();
+    private Date scheduleDate;
+
+    /**
+     * The current work list date.
+     */
+    private Date workListDate;
 
     /**
      * Set of recognised short names.
@@ -66,16 +75,6 @@ public abstract class AbstractContext implements Context {
             PATIENT_SHORTNAME, PRACTICE_SHORTNAME, PRODUCT_SHORTNAME, SCHEDULE_SHORTNAME, SCHEDULE_VIEW_SHORTNAME,
             STOCK_LOCATION_SHORTNAME, SUPPLIER_SHORTNAME, TASK_SHORTNAME, TILL_SHORTNAME, WORKLIST_SHORTNAME,
             WORKLIST_VIEW_SHORTNAME};
-
-    /**
-     * The current schedule date.
-     */
-    private Date scheduleDate;
-
-    /**
-     * The current work list date.
-     */
-    private Date workListDate;
 
     /**
      * Sets the current object being viewed/edited.
@@ -91,7 +90,7 @@ public abstract class AbstractContext implements Context {
      * Returns the current object being viewed/edited.
      *
      * @return the object being viewed/edited, or {@code null} if there is
-     *         no current object
+     * no current object
      */
     public IMObject getCurrent() {
         return current;
@@ -184,7 +183,7 @@ public abstract class AbstractContext implements Context {
      * Returns the current customer.
      *
      * @return the current customer, or {@code null} if there is no current
-     *         customer
+     * customer
      */
     public Party getCustomer() {
         return (Party) getObject(CUSTOMER_SHORTNAME);
@@ -203,7 +202,7 @@ public abstract class AbstractContext implements Context {
      * Returns the current patient.
      *
      * @return the current patient, or {@code null} if there is no current
-     *         patient
+     * patient
      */
     public Party getPatient() {
         return (Party) getObject(PATIENT_SHORTNAME);
@@ -222,7 +221,7 @@ public abstract class AbstractContext implements Context {
      * Returns the current suppller.
      *
      * @return the current supplier, or {@code null} if there is no current
-     *         supplier
+     * supplier
      */
     public Party getSupplier() {
         return (Party) getObject(SUPPLIER_SHORTNAME);
@@ -241,7 +240,7 @@ public abstract class AbstractContext implements Context {
      * Returns the current product.
      *
      * @return the current product, or {@code null} if there is no current
-     *         product
+     * product
      */
     public Product getProduct() {
         return (Product) getObject(PRODUCT_SHORTNAME);
@@ -260,7 +259,7 @@ public abstract class AbstractContext implements Context {
      * Returns the current till.
      *
      * @return the current till, or {@code null} if there is no current
-     *         till
+     * till
      */
     public Party getTill() {
         return (Party) getObject(TILL_SHORTNAME);
@@ -279,7 +278,7 @@ public abstract class AbstractContext implements Context {
      * Returns the current deposit account.
      *
      * @return the current depsoit, or {@code null} if there is no current
-     *         deposit
+     * deposit
      */
     public Party getDeposit() {
         return (Party) getObject(DEPOSIT_SHORTNAME);
@@ -298,7 +297,7 @@ public abstract class AbstractContext implements Context {
      * Returns the current clinician.
      *
      * @return the current clinician, or {@code null} if there is no current
-     *         clinician
+     * clinician
      */
     public User getClinician() {
         return (User) getObject(CLINICIAN_SHORTNAME);
@@ -532,16 +531,13 @@ public abstract class AbstractContext implements Context {
      *
      * @param reference the object reference
      * @return the context object whose reference matches {@code reference},
-     *         or {@code null} if there is no matches
+     * or {@code null} if there is no matches
      */
-    public IMObject getObject(IMObjectReference reference) {
+    public IMObject getObject(Reference reference) {
         IMObject result = null;
         for (IMObject object : getObjects()) {
             if (object != null) {
-                ArchetypeId id = object.getArchetypeId();
-                if (id.equals(reference.getArchetypeId())
-                    && StringUtils.equals(reference.getLinkId(),
-                                          object.getLinkId())) {
+                if (reference.equals(object.getArchetype(), object.getLinkId())) {
                     result = object;
                     break;
                 }
@@ -570,7 +566,7 @@ public abstract class AbstractContext implements Context {
      * @return the a list of the context objects
      */
     public IMObject[] getObjects() {
-        Set<IMObject> result = new HashSet<IMObject>();
+        Set<IMObject> result = new HashSet<>();
         result.addAll(objects.values());
         if (current != null) {
             result.add(current);

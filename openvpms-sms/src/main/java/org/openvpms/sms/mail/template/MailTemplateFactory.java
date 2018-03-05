@@ -27,15 +27,14 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 /**
  * Factory for creating {@link MailTemplate} instances from <em>entity.SMSConfigEmail*</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class MailTemplateFactory {
 
     /**
      * The archetype service.
      */
-    private IArchetypeService service;
+    private final IArchetypeService service;
 
     /**
      * Nodes which may not appear as variables.
@@ -46,7 +45,7 @@ public class MailTemplateFactory {
                                               "active"};
 
     /**
-     * Constructs a <tt>MailTemplatePopulator</tt>.
+     * Constructs a {@link MailTemplateFactory}.
      *
      * @param service the service
      */
@@ -76,6 +75,14 @@ public class MailTemplateFactory {
         result.setSubjectExpression(getString(configBean, "subjectExpression"));
         result.setText(getString(configBean, "text"));
         result.setTextExpression(getString(configBean, "textExpression"));
+        int maxParts = 1;
+        if (configBean.hasNode("parts")) {
+            maxParts = configBean.getInt("parts", 1);
+            if (maxParts < 1) {
+                maxParts = 1;
+            }
+        }
+        result.setMaxParts(maxParts);
         for (NodeDescriptor descriptor : archetype.getNodeDescriptorsAsArray()) {
             String type = descriptor.getType();
             if ((String.class.getName().equals(type) || Boolean.class.getName().equals(type))
@@ -92,7 +99,7 @@ public class MailTemplateFactory {
      *
      * @param bean the bean
      * @param name the node name
-     * @return the string value. May be <tt>null</tt>
+     * @return the string value. May be {@code null}
      */
     private String getString(IMObjectBean bean, String name) {
         String result = null;

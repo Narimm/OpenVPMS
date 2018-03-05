@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.archetype.rules.patient.reminder;
 
@@ -20,19 +20,17 @@ import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.util.Date;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createReminderType;
 import static org.openvpms.archetype.test.TestHelper.getDate;
-import static org.openvpms.archetype.test.TestHelper.getDatetime;
 
 
 /**
@@ -121,7 +119,7 @@ public class ReminderTypeTestCase extends ArchetypeServiceTest {
         EntityBean bean2 = createReminderTypeBean();
         bean2.setValue("defaultInterval", 1);
 
-        addTemplate(bean2, 0, 3, DateUnits.MONTHS);
+        addReminderCount(bean2.getEntity(), 0, 3, DateUnits.MONTHS);
         ReminderType type2 = new ReminderType(bean2.getEntity(), getArchetypeService());
 
         Date expected2 = getDate("2007-04-01");
@@ -131,50 +129,13 @@ public class ReminderTypeTestCase extends ArchetypeServiceTest {
         // check reminder type with 2 template
         EntityBean bean3 = createReminderTypeBean();
         bean3.setValue("defaultInterval", 1);
-        addTemplate(bean3, 0, 3, DateUnits.MONTHS);
-        addTemplate(bean3, 1, 1, DateUnits.YEARS);
+        addReminderCount(bean3.getEntity(), 0, 3, DateUnits.MONTHS);
+        addReminderCount(bean3.getEntity(), 1, 1, DateUnits.YEARS);
         ReminderType type3 = new ReminderType(bean3.getEntity(), getArchetypeService());
 
         Date expected3 = getDate("2008-01-01");
         Date actual3 = type3.getNextDueDate(dueDate, 1);
         assertEquals(expected3, actual3);
-    }
-
-    /**
-     * Tests the {@link ReminderType#isDue} method.
-     */
-    @Test
-    public void testIsDue() {
-        // check isDue for a reminder type with no templates
-        ReminderType type1 = new ReminderType(createReminderType(), getArchetypeService());
-        Date dueDate = getDate("2007-01-01");
-        assertEquals(true, type1.isDue(dueDate, 0, null, null));
-        assertEquals(true, type1.isDue(dueDate, 0, getDate("2007-01-01"), null));
-        assertEquals(false, type1.isDue(dueDate, 0, getDate("2007-01-02"), null));
-        assertEquals(false, type1.isDue(dueDate, 0, null, getDate("2006-12-31")));
-        assertEquals(true, type1.isDue(dueDate, 0, getDate("2007-01-01"), getDate("2007-01-01")));
-
-        // check isDue for a reminder type with 1 template
-        EntityBean bean2 = createReminderTypeBean();
-        bean2.setValue("defaultInterval", 1);
-        addTemplate(bean2, 0, 3, DateUnits.MONTHS);
-        ReminderType type2 = new ReminderType(bean2.getEntity(), getArchetypeService());
-        assertEquals(true, type2.isDue(dueDate, 0, null, null));
-        assertEquals(true, type2.isDue(dueDate, 0, getDate("2007-04-01"), null));
-        assertEquals(false, type2.isDue(dueDate, 0, getDate("2007-04-02"), null));
-        assertEquals(false, type2.isDue(dueDate, 0, null, getDate("2007-03-31")));
-        assertEquals(true, type2.isDue(dueDate, 0, getDate("2007-04-01"), getDate("2007-04-01")));
-    }
-
-    /**
-     * Verifies that times are ignored by {@link ReminderType#isDue}.
-     */
-    @Test
-    public void testIsDueTimeIgnored() {
-        ReminderType type = new ReminderType(createReminderType(), getArchetypeService());
-        Date dueDate = getDatetime("2007-01-01 10:53:22");
-        assertEquals(true, type.isDue(dueDate, 0, getDatetime("2007-01-01 11:00:00"), null));
-        assertEquals(true, type.isDue(dueDate, 0, null, getDatetime("2007-01-01 10:52:00")));
     }
 
     /**
@@ -197,45 +158,54 @@ public class ReminderTypeTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ReminderType#getTemplateRelationship(int)} method and
-     * {@link ReminderType#getDocumentTemplate(int)} methods.
+     * Verifies that reminder counts are returned in the correct order.
      */
     @Test
-    public void testGetTemplate() {
-        EntityBean bean = createReminderTypeBean();
-        bean.setValue("defaultInterval", 1);
+    public void testGetReminderCounts() {
+        Entity entity = createReminderType();
+        Entity contact0 = ReminderTestHelper.createContactRule();
+        Entity email0 = ReminderTestHelper.createEmailRule();
+        Entity sms0 = ReminderTestHelper.createSMSRule();
+        ReminderTestHelper.addReminderCount(entity, 0, 0, DateUnits.DAYS, null, contact0, email0, sms0);
+        Entity email1 = ReminderTestHelper.createEmailRule();
+        Entity sms1 = ReminderTestHelper.createSMSRule();
+        ReminderTestHelper.addReminderCount(entity, 1, 30, DateUnits.DAYS, null, email1, sms1);
+        Entity list2 = ReminderTestHelper.createListRule();
+        ReminderTestHelper.addReminderCount(entity, 2, 60, DateUnits.DAYS, null, list2);
 
-        ReminderType type = new ReminderType(bean.getEntity(), getArchetypeService());
-        assertNull(type.getTemplateRelationship(0));
-        assertNull(type.getTemplateRelationship(1));
-        assertNull(type.getDocumentTemplate(0));
-        assertNull(type.getDocumentTemplate(1));
+        ReminderType reminderType = new ReminderType(entity, getArchetypeService());
+        checkReminderCount(reminderType.getReminderCount(0), 0, 0, DateUnits.DAYS, contact0, email0, sms0);
+        checkReminderCount(reminderType.getReminderCount(1), 1, 30, DateUnits.DAYS, email1, sms1);
+        checkReminderCount(reminderType.getReminderCount(2), 2, 60, DateUnits.DAYS, list2);
+        assertNull(reminderType.getReminderCount(3));
 
-        EntityRelationship template0 = addTemplate(bean, 0, 3, DateUnits.MONTHS);
-        EntityRelationship template1 = addTemplate(bean, 1, 6, DateUnits.MONTHS);
+        List<ReminderCount> counts = reminderType.getReminderCounts();
+        assertEquals(3, counts.size());
+        checkReminderCount(counts.get(0), 0, 0, DateUnits.DAYS, contact0, email0, sms0);
+        checkReminderCount(counts.get(1), 1, 30, DateUnits.DAYS, email1, sms1);
+        checkReminderCount(counts.get(2), 2, 60, DateUnits.DAYS, list2);
+    }
 
-        // need to reload to get changes
-        type = new ReminderType(get(bean.getEntity()), getArchetypeService());
-
-        assertEquals(template0, type.getTemplateRelationship(0));
-        assertEquals(template1, type.getTemplateRelationship(1));
-        assertEquals(template0.getTarget(), type.getDocumentTemplate(0).getObjectReference());
-        assertEquals(template1.getTarget(), type.getDocumentTemplate(1).getObjectReference());
-
-        assertNull(type.getTemplateRelationship(2));
-        assertNull(type.getDocumentTemplate(2));
-
-        // now mark the documentTemplate linked to template1 inactive and verify that it's not returned
-        IMObject documentTemplate = get(template1.getTarget());
-        documentTemplate.setActive(false);
-        save(documentTemplate);
-
-        // need to reload to get changes
-        type = new ReminderType(get(bean.getEntity()), getArchetypeService());
-        assertEquals(template0, type.getTemplateRelationship(0));
-        assertEquals(template0.getTarget(), type.getDocumentTemplate(0).getObjectReference());
-        assertNull(type.getDocumentTemplate(1));
-        assertNull(type.getTemplateRelationship(1));
+    /**
+     * Verifies a {@link ReminderCount} matches that expected.
+     *
+     * @param count            the reminder count
+     * @param expectedCount    the expected count
+     * @param expectedInterval the expected overdue interval
+     * @param expectedUnits    the expected overdue units
+     * @param expectedRules    the expected rules
+     */
+    private void checkReminderCount(ReminderCount count, int expectedCount, int expectedInterval,
+                                    DateUnits expectedUnits, Entity... expectedRules) {
+        assertEquals(expectedCount, count.getCount());
+        assertEquals(expectedInterval, count.getInterval());
+        assertEquals(expectedUnits, count.getUnits());
+        List<ReminderRule> rules = count.getRules();
+        assertEquals(expectedRules.length, rules.size());
+        for (int i = 0; i < expectedRules.length; ++i) {
+            ReminderRule expected = new ReminderRule(expectedRules[i], getArchetypeService());
+            assertEquals(expected, rules.get(i));
+        }
     }
 
     /**
@@ -297,17 +267,6 @@ public class ReminderTypeTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Helper to create a new <em>entity.reminderType</em>.
-     *
-     * @return a new reminder type
-     */
-    private Entity createReminderType() {
-        Entity entity = (Entity) create("entity.reminderType");
-        entity.setName("XReminderType-" + System.currentTimeMillis());
-        return entity;
-    }
-
-    /**
      * Helper to create a new <em>entity.reminderType</em> wrapped by a bean.
      *
      * @return a new reminder type
@@ -317,24 +276,17 @@ public class ReminderTypeTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Adds a template to a reminder type.
+     * Adds a reminder count to a reminder type.
      *
      * @param reminderType  the reminder type
      * @param reminderCount the reminder count
      * @param interval      the interval
      * @param units         the interval units
-     * @return the template
      */
-    private EntityRelationship addTemplate(EntityBean reminderType, int reminderCount, int interval,
-                                           DateUnits units) {
+    private void addReminderCount(Entity reminderType, int reminderCount, int interval, DateUnits units) {
         Entity template = (Entity) create(DocumentArchetypes.DOCUMENT_TEMPLATE);
         template.setName("XTemplate-" + System.currentTimeMillis());
-        EntityRelationship result = reminderType.addNodeRelationship("templates", template);
-        IMObjectBean bean = new IMObjectBean(result);
-        bean.setValue("reminderCount", reminderCount);
-        bean.setValue("interval", interval);
-        bean.setValue("units", units.toString());
-        save(template, reminderType.getEntity());
-        return result;
+        save(template);
+        ReminderTestHelper.addReminderCount(reminderType, reminderCount, interval, units, template);
     }
 }

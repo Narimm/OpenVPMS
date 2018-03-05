@@ -11,20 +11,18 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.sms;
 
-import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.party.Contacts;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.system.ServiceHelper;
 
 /**
@@ -51,45 +49,17 @@ public class SMSHelper {
      * @return {@code true} if the customer can receive SMS messages
      */
     public static boolean canSMS(Party customer) {
-        return customer != null && !ContactHelper.getSMSContacts(customer).isEmpty();
+        return customer != null && new Contacts(ServiceHelper.getArchetypeService()).canSMS(customer);
     }
 
     /**
      * Returns the phone number from a contact, extracting any formatting.
      *
-     * @param contact the phone contact
+     * @param contact the phone contact. May be {@code null}
      * @return the phone number. May be {@code null}
      */
     public static String getPhone(Contact contact) {
-        IMObjectBean bean = new IMObjectBean(contact);
-        String areaCode = bean.getString("areaCode");
-        String phone = bean.getString("telephoneNumber");
-        String result = null;
-        if (!StringUtils.isEmpty(areaCode)) {
-            result = areaCode;
-            if (!StringUtils.isEmpty(phone)) {
-                result += phone;
-            }
-        } else if (!StringUtils.isEmpty(phone)) {
-            result = phone;
-        }
-        result = getPhone(result);
-        return result;
-    }
-
-    /**
-     * Returns the phone number from a string, extracting any formatting.
-     *
-     * @param phone the formatted phone number
-     * @return the phone number. May be {@code null}
-     */
-    public static String getPhone(String phone) {
-        String result = phone;
-        if (!StringUtils.isEmpty(result)) {
-            // strip any spaces, hyphens, and brackets, and any characters after the last digit.
-            result = result.replaceAll("[\\s\\-()]", "").replaceAll("[^\\d\\+].*", "");
-        }
-        return result;
+        return contact != null ? new Contacts(ServiceHelper.getArchetypeService()).getPhone(contact) : null;
     }
 
     /**

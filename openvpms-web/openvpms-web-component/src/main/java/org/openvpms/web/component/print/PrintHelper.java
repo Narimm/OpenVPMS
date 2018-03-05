@@ -16,13 +16,7 @@
 
 package org.openvpms.web.component.print;
 
-import org.openvpms.archetype.rules.doc.DocumentTemplate;
-import org.openvpms.archetype.rules.doc.DocumentTemplatePrinter;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.system.ServiceHelper;
+import org.apache.commons.lang.StringUtils;
 
 import javax.print.PrintService;
 import javax.print.PrintServiceLookup;
@@ -34,64 +28,6 @@ import javax.print.PrintServiceLookup;
  * @author Tim Anderson
  */
 public class PrintHelper {
-
-    /**
-     * Helper to return the default printer for a template for the context practice or location.
-     * <p/>
-     * The printer associated with the location will be returned if present, otherwise the practice relationship will
-     * be returned.
-     *
-     * @param template the document template
-     * @param context  the context
-     * @return the default printer, or {@code null} if none is defined
-     */
-    public static String getDefaultPrinter(DocumentTemplate template, Context context) {
-        String result;
-        DocumentTemplatePrinter printer = getDocumentTemplatePrinter(template, context);
-        if (printer != null) {
-            result = printer.getPrinterName();
-        } else {
-            result = getDefaultLocationPrinter(context.getLocation());
-        }
-        return result;
-    }
-
-    /**
-     * Returns the <em>entityRelationship.documentTemplatePrinter</em>
-     * associated with an <em>entity.documentTemplate</em> for the context practice or location.
-     * <p/>
-     * The location relationship will be returned if present, otherwise the practice relationship will be returned.
-     *
-     * @param template an <em>entity.documentTemplate</em>
-     * @param context  the context
-     * @return the corresponding document template printer relationship, or {@code null} if none is found
-     */
-    public static DocumentTemplatePrinter getDocumentTemplatePrinter(Entity template, Context context) {
-        return getDocumentTemplatePrinter(new DocumentTemplate(template, ServiceHelper.getArchetypeService()), context);
-    }
-
-    /**
-     * Returns the <em>entityRelationship.documentTemplatePrinter</em>
-     * associated with an <em>entity.documentTemplate</em> for the context practice or location.
-     * <p/>
-     * The location relationship will be returned if present, otherwise the practice relationship will be returned.
-     *
-     * @param template the document template
-     * @param context  the context
-     * @return the corresponding document template printer relationship, or {@code null} if none is found
-     */
-    public static DocumentTemplatePrinter getDocumentTemplatePrinter(DocumentTemplate template, Context context) {
-        DocumentTemplatePrinter printer = null;
-        Party location = context.getLocation();
-        Party practice = context.getPractice();
-        if (location != null) {
-            printer = template.getPrinter(location);
-        }
-        if (printer == null && practice != null) {
-            printer = template.getPrinter(practice);
-        }
-        return printer;
-    }
 
     /**
      * Returns the default printer.
@@ -109,8 +45,7 @@ public class PrintHelper {
      * @return a list of the available printers
      */
     public static String[] getPrinters() {
-        PrintService[] printers = PrintServiceLookup.lookupPrintServices(
-            null, null);
+        PrintService[] printers = PrintServiceLookup.lookupPrintServices(null, null);
         String[] names = new String[printers.length];
         for (int i = 0; i < names.length; ++i) {
             names[i] = printers[i].getName();
@@ -119,20 +54,19 @@ public class PrintHelper {
     }
 
     /**
-     * Helper to return the default printer for a location.
-     * If no default printer set than returns system default printer.
+     * Determines if a printer exists.
      *
-     * @param location the location. May be {@code null}
-     * @return the printer name. May be {@code null} if none is defined
+     * @param name the printer name
+     * @return {@code true} if the printer exists, otherwise {@code false}
      */
-    public static String getDefaultLocationPrinter(Party location) {
-        if (location != null) {
-            IMObjectBean bean = new IMObjectBean(location);
-            if (bean.hasNode("defaultPrinter")) {
-                return bean.getString("defaultPrinter", getDefaultPrinter());
+    public static boolean exists(String name) {
+        PrintService[] printers = PrintServiceLookup.lookupPrintServices(null, null);
+        for (PrintService printer : printers) {
+            if (StringUtils.equals(printer.getName(), name)) {
+                return true;
             }
         }
-        return PrintHelper.getDefaultPrinter();
+        return false;
     }
 
 }

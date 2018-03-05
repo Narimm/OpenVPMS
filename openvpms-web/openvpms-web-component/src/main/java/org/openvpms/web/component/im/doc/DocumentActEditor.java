@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -23,7 +23,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
@@ -276,7 +276,7 @@ public class DocumentActEditor extends AbstractActEditor {
 
     /**
      * Invoked when the document template updates.
-     * <p/>
+     * <p>
      * If the template is different to the prior instance, and there is a document node, the template will be used
      * to generate a new document.
      */
@@ -293,7 +293,7 @@ public class DocumentActEditor extends AbstractActEditor {
 
     /**
      * Generates the document.
-     * <p/>
+     * <p>
      * If the act supports versioning, any existing saved document will be copied to new version act.
      */
     private void generateDoc() {
@@ -305,7 +305,8 @@ public class DocumentActEditor extends AbstractActEditor {
                 docEditor.setDocument(document);
             }
         };
-        final DocumentGenerator generator = new DocumentGenerator(act, context, help, listener);
+        DocumentGeneratorFactory factory = ServiceHelper.getBean(DocumentGeneratorFactory.class);
+        DocumentGenerator generator = factory.create(act, context, help, listener);
         generator.generate();
     }
 

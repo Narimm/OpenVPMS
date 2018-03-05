@@ -28,9 +28,7 @@ import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 
 /**
@@ -39,67 +37,6 @@ import java.util.GregorianCalendar;
  * @author Tim Anderson
  */
 public class SchedulingHelper {
-
-    /**
-     * Returns the minutes from midnight for the specified time.
-     *
-     * @param time the time
-     * @return the minutes from midnight for {@code time}
-     */
-    public static int getMinutes(Date time) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(time);
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int mins = calendar.get(Calendar.MINUTE);
-        return (hour * 60) + mins;
-    }
-
-    /**
-     * Returns the minutes from midnight for the specified time, rounded
-     * up or down to the nearest slot.
-     *
-     * @param time     the time
-     * @param slotSize the slot size
-     * @param roundUp  if {@code true} round up to the nearest slot, otherwise round down
-     * @return the minutes from midnight for the specified time
-     */
-    public static int getSlotMinutes(Date time, int slotSize, boolean roundUp) {
-        int mins = getMinutes(time);
-        int result = getNearestSlot(mins, slotSize);
-        if (result != mins && roundUp) {
-            result += slotSize;
-        }
-        return result;
-    }
-
-    /**
-     * Returns the time of the slot closest to that of the specified time.
-     *
-     * @param time     the time
-     * @param slotSize the size of the slot, in minutes
-     * @param roundUp  if {@code true} round up to the nearest slot, otherwise round down
-     * @return the nearest slot time to {@code time}
-     */
-    public static Date getSlotTime(Date time, int slotSize, boolean roundUp) {
-        Date result;
-        int mins = getMinutes(time);
-        int nearestSlot = getNearestSlot(mins, slotSize);
-        if (nearestSlot != mins) {
-            if (roundUp) {
-                nearestSlot += slotSize;
-            }
-            GregorianCalendar calendar = new GregorianCalendar();
-            calendar.setTime(time);
-            calendar.set(Calendar.HOUR_OF_DAY, 0);
-            calendar.set(Calendar.MINUTE, 0);
-            calendar.set(Calendar.SECOND, 0);
-            calendar.add(Calendar.MINUTE, nearestSlot);
-            result = calendar.getTime();
-        } else {
-            result = time;
-        }
-        return result;
-    }
 
     /**
      * Evaluates an xpath expression against the supplied event.
@@ -202,17 +139,6 @@ public class SchedulingHelper {
             waiting = DateFormatter.formatTimeDiff(start, end);
         }
         return waiting;
-    }
-
-    /**
-     * Returns the nearest slot.
-     *
-     * @param mins     the start minutes
-     * @param slotSize the slot size
-     * @return the minutes from midnight for the specified time
-     */
-    private static int getNearestSlot(int mins, int slotSize) {
-        return (mins / slotSize) * slotSize;
     }
 
 }

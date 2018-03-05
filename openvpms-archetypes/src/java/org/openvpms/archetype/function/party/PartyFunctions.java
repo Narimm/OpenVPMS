@@ -18,12 +18,14 @@ package org.openvpms.archetype.function.party;
 
 import org.apache.commons.jxpath.ExpressionContext;
 import org.apache.commons.jxpath.Pointer;
+import org.openvpms.archetype.rules.contact.AddressFormatter;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.account.BalanceCalculator;
 import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -83,14 +85,16 @@ public class PartyFunctions {
     /**
      * Constructs a {@link PartyFunctions}.
      *
-     * @param service      the archetype service
-     * @param lookups      the lookup service
-     * @param patientRules the patient rules
+     * @param service          the archetype service
+     * @param lookups          the lookup service
+     * @param patientRules     the patient rules
+     * @param addressFormatter the address formatter
      */
-    public PartyFunctions(IArchetypeService service, ILookupService lookups, PatientRules patientRules) {
+    public PartyFunctions(IArchetypeService service, ILookupService lookups, PatientRules patientRules,
+                          AddressFormatter addressFormatter) {
         this.service = service;
         this.patientRules = patientRules;
-        partyRules = new PartyRules(service, lookups);
+        partyRules = new PartyRules(service, lookups, addressFormatter);
         supplierRules = new SupplierRules(service);
         appointmentRules = new AppointmentRules(service);
     }
@@ -102,6 +106,7 @@ public class PartyFunctions {
      * @param nodeName to node to return
      * @return the node Object, or {@code null} if none can be found
      */
+    @Deprecated
     public Object getCustomerNode(Party customer, String nodeName) {
         return partyRules.getCustomerNode(customer, nodeName);
     }
@@ -114,15 +119,14 @@ public class PartyFunctions {
      * @return the node Object, or {@code null}
      */
     public Object getCustomerNode(Act act, String nodeName) {
-        return partyRules.getCustomerNode(act, nodeName);
+        return partyRules.getCustomerNode(getCustomer(act), nodeName);
     }
 
     /**
      * Returns the full name for the passed party.
      *
-     * @param context the expression context. Expected to reference a patient
-     *                party or an act.
-     * @return the parties full name.
+     * @param context the expression context. Expected to reference a party or an act.
+     * @return the party's full name.
      */
     public String getPartyFullName(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
@@ -146,13 +150,16 @@ public class PartyFunctions {
     }
 
     /**
-     * Returns a formatted name for an act.
+     * Returns a formatted name for a customer associated with an act.
+     * <p>
+     * The customer is retrieved via an <em>participation.customer</em> participation.
+     * If there is none, then the owner of the patient associated with any <em>participation.patient</em> is used.
      *
      * @param act the act
      * @return the party's formatted name
      */
     public String getPartyFullName(Act act) {
-        return partyRules.getFullName(act);
+        return getPartyFullName(getCustomer(act));
     }
 
     /**
@@ -216,7 +223,7 @@ public class PartyFunctions {
     /**
      * Returns the location for the patient associated with an act.
      *
-     * @param act
+     * @param act the act. May be {@code null}
      * @return the associated party at the patient location, or {@code null}
      */
     public Party getPatientLocation(Act act) {
@@ -226,7 +233,7 @@ public class PartyFunctions {
     /**
      * Returns the current location party for the patient associated with an act.
      *
-     * @param act
+     * @param act the act. May be {@code null}
      * @return the associated party at the patient location, or {@code null}
      */
     public Party getPatientCurrentLocation(Act act) {
@@ -291,8 +298,7 @@ public class PartyFunctions {
     /**
      * Returns a formatted billing address for a party.
      *
-     * @param context the expression context. Expected to reference a party or
-     *                act
+     * @param context the expression context. Expected to reference a party or act
      * @return a formatted billing address, or {@code null}
      */
 
@@ -312,31 +318,50 @@ public class PartyFunctions {
      * Returns a formatted billing address for a party.
      *
      * @param party the party. May be {@code null}.
-     * @return a formatted billing address for the party, or an empty string
-     * if the party is null or if the party has no corresponding
-     * <em>contact.location</em> contact
+     * @return a formatted billing address for the party, or an empty string if the party is null or if the party has
+     * no corresponding <em>contact.location</em> contact
      */
     public String getBillingAddress(Party party) {
-        if (party != null) {
-            return partyRules.getBillingAddress(party);
-        }
-        return "";
+        return getBillingAddress(party, false);
+    }
+
+    /**
+     * Returns a formatted billing address for a party.
+     *
+     * @param party      the party. May be {@code null}.
+     * @param singleLine if {@code true}, return the address as a single line
+     * @return a formatted billing address for the party, or an empty string if the party is null or if the party has
+     * no corresponding <em>contact.location</em> contact
+     */
+    public String getBillingAddress(Party party, boolean singleLine) {
+        return partyRules.getBillingAddress(party, singleLine);
     }
 
     /**
      * Returns a formatted billing address for a customer associated with an
      * act via an <em>participation.customer</em> participation.
      *
-     * @param act the act
+     * @param act the act. May be {@code null}
      * @return a formatted billing address for a party. May be empty if the act has no customer party or the party has
      * no corresponding <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getBillingAddress(Act act) {
-        if (act != null) {
-            return partyRules.getBillingAddress(act);
-        }
-        return "";
+        return getBillingAddress(act, false);
+    }
+
+    /**
+     * Returns a formatted billing address for a customer associated with an
+     * act via an <em>participation.customer</em> participation.
+     *
+     * @param act        the act. May be {@code null}
+     * @param singleLine if {@code true}, return the address as a single line
+     * @return a formatted billing address for a party. May be empty if the act has no customer party or the party has
+     * no corresponding <em>contact.location</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getBillingAddress(Act act, boolean singleLine) {
+        return partyRules.getBillingAddress(getCustomer(act), singleLine);
     }
 
     /**
@@ -359,31 +384,52 @@ public class PartyFunctions {
     /**
      * Returns a formatted correspondence address for a party.
      *
+     * @param party the party. May be {@code null}
+     * @return a formatted correspondence address for a party. May be empty if there is no corresponding
+     * <em>contact.location</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getCorrespondenceAddress(Party party) {
+        return getCorrespondenceAddress(party, false);
+    }
+
+    /**
+     * Returns a formatted correspondence address for a party.
+     *
+     * @param party      the party. May be {@code null}
+     * @param singleLine if {@code true}, return the address as a single line
      * @return a formatted correspondence address for a party. May be empty if
      * there is no corresponding <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getCorrespondenceAddress(Party party) {
-        if (party != null) {
-            return partyRules.getCorrespondenceAddress(party);
-        }
-        return "";
+    public String getCorrespondenceAddress(Party party, boolean singleLine) {
+        return partyRules.getCorrespondenceAddress(party, singleLine);
     }
 
     /**
      * Returns a formatted correspondence address for a customer associated with
      * an act via an <em>participation.customer</em> participation.
      *
-     * @return a formatted billing address for a party. May be empty if
-     * the act has no customer party or the party has no corresponding
-     * <em>contact.location</em> contact
+     * @param act the act. May be {@code null}
+     * @return a formatted correspondence address for a party. May be empty if the act has no customer party or the
+     * party has no corresponding <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getCorrespondenceAddress(Act act) {
-        if (act != null) {
-            return partyRules.getCorrespondenceAddress(act);
-        }
-        return "";
+        return getCorrespondenceAddress(act, false);
+    }
+
+    /**
+     * Returns a formatted correspondence address for a customer associated with
+     * an act via an <em>participation.customer</em> participation.
+     *
+     * @param act the act. May be {@code null}
+     * @return a formatted correspondence address for a party. May be empty if the act has no customer party or the
+     * party has no corresponding <em>contact.location</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getCorrespondenceAddress(Act act, boolean singleLine) {
+        return partyRules.getCorrespondenceAddress(getCustomer(act), singleLine);
     }
 
     /**
@@ -396,10 +442,7 @@ public class PartyFunctions {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getCorrespondenceNameAddress(Act act) {
-        if (act != null) {
-            return partyRules.getCorrespondenceNameAddress(act);
-        }
-        return "";
+        return partyRules.getCorrespondenceNameAddress(getCustomer(act), false);
     }
 
     /**
@@ -414,7 +457,23 @@ public class PartyFunctions {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getAddress(Party party, String purpose) {
-        return (party != null) ? partyRules.getAddress(party, purpose) : "";
+        return getAddress(party, purpose, false);
+    }
+
+    /**
+     * Returns a formatted <em>contact.location</em> address with the specified purpose for a party.
+     * <br/>
+     * If it cannot find the specified purpose, it uses the preferred location contact or
+     * any location contact if there is no preferred.
+     *
+     * @param party      the party
+     * @param purpose    the contact purpose of the address
+     * @param singleLine if {@code true}, return the address as a single line
+     * @return a formatted address. May be empty if there is no corresponding <em>contact.location</em> contact
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public String getAddress(Party party, String purpose, boolean singleLine) {
+        return partyRules.getAddress(party, purpose, singleLine);
     }
 
     /**
@@ -433,28 +492,26 @@ public class PartyFunctions {
      * Returns a formatted telephone number for a customer associated with
      * an act via an <em>participation.customer</em> participation.
      *
-     * @param act the act
+     * @param act the act. May be {@code null}
      * @return a formatted telephone number. party. May be empty if there is no corresponding
      * <em>contact.phoneNumber</em> contact.
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getTelephone(Act act) {
-        return (act != null) ? partyRules.getTelephone(act) : "";
+        return partyRules.getTelephone(getCustomer(act));
     }
 
     /**
-     * Retuurns a formatted home telephone number for a customer.
+     * Returns a formatted home telephone number for a party.
+     * <p>
+     * This will return a phone contact with HOME purpose, or any phone contact if there is none.
      *
-     * @param party the customer
-     * @return a formatted telephone number. party. May be empty if
-     * there is no corresponding <em>contact.phoneNumber</em> contact
-     * with <em>HOME</em> purpose
+     * @param party the party
+     * @return a formatted home telephone number for the party. May be empty if there is no corresponding
+     * <em>contact.phoneNumber</em> contact
      */
     public String getHomeTelephone(Party party) {
-        if (party != null) {
-            return partyRules.getHomeTelephone(party);
-        }
-        return "";
+        return partyRules.getHomeTelephone(party);
     }
 
     /**
@@ -468,10 +525,7 @@ public class PartyFunctions {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getHomeTelephone(Act act) {
-        if (act != null) {
-            return partyRules.getHomeTelephone(act);
-        }
-        return "";
+        return partyRules.getHomeTelephone(getCustomer(act));
     }
 
     /**
@@ -483,10 +537,7 @@ public class PartyFunctions {
      * with <em>WORK</em> purpose
      */
     public String getWorkTelephone(Party party) {
-        if (party != null) {
-            return partyRules.getWorkTelephone(party);
-        }
-        return "";
+        return partyRules.getWorkTelephone(party);
     }
 
     /**
@@ -500,10 +551,7 @@ public class PartyFunctions {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getWorkTelephone(Act act) {
-        if (act != null) {
-            return partyRules.getWorkTelephone(act);
-        }
-        return "";
+        return partyRules.getWorkTelephone(getCustomer(act));
     }
 
     /**
@@ -515,10 +563,7 @@ public class PartyFunctions {
      * with <em>MOBILE</em> purpose
      */
     public String getMobileTelephone(Party party) {
-        if (party != null) {
-            return partyRules.getMobileTelephone(party);
-        }
-        return "";
+        return partyRules.getMobileTelephone(party);
     }
 
     /**
@@ -532,10 +577,7 @@ public class PartyFunctions {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getMobileTelephone(Act act) {
-        if (act != null) {
-            return partyRules.getMobileTelephone(act);
-        }
-        return "";
+        return partyRules.getMobileTelephone(getCustomer(act));
     }
 
     /**
@@ -578,16 +620,7 @@ public class PartyFunctions {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getFaxNumber(Act act) {
-        if (act != null) {
-            Party party = partyRules.getCustomer(act);
-            if (party == null) {
-                party = patientRules.getOwner(act);
-            }
-            if (party != null) {
-                return partyRules.getFaxNumber(party);
-            }
-        }
-        return "";
+        return partyRules.getFaxNumber(getCustomer(act));
     }
 
     /**
@@ -630,16 +663,7 @@ public class PartyFunctions {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getEmailAddress(Act act) {
-        if (act != null) {
-            Party party = partyRules.getCustomer(act);
-            if (party == null) {
-                party = patientRules.getOwner(act);
-            }
-            if (party != null) {
-                return partyRules.getEmailAddress(party);
-            }
-        }
-        return "";
+        return partyRules.getEmailAddress(getCustomer(act));
     }
 
     /**
@@ -650,7 +674,7 @@ public class PartyFunctions {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getWebsite(Party party) {
-        return party != null ? partyRules.getWebsite(party) : "";
+        return partyRules.getWebsite(party);
     }
 
     /**
@@ -741,22 +765,12 @@ public class PartyFunctions {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getAccountBalance(Act act) {
-        BigDecimal result = BigDecimal.ZERO;
-        if (act != null) {
-            Party party = partyRules.getCustomer(act);
-            if (party == null) {
-                party = patientRules.getOwner(act);
-            }
-            if (party != null) {
-                result = getAccountBalance(party);
-            }
-        }
-        return result;
+        return getAccountBalance(getCustomer(act));
     }
 
     /**
      * Returns the referral vet for a patient.
-     * <p/>
+     * <p>
      * This is the patient's associated party from the first matching <em>entityRelationship.referredFrom</em> or
      * <em>entityRelationship.referredTo</em> that matches the:
      * <ul>
@@ -781,7 +795,7 @@ public class PartyFunctions {
 
     /**
      * Returns the referral vet for a patient linked to an act.
-     * <p/>
+     * <p>
      * This is the patient's associated party from the first matching
      * <em>entityRelationship.referredFrom</em> or
      * <em>entityRelationship.referredTo</em> overlapping the act's start time.
@@ -805,7 +819,7 @@ public class PartyFunctions {
 
     /**
      * Returns the referral vet for a patient.
-     * <p/>
+     * <p>
      * This is the patient's associated party from the first matching <em>entityRelationship.referredFrom</em> or
      * <em>entityRelationship.referredTo</em> overlapping the current time.
      *
@@ -887,7 +901,7 @@ public class PartyFunctions {
 
     /**
      * Returns the age of the patient.
-     * <p/>
+     * <p>
      * If the patient is deceased, the age of the patient when they died will be returned
      *
      * @param context the expression context. Expected to reference a party.
@@ -903,7 +917,7 @@ public class PartyFunctions {
 
     /**
      * Returns the age of the patient.
-     * <p/>
+     * <p>
      * If the patient is deceased, the age of the patient when they died will be returned
      *
      * @param patient the patient
@@ -1092,7 +1106,7 @@ public class PartyFunctions {
 
     /**
      * Returns the patient weight, in kilos.
-     * <p/>
+     * <p>
      * This uses the most recent recorded weight for the patient.
      *
      * @param patient the patient. May be {@code null}
@@ -1104,7 +1118,7 @@ public class PartyFunctions {
 
     /**
      * Returns the patient weight, in the specified units.
-     * <p/>
+     * <p>
      * This uses the most recent recorded weight for the patient.
      *
      * @param patient the patient. May be {@code null}
@@ -1122,7 +1136,7 @@ public class PartyFunctions {
 
     /**
      * Returns the patient weight, in kilos, for the patient associated with an act.
-     * <p/>
+     * <p>
      * This uses the most recent recorded weight for the patient.
      *
      * @param act the act. May be {@code null}.
@@ -1135,7 +1149,7 @@ public class PartyFunctions {
 
     /**
      * Returns the patient weight, in kilos, for the patient associated with an act.
-     * <p/>
+     * <p>
      * This uses the most recent recorded weight for the patient.
      *
      * @param act   the act. May be {@code null}.
@@ -1213,12 +1227,22 @@ public class PartyFunctions {
     }
 
     /**
-     * Returns the Practice Address as a single line String.
+     * Returns the practice address as a single line string.
      *
      * @return the practice address as a string
      */
     public String getPracticeAddress() {
-        return partyRules.getPracticeAddress();
+        return getPracticeAddress(true);
+    }
+
+    /**
+     * Returns the practice address.
+     *
+     * @param singleLine if {@code true}, return the address as a single line string, otherwise as a multi-line string
+     * @return the practice address as a string
+     */
+    public String getPracticeAddress(boolean singleLine) {
+        return partyRules.getPracticeAddress(singleLine);
     }
 
     /**
@@ -1238,7 +1262,6 @@ public class PartyFunctions {
      */
     public String getPracticeFaxNumber() {
         return partyRules.getPracticeFaxNumber();
-
     }
 
     /**
@@ -1282,10 +1305,7 @@ public class PartyFunctions {
      */
     public String getBpayId(Act act) {
         if (act != null) {
-            Party party = partyRules.getCustomer(act);
-            if (party == null) {
-                party = patientRules.getOwner(act);
-            }
+            Party party = getCustomer(act);
             return (party != null) ? getBpayId(party) : null;
         }
         return null;
@@ -1293,7 +1313,7 @@ public class PartyFunctions {
 
     /**
      * Returns the location to use for contacts in letterhead.
-     * <p/>
+     * <p>
      * If the supplied practice location has a letterhead, and specifies that a different location should be used
      * for contacts, then this is returned, otherwise the supplied location is returned.
      *
@@ -1336,6 +1356,25 @@ public class PartyFunctions {
     }
 
     /**
+     * Returns the customer associated with an act via an <em>participation.customer</em> participation,
+     * or the the patient owner if there is no customer participation.
+     *
+     * @param act the act. May be {@code null}
+     * @return the customer, or {@code null} if none is present
+     */
+    private Party getCustomer(Act act) {
+        Party customer = null;
+        if (act != null) {
+            ActBean bean = new ActBean(act, service);
+            customer = (Party) bean.getParticipant(CustomerArchetypes.CUSTOMER_PARTICIPATION);
+            if (customer == null) {
+                customer = patientRules.getOwner(act);
+            }
+        }
+        return customer;
+    }
+
+    /**
      * Helper to return the patient associated with an act.
      *
      * @param act the act. May be {@code null}
@@ -1344,7 +1383,7 @@ public class PartyFunctions {
     private Party getPatient(Act act) {
         if (act != null) {
             ActBean bean = new ActBean(act, service);
-            return (Party) bean.getParticipant("participation.patient");
+            return (Party) bean.getParticipant(PatientArchetypes.PATIENT_PARTICIPATION);
         }
         return null;
     }

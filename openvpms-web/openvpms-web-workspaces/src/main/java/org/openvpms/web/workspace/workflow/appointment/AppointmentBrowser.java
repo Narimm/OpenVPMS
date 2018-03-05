@@ -26,10 +26,8 @@ import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.ColumnLayoutData;
-import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
-import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.Slot;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -80,7 +78,7 @@ import static org.openvpms.web.workspace.workflow.appointment.AppointmentQuery.D
 
 /**
  * Appointment browser.
- * <p/>
+ * <p>
  * This provides two tabs:
  * <ol><li>Appointments<br/>
  * Provides a query to select appointments, and renders blocks of appointments in different hours a
@@ -102,19 +100,9 @@ public class AppointmentBrowser extends ScheduleBrowser {
     private final LayoutContext context;
 
     /**
-     * The appointment colours.
+     * The colour cache.
      */
-    private final ScheduleColours appointmentColours;
-
-    /**
-     * The clinician colours.
-     */
-    private final ScheduleColours clinicianColours;
-
-    /**
-     * The blocking event colours.
-     */
-    private final ScheduleColours blockingEventColours;
+    private final ScheduleColours colours;
 
     /**
      * Displays the selected schedule view, schedule and date above the
@@ -193,9 +181,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
         super(query, context.getContext());
         this.context = context;
         rules = ServiceHelper.getBean(AppointmentRules.class);
-        appointmentColours = new ScheduleColours(ScheduleArchetypes.APPOINTMENT_TYPE);
-        clinicianColours = new ScheduleColours(UserArchetypes.USER);
-        blockingEventColours = new ScheduleColours(ScheduleArchetypes.CALENDAR_BLOCK_TYPE);
+        colours = ServiceHelper.getBean(ScheduleColours.class);
     }
 
     /**
@@ -270,13 +256,13 @@ public class AppointmentBrowser extends ScheduleBrowser {
             AppointmentQuery.Show show = query.getShow();
             if (show == AppointmentQuery.Show.CAGE
                 || show == AppointmentQuery.Show.SUMMARY) {
-                grid = new CageScheduleGrid(scheduleView, date, days, events);
+                grid = new CageScheduleGrid(scheduleView, date, days, events, rules);
             } else if (show == AppointmentQuery.Show.CHECKIN) {
-                grid = new CheckInScheduleGrid(scheduleView, date, days, events);
+                grid = new CheckInScheduleGrid(scheduleView, date, days, events, rules);
             } else if (show == AppointmentQuery.Show.CHECKOUT) {
-                grid = new CheckOutScheduleGrid(scheduleView, date, days, events);
+                grid = new CheckOutScheduleGrid(scheduleView, date, days, events, rules);
             } else {
-                grid = new MultiDayScheduleGrid(scheduleView, date, days, events);
+                grid = new MultiDayScheduleGrid(scheduleView, date, days, events, rules);
             }
         } else {
             if (schedules.size() == 1) {
@@ -308,26 +294,20 @@ public class AppointmentBrowser extends ScheduleBrowser {
         if (grid instanceof CageScheduleGrid) {
             CageScheduleGrid cageGrid = (CageScheduleGrid) grid;
             if (getQuery().getShow() == AppointmentQuery.Show.CAGE) {
-                model = new DefaultCageTableModel(cageGrid, getContext(), appointmentColours, clinicianColours, blockingEventColours);
+                model = new DefaultCageTableModel(cageGrid, getContext(), colours);
             } else {
-                model = new CageSummaryTableModel(cageGrid, getContext(), appointmentColours, clinicianColours,
-                                                  blockingEventColours);
+                model = new CageSummaryTableModel(cageGrid, getContext(), colours);
             }
         } else if (grid instanceof MultiDayScheduleGrid) {
-            model = new MultiDayTableModel((MultiDayScheduleGrid) grid, getContext(), appointmentColours,
-                                           clinicianColours, blockingEventColours);
+            model = new MultiDayTableModel((MultiDayScheduleGrid) grid, getContext(), colours);
         } else if (grid instanceof CheckInScheduleGrid) {
-            model = new CheckInTableModel((CheckInScheduleGrid) grid, getContext(), appointmentColours,
-                                          clinicianColours, blockingEventColours);
+            model = new CheckInTableModel((CheckInScheduleGrid) grid, getContext(), colours);
         } else if (grid instanceof CheckOutScheduleGrid) {
-            model = new CheckOutTableModel((CheckOutScheduleGrid) grid, getContext(), appointmentColours,
-                                           clinicianColours, blockingEventColours);
+            model = new CheckOutTableModel((CheckOutScheduleGrid) grid, getContext(), colours);
         } else if (grid.getSchedules().size() == 1) {
-            model = new SingleScheduleTableModel((AppointmentGrid) grid, getContext(), appointmentColours,
-                                                 clinicianColours, blockingEventColours);
+            model = new SingleScheduleTableModel((AppointmentGrid) grid, getContext(), colours);
         } else {
-            model = new MultiScheduleTableModel((AppointmentGrid) grid, getContext(), appointmentColours,
-                                                clinicianColours, blockingEventColours);
+            model = new MultiScheduleTableModel((AppointmentGrid) grid, getContext(), colours);
         }
         return model;
     }
@@ -371,7 +351,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
 
     /**
      * Invoked when a cell is selected.
-     * <p/>
+     * <p>
      * Notifies listeners of the selection.
      *
      * @param event the event
@@ -478,7 +458,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
     private boolean hasOverlappingEvents(List<PropertySet> events, Party schedule) {
         AppointmentRules rules = ServiceHelper.getBean(AppointmentRules.class);
         int slotSize = AbstractAppointmentGrid.getSlotSize(schedule, rules);
-        IntersectComparator comparator = new IntersectComparator(slotSize);
+        IntersectComparator comparator = new IntersectComparator(slotSize, rules);
         List<PropertySet> list = new ArrayList<>();
 
         for (PropertySet event : events) {

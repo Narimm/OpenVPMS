@@ -12,12 +12,14 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xmlns:plugin="http://openvpms.org/schema/plugin/spring"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://openvpms.org/schema/plugin/spring http://openvpms.org/schema/plugin/spring/plugin.xsd">
 
     <!-- ================================================================== -->
     <!--                         GENERAL DEFINITIONS                        -->
@@ -64,9 +66,19 @@
                   value="${hibernate.connection.password}"/>
     </bean>
 
+    <bean id="databaseService" class="org.openvpms.db.service.impl.DatabaseServiceImpl">
+        <constructor-arg value="${hibernate.connection.driver_class}"/>
+        <constructor-arg value="${hibernate.connection.url}"/>
+        <constructor-arg ref="dataSource"/>
+    </bean>
+
+    <bean id="databaseVersionChecker" class="org.openvpms.db.service.DatabaseVersionChecker">
+        <constructor-arg ref="databaseService"/>
+    </bean>
+
     <!--  Hibernate session factory -->
     <bean id="sessionFactory"
-          class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
+          class="org.springframework.orm.hibernate3.LocalSessionFactoryBean" depends-on="databaseVersionChecker">
         <property name="dataSource" ref="dataSource"/>
         <property name="hibernateProperties">
             <props>
@@ -124,6 +136,7 @@
     <!--  Transaction manager -->
     <bean id="txnManager"
           class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+        <plugin:service/>
         <property name="sessionFactory" ref="sessionFactory"/>
     </bean>
 
@@ -221,6 +234,7 @@
         <constructor-arg ref="lookupService"/>
         <constructor-arg ref="practiceService"/>
         <constructor-arg ref="currencies"/>
+        <constructor-arg ref="addressFormatter"/>
         <constructor-arg ref="patientAgeFormatter"/>
         <property name="macros" ref="macros"/>
     </bean>

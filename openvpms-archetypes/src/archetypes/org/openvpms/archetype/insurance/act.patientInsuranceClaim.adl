@@ -1,0 +1,83 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="act.patientInsuranceClaim.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Insurance Claim">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="insurerId" displayName="Claim Number" path="/identities" type="java.util.HashSet"
+              baseName="Identity" minCardinality="0" maxCardinality="1" filter="actIdentity.insuranceClaim*"
+              readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" readOnly="true"
+              defaultValue="'Insurance Claim'"/>
+        <node name="description" type="java.lang.String" path="/description" hidden="true"/>
+        <node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"
+              defaultValue="java.util.Date.new()" readOnly="true"/>
+        <node displayName="Completed Date" name="endTime" path="/activityEndTime" type="java.util.Date"
+              minCardinality="0"
+              readOnly="true"/>
+        <node name="policy" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship"
+              minCardinality="1" maxCardinality="1" filter="actRelationship.insuranceClaimPolicy" readOnly="true"/>
+        <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+              filter="participation.patient" hidden="true"/>
+        <node name="author" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+              filter="participation.author" readOnly="true"/>
+        <node name="user" displayName="Claim Handler" path="/participations" type="java.util.HashSet" minCardinality="1"
+              maxCardinality="1" filter="participation.user"/>
+        <node name="location" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+              filter="participation.location"/>
+        <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+              filter="participation.clinician"/>
+        <node name="amount" path="/total"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+              defaultValue="'0.0'" readOnly="true">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
+        <node name="tax" path="/taxAmount"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+              defaultValue="'0.0'" readOnly="true">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
+        <node displayName="Claim Status" name="status" path="/status" type="java.lang.String" minCardinality="1"
+              defaultValue="'PENDING'" readOnly="true">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="PENDING" value="Pending"/>
+                    <property name="POSTED" value="Finalised"/>
+                    <property name="SUBMITTED" value="Submitted"/>
+                    <property name="ACCEPTED" value="Accepted"/>
+                    <property name="SETTLED" value="Settled"/>
+                    <property name="DECLINED" value="Declined"/>
+                    <property name="CANCELLING" value="Cancelling"/>
+                    <property name="CANCELLED" value="Cancelled"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="message" path="/details/message" type="java.lang.String" minCardinality="0" maxLength="5000"
+              readOnly="true"/>
+        <node name="notes" path="/details/notes" type="java.lang.String" minCardinality="0" maxLength="5000"/>
+        <node name="items" displayName="Conditions" path="/sourceActRelationships" type="java.util.HashSet"
+              baseName="SourceActRelationship" minCardinality="1" maxCardinality="*"
+              filter="actRelationship.insuranceClaimItem"/>
+        <node name="attachments" path="/sourceActRelationships" type="java.util.HashSet"
+              baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
+              filter="actRelationship.insuranceClaimAttachment"/>
+    </archetype>
+</archetypes>

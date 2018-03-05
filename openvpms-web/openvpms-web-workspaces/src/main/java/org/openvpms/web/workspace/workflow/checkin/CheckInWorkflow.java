@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -30,7 +30,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientInformationService;
@@ -38,6 +38,7 @@ import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.HospitalizationService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.EntityQuery;
+import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
@@ -148,7 +149,8 @@ public class CheckInWorkflow extends WorkflowImpl {
         ActBean bean = new ActBean(appointment);
         Party customer = (Party) bean.getParticipant("participation.customer");
         Party patient = (Party) bean.getParticipant("participation.patient");
-        User clinician = (User) bean.getParticipant("participation.clinician");
+        User clinician = UserHelper.useLoggedInClinician(context) ? context.getUser()
+                                                                  : (User) bean.getNodeParticipant("clinician");
 
         ArchetypeServiceFunctions functions = ServiceHelper.getBean(ArchetypeServiceFunctions.class);
         String reason = functions.lookup(appointment, "reason", "Appointment");
@@ -223,7 +225,7 @@ public class CheckInWorkflow extends WorkflowImpl {
         // prompt for a patient weight.
         addTask(new PatientWeightTask(help));
 
-        if (useWorkList && flowSheetServiceFactory.supportsSmartFlowSheet(initial.getLocation())) {
+        if (useWorkList && flowSheetServiceFactory.isSmartFlowSheetEnabled(initial.getLocation())) {
             addTask(new CreateFlowSheetTask());
         }
 
@@ -456,9 +458,10 @@ public class CheckInWorkflow extends WorkflowImpl {
         protected boolean addFlowSheet(String createFlowSheet, IMObjectBean workList,
                                        final PatientContext patientContext, Act appointment, Party location) {
             boolean popup = false;
-            final HospitalizationService service = flowSheetServiceFactory.getHospitalisationService(location);
+            final HospitalizationService service = flowSheetServiceFactory.getHospitalizationService(location);
             if (!service.exists(patientContext)) {
                 int expectedHospitalStay = workList.getInt("expectedHospitalStay");
+                int defaultDepartment = workList.getInt("defaultFlowSheetDepartment", -1);
                 String defaultTemplate = workList.getString("defaultFlowSheetTemplate");
                 int days = 1;
                 if (appointment != null) {
@@ -469,14 +472,15 @@ public class CheckInWorkflow extends WorkflowImpl {
                     days = expectedHospitalStay;
                 }
                 if ("PROMPT".equals(createFlowSheet)) {
-                    final FlowSheetEditDialog dialog = new FlowSheetEditDialog(flowSheetServiceFactory, location,
-                                                                               defaultTemplate, days, true);
+                    final FlowSheetEditDialog dialog = new FlowSheetEditDialog(
+                            flowSheetServiceFactory, location, defaultDepartment, defaultTemplate, days, true);
                     dialog.addWindowPaneListener(new PopupDialogListener() {
                         @Override
                         public void onOK() {
-                            String defaultTemplate = dialog.getTemplate();
+                            int departmentId = dialog.getDepartmentId();
+                            String template = dialog.getTemplate();
                             int expectedStay = dialog.getExpectedStay();
-                            service.add(patientContext, expectedStay, defaultTemplate);
+                            service.add(patientContext, expectedStay, departmentId, template);
                             notifyCompleted();
                         }
 
@@ -493,7 +497,7 @@ public class CheckInWorkflow extends WorkflowImpl {
                     dialog.show();
                     popup = true;
                 } else {
-                    service.add(patientContext, days, defaultTemplate);
+                    service.add(patientContext, days, defaultDepartment, defaultTemplate);
                 }
             } else {
                 popup = true;

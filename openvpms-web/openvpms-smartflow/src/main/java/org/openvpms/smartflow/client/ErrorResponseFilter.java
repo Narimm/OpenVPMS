@@ -1,8 +1,25 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.smartflow.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.openvpms.smartflow.model.Error;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.InternalServerErrorException;
@@ -63,37 +80,38 @@ public class ErrorResponseFilter implements ClientResponseFilter {
                 Error error = mapper.readValue(responseContext.getEntityStream(), Error.class);
                 String message = error.getMessage();
 
-                Response.Status status = Response.Status.fromStatusCode(responseContext.getStatus());
                 WebApplicationException exception;
+                int status = responseContext.getStatus();
                 switch (status) {
-                    case BAD_REQUEST:
+                    case HttpServletResponse.SC_BAD_REQUEST:
                         exception = new BadRequestException(message);
                         break;
-                    case UNAUTHORIZED:
+                    case HttpServletResponse.SC_UNAUTHORIZED:
                         exception = new NotAuthorizedException(message, Response.status(status).build());
                         break;
-                    case FORBIDDEN:
+                    case HttpServletResponse.SC_FORBIDDEN:
                         exception = new ForbiddenException(message);
                         break;
-                    case NOT_FOUND:
+                    case HttpServletResponse.SC_NOT_FOUND:
                         exception = new NotFoundException(message);
                         break;
-                    case METHOD_NOT_ALLOWED:
+                    case HttpServletResponse.SC_METHOD_NOT_ALLOWED:
                         exception = new NotAllowedException(message);
                         break;
-                    case NOT_ACCEPTABLE:
+                    case HttpServletResponse.SC_NOT_ACCEPTABLE:
                         exception = new NotAcceptableException(message);
                         break;
-                    case UNSUPPORTED_MEDIA_TYPE:
+                    case HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE:
                         exception = new NotSupportedException(message);
                         break;
-                    case INTERNAL_SERVER_ERROR:
+                    case HttpServletResponse.SC_INTERNAL_SERVER_ERROR:
                         exception = new InternalServerErrorException(message);
                         break;
-                    case SERVICE_UNAVAILABLE:
+                    case HttpServletResponse.SC_SERVICE_UNAVAILABLE:
                         exception = new ServiceUnavailableException(message);
                         break;
                     default:
+                        // NOTE: SFS uses custom error statuses. E.g. 465 Access to the Document Denied
                         exception = new WebApplicationException(message, status);
                 }
 

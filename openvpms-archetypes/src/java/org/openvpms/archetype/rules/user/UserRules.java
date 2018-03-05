@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.user;
@@ -19,7 +19,6 @@ package org.openvpms.archetype.rules.user;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -28,16 +27,22 @@ import org.openvpms.component.business.service.archetype.functor.SequenceCompara
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
+import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -80,6 +85,24 @@ public class UserRules {
     }
 
     /**
+     * Returns the user associated with an authentication request.
+     *
+     * @param authentication the authentication
+     * @return the user, or {@code null} if one cannot be determined
+     */
+    public User getUser(Authentication authentication) {
+        Object principal = authentication.getPrincipal();
+        User user = null;
+        if (principal instanceof User) {
+            user = (User) principal;
+        } else if (principal instanceof UserDetails) {
+            String name = ((UserDetails) principal).getUsername();
+            user = getUser(name);
+        }
+        return user;
+    }
+
+    /**
      * Determines if a user exists with the specified user name.
      *
      * @param username the user name
@@ -108,7 +131,7 @@ public class UserRules {
      * otherwise {@code false}
      */
     public boolean isClinician(User user) {
-        return isA(user, "CLINICIAN");
+        return isA(user, UserArchetypes.CLINICIAN_USER_TYPE);
     }
 
     /**
@@ -119,7 +142,7 @@ public class UserRules {
      * @return {@code true} if the user is an administrator
      */
     public boolean isAdministrator(User user) {
-        boolean result = isA(user, "ADMINISTRATOR");
+        boolean result = isA(user, UserArchetypes.ADMINISTRATOR_USER_TYPE);
         if (!result) {
             result = TypeHelper.isA(user, UserArchetypes.USER) && "admin".equals(user.getUsername());
         }
@@ -136,7 +159,7 @@ public class UserRules {
     public boolean isA(User user, String userType) {
         if (TypeHelper.isA(user, UserArchetypes.USER)) {
             for (Lookup lookup : user.getClassifications()) {
-                if (TypeHelper.isA(lookup, "lookup.userType") && userType.equals(lookup.getCode())) {
+                if (lookup.isA("lookup.userType") && userType.equals(lookup.getCode())) {
                     return true;
                 }
             }
@@ -198,6 +221,40 @@ public class UserRules {
     }
 
     /**
+     * Returns all users in a list of users and groups.
+     *
+     * @param usersOrGroups the list of users and groups
+     * @return the users in the list
+     */
+    public Set<User> getUsers(List<Entity> usersOrGroups) {
+        Set<User> result = new HashSet<>();
+        Set<Entity> groups = new HashSet<>();
+        for (Entity entity : usersOrGroups) {
+            if (entity instanceof User) {
+                result.add((User) entity);
+            } else if (entity != null) {
+                if (!groups.contains(entity)) {
+                    groups.add(entity);
+                    List<User> users = getUsers(entity);
+                    result.addAll(users);
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns all users in a group.
+     *
+     * @param group the <em>entity.userGroup</em>.
+     * @return the users
+     */
+    public List<User> getUsers(Entity group) {
+        IMObjectBean bean = new IMObjectBean(group, service);
+        return bean.getNodeTargetObjects("users", User.class);
+    }
+
+    /**
      * Returns the follow-up work lists associated with a user.
      *
      * @param user the user
@@ -205,6 +262,22 @@ public class UserRules {
      */
     public List<Entity> getFollowupWorkLists(User user) {
         return new EntityBean(user, service).getNodeTargetEntities("followupWorkLists", SequenceComparator.INSTANCE);
+    }
+
+    /**
+     * Returns all active users available at a practice location.
+     * <p/>
+     * These are the users that have a link to the location, or no links to any location.
+     *
+     * @param location the practice location
+     * @return the active users available at the location
+     */
+    @SuppressWarnings("unchecked")
+    public List<User> getClinicians(Party location) {
+        IArchetypeQuery query = ClinicianQueryFactory.create(location);
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        List results = service.get(query).getResults();
+        return (List<User>) results;
     }
 
     /**

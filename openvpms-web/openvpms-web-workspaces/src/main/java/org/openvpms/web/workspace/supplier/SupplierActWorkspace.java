@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier;
@@ -23,7 +23,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
-import org.openvpms.web.component.workspace.BrowserCRUDWorkspace;
+import org.openvpms.web.component.workspace.QueryBrowserCRUDWorkspace;
 
 
 /**
@@ -32,7 +32,7 @@ import org.openvpms.web.component.workspace.BrowserCRUDWorkspace;
  * @author Tim Anderson
  */
 public abstract class SupplierActWorkspace<T extends Act>
-        extends BrowserCRUDWorkspace<Party, T> {
+        extends QueryBrowserCRUDWorkspace<Party, T> {
 
     /**
      * Constructs a {@link SupplierActWorkspace}.

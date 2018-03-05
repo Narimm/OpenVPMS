@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.problem;
@@ -23,13 +23,16 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.act.ActHierarchyFilter;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Filters patient problems.
- * <p/>
+ * <p>
  * This enables specific problems items to by included by archetype.
  *
  * @author Tim Anderson
@@ -37,13 +40,20 @@ import java.util.Set;
 public class ProblemFilter extends ActHierarchyFilter<Act> {
 
     /**
+     * The search criteria.
+     */
+    private final Predicate<Act> search;
+
+    /**
      * Constructs an {@link ProblemFilter}.
      *
      * @param shortNames the act short names
+     * @param search     the search criteria. May be {@code null}
      * @param ascending  if {@code true} sort items on ascending timestamp; otherwise sort on descending timestamp
      */
-    public ProblemFilter(String[] shortNames, boolean ascending) {
+    public ProblemFilter(String[] shortNames, Predicate<Act> search, boolean ascending) {
         super(shortNames, true);
+        this.search = search;
         setSortItemsAscending(ascending);
     }
 
@@ -59,6 +69,31 @@ public class ProblemFilter extends ActHierarchyFilter<Act> {
             return super.getComparator(true);
         }
         return super.getComparator(act);
+    }
+
+    /**
+     * Filters child acts.
+     *
+     * @param parent   the parent act
+     * @param children the child acts
+     * @param acts     the set of visited acts, keyed on reference
+     * @return the filtered acts
+     */
+    @Override
+    protected List<Act> filter(Act parent, List<Act> children, Map<IMObjectReference, Act> acts) {
+        List<Act> result;
+        if (search == null) {
+            result = children;
+        } else {
+            result = new ArrayList<>();
+            for (Act act : children) {
+                // events always match, so that the child acts can be searched.
+                if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT) || search.test(act)) {
+                    result.add(act);
+                }
+            }
+        }
+        return result;
     }
 
     /**

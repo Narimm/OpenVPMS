@@ -40,6 +40,7 @@
                 <include>org.openvpms:openvpms-framework</include>
                 <include>org.openvpms:openvpms-reports</include>
                 <include>org.openvpms:openvpms-etl-load</include>
+                <include>org.openvpms:openvpms-db</include>
                 <include>org.openvpms:jasperreports-scaler</include>
                 <include>org.apache.commons:commons-dbcp2</include>
                 <include>dom4j:dom4j</include>
@@ -114,15 +115,6 @@
             <outputDirectory>conf</outputDirectory>
         </fileSet>
 
-        <!-- startcom certification authority, required by Smart Flow Sheet -->
-        <fileSet>
-            <directory>${basedir}/src/conf/</directory>
-            <includes>
-                <include>startcom-ca.crt</include>
-            </includes>
-            <outputDirectory>conf</outputDirectory>
-        </fileSet>
-
         <!-- shell scripts -->
         <fileSet>
             <directory>${basedir}/src/bin</directory>
@@ -144,17 +136,7 @@
             <lineEnding>crlf</lineEnding>
         </fileSet>
 
-        <!-- database scripts -->
-        <fileSet>
-            <directory>${basedir}/src/db</directory>
-            <outputDirectory>db</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>${basedir}/target/db</directory>
-            <outputDirectory>db</outputDirectory>
-        </fileSet>
-
-        <!-- update scripts -->
+        <!-- legacy update scripts -->
         <fileSet>
             <directory>${basedir}/src/update</directory>
             <outputDirectory>update</outputDirectory>
@@ -180,6 +162,12 @@
                 <include>**/*.adl</include>
                 <include>**/*.xml</include>
             </includes>
+        </fileSet>
+
+        <!-- plugins -->
+        <fileSet>
+            <directory>${basedir}/target/plugins</directory>
+            <outputDirectory>plugins</outputDirectory>
         </fileSet>
 
         <!-- license -->

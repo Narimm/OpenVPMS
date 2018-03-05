@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.invoice;
@@ -33,8 +33,7 @@ import java.util.List;
 /**
  * Invoice rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class InvoiceRules {
 
@@ -49,13 +48,18 @@ public class InvoiceRules {
     private static final String[] REMINDER_STATUSES = {ActStatus.COMPLETED};
 
     /**
+     * Statuses of <em>act.patientAlerts</em> acts that should be retained.
+     */
+    private static final String[] ALERT_STATUSES = {ActStatus.COMPLETED};
+
+    /**
      * Statuses of <em>act.patientDocument*</em> acts that should be retained.
      */
     private static final String[] DOCUMENT_STATUSES = {ActStatus.COMPLETED, ActStatus.POSTED};
 
 
     /**
-     * Creates a new <tt>InvoiceRules</tt>.
+     * Constructs a {@link InvoiceRules}.
      *
      * @param service the archetype service
      */
@@ -64,8 +68,8 @@ public class InvoiceRules {
     }
 
     /**
-     * Invoked after an invoice item has been saved. Updates any reminders
-     * and documents associated with the product.
+     * Invoked after an invoice item has been saved. Updates any reminders, alerts and documents associated with the
+     * product.
      *
      * @param act the act
      */
@@ -124,6 +128,7 @@ public class InvoiceRules {
         List<Act> toRemove = new ArrayList<>();
         removeInvestigations(act, toRemove);
         removeRelatedActs(act, "reminders", REMINDER_STATUSES, toRemove);
+        removeRelatedActs(act, "alerts", ALERT_STATUSES, toRemove);
         removeRelatedActs(act, "documents", DOCUMENT_STATUSES, toRemove);
 
         if (!toRemove.isEmpty()) {

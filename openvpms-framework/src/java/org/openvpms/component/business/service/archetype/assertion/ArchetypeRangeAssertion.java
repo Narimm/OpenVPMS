@@ -1,24 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.assertion;
 
-// java core
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
@@ -28,12 +25,12 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
-import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyCollection;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.model.archetype.NamedProperty;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.util.StringUtilities;
 
@@ -47,8 +44,7 @@ import java.util.Map;
  * all static functions that take an object and property map as arguments and
  * return a boolean as a result.
  * 
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
  */
 public class ArchetypeRangeAssertion {
     /**
@@ -236,7 +232,7 @@ public class ArchetypeRangeAssertion {
      * @return ArchetypeRangeInfo[] an array of the archetype property info
      */
     private static List<ArchetypeRangeInfo> getArchetypeRangeInfo(AssertionDescriptor desc) {
-        List<ArchetypeRangeInfo> infos = new ArrayList<ArchetypeRangeInfo>();
+        List<ArchetypeRangeInfo> infos = new ArrayList<>();
         PropertyList archetypes = (PropertyList) desc.getPropertyMap()
                 .getProperties().get("archetypes");
         for (NamedProperty archetype : archetypes.getProperties()) {

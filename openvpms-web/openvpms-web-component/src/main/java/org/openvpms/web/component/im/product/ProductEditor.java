@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -31,7 +31,6 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.EditableIMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -41,8 +40,6 @@ import org.openvpms.web.component.im.relationship.MultipleEntityLinkCollectionEd
 import org.openvpms.web.component.im.relationship.RelationshipCollectionEditor;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.component.property.Modifiable;
-import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
@@ -111,6 +108,11 @@ public class ProductEditor extends AbstractIMObjectEditor {
      * Pricing groups node.
      */
     private static final String PRICING_GROUPS = "pricingGroups";
+
+    /**
+     * Preferred supplier node.
+     */
+    private static final String PREFERRED = "preferred";
 
     /**
      * Constructs a {@link ProductEditor}.
@@ -194,7 +196,7 @@ public class ProductEditor extends AbstractIMObjectEditor {
     protected boolean doValidation(Validator validator) {
         boolean valid = super.doValidation(validator);
         if (valid) {
-            valid = validateUnitPrices(validator) && validateDoses(validator);
+            valid = validateUnitPrices(validator) && validateDoses(validator) && validateSuppliers(validator);
         }
         return valid;
     }
@@ -226,11 +228,7 @@ public class ProductEditor extends AbstractIMObjectEditor {
     protected void onLayoutCompleted() {
         EditableIMObjectCollectionEditor editor = getSuppliersEditor();
         if (editor != null) {
-            editor.addModifiableListener(new ModifiableListener() {
-                public void modified(Modifiable modifiable) {
-                    onSupplierChanged();
-                }
-            });
+            editor.addModifiableListener(modifiable -> onSupplierChanged());
         }
     }
 
@@ -239,6 +237,7 @@ public class ProductEditor extends AbstractIMObjectEditor {
      */
     private void onSupplierChanged() {
         updateUnitPrices();
+        updatePreferred();
     }
 
     /**
@@ -296,8 +295,9 @@ public class ProductEditor extends AbstractIMObjectEditor {
         boolean valid = true;
         Product product = (Product) getObject();
         List<ProductPrice> unitPrices = new ArrayList<>();
-        for (ProductPrice price : product.getProductPrices()) {
-            if (TypeHelper.isA(price, ProductArchetypes.UNIT_PRICE)) {
+        for (org.openvpms.component.model.product.ProductPrice p : product.getProductPrices()) {
+            ProductPrice price = (ProductPrice) p;
+            if (price.isA(ProductArchetypes.UNIT_PRICE)) {
                 unitPrices.add(price);
             }
         }
@@ -434,6 +434,64 @@ public class ProductEditor extends AbstractIMObjectEditor {
             }
         }
         return true;
+    }
+
+    /**
+     * Invoked when a product-supplier relationship changes to ensure that only one is preferred.
+     */
+    private void updatePreferred() {
+        EditableIMObjectCollectionEditor suppliers = getSuppliersEditor();
+        if (suppliers != null) {
+            IMObjectEditor currentEditor = suppliers.getCurrentEditor();
+            if (currentEditor != null && currentEditor.getProperty(PREFERRED).getBoolean()) {
+                // current relationship is preferred. Ensure other suppliers are not preferred
+                for (IMObject object : suppliers.getCurrentObjects()) {
+                    if (!object.equals(currentEditor.getObject())) {
+                        IMObjectEditor editor = suppliers.getEditor(object);
+                        if (editor != null) {
+                            Property preferred = editor.getProperty(PREFERRED);
+                            if (preferred.getBoolean()) {
+                                preferred.setValue(false);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Ensures that a product has only one preferred supplier.
+     *
+     * @param validator the validator
+     * @return {@code true} if there is at most one preferred supplier, otherwise {@code false}
+     */
+    private boolean validateSuppliers(Validator validator) {
+        boolean valid = true;
+        EditableIMObjectCollectionEditor editor = getSuppliersEditor();
+        if (editor != null) {
+            IMObjectReference preferred = null;
+            for (IMObject object : editor.getCurrentObjects()) {
+                IMObjectRelationship relationship = (IMObjectRelationship) object;
+                IMObjectBean bean = new IMObjectBean(relationship);
+                if (bean.getBoolean(PREFERRED)) {
+                    if (preferred != null) {
+                        IMObject first = getObject(preferred);
+                        IMObject second = getObject(relationship.getTarget());
+                        String firstName = (first != null) ? first.getName() : null;
+                        String secondName = (second != null) ? second.getName() : null;
+                        // shouldn't fail to retrieve suppliers...
+                        String message = Messages.format("product.supplier.multiplepreferred", firstName, secondName);
+                        validator.add(editor.getProperty(), new ValidatorError(editor.getProperty(), message));
+                        valid = false;
+                        break;
+                    } else {
+                        preferred = relationship.getTarget();
+                    }
+                }
+            }
+        }
+        return valid;
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.model;
@@ -27,6 +27,11 @@ import java.util.Date;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Hospitalization {
+
+    /**
+     * Status indicating the hospitalization is active.
+     */
+    public static final String ACTIVE_STATUS = "active";
 
     /**
      * Describes the type of the object transferred with the SFS events. Should be assigned hospitalization value.

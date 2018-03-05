@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -53,6 +53,25 @@ import static org.junit.Assert.fail;
 public abstract class AbstractDataSourceTest<T> extends AbstractReportTest {
 
     /**
+     * Helper class for testing {@link AbstractDataSource#getExpressionDataSource(String)}.
+     */
+    public static class TestFunctions {
+
+        private List<IMObject> objects;
+
+        public TestFunctions(List<IMObject> objects) {
+            this.objects = objects;
+        }
+
+        public Iterable<IMObject> getIterable() {
+            return objects;
+        }
+
+        public void invalid() {
+        }
+    }
+
+    /**
      * Tests the {@link DataSource#getExpressionDataSource(String)} method.
      *
      * @throws Exception for any error
@@ -60,10 +79,13 @@ public abstract class AbstractDataSourceTest<T> extends AbstractReportTest {
     @Test
     public void testExpressionDataSource() throws Exception {
         Party customer = TestHelper.createCustomer(false);
+        Party patient = TestHelper.createPatient(customer, false);
+        patient.setName("Fido");
         List<T> objects = createCollection(customer);
         Map<String, Object> fields = new HashMap<>();
         fields.put("Globals.A", "A");
         fields.put("Globals.1", 1);
+        fields.put("OpenVPMS.patient", patient);
         PropertySet f = new ResolvingPropertySet(fields, getArchetypeService(), getLookupService());
         DataSource source = createDataSource(objects, new Parameters(null), f);
         assertTrue(source.next());
@@ -105,7 +127,6 @@ public abstract class AbstractDataSourceTest<T> extends AbstractReportTest {
      */
     protected abstract List<T> createCollection(Party... customers);
 
-
     /**
      * Tests the {@link AbstractDataSource#getExpressionDataSource(String)} method.
      *
@@ -144,6 +165,13 @@ public abstract class AbstractDataSourceTest<T> extends AbstractReportTest {
         } catch (JRException expected) {
             // do nothing
         }
+
+        // test expression accessing field
+        JRRewindableDataSource expressionDataSource2 = dataSource.getExpressionDataSource("$OpenVPMS.patient");
+        assertTrue(expressionDataSource2.next());
+        JRField name = createField("name", String.class);
+        assertEquals("Fido", expressionDataSource2.getFieldValue(name));
+        assertFalse(expressionDataSource2.next());
     }
 
     /**
@@ -172,26 +200,6 @@ public abstract class AbstractDataSourceTest<T> extends AbstractReportTest {
             Object expected = expectedFields.get(name);
             Object value = dataSource.getFieldValue(createField(name, expected.getClass()));
             assertEquals(expected, value);
-        }
-    }
-
-
-    /**
-     * Helper class for testing {@link AbstractDataSource#getExpressionDataSource(String)}.
-     */
-    public static class TestFunctions {
-
-        private List<IMObject> objects;
-
-        public TestFunctions(List<IMObject> objects) {
-            this.objects = objects;
-        }
-
-        public Iterable<IMObject> getIterable() {
-            return objects;
-        }
-
-        public void invalid() {
         }
     }
 }

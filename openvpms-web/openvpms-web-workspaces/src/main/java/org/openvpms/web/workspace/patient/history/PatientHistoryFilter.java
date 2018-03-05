@@ -11,15 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
 
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -30,14 +31,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
+import java.util.function.Predicate;
 
 
 /**
  * Filters patient history.
- * <p/>
+ * <p>
  * This:
  * <ul>
  * <li>enables specific event items to by included by archetype</li>
@@ -60,8 +61,13 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
     private final boolean invoice;
 
     /**
+     * The search criteria.
+     */
+    private final Predicate<Act> search;
+
+    /**
      * Constructs a {@link PatientHistoryFilter}.
-     * <p/>
+     * <p>
      * Items are sorted on ascending timestamp.
      *
      * @param shortNames the history item short names to include
@@ -77,9 +83,21 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
      * @param sortAscending if {@code true} sort items on ascending timestamp; otherwise sort on descending timestamp
      */
     public PatientHistoryFilter(String[] shortNames, boolean sortAscending) {
+        this(shortNames, null, sortAscending);
+    }
+
+    /**
+     * Constructs a {@link PatientHistoryFilter}.
+     *
+     * @param shortNames    the history item short names to include
+     * @param search        the search criteria. May be {@code null}
+     * @param sortAscending if {@code true} sort items on ascending timestamp; otherwise sort on descending timestamp
+     */
+    public PatientHistoryFilter(String[] shortNames, Predicate<Act> search, boolean sortAscending) {
         super();
         this.shortNames = new ArrayList<>(Arrays.asList(shortNames));
         invoice = this.shortNames.remove(CustomerAccountArchetypes.INVOICE_ITEM);
+        this.search = search;
         setSortItemsAscending(sortAscending);
     }
 
@@ -102,22 +120,43 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
      *
      * @param parent   the parent act
      * @param children the child acts
+     * @param acts     the set of visited acts, keyed on reference
      * @return the filtered acts
      */
     @Override
-    protected List<Act> filter(Act parent, List<Act> children) {
+    protected List<Act> filter(Act parent, List<Act> children, Map<IMObjectReference, Act> acts) {
         List<Act> result;
         if (invoice && TypeHelper.isA(parent, PatientArchetypes.CLINICAL_EVENT)) {
-            result = filterInvoiceItems(parent, children);
-        } else {
+            children = filterInvoiceItems(parent, children);
+        }
+        if (search == null) {
             result = children;
+        } else {
+            result = new ArrayList<>();
+            for (Act act : children) {
+                if (search.test(act)) {
+                    result.add(act);
+                } else if (supportsVersions(act)) {
+                    // need to look at the version acts before deciding to exclude the parent act
+                    boolean add = false;
+                    for (Act child : getChildren(act, acts)) {
+                        if (search.test(child)) {
+                            add = true;
+                            break;
+                        }
+                    }
+                    if (add) {
+                        result.add(act);
+                    }
+                }
+            }
         }
         return result;
     }
 
     /**
      * Determines if a child act should be included.
-     * <p/>
+     * <p>
      * This implementation excludes children of <em>act.patientClinicalProblem</em> acts that are linked to an event
      * different to the root.
      *
@@ -145,9 +184,22 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
      * @return the filtered relationships
      */
     @Override
-    protected Collection<ActRelationship> getRelationships(Act act) {
+    protected Collection<org.openvpms.component.model.act.ActRelationship> getRelationships(Act act) {
         String[] acts = shortNames.toArray(new String[shortNames.size()]);
         return getRelationships(act.getSourceActRelationships(), createIsA(acts, true));
+    }
+
+    /**
+     * Determines if an act is a document act that supports versioned documents.
+     *
+     * @param act the act
+     * @return {@code true} if the act supports versioned document
+     */
+    private boolean supportsVersions(Act act) {
+        return act instanceof DocumentAct && TypeHelper.isA(act, InvestigationArchetypes.PATIENT_INVESTIGATION,
+                                                            PatientArchetypes.DOCUMENT_ATTACHMENT,
+                                                            PatientArchetypes.DOCUMENT_LETTER,
+                                                            PatientArchetypes.DOCUMENT_IMAGE);
     }
 
     /**
@@ -160,14 +212,8 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
     private List<Act> filterInvoiceItems(Act event, List<Act> children) {
         List<Act> result;
         result = new ArrayList<>(children);
-        Set<IMObjectReference> chargeItemRefs = new HashSet<>();
         ActBean bean = new ActBean(event);
-        for (ActRelationship relationship : bean.getRelationships(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM)) {
-            IMObjectReference target = relationship.getTarget();
-            if (target != null) {
-                chargeItemRefs.add(target);
-            }
-        }
+        List<IMObjectReference> chargeItemRefs = bean.getNodeTargetObjectRefs("chargeItems");
         if (!chargeItemRefs.isEmpty()) {
             for (int i = 0; i < children.size() && !chargeItemRefs.isEmpty(); ++i) {
                 Act act = children.get(i);

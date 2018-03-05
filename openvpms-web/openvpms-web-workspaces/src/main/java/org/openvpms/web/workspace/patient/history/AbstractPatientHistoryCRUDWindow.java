@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -26,10 +26,11 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
+import org.openvpms.web.component.im.doc.DocumentGeneratorFactory;
 import org.openvpms.web.component.im.edit.IMObjectActions;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
@@ -176,17 +177,17 @@ public class AbstractPatientHistoryCRUDWindow extends AbstractCRUDWindow<Act> im
             documentActions.externalEdit(act);
         } else {
             // the act has no document attached. Try and generate it first.
-            DocumentGenerator generator = new DocumentGenerator(
-                    act, getContext(), getHelpContext(),
-                    new DocumentGenerator.AbstractListener() {
-                        @Override
-                        public void generated(Document document) {
-                            onSaved(act, false);
-                            if (documentActions.canExternalEdit(act)) {
-                                documentActions.externalEdit(act);
-                            }
-                        }
-                    });
+            DocumentGeneratorFactory factory = ServiceHelper.getBean(DocumentGeneratorFactory.class);
+            DocumentGenerator generator = factory.create(act, getContext(), getHelpContext(),
+                                                         new DocumentGenerator.AbstractListener() {
+                                                             @Override
+                                                             public void generated(Document document) {
+                                                                 onSaved(act, false);
+                                                                 if (documentActions.canExternalEdit(act)) {
+                                                                     documentActions.externalEdit(act);
+                                                                 }
+                                                             }
+                                                         });
             generator.generate(true, false);
         }
     }

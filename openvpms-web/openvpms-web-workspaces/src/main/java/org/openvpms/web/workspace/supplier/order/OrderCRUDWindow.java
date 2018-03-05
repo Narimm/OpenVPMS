@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.order;
@@ -19,16 +19,22 @@ package org.openvpms.web.workspace.supplier.order;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.supplier.OrderRules;
 import org.openvpms.archetype.rules.supplier.OrderStatus;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
+import org.openvpms.archetype.rules.user.UserRules;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.esci.adapter.client.OrderServiceAdapter;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
@@ -67,6 +73,10 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
      */
     private static final String GENERATE_ID = "button.generateOrders";
 
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(OrderCRUDWindow.class);
 
     /**
      * Constructs an {@code OrderCRUDWindow}.
@@ -169,6 +179,35 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
         } catch (OpenVPMSException exception) {
             String title = Messages.get("supplier.order.copy.failed");
             ErrorHelper.show(title, exception);
+        }
+    }
+
+    /**
+     * Confirms that the user wants to post the act, if the order contains no restricted products
+     * or the user is a clinician.
+     *
+     * @param act      the act to post
+     * @param callback the callback to handle the posting, if the user confirms it
+     */
+    @Override
+    protected void confirmPost(Act act, Runnable callback) {
+        PracticeRules practiceRules = ServiceHelper.getBean(PracticeRules.class);
+        OrderRules orderRules = SupplierHelper.createOrderRules(getContext().getPractice());
+
+        boolean restricted = false;
+        if (practiceRules.isOrderingRestricted(getContext().getPractice())) {
+            UserRules userRules = ServiceHelper.getBean(UserRules.class);
+            User user = getContext().getUser();
+            if (!userRules.isClinician(user) && orderRules.hasRestrictedProducts(act)) {
+                log.warn("A user has attempted to finalise a restricted order. User=" + user.getUsername() + ", order="
+                         + act.getId());
+                InformationDialog.show(Messages.get("supplier.order.restricted.title"),
+                                       Messages.get("supplier.order.restricted.message"));
+                restricted = true;
+            }
+        }
+        if (!restricted) {
+            super.confirmPost(act, callback);
         }
     }
 

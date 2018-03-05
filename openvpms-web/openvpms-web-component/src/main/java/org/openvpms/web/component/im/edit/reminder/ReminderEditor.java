@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.reminder;
@@ -21,16 +21,29 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Editor;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.patient.PatientActEditor;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
-import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * An editor for {@link Act}s which have an archetype of <em>act.patientReminder</em>.
@@ -58,11 +71,33 @@ public class ReminderEditor extends PatientActEditor {
      */
     public ReminderEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
+        addStartEndTimeListeners();
         if (!TypeHelper.isA(act, ReminderArchetypes.REMINDER)) {
             throw new IllegalArgumentException(
                     "Invalid act type:" + act.getArchetypeId().getShortName());
         }
         rules = ServiceHelper.getBean(ReminderRules.class);
+    }
+
+    /**
+     * Sets the created time.
+     * <p/>
+     * Due dates are calculated relative to this.
+     * TODO - this won't work when createdTime is populated by the persistence layer. A separate date will be required
+     *
+     * @param created the created time
+     */
+    public void setCreatedTime(Date created) {
+        getProperty("createdTime").setValue(created);
+    }
+
+    /**
+     * Returns the created time.
+     *
+     * @return the created time. May be {@code null}
+     */
+    public Date getCreatedTime() {
+        return getProperty("createdTime").getDate();
     }
 
     /**
@@ -102,6 +137,15 @@ public class ReminderEditor extends PatientActEditor {
     }
 
     /**
+     * Returns the reminder count.
+     *
+     * @return the reminder count
+     */
+    public int getReminderCount() {
+        return getProperty("reminderCount").getInt();
+    }
+
+    /**
      * Determines if matching reminders should be marked completed, if the reminder is new and IN_PROGRESS when it is
      * saved.
      * <p/>
@@ -129,6 +173,82 @@ public class ReminderEditor extends PatientActEditor {
             };
             reminderType.addModifiableListener(listener);
         }
+
+        ActRelationshipCollectionEditor items = getItems();
+        if (items != null) {
+            items.setExcludeDefaultValueObject(false);
+        }
+    }
+
+    /**
+     * Validates that the start and end times are valid.
+     * <p/>
+     * This ensures that the start time (i.e. Next Due Date) is &gt;= the end time (First Due Date).
+     *
+     * @param validator the validator
+     * @return {@code true} if the start and end times are valid
+     */
+    @Override
+    protected boolean validateStartEndTimes(Validator validator) {
+        boolean result = true;
+        Date start = getStartTime();
+        Date end = getEndTime();
+        if (start != null && end != null && start.getTime() < end.getTime()) {
+            validator.add(this, new ValidatorError(Messages.get("patient.reminder.firstDueGreaterThanNextDue")));
+            result = false;
+        }
+        return result;
+    }
+
+    /**
+     * Invoked when the start time changes.
+     * <p>
+     * For reminders, the start time represents the next due date. It must be the same as or greater than the original
+     * due date (endTime).
+     */
+    @Override
+    protected void onStartTimeChanged() {
+        Date start = getStartTime();
+        Date end = getEndTime();
+        if (start != null && end != null) {
+            if (start.compareTo(end) < 0) {
+                setStartTime(end, true);
+            }
+        }
+        updateReminderItemSendDates();
+    }
+
+    private void updateReminderItemSendDates() {
+        Date start;// propagate the next due date to each of the reminder items with the same reminder count.
+        ActRelationshipCollectionEditor items = getItems();
+        if (items != null) {
+            start = getStartTime();
+            int count = getReminderCount();
+            for (Act item : items.getCurrentActs()) {
+                IMObjectEditor editor = items.getEditor(item);
+                if (editor instanceof ReminderItemEditor) {
+                    ReminderItemEditor itemEditor = (ReminderItemEditor) editor;
+                    if (itemEditor.getCount() == count) {
+                        itemEditor.setEndTime(start);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Invoked when the end time changes. For reminders, the end represents the original due date.
+     * <p>
+     * This populates the start time if with the same value, if it is unset.
+     */
+    @Override
+    protected void onEndTimeChanged() {
+        Date end = getEndTime();
+        if (end != null || getReminderCount() == 0) {
+            setStartTime(end, true);
+
+            updateReminderItemSendDates();
+        }
     }
 
     /**
@@ -146,16 +266,83 @@ public class ReminderEditor extends PatientActEditor {
     }
 
     /**
+     * Validates the object.
+     * <p/>
+     * This extends validation by ensuring that the start time is less than the end time, if non-null.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        boolean valid = super.doValidation(validator);
+        if (valid) {
+            valid = validateItems(validator);
+        }
+        return valid;
+    }
+
+    /**
+     * Ensures that reminder item counts aren't duplicated.
+     *
+     * @param validator the validator
+     * @return {@code true} if the items are valid
+     */
+    private boolean validateItems(Validator validator) {
+        boolean valid = true;
+        ActRelationshipCollectionEditor items = getItems();
+        if (items != null) {
+            List<Act> acts = items.getCurrentActs();
+            if (acts.size() > 1) {
+                Map<Integer, Set<String>> map = new HashMap<>();
+                for (Act act : acts) {
+                    ActBean bean = new ActBean(act);
+                    int count = bean.getInt("count");
+                    Set<String> set = map.get(count);
+                    if (set == null) {
+                        set = new HashSet<>();
+                        map.put(count, set);
+                    }
+                    String archetype = act.getArchetypeId().getShortName();
+                    if (set.contains(archetype)) {
+                        String message = Messages.format("patient.reminder.duplicateItem",
+                                                         DescriptorHelper.getDisplayName(archetype), count);
+                        validator.add(this, new ValidatorError(message));
+                        valid = false;
+                        break;
+                    } else {
+                        set.add(archetype);
+                    }
+                }
+            }
+        }
+        return valid;
+    }
+
+    /**
      * Updates the Due Date based on the reminderType reminder interval.
      */
     private void onReminderTypeChanged() {
         try {
-            rules.calculateReminderDueDate(getObject());
-            Property property = getProperty("endTime");
-            property.refresh();
+            Date created = getCreatedTime();
+            Entity reminderType = getReminderType();
+            if (created != null && reminderType != null) {
+                Date dueDate = rules.calculateReminderDueDate(created, reminderType);
+                setStartTime(dueDate);
+                setEndTime(dueDate);
+            }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
+    }
+
+    /**
+     * Returns the reminder items.
+     *
+     * @return the reminder items, or {@code null} if they haven't been created yet
+     */
+    private ActRelationshipCollectionEditor getItems() {
+        return (ActRelationshipCollectionEditor) getEditor("items", false);
     }
 
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
@@ -237,6 +237,10 @@ public abstract class AbstractLoader implements Loader {
     protected boolean loadWithDuplicateCheck(DocumentAct act, File file, LoadContext context) {
         boolean result = false;
         try {
+            if (ActStatus.CANCELLED.equals(act.getStatus())) {
+                throw new DocumentLoaderException(DocumentLoaderException.ErrorCode.CannotLoadToCancelledAct,
+                                                  DescriptorHelper.getDisplayName(act, service), act.getId());
+            }
             Document doc = createDocument(file);
             DocumentAct duplicate = getDuplicate(act, doc);
             if (duplicate != null && file.getName().equals(duplicate.getFileName())) {

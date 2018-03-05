@@ -11,32 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
 
 import nextapp.echo2.app.event.ActionEvent;
-import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.prescription.PrescriptionRules;
-import org.openvpms.archetype.rules.practice.LocationRules;
-import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
-import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.product.ProductHelper;
-import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.ActCRUDWindow;
@@ -49,10 +37,7 @@ import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
-import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
-import org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActEditor;
-import org.openvpms.web.workspace.customer.charge.DefaultEditorQueue;
+import org.openvpms.web.workspace.patient.mr.prescription.PrescriptionDispenser;
 
 /**
  * CRUD window for patient prescriptions.
@@ -147,7 +132,6 @@ public class PatientPrescriptionCRUDWindow extends ActCRUDWindow<Act> {
      * Dispenses a prescription.
      */
     protected void onDispense() {
-        CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
         Context context = getContext();
         Act prescription = IMObjectHelper.reload(getObject());
         if (prescription == null || !getActions().canDispense(prescription)) {
@@ -158,53 +142,8 @@ public class PatientPrescriptionCRUDWindow extends ActCRUDWindow<Act> {
             if (customer == null) {
                 ErrorHelper.show(Messages.get("patient.prescription.nocustomer"));
             } else {
-                ActBean prescriptionBean = new ActBean(prescription);
-                Product product = (Product) prescriptionBean.getNodeParticipant("product");
-                if (product == null || !product.isActive()) {
-                    ErrorHelper.show(Messages.get("patient.prescription.noproduct"));
-                } else {
-                    FinancialAct invoice = rules.getInvoice(customer);
-                    Party location = null;
-                    if (invoice == null) {
-                        invoice = (FinancialAct) IMObjectCreator.create(CustomerAccountArchetypes.INVOICE);
-                        ActBean invoiceBean = new ActBean(invoice);
-                        invoiceBean.addNodeParticipation("customer", customer);
-                    } else {
-                        ActBean invoiceBean = new ActBean(invoice);
-                        location = (Party) invoiceBean.getNodeParticipant("location");
-                    }
-                    if (location == null) {
-                        location = context.getLocation();
-                    }
-                    if (!checkDispense(product, location, context)) {
-                        if (!ObjectUtils.equals(location, context.getLocation())) {
-                            ErrorHelper.show(Messages.format("patient.prescription.notatinvoicelocation",
-                                                             product.getName(), location.getName()));
-                        } else {
-                            ErrorHelper.show(Messages.format("patient.prescription.notatlocation", product.getName()));
-                        }
-                    } else {
-                        DefaultLayoutContext layout = new DefaultLayoutContext(
-                                new LocalContext(context), getHelpContext());
-                        final CustomerChargeActEditor editor
-                                = new DefaultCustomerChargeActEditor(invoice, null, layout, false);
-                        editor.getComponent();
-                        CustomerChargeActItemEditor item = editor.addItem();
-                        item.getComponent();
-                        item.setPromptForPrescriptions(false);
-                        item.setCancelPrescription(true);
-                        item.getPrescriptions().add(prescription);
-                        item.setEditorQueue(new DefaultEditorQueue(context) {
-                            @Override
-                            protected void completed() {
-                                super.completed();
-                                SaveHelper.save(editor);
-                                onSaved(getObject(), false);
-                            }
-                        });
-                        item.setProduct(product);
-                    }
-                }
+                PrescriptionDispenser dispenser = new PrescriptionDispenser(context, getHelpContext());
+                dispenser.dispense(prescription, customer, () -> onSaved(getObject(), false));
             }
         }
     }
@@ -235,26 +174,6 @@ public class PatientPrescriptionCRUDWindow extends ActCRUDWindow<Act> {
         }
     }
 
-    /**
-     * Checks if a product can be dispensed at the specified location.
-     *
-     * @param product  the product
-     * @param location the location
-     * @param context  the context
-     * @return {@code true} if the product can be dispensed at the location
-     */
-    private boolean checkDispense(Product product, Party location, Context context) {
-        boolean result;
-        if (ProductHelper.useLocationProducts(context)) {
-            LocationRules locationRules = ServiceHelper.getBean(LocationRules.class);
-            StockRules rules = ServiceHelper.getBean(StockRules.class);
-            Party stockLocation = locationRules.getDefaultStockLocation(location);
-            result = stockLocation != null && rules.hasStockRelationship(product, stockLocation);
-        } else {
-            result = true;
-        }
-        return result;
-    }
 
     protected static class PrescriptionActions extends ActActions<Act> {
 

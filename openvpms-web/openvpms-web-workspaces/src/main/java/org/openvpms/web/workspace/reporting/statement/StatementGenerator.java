@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -28,9 +28,10 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.EmailTemplateEvaluator;
 import org.openvpms.web.component.mail.MailContext;
@@ -159,19 +160,22 @@ class StatementGenerator extends AbstractStatementGenerator {
                                                   "Context has no practice");
         }
 
+        ReporterFactory factory = ServiceHelper.getBean(ReporterFactory.class);
         processor = new StatementProcessor(date, practice, ServiceHelper.getArchetypeService(),
                                            ServiceHelper.getBean(CustomerAccountRules.class));
         progressBarProcessor = new StatementProgressBarProcessor(processor, customers);
 
-        StatementPrintProcessor printer = new StatementPrintProcessor(progressBarProcessor, getCancelListener(),
-                                                                      practice, context, mailContext, help);
+        StatementPrintProcessor printer = new StatementPrintProcessor(progressBarProcessor, factory,
+                                                                      getCancelListener(), practice, context,
+                                                                      mailContext, help);
         if (printOnly) {
             processor.addListener(printer);
             printer.setUpdatePrinted(false);
         } else {
             PracticeMailService mailService = ServiceHelper.getBean(PracticeMailService.class);
             EmailTemplateEvaluator evaluator = ServiceHelper.getBean(EmailTemplateEvaluator.class);
-            StatementEmailProcessor mailer = new StatementEmailProcessor(mailService, evaluator, practice, context);
+            StatementEmailProcessor mailer = new StatementEmailProcessor(mailService, evaluator, factory, practice,
+                                                                         context);
             processor.addListener(new StatementDelegator(printer, mailer));
         }
     }

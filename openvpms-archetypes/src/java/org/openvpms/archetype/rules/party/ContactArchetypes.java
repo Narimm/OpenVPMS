@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -49,4 +49,38 @@ public class ContactArchetypes {
      */
     public static final String PURPOSE = "lookup.contactPurpose";
 
+    /**
+     * Home lookup.contactPurpose code.
+     */
+    public static final String HOME_PURPOSE = "HOME";
+
+    /**
+     * Work lookup.contactPurpose code.
+     */
+    public static final String WORK_PURPOSE = "WORK";
+
+    /**
+     * Mobile lookup.contactPurpose code.
+     */
+    public static final String MOBILE_PURPOSE = "MOBILE";
+
+    /**
+     * Fax lookup.contactPurpose code.
+     */
+    public static final String FAX_PURPOSE = "FAX";
+
+    /**
+     * Correspondence lookup.contactPurpose code.
+     */
+    public static final String CORRESPONDENCE_PURPOSE = "CORRESPONDENCE";
+
+    /**
+     * Billing lookup.contactPurpose code.
+     */
+    public static final String BILLING_PURPOSE = "BILLING";
+
+    /**
+     * Reminder lookup.contactPurpose code.
+     */
+    public static final String REMINDER_PURPOSE = "REMINDER";
 }

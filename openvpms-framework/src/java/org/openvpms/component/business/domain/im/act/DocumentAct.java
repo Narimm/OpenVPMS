@@ -1,42 +1,33 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
 package org.openvpms.component.business.domain.im.act;
 
-// commons-lang
-
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.model.object.Reference;
 
 /**
  * Document specific-act
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
  */
-public class DocumentAct extends Act {
-    /**
-     * Default SUID
-     */
-    private static final long serialVersionUID = 1L;
-
+public class DocumentAct extends Act implements org.openvpms.component.model.act.DocumentAct {
     /**
      * The version of the document
      */
@@ -61,6 +52,11 @@ public class DocumentAct extends Act {
      * A reference to the actual {@link Document}
      */
     private IMObjectReference docReference;
+
+    /**
+     * Default SUID
+     */
+    private static final long serialVersionUID = 1L;
 
     /**
      * Default constructor
@@ -88,11 +84,20 @@ public class DocumentAct extends Act {
     }
 
     /**
+     * Sets the document reference.
+     *
+     * @param reference the document reference. May be <tt>null</tt>
+     */
+    public void setDocument(Reference reference) {
+        setDocument((IMObjectReference) reference);
+    }
+
+    /**
      * @return Returns the document.
      * @deprecated use {@link #getDocument()}
      */
     @Deprecated
-    public IMObjectReference getDocReference() {
+    public Reference getDocReference() {
         return getDocument();
     }
 

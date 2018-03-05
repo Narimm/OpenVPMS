@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -40,29 +40,14 @@ public abstract class AbstractMultiDayTableModel extends ScheduleTableModel {
     public static final int SCHEDULE_INDEX = 0;
 
     /**
-     * Date column.
-     */
-    protected static class DateColumn extends Column {
-
-        public DateColumn(int modelIndex, Date startTime) {
-            super(modelIndex, null);
-            setHeaderValue(startTime);
-            setHeaderRenderer(MultiDayTableHeaderRenderer.INSTANCE);
-        }
-    }
-
-    /**
      * Constructs an {@link AbstractMultiDayTableModel}.
      *
-     * @param grid                 the appointment grid
-     * @param context              the context
-     * @param eventColours         the event colours
-     * @param clinicianColours     the clinician colours
-     * @param blockingEventColours the blocking event colours
+     * @param grid    the appointment grid
+     * @param context the context
+     * @param colours the colour cache
      */
-    public AbstractMultiDayTableModel(ScheduleEventGrid grid, Context context, ScheduleColours eventColours,
-                                      ScheduleColours clinicianColours, ScheduleColours blockingEventColours) {
-        super(grid, context, false, eventColours, clinicianColours, blockingEventColours);
+    public AbstractMultiDayTableModel(ScheduleEventGrid grid, Context context, ScheduleColours colours) {
+        super(grid, context, false, colours);
     }
 
     /**
@@ -121,6 +106,18 @@ public abstract class AbstractMultiDayTableModel extends ScheduleTableModel {
     @Override
     protected int getCellColumn(int slot) {
         return slot + 1;
+    }
+
+    /**
+     * Date column.
+     */
+    protected static class DateColumn extends Column {
+
+        public DateColumn(int modelIndex, Date startTime) {
+            super(modelIndex, null);
+            setHeaderValue(startTime);
+            setHeaderRenderer(MultiDayTableHeaderRenderer.INSTANCE);
+        }
     }
 
 }

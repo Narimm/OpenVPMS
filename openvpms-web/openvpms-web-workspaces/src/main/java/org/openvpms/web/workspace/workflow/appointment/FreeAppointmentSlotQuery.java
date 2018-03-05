@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -33,10 +33,10 @@ import org.openvpms.archetype.rules.workflow.FreeSlotQuery;
 import org.openvpms.archetype.rules.workflow.Slot;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.cache.MapIMObjectCache;
 import org.openvpms.web.component.bound.BoundSelectFieldFactory;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
@@ -84,11 +84,6 @@ class FreeAppointmentSlotQuery extends ScheduleQuery {
     private final Date date;
 
     /**
-     * The date range.
-     */
-    private DateRange dateRange;
-
-    /**
      * The 'from' time, used to restrict free slots to those after a time each day.
      */
     private final Property fromTime;
@@ -109,11 +104,6 @@ class FreeAppointmentSlotQuery extends ScheduleQuery {
     private final Property durationUnits;
 
     /**
-     * The cage type selector.
-     */
-    private SelectField cageSelector;
-
-    /**
      * The container for the cage type label.
      */
     private final Component cageLabelContainer = new Row();
@@ -122,6 +112,16 @@ class FreeAppointmentSlotQuery extends ScheduleQuery {
      * The container for the cage type selector.
      */
     private final Component cageContainer = new Row();
+
+    /**
+     * The date range.
+     */
+    private DateRange dateRange;
+
+    /**
+     * The cage type selector.
+     */
+    private SelectField cageSelector;
 
 
     /**
@@ -384,7 +384,7 @@ class FreeAppointmentSlotQuery extends ScheduleQuery {
      * Updates the cage types for the selected view.
      */
     private void updateCageTypes() {
-        Map<IMObjectReference, IMObject> cageTypes;
+        Map<Reference, IMObject> cageTypes;
         if (AppointmentHelper.isMultiDayView(getScheduleView())) {
             cageTypes = new HashMap<>();
             IArchetypeRuleService service = ServiceHelper.getArchetypeService();

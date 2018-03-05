@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -19,16 +19,16 @@ package org.openvpms.web.component.property;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.archetype.AssertionDescriptor;
+import org.openvpms.component.service.archetype.ValidationError;
 import org.openvpms.web.component.im.util.ObjectHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -254,6 +254,16 @@ public class IMObjectProperty extends AbstractProperty
      */
     public boolean isLookup() {
         return descriptor.isLookup();
+    }
+
+    /**
+     * Determines if the property is a password.
+     *
+     * @return {@code true} if it is a password
+     */
+    @Override
+    public boolean isPassword() {
+        return descriptor.containsAssertionType("password");
     }
 
     /**
@@ -534,6 +544,7 @@ public class IMObjectProperty extends AbstractProperty
      *
      * @param exception the reason for the failure
      */
+    @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
     private void invalidate(DescriptorException exception) {
         log.warn(exception.getMessage(), exception);
         resetErrors();

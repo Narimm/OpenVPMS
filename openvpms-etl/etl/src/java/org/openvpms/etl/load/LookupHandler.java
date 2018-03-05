@@ -1,26 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.load;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -28,14 +26,20 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import static org.openvpms.etl.load.LoaderException.ErrorCode.*;
+import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.archetype.AssertionDescriptor;
+import org.openvpms.component.model.archetype.NamedProperty;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.openvpms.etl.load.LoaderException.ErrorCode.ArchetypeNotFound;
+import static org.openvpms.etl.load.LoaderException.ErrorCode.LookupNotFound;
+import static org.openvpms.etl.load.LoaderException.ErrorCode.LookupRelationshipNotFound;
+import static org.openvpms.etl.load.LoaderException.ErrorCode.LookupRelationshipTargetNotFound;
 
 
 /**
@@ -46,22 +50,25 @@ import java.util.Map;
 class LookupHandler {
 
     /**
-     * The archetype service.
-     */
-    private final IArchetypeService service;
-
-    /**
      * A mapping of lookup nodes to their corresponding lookup descriptors.
      */
-    Map<NodeDescriptor, LookupDescriptor> lookups
-            = new HashMap<NodeDescriptor, LookupDescriptor>();
+    Map<NodeDescriptor, LookupDescriptor> lookups = new HashMap<>();
 
     /**
      * A mapping of target lookup nodes to their corresponding lookup
      * relationship descriptors.
      */
-    Map<NodeDescriptor, LookupRelationshipDescriptor> relationships
-            = new HashMap<NodeDescriptor, LookupRelationshipDescriptor>();
+    Map<NodeDescriptor, LookupRelationshipDescriptor> relationships = new HashMap<>();
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
+     * Exception messages.
+     */
+    private final ExceptionHelper messages;
 
     /**
      * The error listener, to notify of processing errors. May be <tt>null</tt>
@@ -72,11 +79,6 @@ class LookupHandler {
      * The lookup cache.
      */
     private LookupCache cache;
-
-    /**
-     * Exception messages.
-     */
-    private final ExceptionHelper messages;
 
 
     /**
@@ -92,8 +94,7 @@ class LookupHandler {
         messages = new ExceptionHelper(service);
 
         // cache of lookups of type 'targetLookup'
-        Map<NodeDescriptor, ArchetypeDescriptor> targets
-                = new HashMap<NodeDescriptor, ArchetypeDescriptor>();
+        Map<NodeDescriptor, ArchetypeDescriptor> targets = new HashMap<>();
 
         // for each node in the mapping, determine which of those nodes are
         // lookups. Lookups of type 'lookup' are processed first.
@@ -300,8 +301,7 @@ class LookupHandler {
      */
     @SuppressWarnings("HardCodedStringLiteral")
     private void processLookupDescriptor(NodeDescriptor descriptor) {
-        AssertionDescriptor assertion
-                = descriptor.getAssertionDescriptor("lookup");
+        AssertionDescriptor assertion = descriptor.getAssertionDescriptor("lookup");
         String archetype = getValue(assertion, "source");
         lookups.put(descriptor,
                     new LookupDescriptor(descriptor, archetype));
@@ -391,7 +391,7 @@ class LookupHandler {
      */
     private List<IMObject> createRelationships(
             LookupRelationshipDescriptor descriptor) {
-        List<IMObject> result = new ArrayList<IMObject>();
+        List<IMObject> result = new ArrayList<>();
         for (Pair pair : descriptor.getPairs()) {
             String sourceCode = pair.getValue1();
             String targetCode = pair.getValue2();
@@ -443,7 +443,7 @@ class LookupHandler {
      * @param archetype the archetype descriptor
      * @param path      the node jxpath
      * @return the node with corresponding path, or <tt>null</tt> if none
-     *         is found
+     * is found
      */
     private NodeDescriptor getNodeByPath(ArchetypeDescriptor archetype,
                                          String path) {

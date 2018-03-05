@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -21,8 +21,11 @@ import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -38,6 +41,7 @@ import java.util.Date;
 import java.util.List;
 
 import static org.openvpms.archetype.test.TestHelper.create;
+import static org.openvpms.archetype.test.TestHelper.getLookup;
 import static org.openvpms.archetype.test.TestHelper.save;
 
 /**
@@ -60,10 +64,10 @@ public class PatientTestHelper {
     public static Party createPatient(String name, String species, String breed, Date dateOfBirth, Party owner) {
         Party patient = TestHelper.createPatient(owner);
         patient.setName(name);
-        Lookup speciesLookup = TestHelper.getLookup(PatientArchetypes.SPECIES, species,
-                                                    WordUtils.capitalize(species.toLowerCase()), true);
-        Lookup breedLookup = TestHelper.getLookup(PatientArchetypes.BREED, breed, speciesLookup,
-                                                  "lookupRelationship.speciesBreed");
+        Lookup speciesLookup = getLookup(PatientArchetypes.SPECIES, species,
+                                         WordUtils.capitalize(species.toLowerCase()), true);
+        Lookup breedLookup = getLookup(PatientArchetypes.BREED, breed, speciesLookup,
+                                       "lookupRelationship.speciesBreed");
         breedLookup.setName(WordUtils.capitalize(breed.toLowerCase()));
         save(breedLookup);
         IMObjectBean bean = new IMObjectBean(patient);
@@ -73,6 +77,33 @@ public class PatientTestHelper {
         bean.save();
         return patient;
     }
+
+    /**
+     * Creates a new patient.
+     *
+     * @param name        the patient name
+     * @param species     the patient species code
+     * @param breed       the patient breed code
+     * @param sex         the patient sex
+     * @param dateOfBirth the patient's date of birth. May be {@code null}
+     * @param microchip   the microchip. May be {@code nul}
+     * @param colour      the colour. May be {@code null}
+     * @param owner       the patient owner
+     * @return a new patient
+     */
+    public static Party createPatient(String name, String species, String breed, String sex, Date dateOfBirth,
+                                      String microchip, String colour, Party owner) {
+        Party patient = createPatient(name, species, breed, dateOfBirth, owner);
+        IMObjectBean bean = new IMObjectBean(patient);
+        bean.setValue("sex", sex);
+        if (microchip != null) {
+            patient.addIdentity(TestHelper.createEntityIdentity(PatientArchetypes.MICROCHIP, microchip));
+        }
+        bean.setValue("colour", colour);
+        bean.save();
+        return patient;
+    }
+
 
     /**
      * Helper to create an <em>act.patientMedication</em>.
@@ -134,7 +165,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
-     * <p/>
+     * <p>
      * This links the event to any items, and saves it.
      *
      * @param startTime the start time. May be {@code null}
@@ -147,7 +178,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
-     * <p/>
+     * <p>
      * This links the event to any items, and saves it.
      *
      * @param startTime the start time. May be {@code null}
@@ -161,13 +192,14 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalEvent</em>.
-     * <p/>
+     * <p>
      * This links the event to any items, and saves it.
      *
      * @param startTime the start time. May be {@code null}
      * @param endTime   the end time. May be {@code null}
      * @param patient   the patient
      * @param clinician the clinician. May be {@code null}
+     * @param items     the items. May be history or invoice items
      * @return a new act
      */
     public static Act createEvent(Date startTime, Date endTime, Party patient, User clinician, Act... items) {
@@ -176,7 +208,11 @@ public class PatientTestHelper {
         act.setActivityEndTime(endTime);
         ActBean bean = new ActBean(act);
         for (Act item : items) {
-            bean.addNodeRelationship("items", item);
+            if (item instanceof FinancialAct) {
+                bean.addNodeRelationship("chargeItems", item);
+            } else {
+                bean.addNodeRelationship("items", item);
+            }
         }
         List<Act> acts = new ArrayList<>();
         acts.add(act);
@@ -187,7 +223,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalProblem</em>.
-     * <p/>
+     * <p>
      * This links the problem to any items, and saves it.
      *
      * @param startTime the start time
@@ -201,7 +237,7 @@ public class PatientTestHelper {
 
     /**
      * Helper to create an <em>act.patientClinicalProblem</em>.
-     * <p/>
+     * <p>
      * This links the problem to any items, and saves it.
      *
      * @param startTime the start time
@@ -211,10 +247,32 @@ public class PatientTestHelper {
      * @return a new act
      */
     public static Act createProblem(Date startTime, Party patient, User clinician, Act... items) {
+        return createProblem(startTime, patient, clinician, null, "HEART_MURMUR", items);
+    }
+
+    /**
+     * Helper to create an <em>act.patientClinicalProblem</em>.
+     * <p>
+     * This links the problem to any items, and saves it.
+     *
+     * @param startTime        the start time
+     * @param patient          the patient
+     * @param clinician        the clinician. May be {@code null}
+     * @param presentComplaint the presenting complaint code. May be {@code null}
+     * @param diagnosis        the diagnosis code. May be {@code null}
+     * @param items            the problem items
+     * @return a new act
+     */
+    public static Act createProblem(Date startTime, Party patient, User clinician,
+                                    String presentComplaint, String diagnosis, Act... items) {
         Act act = createAct(PatientArchetypes.CLINICAL_PROBLEM, startTime, patient, clinician);
-        Lookup diagnosis = TestHelper.getLookup("lookup.diagnosis", "HEART_MURMUR");
-        act.setReason(diagnosis.getCode());
         ActBean bean = new ActBean(act);
+        if (diagnosis != null) {
+            act.setReason(getLookup("lookup.diagnosis", diagnosis).getCode());
+        }
+        if (presentComplaint != null) {
+            bean.setValue("presentingComplaint", getLookup("lookup.presentingComplaint", presentComplaint).getCode());
+        }
         for (Act item : items) {
             bean.addNodeRelationship("items", item);
         }
@@ -245,7 +303,24 @@ public class PatientTestHelper {
      * @return a new act
      */
     public static Act createNote(Date startTime, Party patient, User clinician) {
+        return createNote(startTime, patient, clinician, null);
+    }
+
+    /**
+     * Creates an <em>act.patientClinicalNote</em>.
+     *
+     * @param startTime the act start time
+     * @param patient   the patient
+     * @param clinician the clinician. May be {@code null}
+     * @param note      the note. May be {@code null}
+     * @return a new act
+     */
+    public static Act createNote(Date startTime, Party patient, User clinician, String note) {
         Act act = createAct(PatientArchetypes.CLINICAL_NOTE, startTime, patient, clinician);
+        if (note != null) {
+            ActBean bean = new ActBean(act);
+            bean.setValue("note", note);
+        }
         save(act);
         return act;
     }
@@ -253,7 +328,8 @@ public class PatientTestHelper {
     /**
      * Adds an <em>act.patientClinicalAddendum</em> to another act.
      *
-     * @param act      the act to link to. May be an <em>act.patientClinicalNote</em>, or an <em>act.patientMedication</em>
+     * @param act      the act to link to. May be an <em>act.patientClinicalNote</em>, or an
+     *                 <em>act.patientMedication</em>
      * @param addendum the addendum
      */
     public static void addAddendum(Act act, Act addendum) {
@@ -271,7 +347,24 @@ public class PatientTestHelper {
      * @return a new act
      */
     public static Act createAddendum(Date startTime, Party patient, User clinician) {
+        return createAddendum(startTime, patient, clinician, null);
+    }
+
+    /**
+     * Creates an <em>act.patientClinicalAddendum</em>.
+     *
+     * @param startTime the act start time
+     * @param patient   the patient
+     * @param clinician the clinician. May be {@code null}
+     * @param note      the note. May be {@code null}
+     * @return a new act
+     */
+    public static Act createAddendum(Date startTime, Party patient, User clinician, String note) {
         Act act = createAct(PatientArchetypes.CLINICAL_ADDENDUM, startTime, patient, clinician);
+        if (note != null) {
+            ActBean bean = new ActBean(act);
+            bean.setValue("note", note);
+        }
         save(act);
         return act;
     }
@@ -398,7 +491,7 @@ public class PatientTestHelper {
      * @return a new investigation
      */
     public static DocumentAct createInvestigation(Date startTime, Party patient, User clinician, Party location,
-                                          Entity investigationType) {
+                                                  Entity investigationType) {
         DocumentAct act = (DocumentAct) createAct(InvestigationArchetypes.PATIENT_INVESTIGATION, startTime, patient,
                                                   clinician);
         ActBean bean = new ActBean(act);
@@ -446,9 +539,39 @@ public class PatientTestHelper {
      * @return a new document act
      */
     public static DocumentAct createDocumentAttachment(Date startTime, Party patient) {
-        Act act = createAct(PatientArchetypes.DOCUMENT_ATTACHMENT, startTime, patient, null);
+        return createDocumentAttachment(startTime, patient, null);
+    }
+
+    /**
+     * Creates an attachment document act.
+     *
+     * @param patient   the patient
+     * @param startTime the act start time
+     * @param fileName  the document file name. May be {@code null}
+     * @return a new document act
+     */
+    public static DocumentAct createDocumentAttachment(Date startTime, Party patient, String fileName) {
+        return createDocumentAttachment(startTime, patient, fileName, null);
+    }
+
+    /**
+     * Creates an attachment document act with an identity.
+     *
+     * @param patient   the patient
+     * @param startTime the act start time
+     * @param fileName  the document file name. May be {@code null}
+     * @param identity  the act identity. May be {@code null}
+     * @return a new document act
+     */
+    public static DocumentAct createDocumentAttachment(Date startTime, Party patient, String fileName,
+                                                       ActIdentity identity) {
+        DocumentAct act = (DocumentAct) createAct(PatientArchetypes.DOCUMENT_ATTACHMENT, startTime, patient, null);
+        act.setFileName(fileName);
+        if (identity != null) {
+            act.addIdentity(identity);
+        }
         save(act);
-        return (DocumentAct) act;
+        return act;
     }
 
     /**
@@ -494,10 +617,24 @@ public class PatientTestHelper {
      * @return a new form document act
      */
     public static DocumentAct createDocumentForm(Date startTime, Party patient, Product product) {
+        return createDocumentForm(startTime, patient, product, null);
+    }
+
+    /**
+     * Creates a form document act.
+     *
+     * @param startTime the act start time
+     * @param patient   the patient
+     * @param product   the product. May be {@code null}
+     * @param template  the template. May be {@code null}
+     * @return a new form document act
+     */
+    public static DocumentAct createDocumentForm(Date startTime, Party patient, Product product, Entity template) {
         DocumentAct act = (DocumentAct) createAct(PatientArchetypes.DOCUMENT_FORM, startTime, patient, null);
-        if (product != null) {
-            ActBean bean = new ActBean(act);
-            bean.addNodeParticipation("product", product);
+        if (product != null || template != null) {
+            IMObjectBean bean = new IMObjectBean(act);
+            bean.setTarget("product", product);
+            bean.setTarget("documentTemplate", template);
         }
         save(act);
         return act;
@@ -536,9 +673,18 @@ public class PatientTestHelper {
      * @param patient   the patient
      * @return a new document act
      */
-    public static DocumentAct createDocumentLetter(Date startTime, Party patient) {
+    public static DocumentAct createDocumentLetter(Date startTime, Party patient, Act... versions) {
         Act act = createAct(PatientArchetypes.DOCUMENT_LETTER, startTime, patient, null);
-        save(act);
+        List<Act> toSave = new ArrayList<>();
+        toSave.add(act);
+        if (versions.length > 0) {
+            ActBean bean = new ActBean(act);
+            for (Act version : versions) {
+                bean.addNodeRelationship("versions", version);
+                toSave.add(version);
+            }
+        }
+        save(toSave);
         return (DocumentAct) act;
     }
 
@@ -555,4 +701,29 @@ public class PatientTestHelper {
         return act;
     }
 
+    /**
+     * Creates a new microchip identity.
+     *
+     * @param microchip the microchip
+     * @return a new identity
+     */
+    public static EntityIdentity createMicrochip(String microchip) {
+        EntityIdentity result = (EntityIdentity) create(PatientArchetypes.MICROCHIP);
+        IMObjectBean bean = new IMObjectBean(result);
+        bean.setValue("microchip", microchip);
+        return result;
+    }
+
+    /**
+     * Creates a new pet tag identity.
+     *
+     * @param tag the tag
+     * @return a new identity
+     */
+    public static EntityIdentity createPetTag(String tag) {
+        EntityIdentity result = (EntityIdentity) create(PatientArchetypes.PET_TAG);
+        IMObjectBean bean = new IMObjectBean(result);
+        bean.setValue("petTag", tag);
+        return result;
+    }
 }

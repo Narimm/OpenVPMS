@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
 
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
@@ -36,9 +37,10 @@ class TaskSchedule extends Schedule {
      * Constructs a {@link TaskSchedule}.
      *
      * @param schedule the schedule
+     * @param rules    the appointment rules
      */
-    public TaskSchedule(Entity schedule) {
-        super(schedule, null);
+    public TaskSchedule(Entity schedule, AppointmentRules rules) {
+        super(schedule, null, rules);
         IMObjectBean bean = new IMObjectBean(schedule);
         maxSlots = bean.getInt("maxSlots");
     }

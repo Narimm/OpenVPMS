@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.patient.history;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
 import org.openvpms.archetype.rules.prefs.Preferences;
@@ -76,13 +77,14 @@ public abstract class AbstractPatientHistoryQuery extends DateRangeActQuery<Act>
      *
      * @param patient     the patient to query
      * @param shortNames  the act short names
-     * @param preferences the user preferences
+     * @param preferences the user preferences. May be {@code null}
      */
     public AbstractPatientHistoryQuery(Party patient, String[] shortNames, Preferences preferences) {
         super(patient, "patient", PatientArchetypes.PATIENT_PARTICIPATION, shortNames, Act.class);
         this.preferences = preferences;
         setAuto(true);
-        setSortAscending(isSortAscending(preferences));
+        boolean ascending = (preferences == null) || isSortAscending(preferences);
+        setSortAscending(ascending);
     }
 
     /**
@@ -143,7 +145,9 @@ public abstract class AbstractPatientHistoryQuery extends DateRangeActQuery<Act>
             setSortIcon();
         }
         // update session preferences
-        preferences.setPreference(PreferenceArchetypes.HISTORY, "sort", ascending ? "ASC" : "DESC");
+        if (preferences != null) {
+            preferences.setPreference(PreferenceArchetypes.HISTORY, "sort", ascending ? "ASC" : "DESC");
+        }
     }
 
     /**
@@ -156,9 +160,30 @@ public abstract class AbstractPatientHistoryQuery extends DateRangeActQuery<Act>
     }
 
     /**
+     * Returns the value being queried on.
+     * <p/>
+     * This implementation does not append wildcards; all searches are 'contains'.
+     *
+     * @return the value. May be {@code null}
+     */
+    @Override
+    public String getValue() {
+        return StringUtils.trimToNull(getSearchField().getText());
+    }
+
+    /**
+     * Invoked when the search field changes. Invokes {@link #onQuery} and resets the focus back to the search field.
+     */
+    @Override
+    protected void onSearchFieldChanged() {
+        super.onSearchFieldChanged();
+        FocusHelper.setFocus(getSearchField());
+    }
+
+    /**
      * Returns the user preferences.
      *
-     * @return the preferences
+     * @return the preferences. May be {@code null}
      */
     protected Preferences getPreferences() {
         return preferences;

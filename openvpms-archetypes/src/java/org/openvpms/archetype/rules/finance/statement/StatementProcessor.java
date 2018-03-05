@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.statement;
@@ -26,8 +26,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 
 import java.math.BigDecimal;
@@ -176,9 +175,9 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
         addBillingContacts(result, customer, ContactArchetypes.EMAIL);
         addBillingContacts(result, customer, ContactArchetypes.LOCATION);
         if (result.isEmpty()) {
-            for (Contact contact : customer.getContacts()) {
-                if (TypeHelper.isA(contact, ContactArchetypes.LOCATION)) {
-                    result.add(contact);
+            for (org.openvpms.component.model.party.Contact contact : customer.getContacts()) {
+                if (contact.isA(ContactArchetypes.LOCATION)) {
+                    result.add((Contact) contact);
                 }
             }
         }
@@ -196,14 +195,13 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
      */
     private void addBillingContacts(List<Contact> list, Party customer,
                                     String shortName) {
-        for (Contact contact : customer.getContacts()) {
-            if (TypeHelper.isA(contact, shortName)) {
+        for (org.openvpms.component.model.party.Contact contact : customer.getContacts()) {
+            if (contact.isA(shortName)) {
                 IMObjectBean bean = new IMObjectBean(contact, service);
-                List<Lookup> purposes
-                        = bean.getValues("purposes", Lookup.class);
+                List<Lookup> purposes = bean.getValues("purposes", Lookup.class);
                 for (Lookup purpose : purposes) {
                     if ("BILLING".equals(purpose.getCode())) {
-                        list.add(contact);
+                        list.add((Contact) contact);
                         break;
                     }
                 }

@@ -13,7 +13,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.openvpms</groupId>
         <artifactId>openvpms</artifactId>
-        <version>1.9.4-SNAPSHOT</version>
+        <version>2.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>openvpms-archetypes</artifactId>
@@ -115,7 +115,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-RequiredExecutionEnvironment>JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
+                        <Bundle-RequiredExecutionEnvironment>JavaSE-1.7</Bundle-RequiredExecutionEnvironment>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Version>${project.version}</Bundle-Version>
                         <Export-Package>org.openvpms.archetype.*;version="${project.version}"</Export-Package>
@@ -123,22 +123,23 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>hibernate3-maven-plugin</artifactId>
-                <version>2.2</version>
+                <groupId>org.openvpms</groupId>
+                <artifactId>openvpms-db-plugin</artifactId>
+                <version>${project.version}</version>
                 <configuration>
-                    <componentProperties>
-                        <drop>true</drop>
-                        <jdk5>true</jdk5>
-                        <configurationfile>target/test-classes/hibernate.cfg.xml</configurationfile>
-                        <skip>${skipTests}</skip>
-                    </componentProperties>
+                    <driver>${build.jdbc.driverClassName}</driver>
+                    <url>${build.jdbc.url}</url>
+                    <username>${build.jdbc.username}</username>
+                    <password>${build.jdbc.password}</password>
+                    <adminUsername>${jdbc.admin.username}</adminUsername>
+                    <adminPassword>${jdbc.admin.password}</adminPassword>
+                    <skip>${skipTests}</skip>
                 </configuration>
                 <executions>
                     <execution>
                         <phase>process-test-classes</phase>
                         <goals>
-                            <goal>hbm2ddl</goal>
+                            <goal>create</goal>
                         </goals>
                     </execution>
                 </executions>

@@ -27,6 +27,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.macro.Macros;
 import org.openvpms.sms.SMSException;
+import org.openvpms.sms.util.SMSLengthCalculator;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.bound.BoundSelectFieldFactory;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
@@ -43,13 +44,12 @@ import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.component.service.SMSService;
-import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.echo.text.CountedTextArea;
+import org.openvpms.web.echo.text.SMSTextArea;
 import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -66,11 +66,6 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class SMSEditor extends AbstractModifiable {
-
-    /**
-     * Maximum SMS length.
-     */
-    public static final int MAX_LENGTH = 160;
 
     /**
      * The context.
@@ -95,27 +90,32 @@ public class SMSEditor extends AbstractModifiable {
     /**
      * The text message.
      */
-    private CountedTextArea message;
+    private final SMSTextArea message;
 
     /**
      * The text property. Used to support macro expansion.
      */
-    private SimpleProperty messageProperty;
+    private final SimpleProperty messageProperty;
 
     /**
      * The phone property.
      */
-    private SimpleProperty phoneProperty;
+    private final SimpleProperty phoneProperty;
 
     /**
      * Focus group.
      */
-    private FocusGroup focus;
+    private final FocusGroup focus;
 
     /**
      * Used to track property modification, and perform validation.
      */
-    private Editors editors;
+    private final Editors editors;
+
+    /**
+     * The maximum number of parts in multi-part SMS messages.
+     */
+    private int maxParts;
 
     /**
      * Ad hoc SMS reason code.
@@ -133,7 +133,7 @@ public class SMSEditor extends AbstractModifiable {
 
     /**
      * Constructs an {@link SMSEditor}.
-     * <p/>
+     * <p>
      * If no phone numbers are supplied, the phone number will be editable, otherwise it will be read-only.
      * If there are multiple phone numbers, they will be displayed in a dropdown, with the first no. as the default
      *
@@ -172,11 +172,11 @@ public class SMSEditor extends AbstractModifiable {
 
         messageProperty = new SimpleProperty("message", null, String.class, Messages.get("sms.message"));
         messageProperty.setRequired(true);
-        messageProperty.setMaxLength(MAX_LENGTH);
+        messageProperty.setMaxLength(-1); // don't limit length as it is determined by maxParts and encoding
         Macros macros = ServiceHelper.getMacros();
         messageProperty.setTransformer(new StringPropertyTransformer(messageProperty, false, macros, null, variables));
 
-        message = new BoundCountedTextArea(messageProperty, 40, 15);
+        message = new BoundSMSTextArea(messageProperty, 40, 15);
         message.setStyleName(Styles.DEFAULT);
         focus = new FocusGroup("SMSEditor");
         if (phone != null) {
@@ -195,6 +195,8 @@ public class SMSEditor extends AbstractModifiable {
                 resetValid();
             }
         });
+
+        setMaxParts(ServiceHelper.getSMSConnectionFactory().getMaxParts());
     }
 
     /**
@@ -237,11 +239,40 @@ public class SMSEditor extends AbstractModifiable {
      * @param message the message
      */
     public void setMessage(String message) {
-        if (message != null && message.length() > MAX_LENGTH) {
-            message = message.substring(0, MAX_LENGTH);
-            InformationDialog.show(Messages.get("sms.truncated"));
-        }
         messageProperty.setValue(message);
+    }
+
+    /**
+     * Sets the maximum number of parts of the message.
+     *
+     * @param maxParts the maximum length
+     */
+    public void setMaxParts(int maxParts) {
+        if (maxParts <= 0) {
+            maxParts = 1;
+        }
+        this.maxParts = maxParts;
+        message.setMaxParts(maxParts);
+    }
+
+    /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    public boolean validate(Validator validator) {
+        boolean valid = super.validate(validator);
+        if (valid) {
+            String message = getMessage();
+            int parts = SMSLengthCalculator.getParts(message);
+            if (parts > maxParts) {
+                valid = false;
+                validator.add(this, new ValidatorError(Messages.format("sms.toolong", parts, maxParts)));
+            }
+        }
+        return valid;
     }
 
     /**
@@ -372,7 +403,7 @@ public class SMSEditor extends AbstractModifiable {
 
     /**
      * Formats phone numbers that are flagged for SMS messaging.
-     * <p/>
+     * <p>
      * The preferred no.s are at the head of the list
      *
      * @param contacts the SMS contacts

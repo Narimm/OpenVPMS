@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -55,6 +56,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static org.openvpms.component.system.common.query.Constraints.eq;
+import static org.openvpms.component.system.common.query.Constraints.join;
+import static org.openvpms.component.system.common.query.Constraints.shortName;
+import static org.openvpms.component.system.common.query.Constraints.sort;
 
 
 /**
@@ -93,11 +99,6 @@ public class MedicalRecordRules {
      * End time node name.
      */
     private static final String END_TIME = "endTime";
-
-    /**
-     * Allergy alert type code.
-     */
-    private static final String ALLERGY = "ALLERGY";
 
 
     /**
@@ -445,17 +446,6 @@ public class MedicalRecordRules {
     }
 
     /**
-     * Determines if an alert is for an allergy.
-     *
-     * @param alert the alert
-     * @return {@code true} if the alert is for an allergy
-     */
-    public boolean isAllergy(Act alert) {
-        ActBean bean = new ActBean(alert, service);
-        return ALLERGY.equals(bean.getString("alertType"));
-    }
-
-    /**
      * Determines if a medical record needs to be locked, given a period relative to the current time.
      *
      * @param act    the record act
@@ -502,6 +492,36 @@ public class MedicalRecordRules {
             lockableRecords = items.toArray(new String[items.size()]);
         }
         return lockableRecords;
+    }
+
+    /**
+     * Returns the most recent attachment with the specified file name associated with a patient clinical event.
+     *
+     * @param fileName the file name
+     * @param event    the <em>act.patientClinicalEvent</em>
+     * @return the attachment, or {@code null} if none is found
+     */
+    public DocumentAct getAttachment(String fileName, Act event) {
+        ArchetypeQuery query = createAttachmentQuery(fileName, event);
+        IMObjectQueryIterator<DocumentAct> iterator = new IMObjectQueryIterator<>(service, query);
+        return iterator.hasNext() ? iterator.next() : null;
+    }
+
+    /**
+     * Returns the most recent attachment with the specified file name and identity, associated with a patient clinical
+     * event.
+     *
+     * @param fileName          the file name
+     * @param event             the <em>act.patientClinicalEvent</em>
+     * @param identityArchetype the identity archetype
+     * @param identity          the identity
+     * @return the attachment, or {@code null} if none is found
+     */
+    public DocumentAct getAttachment(String fileName, Act event, String identityArchetype, String identity) {
+        ArchetypeQuery query = createAttachmentQuery(fileName, event);
+        query.add(Constraints.join("identities", shortName(identityArchetype)).add(eq("identity", identity)));
+        IMObjectQueryIterator<DocumentAct> iterator = new IMObjectQueryIterator<>(service, query);
+        return iterator.hasNext() ? iterator.next() : null;
     }
 
     /**
@@ -880,6 +900,23 @@ public class MedicalRecordRules {
             changed.add(item);
             changed.add(addendum);
         }
+    }
+
+    /**
+     * Creates a query to locate attachments with the specified file name, associated with an event.
+     *
+     * @param fileName the file name
+     * @param event    the <em>act.patientClinicalEvent</em>
+     * @return a new query
+     */
+    private ArchetypeQuery createAttachmentQuery(String fileName, Act event) {
+        ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.DOCUMENT_ATTACHMENT);
+        query.add(join("event").add(eq("source", event)));
+        query.add(eq("fileName", fileName));
+        query.add(sort("startTime", false));
+        query.add(sort("id", false));
+        query.setMaxResults(1);
+        return query;
     }
 
 }

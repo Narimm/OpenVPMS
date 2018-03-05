@@ -16,6 +16,8 @@
 
 package org.openvpms.archetype.function.factory;
 
+import org.openvpms.archetype.rules.contact.AddressFormatter;
+import org.openvpms.archetype.rules.contact.BasicAddressFormatter;
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.patient.PatientAgeFormatter;
 import org.openvpms.archetype.rules.practice.PracticeService;
@@ -50,9 +52,14 @@ public class DefaultArchetypeFunctionsFactory extends ArchetypeFunctionsFactory 
     private final Currencies currencies;
 
     /**
+     * The address formatter.
+     */
+    private final AddressFormatter addressFormatter;
+
+    /**
      * The patient age formatter.
      */
-    private final PatientAgeFormatter formatter;
+    private final PatientAgeFormatter ageFormatter;
 
     /**
      * Constructs a {@link DefaultArchetypeFunctionsFactory}.
@@ -61,16 +68,33 @@ public class DefaultArchetypeFunctionsFactory extends ArchetypeFunctionsFactory 
      * @param lookups         the lookup service
      * @param practiceService the practice service
      * @param currencies      the currencies
-     * @param formatter       the patient age formatter. May be {@code null}
+     * @param ageFormatter    the patient age formatter. May be {@code null}
      */
     public DefaultArchetypeFunctionsFactory(IArchetypeService service, ILookupService lookups,
                                             PracticeService practiceService, Currencies currencies,
-                                            PatientAgeFormatter formatter) {
+                                            PatientAgeFormatter ageFormatter) {
+        this(service, lookups, practiceService, currencies, new BasicAddressFormatter(service, lookups), ageFormatter);
+    }
+
+    /**
+     * Constructs a {@link DefaultArchetypeFunctionsFactory}.
+     *
+     * @param service          the archetype service
+     * @param lookups          the lookup service
+     * @param practiceService  the practice service
+     * @param currencies       the currencies
+     * @param addressFormatter the address formatter
+     * @param ageFormatter     the patient age formatter. May be {@code null}
+     */
+    public DefaultArchetypeFunctionsFactory(IArchetypeService service, ILookupService lookups,
+                                            PracticeService practiceService, Currencies currencies,
+                                            AddressFormatter addressFormatter, PatientAgeFormatter ageFormatter) {
         this.service = service;
         this.lookups = lookups;
         this.practiceService = practiceService;
         this.currencies = currencies;
-        this.formatter = formatter;
+        this.addressFormatter = addressFormatter;
+        this.ageFormatter = ageFormatter;
     }
 
     /**
@@ -114,12 +138,23 @@ public class DefaultArchetypeFunctionsFactory extends ArchetypeFunctionsFactory 
     }
 
     /**
+     * Returns the address formatter.
+     *
+     * @return the address formatter
+     */
+    @Override
+    protected AddressFormatter getAddressFormatter() {
+        return addressFormatter;
+    }
+
+    /**
      * Returns the patient age formatter.
      *
      * @return the patient age formatter. May be {@code null}
      */
     @Override
     protected PatientAgeFormatter getPatientAgeFormatter() {
-        return formatter;
+        return ageFormatter;
     }
+
 }

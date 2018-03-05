@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -25,7 +25,6 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * Exception thrown by the descriptor classes.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
  * @see ArchetypeDescriptor
  * @see ArchetypeDescriptors
  * @see NodeDescriptor

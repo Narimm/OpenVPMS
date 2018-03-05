@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -36,19 +36,8 @@
         <node displayName="Default" name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup"
               defaultValue="false()"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
-        <node name="source" path="/sourceLookupRelationships"
+        <node name="source" displayName="States" path="/sourceLookupRelationships"
               type="java.util.HashSet" baseName="sourceLookupRelationship"
-              minCardinality="0" maxCardinality="*">
-            <assertion name="archetypeRange"
-                       filter="lookupRelationship.countryState">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="lookupRelationship.countryState"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+              minCardinality="0" maxCardinality="*" filter="lookupRelationship.countryState"/>
     </archetype>
 </archetypes>

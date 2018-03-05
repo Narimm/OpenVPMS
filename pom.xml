@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -24,7 +24,7 @@
     <artifactId>openvpms</artifactId>
     <packaging>pom</packaging>
     <name>OpenVPMS</name>
-    <version>1.9.4-SNAPSHOT</version>
+    <version>2.0-SNAPSHOT</version>
     <inceptionYear>2005</inceptionYear>
     <url>http://www.openvpms.org</url>
 
@@ -33,7 +33,7 @@
     </description>
 
     <prerequisites>
-        <maven>2.2.1</maven>
+        <maven>3.3.9</maven>
     </prerequisites>
 
     <scm>
@@ -110,7 +110,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.14.1</version>
+                <version>2.20</version>
                 <configuration>
                     <includes>
                         <include>**/*TestCase.java</include>
@@ -127,7 +127,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>2.3.7</version>
+                <version>3.3.0</version>
                 <extensions>true</extensions>
                 <configuration>
                     <obrRepository>NONE</obrRepository>
@@ -187,8 +187,8 @@
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>2.3.2</version>
                     <configuration>
-                        <source>1.7</source>
-                        <target>1.7</target>
+                        <source>1.8</source>
+                        <target>1.8</target>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -331,6 +331,11 @@
             </dependency>
             <dependency>
                 <groupId>org.openvpms</groupId>
+                <artifactId>openvpms-framework-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openvpms</groupId>
                 <artifactId>openvpms-framework</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -345,14 +350,22 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.sun.xml.bind</groupId>
-                <artifactId>jaxb-impl</artifactId>
-                <version>2.1.10</version>
+                <!--  replaces com.sun.xml.bind:jaxb-impl -->
+                <groupId>org.apache.servicemix.bundles</groupId>
+                <artifactId>org.apache.servicemix.bundles.jaxb-impl</artifactId>
+                <version>2.2.11_1</version>
             </dependency>
             <dependency>
-                <groupId>com.sun.xml.ws</groupId>
-                <artifactId>jaxws-rt</artifactId>
-                <version>2.1.7</version>
+                <!-- replaces javax.xml.bind:jaxb-api -->
+                <groupId>org.apache.servicemix.specs</groupId>
+                <artifactId>org.apache.servicemix.specs.jaxb-api-2.2</artifactId>
+                <version>2.8.0</version>
+            </dependency>
+            <dependency>
+                <!-- replaces javax.xml.ws:jaxws-api -->
+                <groupId>org.apache.servicemix.specs</groupId>
+                <artifactId>org.apache.servicemix.specs.jaxws-api-2.2</artifactId>
+                <version>2.9.0</version>
             </dependency>
             <dependency>
                 <groupId>com.thoughtworks.xstream</groupId>
@@ -391,6 +404,10 @@
                     <exclusion>
                         <groupId>javax.servlet</groupId>
                         <artifactId>servlet-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.xml.ws</groupId>
+                        <artifactId>jaxws-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -470,6 +487,12 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
                 <version>${spring.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-simple</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -501,21 +524,21 @@
                 <artifactId>org.apache.servicemix.bundles.xerces</artifactId>
                 <version>${xerces.version}</version>
             </dependency>
+            <!-- used by jersey, older versions included by jasperreports -->
             <dependency>
-                <!-- used by jersey, jasper reports html exporter -->
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-core</artifactId>
-                <version>2.5.4</version>
+                <version>2.8.4</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>2.5.4</version>
+                <version>2.8.4</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-annotations</artifactId>
-                <version>2.5.4</version>
+                <version>2.8.4</version>
             </dependency>
             <dependency>
                 <groupId>p6spy</groupId>
@@ -587,6 +610,8 @@
                 <build.jdbc.db>openvpms-1_8</build.jdbc.db>
                 <build.jdbc.server>jdbc:mysql://localhost:3306/</build.jdbc.server>
                 <build.jdbc.url>${build.jdbc.server}${build.jdbc.db}</build.jdbc.url>
+                <jdbc.admin.username>root</jdbc.admin.username>
+                <jdbc.admin.password>root</jdbc.admin.password>
                 <build.jdbc.username>openvpms</build.jdbc.username>
                 <build.jdbc.password>openvpms</build.jdbc.password>
                 <release.hibernate.dialect>${build.hibernate.dialect}</release.hibernate.dialect>
@@ -594,7 +619,7 @@
                 <release.jdbc.url>${build.jdbc.url}</release.jdbc.url>
                 <release.jdbc.username>${build.jdbc.username}</release.jdbc.username>
                 <release.jdbc.password>${build.jdbc.password}</release.jdbc.password>
-                <smartflow.url>https://sfs-public.azurewebsites.net/api/v3</smartflow.url>
+                <smartflow.url>https://sandbox.smartflowsheet.com/api/v3</smartflow.url>
                 <smartflow.emrApiKey>873af17b2163255a3eb70a7d7413be152657bfab</smartflow.emrApiKey>
             </properties>
         </profile>
@@ -603,18 +628,24 @@
             <properties>
                 <release.jdbc.url>jdbc:mysql://localhost:3306/openvpms</release.jdbc.url>
                 <smartflow.url>https://www.smartflowsheet.com/api/v3</smartflow.url>
-                <smartflow.emrApiKey>534bf0dae63b8755b2206daf33955c79c1362ef2</smartflow.emrApiKey>
+                <smartflow.emrApiKey>7d6e3ef29d9f4be3bf08aab328f89483894d6e3a</smartflow.emrApiKey>
             </properties>
         </profile>
     </profiles>
 
     <modules>
+        <module>openvpms-framework-api</module>
         <module>openvpms-framework</module>
         <module>maven-plugins</module>
         <module>openvpms-archetypes</module>
         <module>openvpms-reports</module>
         <module>openvpms-sms</module>
         <module>openvpms-esci-adapter</module>
+        <module>openvpms-db</module>
+        <module>openvpms-version</module>
+        <module>openvpms-plugins</module>
+        <module>openvpms-booking</module>
+        <module>openvpms-insurance</module>
         <module>openvpms-web</module>
         <module>openvpms-etl</module>
         <module>openvpms-release</module>
@@ -758,7 +789,7 @@
         <commons.io.version>2.4</commons.io.version>
         <commons.jxpath.version>1.3</commons.jxpath.version>
         <commons.lang.version>2.6</commons.lang.version>
-        <commons.logging.version>1.1.1</commons.logging.version>
+        <commons.logging.version>1.2</commons.logging.version>
         <commons.pool.version>2.3</commons.pool.version>
         <commons.resources.version>1.0-dev</commons.resources.version>
         <dom4j.version>1.6.1</dom4j.version>
@@ -772,24 +803,28 @@
         <javassist.version>3.4.GA</javassist.version>
         <javax.mail.version>1.4.4</javax.mail.version>
         <javax.servlet.version>3.0.1</javax.servlet.version>
+        <!--javax.servlet.version>3.1.0</javax.servlet.version--> <!-- Requires Tomcat 8 -->
+        <jersey.version>2.25.1</jersey.version>
         <joda.time.version>1.6.2</joda.time.version>
         <jdom.version>1.0</jdom.version>
         <jsap.version>2.0a</jsap.version>
         <jta.version>1.1</jta.version>
         <jug.version>2.0rc4</jug.version>
         <junit.version>4.11</junit.version>
-        <log4j.version>1.2.15</log4j.version>
+        <log4j.version>1.2.17</log4j.version>
         <oro.version>2.0.8</oro.version>
         <stax.api.version>1.0</stax.api.version>
         <stax.version>1.1.2-dev</stax.version>
-        <slf4j.version>1.6.0</slf4j.version>
+        <slf4j.version>1.7.25</slf4j.version>
         <spring.version>3.2.14.RELEASE</spring.version>
+        <servicemix.spring.version>3.2.14.RELEASE_1</servicemix.spring.version>
         <spring.security.version>3.2.7.RELEASE</spring.security.version>
         <springmodules.version>0.2</springmodules.version>
         <swt.version>4.4</swt.version>
         <xerces.version>2.11.0_1</xerces.version>
         <xmlapis.version>1.4.01</xmlapis.version>
         <xstream.version>1.3.1</xstream.version>
+        <webdav.launcher.version>1.9.2</webdav.launcher.version>
     </properties>
 
 </project>

@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
 
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -42,12 +43,16 @@ import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.workspace.customer.communication.CustomerAlertTableModel;
 import org.openvpms.web.workspace.patient.communication.PatientCommunicationCRUDWindow;
 import org.openvpms.web.workspace.patient.communication.PatientCommunicationQuery;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
+import org.openvpms.web.workspace.patient.insurance.InsuranceBrowser;
+import org.openvpms.web.workspace.patient.insurance.InsuranceCRUDWindow;
+import org.openvpms.web.workspace.patient.insurance.InsuranceQuery;
 import org.openvpms.web.workspace.patient.problem.ProblemBrowser;
 import org.openvpms.web.workspace.patient.problem.ProblemQuery;
 import org.openvpms.web.workspace.patient.problem.ProblemRecordCRUDWindow;
@@ -58,7 +63,7 @@ import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_PAR
 
 /**
  * Patient record browser.
- * <p/>
+ * <p>
  * TODO - refactor along the lines of {@link VisitEditor}.
  *
  * @author Tim Anderson
@@ -91,6 +96,11 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     private final Browser<Act> communication;
 
     /**
+     * The insurance act browser.
+     */
+    private final Browser<Act> insurance;
+
+    /**
      * History browser tab index.
      */
     private final int historyIndex;
@@ -98,40 +108,48 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     /**
      * Problem browser tab index.
      */
-    private int problemIndex;
+    private final int problemIndex;
 
     /**
      * Reminder browser tab index.
      */
-    private int remindersIndex;
+    private final int remindersIndex;
+
+    /**
+     * Alert browser tab index.
+     */
+    private final int alertsIndex;
 
     /**
      * Document browser tab index.
      */
-    private int documentsIndex;
+    private final int documentsIndex;
 
     /**
      * Charges browser tab index.
      */
-    private int chargesIndex;
+    private final int chargesIndex;
 
     /**
      * Prescription browser tab index.
      */
-    private int prescriptionIndex;
+    private final int prescriptionIndex;
 
     /**
      * The communication browser tab index.
      */
-    private int communicationIndex = -1;
+    private final int communicationIndex;
+
+    /**
+     * The insurance browser tab index.
+     */
+    private final int insuranceIndex;
 
     /**
      * Patient charges shortnames supported by the workspace.
      */
-    private static final String[] CHARGES_SHORT_NAMES = {
-            "act.customerAccountInvoiceItem",
-            "act.customerAccountCreditItem"
-    };
+    private static final String[] CHARGES_SHORT_NAMES = {CustomerAccountArchetypes.INVOICE_ITEM,
+                                                         CustomerAccountArchetypes.CREDIT_ITEM};
 
     /**
      * The default sort constraint.
@@ -145,14 +163,14 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     private static final ActStatuses REMINDER_STATUSES = new ActStatuses(ReminderArchetypes.REMINDER);
 
     /**
+     * The alert statuses to query.
+     */
+    private static final ActStatuses ALERT_STATUSES = new ActStatuses(PatientArchetypes.ALERT);
+
+    /**
      * The problem statuses to query.
      */
     private static final ActStatuses PROBLEM_STATUSES;
-
-    static {
-        PROBLEM_STATUSES = new ActStatuses(PatientArchetypes.CLINICAL_PROBLEM);
-        PROBLEM_STATUSES.setDefault((String) null);
-    }
 
     /**
      * Constructs a {@link RecordBrowser}.
@@ -182,13 +200,16 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         historyIndex = addBrowser(Messages.get("button.summary"), history);
         problems = createProblemBrowser(patient, layout);
         problemIndex = addBrowser(Messages.get("button.problem"), problems);
-        remindersIndex = addBrowser(Messages.get("button.reminder"), createReminderAlertBrowser(patient, layout));
+        remindersIndex = addBrowser(Messages.get("button.reminder"), createReminderBrowser(patient, layout));
+        alertsIndex = addBrowser(Messages.get("button.alert"), createAlertBrowser(patient, layout));
         documentsIndex = addBrowser(Messages.get("button.document"), createDocumentBrowser(patient, layout));
         chargesIndex = addBrowser(Messages.get("button.charges"), createChargeBrowser(patient, layout));
         prescriptionIndex = addBrowser(Messages.get("button.prescriptions"),
                                        createPrescriptionBrowser(patient, layout));
         communication = createCommunicationBrowser(patient, context, help);
         communicationIndex = addBrowser(Messages.get("button.communication"), communication);
+        insurance = createInsuranceBrowser(patient, context, help.subtopic("insurance"));
+        insuranceIndex = addBrowser(Messages.get("button.insurance"), insurance);
     }
 
     /**
@@ -206,6 +227,13 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     }
 
     /**
+     * Displays the insurance tab.
+     */
+    public void showInsurance() {
+        setSelectedBrowser(insuranceIndex);
+    }
+
+    /**
      * Creates a {@link CRUDWindow} for the current browser.
      *
      * @param context the context
@@ -218,7 +246,9 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         if (index == problemIndex) {
             result = createProblemRecordCRUDWindow(context, help);
         } else if (index == remindersIndex) {
-            result = createReminderAlertCRUDWindow(context, help);
+            result = createReminderCRUDWindow(context, help);
+        } else if (index == alertsIndex) {
+            result = createAlertCRUDWindow(context, help);
         } else if (index == documentsIndex) {
             result = createDocumentCRUDWindow(context, help);
         } else if (index == chargesIndex) {
@@ -227,6 +257,8 @@ public class RecordBrowser extends TabbedBrowser<Act> {
             result = createPrescriptionCRUDWindow(context, help);
         } else if (index == communicationIndex) {
             result = new PatientCommunicationCRUDWindow(context, help);
+        } else if (index == insuranceIndex) {
+            result = new InsuranceCRUDWindow(context, help.subtopic("insurance"));
         } else {
             result = createHistoryCRUDWindow(context, help);
         }
@@ -235,7 +267,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
 
     /**
      * Returns the event associated with the current selected browser act.
-     * <p/>
+     * <p>
      * Only applies if the history or problem browser is visible.
      *
      * @param act the current selected act. May be {@code null}
@@ -330,18 +362,16 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     }
 
     /**
-     * Creates a patient reminder/alert browser.
+     * Creates a patient reminder browser.
      *
      * @param patient the patient
      * @param layout  the layout context
      * @return a new browser
      */
-    protected Browser<Act> createReminderAlertBrowser(Party patient, LayoutContext layout) {
+    protected Browser<Act> createReminderBrowser(Party patient, LayoutContext layout) {
         // todo - should be able to register ReminderActTableModel in IMObjectTableFactory.properties for
-        // act.patientReminder and act.patientAlert
-        String[] shortNames = {ReminderArchetypes.REMINDER, PatientArchetypes.ALERT};
-        DefaultActQuery<Act> query = new DefaultActQuery<>(patient, "patient", PATIENT_PARTICIPATION, shortNames,
-                                                           REMINDER_STATUSES);
+        DefaultActQuery<Act> query = new DefaultActQuery<>(patient, "patient", PATIENT_PARTICIPATION,
+                                                           ReminderArchetypes.REMINDER, REMINDER_STATUSES);
         query.setStatus(ActStatus.IN_PROGRESS);
         query.setDefaultSortConstraint(DEFAULT_SORT);
         IMObjectTableModel<Act> model = new ReminderActTableModel(query.getShortNames(), layout);
@@ -349,14 +379,41 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     }
 
     /**
-     * Creates a {@link CRUDWindow} for the reminder/alert browser.
+     * Creates a {@link CRUDWindow} for the reminder browser.
      *
      * @param context the context
      * @param help    the help context
      * @return a new {@link CRUDWindow}
      */
-    protected CRUDWindow<Act> createReminderAlertCRUDWindow(Context context, HelpContext help) {
+    protected CRUDWindow<Act> createReminderCRUDWindow(Context context, HelpContext help) {
         return new ReminderCRUDWindow(context, help);
+    }
+
+    /**
+     * Creates a patient alert browser.
+     *
+     * @param patient the patient
+     * @param layout  the layout context
+     * @return a new browser
+     */
+    protected Browser<Act> createAlertBrowser(Party patient, LayoutContext layout) {
+        DefaultActQuery<Act> query = new DefaultActQuery<>(patient, "patient", PATIENT_PARTICIPATION,
+                                                           PatientArchetypes.ALERT, ALERT_STATUSES);
+        query.setStatus(ActStatus.IN_PROGRESS);
+        query.setDefaultSortConstraint(DEFAULT_SORT);
+        IMObjectTableModel<Act> model = new CustomerAlertTableModel(query.getShortNames(), layout);
+        return new DefaultIMObjectTableBrowser<>(query, model, layout);
+    }
+
+    /**
+     * Creates a {@link CRUDWindow} for the alert browser.
+     *
+     * @param context the context
+     * @param help    the help context
+     * @return a new {@link CRUDWindow}
+     */
+    protected CRUDWindow<Act> createAlertCRUDWindow(Context context, HelpContext help) {
+        return new AlertCRUDWindow(context, help);
     }
 
     /**
@@ -411,17 +468,6 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     }
 
     /**
-     * Creates a browser for prescriptions.
-     *
-     * @param patient the payment
-     * @param layout  the layout context
-     * @return a new browser
-     */
-    private Browser<Act> createPrescriptionBrowser(Party patient, LayoutContext layout) {
-        return BrowserFactory.create(new PatientPrescriptionQuery(patient), layout);
-    }
-
-    /**
      * Creates a {@link CRUDWindow} for the prescriptions browser.
      *
      * @param context the context
@@ -435,7 +481,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     /**
      * Creates the communication browser.
      *
-     * @param patient the patient to browser communication logs for
+     * @param patient the patient to browse communication logs for
      * @param context the context
      * @param help    the help context
      * @return a new browser
@@ -446,8 +492,21 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     }
 
     /**
+     * Creates the insurance browser.
+     *
+     * @param patient the patient to browse insurance for
+     * @param context the context
+     * @param help    the help context
+     * @return a new browser
+     */
+    protected Browser<Act> createInsuranceBrowser(Party patient, Context context, HelpContext help) {
+        ActQuery<Act> query = new InsuranceQuery(patient);
+        return new InsuranceBrowser(query, new DefaultLayoutContext(context, help));
+    }
+
+    /**
      * Invoked when a browser is selected.
-     * <p/>
+     * <p>
      * This notifies any registered listener.
      *
      * @param selected the selected index
@@ -462,7 +521,7 @@ public class RecordBrowser extends TabbedBrowser<Act> {
 
     /**
      * Follow a hyperlink.
-     * <p/>
+     * <p>
      * If the object is a:
      * <ul>
      * <li>problem, the Problems tab will be shown, and the problem selected</li>
@@ -477,6 +536,17 @@ public class RecordBrowser extends TabbedBrowser<Act> {
         } else if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_EVENT)) {
             showEvent((Act) object);
         }
+    }
+
+    /**
+     * Creates a browser for prescriptions.
+     *
+     * @param patient the payment
+     * @param layout  the layout context
+     * @return a new browser
+     */
+    private Browser<Act> createPrescriptionBrowser(Party patient, LayoutContext layout) {
+        return BrowserFactory.create(new PatientPrescriptionQuery(patient), layout);
     }
 
     /**
@@ -497,6 +567,11 @@ public class RecordBrowser extends TabbedBrowser<Act> {
     private void showProblem(Act object) {
         showProblems();
         problems.setSelected(object, true);
+    }
+
+    static {
+        PROBLEM_STATUSES = new ActStatuses(PatientArchetypes.CLINICAL_PROBLEM);
+        PROBLEM_STATUSES.setDefault((String) null);
     }
 
 }

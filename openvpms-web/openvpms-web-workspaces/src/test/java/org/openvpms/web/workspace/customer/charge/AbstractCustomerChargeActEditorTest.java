@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.junit.Before;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
@@ -29,6 +30,7 @@ import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
@@ -48,6 +50,7 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -218,6 +221,12 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
                 checkReminder(item, patient, product, reminderType, author, clinician);
                 ++count;
             }
+            List<Entity> alertTypes = bean.getNodeTargetEntities("alerts");
+            assertEquals(alertTypes.size(), itemBean.getNodeActs("alerts").size());
+            for (Entity alertType : alertTypes) {
+                checkAlert(item, patient, product, alertType, author, clinician);
+                ++count;
+            }
             List<Entity> templates = bean.getNodeTargetEntities("documents");
             assertEquals(templates.size(), itemBean.getNodeActs("documents").size());
             for (Entity docTemplate : templates) {
@@ -233,6 +242,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
             assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
             assertTrue(itemBean.getActs(InvestigationArchetypes.PATIENT_INVESTIGATION).isEmpty());
             assertTrue(itemBean.getActs(ReminderArchetypes.REMINDER).isEmpty());
+            assertTrue(itemBean.getActs(PatientArchetypes.ALERT).isEmpty());
             assertTrue(itemBean.getActs("act.patientDocument*").isEmpty());
         }
         assertEquals(childActs, count);
@@ -471,7 +481,8 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         List<EntityRelationship> rels = productBean.getNodeRelationships("reminders");
         assertEquals(1, rels.size());
         ActBean bean = new ActBean(reminder);
-        assertEquals(item.getActivityStartTime(), reminder.getActivityStartTime());
+        Date createdTime = DateUtils.truncate(bean.getDate("createdTime"), Calendar.SECOND); // details nodes store ms
+        assertEquals(0, DateRules.compareTo(item.getActivityStartTime(), createdTime));
         Date dueDate = rules.calculateProductReminderDueDate(item.getActivityStartTime(), rels.get(0));
         assertEquals(0, DateRules.compareTo(reminder.getActivityEndTime(), dueDate));
         assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
@@ -480,6 +491,57 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
         assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
         return reminder;
+    }
+
+    /**
+     * Finds an alert associated with a charge item, given its alert type.
+     *
+     * @param item      the item
+     * @param alertType the alert type
+     * @return the corresponding alert
+     */
+    protected Act getAlert(Act item, Entity alertType) {
+        ActBean itemBean = new ActBean(item);
+        List<Act> alerts = itemBean.getNodeActs("alerts");
+        for (Act alert : alerts) {
+            ActBean bean = new ActBean(alert);
+            assertTrue(bean.isA(PatientArchetypes.ALERT));
+            if (ObjectUtils.equals(bean.getNodeParticipantRef("alertType"), alertType.getObjectReference())) {
+                return alert;
+            }
+        }
+        fail("Alert not found");
+        return null;
+    }
+
+    /**
+     * Verifies a patient alert act matches that expected.
+     *
+     * @param item      the charge item, linked to the alert
+     * @param patient   the expected patient
+     * @param product   the expected product
+     * @param alertType the expected alert type
+     * @param author    the expected author
+     * @param clinician the expected clinician
+     * @return the alert act
+     */
+    protected Act checkAlert(Act item, Party patient, Product product, Entity alertType, User author, User clinician) {
+        Act alert = getAlert(item, alertType);
+        ActBean bean = new ActBean(alert);
+        assertEquals(item.getActivityStartTime(), alert.getActivityStartTime());
+        IMObjectBean alertBean = new IMObjectBean(alertType);
+        if (alertBean.getString("durationUnits") != null) {
+            int duration = alertBean.getInt("duration");
+            DateUnits units = DateUnits.fromString(alertBean.getString("durationUnits"));
+            Date endTime = DateRules.getDate(item.getActivityStartTime(), duration, units);
+            assertEquals(endTime, alert.getActivityEndTime());
+        }
+        assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
+        assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
+        assertEquals(alertType.getObjectReference(), bean.getNodeParticipantRef("alertType"));
+        assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
+        assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
+        return alert;
     }
 
     /**
@@ -708,6 +770,30 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     }
 
     /**
+     * Adds an interactive alert type to a product.
+     *
+     * @param product the product
+     * @return the alert type
+     */
+    protected Entity addAlertType(Product product) {
+        Entity alertType = ReminderTestHelper.createAlertType("Z Test Alert", null, 1, DateUnits.YEARS, true);
+        addAlertType(product, alertType);
+        return alertType;
+    }
+
+    /**
+     * Adds an alert type to a product.
+     *
+     * @param product   the product
+     * @param alertType the alert type
+     */
+    protected void addAlertType(Product product, Entity alertType) {
+        IMObjectBean bean = new IMObjectBean(product);
+        bean.addNodeTarget("alerts", alertType);
+        bean.save();
+    }
+
+    /**
      * Adds a tax exemption to a customer.
      *
      * @param customer the customer
@@ -727,8 +813,8 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param discount the discount
      */
     protected void addDiscount(Entity entity, Entity discount) {
-        EntityBean bean = new EntityBean(entity);
-        bean.addNodeRelationship("discounts", discount);
+        IMObjectBean bean = new IMObjectBean(entity);
+        bean.addNodeTarget("discounts", discount);
         bean.save();
     }
 

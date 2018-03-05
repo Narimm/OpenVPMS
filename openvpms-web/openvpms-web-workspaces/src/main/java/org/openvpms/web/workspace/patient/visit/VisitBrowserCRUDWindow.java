@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -28,6 +28,7 @@ import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.pane.ContentPane;
+import org.openvpms.web.workspace.customer.CustomerMailContext;
 
 
 /**
@@ -59,6 +60,20 @@ public class VisitBrowserCRUDWindow<T extends Act> extends BrowserCRUDWindow<T> 
         super(browser, window);
     }
 
+    /**
+     * Registers the window.
+     * <p/>
+     * This implementation registers a {@link CustomerMailContext}, if no mail context is registered.
+     *
+     * @param window the window
+     */
+    @Override
+    protected void setWindow(AbstractCRUDWindow<T> window) {
+        super.setWindow(window);
+        if (window.getMailContext() == null) {
+            window.setMailContext(new CustomerMailContext(window.getContext(), window.getHelpContext()));
+        }
+    }
 
     /**
      * Sets the buttons.
@@ -114,7 +129,7 @@ public class VisitBrowserCRUDWindow<T extends Act> extends BrowserCRUDWindow<T> 
 
     /**
      * Invoked prior to switching to another tab, in order to save state.
-     * <p/>
+     * <p>
      * If the save fails, then switching is cancelled.
      *
      * @return {@code true} if the save was successful, otherwise {@code false}

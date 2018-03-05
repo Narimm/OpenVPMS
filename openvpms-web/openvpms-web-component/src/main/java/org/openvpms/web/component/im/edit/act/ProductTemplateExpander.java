@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -250,7 +250,7 @@ public class ProductTemplateExpander {
     protected void reportRecursionError(Product root, Product template, Deque<Product> parents) {
         ListFunctions functions = new ListFunctions(ServiceHelper.getArchetypeService(),
                                                     ServiceHelper.getLookupService());
-        List<Product> products = new ArrayList<>(parents);
+        List<Object> products = new ArrayList<Object>(parents);
         Collections.reverse(products);
         products.add(template);
         String names = functions.names(products, Messages.get("product.template.includes"));

@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -150,12 +150,14 @@ public abstract class DelegatingCollectionEditor implements EditableIMObjectColl
     }
 
     /**
-     * Adds an object to the collection.
+     * Adds an object to the collection, if it doesn't exist.
      *
      * @param object the object to add
+     * @return {@code true} if the object was added, otherwise {@code false}
      */
-    public void add(IMObject object) {
-        editor.add(object);
+    @Override
+    public boolean add(IMObject object) {
+        return editor.add(object);
     }
 
     /**
@@ -390,6 +392,18 @@ public abstract class DelegatingCollectionEditor implements EditableIMObjectColl
     @Override
     public Collection<IMObject> getCurrentObjects() {
         return editor.getCurrentObjects();
+    }
+
+    /**
+     * Returns an editor for the first object in the collection.
+     *
+     * @param create, if {@code true} create a new instance if the collection is empty
+     * @return the first object editor, or {@code null} if one wasn't found or {@code create} was {@code false} or an
+     * editor could not be created
+     */
+    @Override
+    public IMObjectEditor getFirstEditor(boolean create) {
+        return editor.getFirstEditor(create);
     }
 
     /**

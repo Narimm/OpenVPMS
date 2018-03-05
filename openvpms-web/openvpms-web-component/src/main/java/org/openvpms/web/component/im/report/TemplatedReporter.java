@@ -11,19 +11,30 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.report;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.doc.DocumentArchetypes;
+import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.LookupHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.report.ReportException;
 import org.openvpms.web.component.im.doc.FileNameFormatter;
 
 import java.util.Iterator;
+import java.util.Map;
+
+import static org.openvpms.report.ReportException.ErrorCode.NoTemplateForArchetype;
 
 
 /**
@@ -44,49 +55,97 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
      */
     private DocumentTemplateLocator locator;
 
+    /**
+     * The file name formatter.
+     */
+    private final FileNameFormatter formatter;
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
+    /**
+     * Cache of template names, keyed on template archetype short name.
+     */
+    private Map<String, String> templateNames;
+
 
     /**
      * Constructs a {@link TemplatedReporter} for a single object.
      *
-     * @param object   the object
-     * @param template the document template to use
+     * @param object    the object
+     * @param template  the document template to use
+     * @param formatter the file name formatter
+     * @param service   the archetype service
+     * @param lookups   the lookup service
      */
-    public TemplatedReporter(T object, DocumentTemplate template) {
+    public TemplatedReporter(T object, DocumentTemplate template, FileNameFormatter formatter,
+                             IArchetypeService service, ILookupService lookups) {
         super(object);
         this.template = template;
+        this.formatter = formatter;
+        this.service = service;
+        this.lookups = lookups;
     }
 
     /**
-     * Constructs a {@code TemplatedReporter} for a single object.
+     * Constructs a {@link TemplatedReporter} for a single object.
      *
-     * @param object  the object
-     * @param locator the document template locator
+     * @param object    the object
+     * @param locator   the document template locator
+     * @param formatter the file name formatter
+     * @param service   the archetype service
+     * @param lookups   the lookup service
      */
-    public TemplatedReporter(T object, DocumentTemplateLocator locator) {
+    public TemplatedReporter(T object, DocumentTemplateLocator locator, FileNameFormatter formatter,
+                             IArchetypeService service, ILookupService lookups) {
         super(object);
         this.locator = locator;
+        this.formatter = formatter;
+        this.service = service;
+        this.lookups = lookups;
     }
 
     /**
-     * Constructs a {@code TemplatedReporter} to print a collection of objects.
+     * Constructs a {@link TemplatedReporter} for a collection of objects.
      *
-     * @param objects  the objects to print
-     * @param template the document template to use
+     * @param objects   the objects
+     * @param template  the document template to use
+     * @param formatter the file name formatter
+     * @param service   the archetype service
+     * @param lookups   the lookup service
      */
-    public TemplatedReporter(Iterable<T> objects, DocumentTemplate template) {
+    public TemplatedReporter(Iterable<T> objects, DocumentTemplate template, FileNameFormatter formatter,
+                             IArchetypeService service, ILookupService lookups) {
         super(objects);
         this.template = template;
+        this.formatter = formatter;
+        this.service = service;
+        this.lookups = lookups;
     }
 
     /**
-     * Constructs a {@code TemplatedReporter} to print a collection of objects.
+     * Constructs a {@link TemplatedReporter} for a collection of objects.
      *
-     * @param objects the objects to print
-     * @param locator the document template locator
+     * @param objects   the objects
+     * @param locator   the document template locator
+     * @param formatter the file name formatter
+     * @param service   the archetype service
+     * @param lookups   the lookup service
      */
-    public TemplatedReporter(Iterable<T> objects, DocumentTemplateLocator locator) {
+    public TemplatedReporter(Iterable<T> objects, DocumentTemplateLocator locator, FileNameFormatter formatter,
+                             IArchetypeService service, ILookupService lookups) {
         super(objects);
         this.locator = locator;
+        this.formatter = formatter;
+        this.service = service;
+        this.lookups = lookups;
     }
 
     /**
@@ -96,6 +155,31 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
      */
     public String getShortName() {
         return locator.getShortName();
+    }
+
+    /**
+     * Returns a display name for the objects being reported on.
+     *
+     * @return a display name for the objects being printed
+     */
+    public String getDisplayName() {
+        String result = null;
+        DocumentTemplate template = getTemplate();
+        if (template != null) {
+            result = template.getName();
+        }
+        if (StringUtils.isEmpty(result)) {
+            if (templateNames == null) {
+                templateNames = LookupHelper.getNames(service, lookups, DocumentArchetypes.DOCUMENT_TEMPLATE,
+                                                      "archetype");
+            }
+            String shortName = getShortName();
+            result = templateNames.get(shortName);
+            if (result == null) {
+                result = DescriptorHelper.getDisplayName(shortName, service);
+            }
+        }
+        return result;
     }
 
     /**
@@ -114,12 +198,25 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
     /**
      * Returns the document template associated with the template entity.
      *
-     * @return the document, or {@code null} if none can be found
-     * @throws ArchetypeServiceException for any archetype service error
+     * @return the document
+     * @throws ReportException   if the template cannot be found
+     * @throws DocumentException if the template doesn't have a document
      */
     public Document getTemplateDocument() {
         DocumentTemplate template = getTemplate();
-        return (template != null) ? template.getDocument() : null;
+        if (template == null) {
+            String shortName = getShortName();
+            String displayName = DescriptorHelper.getDisplayName(shortName, service);
+            if (displayName == null) {
+                displayName = shortName;
+            }
+            throw new ReportException(NoTemplateForArchetype, displayName);
+        }
+        Document doc = template.getDocument();
+        if (doc == null) {
+            throw new DocumentException(DocumentException.ErrorCode.TemplateHasNoDocument, template.getName());
+        }
+        return doc;
     }
 
     /**
@@ -150,7 +247,7 @@ public abstract class TemplatedReporter<T> extends Reporter<T> {
             }
             if (value instanceof IMObject) {
                 IMObject object = (IMObject) value;
-                String fileName = new FileNameFormatter().format(template.getName(), object, template);
+                String fileName = formatter.format(template.getName(), object, template);
                 String extension = FilenameUtils.getExtension(document.getName());
                 document.setName(fileName + "." + extension);
             }

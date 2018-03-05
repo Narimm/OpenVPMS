@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.common;
@@ -22,6 +22,7 @@ import org.hibernate.Session;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.object.Reference;
 import org.springframework.core.Ordered;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -40,8 +41,7 @@ import java.util.Set;
 /**
  * Maintains information to be shared between {@link Assembler}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class Context {
 
@@ -64,20 +64,17 @@ public class Context {
     /**
      * A map of objects to their corresponding data object states.
      */
-    private Map<IMObject, DOState> objectToDOMap
-            = new HashMap<IMObject, DOState>();
+    private Map<IMObject, DOState> objectToDOMap = new HashMap<>();
 
     /**
      * A map of data objects to their corresponding objects.
      */
-    private Map<IMObjectDO, IMObject> doToObjectMap
-            = new HashMap<IMObjectDO, IMObject>();
+    private Map<IMObjectDO, IMObject> doToObjectMap = new HashMap<>();
 
     /**
      * A map of references to their corresponding data object states.
      */
-    private Map<IMObjectReference, DOState> refToDOMap
-            = new HashMap<IMObjectReference, DOState>();
+    private Map<Reference, DOState> refToDOMap = new HashMap<>();
 
     /**
      * The set of data objects that have been saved in the session.
@@ -319,7 +316,7 @@ public class Context {
      * @param reference the reference
      * @return the corresponding state, or <tt>null</tt> if none is found
      */
-    public DOState getCached(IMObjectReference reference) {
+    public DOState getCached(Reference reference) {
         return refToDOMap.get(reference);
     }
 
@@ -331,8 +328,7 @@ public class Context {
      * @param impl      the data object implementation type
      * @return the corresponding object, or <tt>null</tt> if none is found
      */
-    public <T extends IMObjectDO, Impl extends IMObjectDOImpl> T
-    get(IMObjectReference reference, Class<T> type, Class<Impl> impl) {
+    public <T extends IMObjectDO, Impl extends IMObjectDOImpl> T get(Reference reference, Class<T> type, Class<Impl> impl) {
         Object result = session.load(impl, reference.getId());
         return type.cast(result);
     }
@@ -424,6 +420,50 @@ public class Context {
             index += max;
         }
         return result;
+    }
+
+    /**
+     * Resolves deferred references.
+     */
+    public void resolveDeferredReferences() {
+        List<DeferredReference> deferred = getDeferredReferences();
+        if (!deferred.isEmpty()) {
+            Map<Class<? extends IMObjectDOImpl>, List<DeferredReference>> map = new HashMap<>();
+            for (DeferredReference ref : deferred) {
+                IMObjectDO object = ref.getObject();
+                if (Hibernate.isInitialized(object)) {
+                    ref.update(object.getObjectReference());
+                } else {
+                    List<DeferredReference> list = map.get(ref.getType());
+                    if (list == null) {
+                        list = new ArrayList<>();
+                        map.put(ref.getType(), list);
+                    }
+                    list.add(ref);
+                }
+            }
+            if (!map.isEmpty()) {
+                for (Map.Entry<Class<? extends IMObjectDOImpl>,
+                        List<DeferredReference>> entry : map.entrySet()) {
+                    Class<? extends IMObjectDOImpl> type = entry.getKey();
+                    List<DeferredReference> refs = entry.getValue();
+                    Map<Long, IMObjectDO> objects = new HashMap<>();
+                    for (DeferredReference ref : refs) {
+                        IMObjectDO object = ref.getObject();
+                        objects.put(object.getId(), object);
+                    }
+                    Map<Long, IMObjectReference> resolvedRefs = getReferences(objects, type);
+                    for (DeferredReference ref : refs) {
+                        IMObjectReference resolved = resolvedRefs.get(ref.getObject().getId());
+                        if (resolved != null) {
+                            ref.update(resolved);
+                        }
+                    }
+                }
+                map.clear();
+            }
+            deferred.clear();
+        }
     }
 
     /**

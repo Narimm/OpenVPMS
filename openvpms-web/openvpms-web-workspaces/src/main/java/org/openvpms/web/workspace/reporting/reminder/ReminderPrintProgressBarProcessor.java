@@ -11,17 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.resource.i18n.Messages;
-
-import java.util.List;
 
 
 /**
@@ -32,33 +29,33 @@ import java.util.List;
 public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProcessor {
 
     /**
-     * The reminder printer.
-     */
-    private final ReminderPrintProcessor processor;
-
-    /**
-     * The events currently being printed
-     */
-    private List<ReminderEvent> events;
-
-    /**
      * Constructs a {@link ReminderPrintProgressBarProcessor}.
      *
-     * @param reminders  the reminders
-     * @param processor  the reminder print processor
-     * @param statistics the statistics
+     * @param query     the query
+     * @param processor the email processor
      */
-    public ReminderPrintProgressBarProcessor(List<List<ReminderEvent>> reminders, ReminderPrintProcessor processor,
-                                             Statistics statistics) {
-        super(reminders, statistics, Messages.get("reporting.reminder.run.print"));
+    public ReminderPrintProgressBarProcessor(ReminderItemSource query, final ReminderPrintProcessor processor) {
+        super(query, processor, Messages.get("reporting.reminder.run.print"));
+        // if a single reminder is being printed, always display the print dialog, otherwise display it if there is
+        // no default printer
+        if (query instanceof SingleReminderItemSource) {
+            processor.setInteractiveAlways(true);
+        } else {
+            processor.setInteractiveAlways(false);
+        }
 
         PrinterListener listener = new PrinterListener() {
             public void printed(String printer) {
                 try {
                     setSuspend(false);
-                    processCompleted(events);
+                    if (processor.isAsynchronous()) {
+                        processCompleted();
+                    }
                 } catch (OpenVPMSException exception) {
-                    processError(exception, events);
+                    processError(exception);
+                    if (processor.isAsynchronous()) {
+                        processCompleted();
+                    }
                 }
             }
 
@@ -68,30 +65,17 @@ public class ReminderPrintProgressBarProcessor extends ReminderProgressBarProces
 
             public void skipped() {
                 setSuspend(false);
-                skip(events);
+                skip();
             }
 
             public void failed(Throwable cause) {
-                processError(cause, events);
+                processError(cause);
+                if (processor.isAsynchronous()) {
+                    processCompleted();
+                }
             }
         };
-        this.processor = processor;
         processor.setListener(listener);
     }
 
-    /**
-     * Processes a set of reminder events.
-     *
-     * @param events the reminder events to process
-     * @throws OpenVPMSException if the events cannot be processed
-     */
-    protected void process(List<ReminderEvent> events) {
-        super.process(events);
-        this.events = events;
-        processor.process(events);
-        if (processor.isInteractive()) {
-            // need to process this print asynchronously, so suspend
-            setSuspend(true);
-        }
-    }
 }

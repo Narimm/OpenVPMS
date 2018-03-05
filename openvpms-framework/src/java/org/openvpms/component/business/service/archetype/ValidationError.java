@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
 package org.openvpms.component.business.service.archetype;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.openvpms.component.model.object.Reference;
 
 import java.io.Serializable;
 
@@ -28,17 +29,17 @@ import java.io.Serializable;
  * @author Jim Alateras
  * @author Tim Anderson
  */
-public class ValidationError implements Serializable {
+public class ValidationError implements org.openvpms.component.service.archetype.ValidationError, Serializable {
 
     /**
      * Serialisation identifier.
      */
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     /**
      * The short name of the archetype that the error refers to.
      */
-    private String archetype;
+    private Reference reference;
 
     /**
      * The name of the node that the error refers to.
@@ -60,14 +61,24 @@ public class ValidationError implements Serializable {
     /**
      * Constructs a new <tt>ValidationError</tt>.
      *
-     * @param archetype the archetype short name
+     * @param reference the object reference
      * @param node      the node name. May be {@code null}
      * @param message   the error message
      */
-    public ValidationError(String archetype, String node, String message) {
-        this.archetype = archetype;
+    public ValidationError(Reference reference, String node, String message) {
+        this.reference = reference;
         this.message = message;
         this.node = node;
+    }
+
+    /**
+     * Returns a reference to the object.
+     *
+     * @return the object reference
+     */
+    @Override
+    public Reference getReference() {
+        return reference;
     }
 
     /**
@@ -76,16 +87,7 @@ public class ValidationError implements Serializable {
      * @return the archetype short name
      */
     public String getArchetype() {
-        return archetype;
-    }
-
-    /**
-     * Sets the archetype short name.
-     *
-     * @param archetype the archetype short name
-     */
-    public void setArchetype(String archetype) {
-        this.archetype = archetype;
+        return reference.getArchetype();
     }
 
     /**
@@ -98,15 +100,6 @@ public class ValidationError implements Serializable {
     }
 
     /**
-     * Sets the node name.
-     *
-     * @param node the node name. May be {@code null}
-     */
-    public void setNode(String node) {
-        this.node = node;
-    }
-
-    /**
      * Returns the error message.
      *
      * @return the error message
@@ -115,22 +108,13 @@ public class ValidationError implements Serializable {
         return message;
     }
 
-    /**
-     * Sets the error message.
-     *
-     * @param message the error message
-     */
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString() {
         return new ToStringBuilder(this)
-                .append("archetype", archetype)
+                .append("reference", reference)
                 .append("node", node)
                 .append("message", message)
                 .toString();

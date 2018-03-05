@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -20,6 +20,7 @@ import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.AndPredicate;
 import org.apache.commons.jxpath.JXPathContext;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.MergeException;
@@ -27,9 +28,12 @@ import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
@@ -41,7 +45,6 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -54,6 +57,7 @@ import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.ParticipationConstraint;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -62,6 +66,13 @@ import java.util.TreeMap;
 
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_LOCATION;
 import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_WEIGHT;
+import static org.openvpms.component.system.common.query.Constraints.and;
+import static org.openvpms.component.system.common.query.Constraints.eq;
+import static org.openvpms.component.system.common.query.Constraints.isNull;
+import static org.openvpms.component.system.common.query.Constraints.join;
+import static org.openvpms.component.system.common.query.Constraints.lte;
+import static org.openvpms.component.system.common.query.Constraints.or;
+import static org.openvpms.component.system.common.query.Constraints.sort;
 import static org.openvpms.component.system.common.query.ParticipationConstraint.Field.ActShortName;
 
 
@@ -71,6 +82,16 @@ import static org.openvpms.component.system.common.query.ParticipationConstraint
  * @author Tim Anderson
  */
 public class PatientRules {
+
+    /**
+     * Allergy alert type code.
+     */
+    public static final String ALLERGY_ALERT_TYPE = "ALLERGY";
+
+    /**
+     * Aggression alert type code.
+     */
+    public static final String AGGRESSION_ALERT_TYPE = "AGGRESSION";
 
     /**
      * The practice rules.
@@ -429,7 +450,7 @@ public class PatientRules {
 
     /**
      * Returns the age of the patient.
-     * <p/>
+     * <p>
      * If the patient is deceased, the age of the patient when they died will be returned
      *
      * @param patient the patient
@@ -442,7 +463,7 @@ public class PatientRules {
 
     /**
      * Returns the age of the patient as of the specified date.
-     * <p/>
+     * <p>
      * If the patient is deceased, the age of the patient when they died will be returned
      *
      * @param patient the patient
@@ -507,6 +528,17 @@ public class PatientRules {
     }
 
     /**
+     * Returns the patient's colour.
+     *
+     * @param patient the patient
+     * @return the colour. May be {@code null}
+     */
+    public String getPatientColour(Party patient) {
+        IMObjectBean bean = new IMObjectBean(patient, service);
+        return bean.getString("colour");
+    }
+
+    /**
      * Returns the description node of the most recent
      * <em>act.patientWeight</em> for a patient.
      *
@@ -540,7 +572,7 @@ public class PatientRules {
 
     /**
      * Returns the patient's weight.
-     * <p/>
+     * <p>
      * This uses the most recent recorded weight for the patient.
      *
      * @param patient the patient
@@ -662,6 +694,64 @@ public class PatientRules {
     }
 
     /**
+     * Returns all IN_PROGRESS allergy alerts for a patient, active at the specified date.
+     * <p>
+     * An alert is considered an allergy allert if it has an alert type coded as {@link #ALLERGY_ALERT_TYPE}.
+     *
+     * @param patient the patient
+     * @param date    the date
+     * @return the patient alerts
+     */
+    public List<Act> getAllergies(Party patient, Date date) {
+        List<Act> acts = new ArrayList<>();
+        ArchetypeQuery query = createAlertQuery(patient, ALLERGY_ALERT_TYPE, date);
+        IMObjectQueryIterator<Act> alerts = new IMObjectQueryIterator<>(service, query);
+        while (alerts.hasNext()) {
+            acts.add(alerts.next());
+        }
+        return acts;
+    }
+
+    /**
+     * Determines if an alert is for an allergy.
+     *
+     * @param alert the alert
+     * @return {@code true} if the alert is for an allergy
+     */
+    public boolean isAllergy(Act alert) {
+        boolean result = false;
+        ActBean bean = new ActBean(alert, service);
+        Entity alertType = bean.getNodeParticipant("alertType");
+        if (alertType != null) {
+            IMObjectBean alertBean = new IMObjectBean(alertType, service);
+            IMObject lookup = alertBean.getValue("class", new Predicate() {
+                @Override
+                public boolean evaluate(Object object) {
+                    return (object instanceof Lookup) && ALLERGY_ALERT_TYPE.equals(((Lookup) object).getCode());
+                }
+            });
+            result = lookup != null;
+        }
+        return result;
+    }
+
+    /**
+     * Determines if a patient is aggressive.
+     * <p>
+     * A patient is aggressive if there is an IN_PROGRESS act.patientAlert active at the current time, with an
+     * alert type coded as {@link #AGGRESSION_ALERT_TYPE}.
+     *
+     * @param patient the patient
+     * @return {@code true} if a patient is aggressive
+     */
+    public boolean isAggressive(Party patient) {
+        ArchetypeQuery query = createAlertQuery(patient, AGGRESSION_ALERT_TYPE, new Date());
+        query.setMaxResults(1);
+        IMObjectQueryIterator<Act> alerts = new IMObjectQueryIterator<>(service, query);
+        return alerts.hasNext();
+    }
+
+    /**
      * Returns the source of a patient relationship closest to the specified start time.
      *
      * @param patient   the patient. May be {@code null}
@@ -702,6 +792,25 @@ public class PatientRules {
     }
 
     /**
+     * Creates a query for IN_PROGRESS alerts, active at the specified time.
+     *
+     * @param patient the patient
+     * @param code    the alert code
+     * @param date    the date
+     * @return a new query
+     */
+    private ArchetypeQuery createAlertQuery(Party patient, String code, Date date) {
+        ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.ALERT);
+        query.add(eq("status", ActStatus.IN_PROGRESS));
+        query.add(join("patient").add(eq("entity", patient)));
+        query.add(join("alertType").add(join("entity").add(join("class", "clazz").add(eq("code", code)))));
+        query.add(and(lte("startTime", date), or(Constraints.gt("endTime", date), isNull("endTime"))));
+        query.add(sort("startTime"));
+        query.add(sort("id"));
+        return query;
+    }
+
+    /**
      * Helper to create a query to return the most recent <em>act.patientWeight</em> for a patient.
      *
      * @param patient the patient
@@ -709,11 +818,11 @@ public class PatientRules {
      */
     private ArchetypeQuery createWeightQuery(Party patient) {
         ArchetypeQuery query = new ArchetypeQuery(Constraints.shortName("act", PATIENT_WEIGHT));
-        JoinConstraint participation = Constraints.join("patient");
-        participation.add(Constraints.eq("entity", patient));
+        JoinConstraint participation = join("patient");
+        participation.add(eq("entity", patient));
         participation.add(new ParticipationConstraint(ActShortName, PATIENT_WEIGHT));
         query.add(participation);
-        query.add(Constraints.sort("startTime", false));
+        query.add(sort("startTime", false));
         query.setMaxResults(1);
         return query;
     }
@@ -783,10 +892,10 @@ public class PatientRules {
     private EntityIdentity getEntityIdentity(Party patient, String shortName) {
         EntityIdentity result = null;
         if (patient != null) {
-            for (EntityIdentity identity : patient.getIdentities()) {
-                if (identity.isActive() && TypeHelper.isA(identity, shortName)) {
+            for (org.openvpms.component.model.entity.EntityIdentity identity : patient.getIdentities()) {
+                if (identity.isActive() && identity.isA(shortName)) {
                     if (result == null || result.getId() < identity.getId()) {
-                        result = identity;
+                        result = (EntityIdentity) identity;
                     }
                 }
             }
@@ -807,9 +916,9 @@ public class PatientRules {
     private Collection<EntityIdentity> getIdentities(Party patient, String shortName) {
         TreeMap<Long, EntityIdentity> result = new TreeMap<>(ComparatorUtils.reversedComparator(
                 ComparatorUtils.NATURAL_COMPARATOR));
-        for (EntityIdentity identity : patient.getIdentities()) {
-            if (identity.isActive() && TypeHelper.isA(identity, shortName)) {
-                result.put(identity.getId(), identity);
+        for (org.openvpms.component.model.entity.EntityIdentity identity : patient.getIdentities()) {
+            if (identity.isActive() && identity.isA(shortName)) {
+                result.put(identity.getId(), (EntityIdentity) identity);
             }
         }
         return result.values();

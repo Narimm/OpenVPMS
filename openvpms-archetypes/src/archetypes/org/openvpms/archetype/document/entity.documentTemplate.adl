@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -47,6 +47,7 @@
                     <property name="act.patientReminder" value="Reminder Report"/>
                     <property name="act.patientClinicalEvent" value="Patient Visit"/>
                     <property name="act.patientClinicalProblem" value="Patient Problem"/>
+                    <property name="act.patientInsuranceClaim" value="Insurance Claim"/>
                     <property name="act.tillBalance" value="Till Balance"/>
                     <property name="act.bankDeposit" value="Bank Deposit"/>
                     <property name="act.customerAccountOpeningBalance" value="Customer Statement"/>
@@ -70,6 +71,9 @@
                     <property name="GROUPED_REMINDERS" value="Grouped Reminders"/>
                     <property name="REPORT" value="Report"/>
                     <property name="SUBREPORT" value="Sub Report"/>
+                    <property name="INSURANCE_CLAIM_INVOICE" value="Insurance Claim Invoice"/>
+                    <property name="INSURANCE_CLAIM_MEDICAL_RECORDS" value="Insurance Claim Medical Records"/>
+                    <property name="INSURANCE_CLAIM" value="Insurance Claim - Custom"/>
                 </propertyList>
             </assertion>
         </node>

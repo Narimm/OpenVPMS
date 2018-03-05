@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -25,11 +23,12 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import static org.openvpms.component.business.domain.im.lookup.LookupRelationshipException.ErrorCode.FailedToAddLookRelationship;
-import static org.openvpms.component.business.domain.im.lookup.LookupRelationshipException.ErrorCode.FailedToRemoveLookRelationship;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import static org.openvpms.component.business.domain.im.lookup.LookupRelationshipException.ErrorCode.FailedToAddLookRelationship;
+import static org.openvpms.component.business.domain.im.lookup.LookupRelationshipException.ErrorCode.FailedToRemoveLookRelationship;
 
 
 /**
@@ -51,10 +50,9 @@ import java.util.Set;
  * A lookup can have additional information stored in the details
  * attribute.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
  */
-public class Lookup extends IMObject {
+public class Lookup extends IMObject implements org.openvpms.component.model.lookup.Lookup {
 
     /**
      * Serialization version identifier.
@@ -74,14 +72,12 @@ public class Lookup extends IMObject {
     /**
      * The {@link LookupRelationship}s that this lookup is a source of.
      */
-    private Set<LookupRelationship> sourceLookupRelationships =
-            new HashSet<LookupRelationship>();
+    private Set<org.openvpms.component.model.lookup.LookupRelationship> sourceLookupRelationships = new HashSet<>();
 
     /**
      * The {@link LookupRelationship}s that this lookup is a target of.
      */
-    private Set<LookupRelationship> targetLookupRelationships =
-            new HashSet<LookupRelationship>();
+    private Set<org.openvpms.component.model.lookup.LookupRelationship> targetLookupRelationships = new HashSet<>();
 
 
     /**
@@ -168,7 +164,7 @@ public class Lookup extends IMObject {
      *
      * @return the source lookup relationships
      */
-    public Set<LookupRelationship> getSourceLookupRelationships() {
+    public Set<org.openvpms.component.model.lookup.LookupRelationship> getSourceLookupRelationships() {
         return sourceLookupRelationships;
     }
 
@@ -178,26 +174,26 @@ public class Lookup extends IMObject {
      * @param relationships the relationships to set
      */
     public void setSourceLookupRelationships(
-            Set<LookupRelationship> relationships) {
+            Set<org.openvpms.component.model.lookup.LookupRelationship> relationships) {
         sourceLookupRelationships = relationships;
     }
 
     /**
      * Add a source {@link LookupRelationship}.
      *
-     * @param source the relationship to add
+     * @param relationship the relationship to add
      */
-    public void addSourceLookupRelationship(LookupRelationship source) {
-        sourceLookupRelationships.add(source);
+    public void addSourceLookupRelationship(org.openvpms.component.model.lookup.LookupRelationship relationship) {
+        sourceLookupRelationships.add(relationship);
     }
 
     /**
      * Remove a source {@link LookupRelationship}.
      *
-     * @param source the relationship to remove
+     * @param relationship the relationship to remove
      */
-    public void removeSourceLookupRelationship(LookupRelationship source) {
-        sourceLookupRelationships.remove(source);
+    public void removeSourceLookupRelationship(org.openvpms.component.model.lookup.LookupRelationship relationship) {
+        sourceLookupRelationships.remove(relationship);
     }
 
     /**
@@ -205,7 +201,7 @@ public class Lookup extends IMObject {
      *
      * @return the target lookup relationships
      */
-    public Set<LookupRelationship> getTargetLookupRelationships() {
+    public Set<org.openvpms.component.model.lookup.LookupRelationship> getTargetLookupRelationships() {
         return targetLookupRelationships;
     }
 
@@ -215,49 +211,47 @@ public class Lookup extends IMObject {
      * @param relationships the relationships to set
      */
     public void setTargetLookupRelationships(
-            Set<LookupRelationship> relationships) {
+            Set<org.openvpms.component.model.lookup.LookupRelationship> relationships) {
         targetLookupRelationships = relationships;
     }
 
     /**
      * Adds a target {@link LookupRelationship}.
      *
-     * @param target the relationship to add
+     * @param relationship the relationship to add
      */
-    public void addTargetLookupRelationship(LookupRelationship target) {
-        targetLookupRelationships.add(target);
+    public void addTargetLookupRelationship(org.openvpms.component.model.lookup.LookupRelationship relationship) {
+        targetLookupRelationships.add(relationship);
     }
 
     /**
      * Removes a target {@link LookupRelationship}.
      *
-     * @param target the relationship to remove
+     * @param relationship the relationship to remove
      */
-    public void removeTargetLookupRelationship(LookupRelationship target) {
-        targetLookupRelationships.remove(target);
+    public void removeTargetLookupRelationship(org.openvpms.component.model.lookup.LookupRelationship relationship) {
+        targetLookupRelationships.remove(relationship);
     }
 
     /**
      * Add a relationship to this lookup. It will determine whether it is a
      * source or target relationship before adding it.
      *
-     * @param rel the relationship to add
+     * @param relationship the relationship to add
      * @throws LookupRelationshipException if the relationship cannot be added
      *                                     to this lookup
      */
-    public void addLookupRelationship(LookupRelationship rel) {
-        if ((rel.getSource().getLinkId().equals(this.getLinkId())) &&
-            (rel.getSource().getArchetypeId().equals(
-                    this.getArchetypeId()))) {
-            addSourceLookupRelationship(rel);
-        } else if ((rel.getTarget().getLinkId().equals(this.getLinkId())) &&
-                   (rel.getTarget().getArchetypeId().equals(
-                           this.getArchetypeId()))) {
-            addTargetLookupRelationship(rel);
+    public void addLookupRelationship(org.openvpms.component.model.lookup.LookupRelationship relationship) {
+        if ((relationship.getSource().getLinkId().equals(this.getLinkId())) &&
+            (relationship.getSource().getArchetype().equals(this.getArchetype()))) {
+            addSourceLookupRelationship(relationship);
+        } else if ((relationship.getTarget().getLinkId().equals(this.getLinkId())) &&
+                   (relationship.getTarget().getArchetype().equals(this.getArchetype()))) {
+            addTargetLookupRelationship(relationship);
         } else {
             throw new LookupRelationshipException(
                     FailedToAddLookRelationship,
-                    new Object[]{rel.getSource(), rel.getTarget()});
+                    new Object[]{relationship.getSource(), relationship.getTarget()});
         }
     }
 
@@ -265,37 +259,31 @@ public class Lookup extends IMObject {
      * Remove a relationship from this lookup. It will determine whether it is a
      * source or target relationship before removing it.
      *
-     * @param rel the lookup relationship to remove
+     * @param relationship the lookup relationship to remove
      * @throws LookupRelationshipException if the relationship cannot be removed
      *                                     from this lookup
      */
-    public void removeLookupRelationship(LookupRelationship rel) {
-        if ((rel.getSource().getLinkId().equals(this.getLinkId())) &&
-            (rel.getSource().getArchetypeId().equals(
-                    this.getArchetypeId()))) {
-            removeSourceLookupRelationship(rel);
-        } else if ((rel.getTarget().getLinkId().equals(this.getLinkId())) &&
-                   (rel.getTarget().getArchetypeId().equals(
-                           this.getArchetypeId()))) {
-            removeTargetLookupRelationship(rel);
+    public void removeLookupRelationship(org.openvpms.component.model.lookup.LookupRelationship relationship) {
+        if ((relationship.getSource().getLinkId().equals(this.getLinkId())) &&
+            (relationship.getSource().getArchetype().equals(this.getArchetype()))) {
+            removeSourceLookupRelationship(relationship);
+        } else if ((relationship.getTarget().getLinkId().equals(this.getLinkId())) &&
+                   (relationship.getTarget().getArchetype().equals(this.getArchetype()))) {
+            removeTargetLookupRelationship(relationship);
         } else {
             throw new LookupRelationshipException(
                     FailedToRemoveLookRelationship,
-                    new Object[]{rel.getSource(), rel.getTarget()});
+                    new Object[]{relationship.getSource(), relationship.getTarget()});
         }
     }
 
     /**
-     * Returns all the lookup relationships. Do not use the returned set to
-     * add and remove lookup relationships.
-     * Instead use {@link #addLookupRelationship(LookupRelationship)}
-     * and {@link #removeLookupRelationship(LookupRelationship)} repsectively.
-     *
+     * Returns all the lookup relationships.
      * @return the set of all lookup relationships
      */
-    public Set<LookupRelationship> getLookupRelationships() {
-        Set<LookupRelationship> relationships =
-                new HashSet<LookupRelationship>(sourceLookupRelationships);
+    public Set<org.openvpms.component.model.lookup.LookupRelationship> getLookupRelationships() {
+        Set<org.openvpms.component.model.lookup.LookupRelationship> relationships
+                = new HashSet<>(sourceLookupRelationships);
         relationships.addAll(targetLookupRelationships);
         return relationships;
     }

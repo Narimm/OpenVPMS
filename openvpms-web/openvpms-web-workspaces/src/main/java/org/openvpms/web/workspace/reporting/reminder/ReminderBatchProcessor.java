@@ -11,10 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.reporting.reminder;
 
+import nextapp.echo2.app.Component;
 import org.openvpms.web.component.processor.BatchProcessorComponent;
 
 
@@ -26,12 +28,47 @@ import org.openvpms.web.component.processor.BatchProcessorComponent;
 public interface ReminderBatchProcessor extends BatchProcessorComponent {
 
     /**
-     * Determines if reminders should be updated on completion.
-     * <p/>
-     * If set, the {@code reminderCount} is incremented the {@code lastSent} timestamp set on completed reminders.
+     * Returns the reminder item archetype that this processes.
      *
-     * @param update if {@code true} update reminders on completion
+     * @return the reminder item archetype
      */
-    void setUpdateOnCompletion(boolean update);
+    String getArchetype();
+
+    /**
+     * Indicates if reminders are being resent.
+     * <p>
+     * If set:
+     * <ul>
+     * <li>due dates are ignored</li>
+     * <li>the reminder last sent date is not updated</li>
+     * </ul>
+     * <p>
+     * Defaults to {@code false}.
+     *
+     * @param resend if {@code true} reminders are being resent
+     */
+    void setResend(boolean resend);
+
+    /**
+     * Registers the statistics.
+     *
+     * @param statistics the statistics
+     */
+    void setStatistics(Statistics statistics);
+
+    /**
+     * Determines if there are more reminders available on completion of processing.
+     *
+     * @return {@code true} if there are more reminders available
+     */
+    boolean hasMoreReminders();
+
+    /**
+     * Returns the component.
+     *
+     * @return the component, or {@code null} if this doesn't render one
+     */
+    @Override
+    Component getComponent();
 
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -31,7 +31,7 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
@@ -69,6 +69,16 @@ public class StatementEmailProcessor extends AbstractStatementProcessorListener 
     private final JavaMailSender sender;
 
     /**
+     * The email template evaluator.
+     */
+    private final EmailTemplateEvaluator evaluator;
+
+    /**
+     * The reporter factory.
+     */
+    private final ReporterFactory factory;
+
+    /**
      * The practice email addresses.
      */
     private final PracticeEmailAddresses addresses;
@@ -93,27 +103,24 @@ public class StatementEmailProcessor extends AbstractStatementProcessorListener 
      */
     private final Context context;
 
-    /**
-     * The email template evaluator.
-     */
-    private final EmailTemplateEvaluator evaluator;
-
 
     /**
      * Constructs a {@link StatementEmailProcessor}.
      *
      * @param sender    the mail sender
      * @param evaluator the email template evaluator
+     * @param factory   the reporter factory
      * @param practice  the practice
      * @param context   the context
      * @throws ArchetypeServiceException   for any archetype service error
      * @throws StatementProcessorException for any statement processor error
      */
-    public StatementEmailProcessor(JavaMailSender sender, EmailTemplateEvaluator evaluator, Party practice,
-                                   Context context) {
+    public StatementEmailProcessor(JavaMailSender sender, EmailTemplateEvaluator evaluator, ReporterFactory factory,
+                                   Party practice, Context context) {
         super(practice);
         this.sender = sender;
         this.evaluator = evaluator;
+        this.factory = factory;
         this.context = context;
         addresses = new PracticeEmailAddresses(practice, "BILLING");
         handlers = ServiceHelper.getDocumentHandlers();
@@ -162,7 +169,7 @@ public class StatementEmailProcessor extends AbstractStatementProcessorListener 
             helper.setSubject(subject);
             helper.setText(text, true);
             Iterable<IMObject> objects = getActs(statement);
-            Reporter reporter = ReporterFactory.create(objects, statementTemplate, TemplatedReporter.class);
+            Reporter reporter = factory.create(objects, statementTemplate, TemplatedReporter.class);
             reporter.setParameters(getParameters(statement));
             reporter.setFields(ReportContextFactory.create(local));
             final Document doc = reporter.getDocument(DocFormats.PDF_TYPE, true);

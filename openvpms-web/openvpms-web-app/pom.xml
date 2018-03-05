@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -21,7 +21,7 @@
     <parent>
         <artifactId>openvpms-web</artifactId>
         <groupId>org.openvpms</groupId>
-        <version>1.9.4-SNAPSHOT</version>
+        <version>2.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -31,10 +31,19 @@
     <name>OpenVPMS Web App</name>
 
     <!-- ========================================================================== -->
-    <!-- Debugging notes:                                                           -->
-    <!-- . p6spy can be enabled using:                                              -->
-    <!--   mvn -Djdbc.driverClassName=com.p6spy.engine.spy.P6SpyDriver tomcat:run   -->
+    <!-- Deployment notes                                                           -->
+    <!-- . rapid deployment can be done via jetty using                             -->
+    <!--   mvn jetty:run                                                            -->
+    <!-- . deployment via Tomcat 8 can be done using                                -->
+    <!--   mvn package cargo:run                                                    -->
     <!-- ========================================================================== -->
+
+    <!-- ============================================================================================ -->
+    <!-- Debugging notes:                                                                             -->
+    <!-- . p6spy can be enabled using:                                                                -->
+    <!--   mvn -Dhibernate.connection.driver_class=com.p6spy.engine.spy.P6SpyDriver \                 -->
+    <!--       -Dhibernate.connection.url=jdbc:p6spy:mysql://localhost:3306/openvpms-1_8 jetty:run    -->
+    <!-- ============================================================================================ -->
 
     <build>
         <finalName>openvpms</finalName>
@@ -185,24 +194,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.tomcat.maven</groupId>
-                <artifactId>tomcat6-maven-plugin</artifactId>
-                <version>2.2</version>
-                <configuration>
-                    <server>openvpms-tomcat</server>
-                    <!--port>${maven.tomcat.port}</port-->
-                    <path>/${project.build.finalName}</path>
-                    <warSourceDirectory>${basedir}/target/webapp</warSourceDirectory>
-                </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>${jdbc.groupId}</groupId>
-                        <artifactId>${jdbc.artifactId}</artifactId>
-                        <version>${jdbc.version}</version>
-                    </dependency>
-                </dependencies>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.tomcat.maven</groupId>
                 <artifactId>tomcat7-maven-plugin</artifactId>
                 <version>2.2</version>
                 <configuration>
@@ -219,21 +210,109 @@
                     </dependency>
                 </dependencies>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.cargo</groupId>
+                <artifactId>cargo-maven2-plugin</artifactId>
+                <version>1.6.4</version>
+                <configuration>
+                    <container>
+                        <containerId>tomcat8x</containerId>
+                        <artifactInstaller>
+                            <groupId>org.apache.tomcat</groupId>
+                            <artifactId>tomcat</artifactId>
+                            <version>${tomcat.version}</version>
+                        </artifactInstaller>
+                    </container>
+                    <deployables>
+                        <deployable>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <type>war</type>
+                            <properties>
+                                <context>/openvpms</context>
+                            </properties>
+                        </deployable>
+                    </deployables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>${jetty.version}</version>
+                <configuration>
+                    <webApp>
+                        <descriptor>${basedir}/src/webapp/WEB-INF/web.xml</descriptor>
+                        <contextPath>/openvpms</contextPath>
+                        <webInfIncludeJarPattern>.*/^(asm-all-repackaged)[^/]*\.jar$</webInfIncludeJarPattern>
+                        <resourceBases>
+                            <resourceBase>src/webapp</resourceBase>
+                            <resourceBase>${project.build.directory}/webapp</resourceBase>
+                        </resourceBases>
+                    </webApp>
+                    <useTestScope>true</useTestScope>
+                    <useTestClasspath>true</useTestClasspath>
+                    <httpConnector>
+                        <port>8080</port>
+                    </httpConnector>
+                    <stopPort>9091</stopPort>
+                    <stopKey>stop</stopKey>
+                    <systemProperties>
+                        <systemProperty>
+                            <name>catalina.base</name>
+                            <value>${project.build.directory}/tmp</value>
+                        </systemProperty>
+                    </systemProperties>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>${jdbc.groupId}</groupId>
+                        <artifactId>${jdbc.artifactId}</artifactId>
+                        <version>${jdbc.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>log4j</groupId>
+                        <artifactId>log4j</artifactId>
+                        <version>${log4j.version}</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>com.sun.jdmk</groupId>
+                                <artifactId>jmxtools</artifactId>
+                            </exclusion>
+                            <exclusion>
+                                <groupId>com.sun.jmx</groupId>
+                                <artifactId>jmxri</artifactId>
+                            </exclusion>
+                            <exclusion>
+                                <groupId>javax.jms</groupId>
+                                <artifactId>jms</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-api</artifactId>
+                        <version>${slf4j.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                        <version>${slf4j.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
         </plugins>
     </build>
-    <repositories>
-        <repository>
-            <!-- for jetty plugin dependencies -->
-            <id>java.net</id>
-            <url>http://download.java.net/maven/2/</url>
-            <snapshots>
-                <enabled>false</enabled>
-                <checksumPolicy>fail</checksumPolicy>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-        </repository>
-    </repositories>
     <dependencies>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-plugin-manager-impl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-plugin-services-impl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
             <artifactId>openvpms-web-workspaces</artifactId>
@@ -252,7 +331,18 @@
             <artifactId>openvpms-webdav-launcher-package</artifactId>
             <version>${webdav.launcher.version}</version>
             <type>war</type>
-            <scope>provided</scope> <!-- copied to the webstart dir -->
+            <scope>provided</scope>
+            <!-- copied to the webstart dir -->
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-db</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openvpms</groupId>
+            <artifactId>openvpms-booking-service</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.mojo</groupId>
@@ -267,6 +357,8 @@
     </dependencies>
 
     <properties>
+        <tomcat.version>8.0.45</tomcat.version>
+        <jetty.version>9.4.6.v20170531</jetty.version>
         <jetty.port>8080</jetty.port>
         <jetty.sslport>8443</jetty.sslport>
     </properties>

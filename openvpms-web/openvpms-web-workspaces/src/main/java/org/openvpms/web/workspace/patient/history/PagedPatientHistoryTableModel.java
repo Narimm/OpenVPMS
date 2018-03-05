@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
-import org.openvpms.web.component.im.act.PagedActHierarchyTableModel;
 
 import java.util.List;
 
@@ -27,7 +26,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class PagedPatientHistoryTableModel extends PagedActHierarchyTableModel<Act> {
+public class PagedPatientHistoryTableModel extends AbstractPagedPatientHistoryTableModel {
 
     /**
      * Constructs a {@link PagedPatientHistoryTableModel}.
@@ -35,9 +34,9 @@ public class PagedPatientHistoryTableModel extends PagedActHierarchyTableModel<A
      * @param model      the underlying table model
      * @param shortNames the archetype short names of the child acts to display
      */
-    public PagedPatientHistoryTableModel(AbstractPatientHistoryTableModel model, String... shortNames) {
+    public PagedPatientHistoryTableModel(AbstractPatientHistoryTableModel model, String[] shortNames) {
         super(model, shortNames);
-    }
+   }
 
     /**
      * Sets the objects for the current page.
@@ -46,7 +45,7 @@ public class PagedPatientHistoryTableModel extends PagedActHierarchyTableModel<A
      */
     @Override
     protected ActHierarchyIterator<Act> createIterator(List<Act> objects, String[] shortNames) {
-        return new PatientHistoryIterator(objects, shortNames, isSortAscending());
+        return new PatientHistoryIterator(objects, shortNames, getSearch(), isSortAscending());
     }
 
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -19,7 +19,6 @@ package org.openvpms.web.workspace.workflow.checkin;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
@@ -40,7 +39,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 
-import java.util.List;
+import java.util.Collection;
 
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.join;
@@ -75,7 +74,7 @@ public abstract class AbstractPrintPatientDocumentsTask extends Tasks {
 
     /**
      * Starts the task.
-     * <p/>
+     * <p>
      * The registered {@link TaskListener} will be notified on completion or failure.
      *
      * @param context the task context
@@ -106,17 +105,8 @@ public abstract class AbstractPrintPatientDocumentsTask extends Tasks {
             dialog.setCloseOnSelection(false);
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
-                protected void onAction(PopupDialog dialog) {
-                    try {
-                        super.onAction(dialog);
-                    } finally {
-                        AbstractPrintPatientDocumentsTask.this.dialog = null;
-                    }
-                }
-
-                @Override
                 public void onOK() {
-                    print(browser.getSelectedList(), context);
+                    print(browser.getSelections(), context);
                 }
 
                 @Override
@@ -137,6 +127,15 @@ public abstract class AbstractPrintPatientDocumentsTask extends Tasks {
                 @Override
                 public void onAction(String action) {
                     notifyCancelled();
+                }
+
+                @Override
+                protected void onAction(PopupDialog dialog) {
+                    try {
+                        super.onAction(dialog);
+                    } finally {
+                        AbstractPrintPatientDocumentsTask.this.dialog = null;
+                    }
                 }
 
             });
@@ -201,7 +200,7 @@ public abstract class AbstractPrintPatientDocumentsTask extends Tasks {
      * @param browser the browser
      */
     private void enableOK(PatientDocumentTemplateBrowser browser) {
-        dialog.getButtons().setEnabled(PopupDialog.OK_ID, browser.hasSelections());
+        dialog.getButtons().setEnabled(PopupDialog.OK_ID, !browser.getSelections().isEmpty());
     }
 
     /**
@@ -210,14 +209,15 @@ public abstract class AbstractPrintPatientDocumentsTask extends Tasks {
      * @param templates the templates
      * @param context   the context
      */
-    private void print(List<Entity> templates, TaskContext context) {
+    private void print(Collection<Entity> templates, TaskContext context) {
         CustomerMailContext mailContext = new CustomerMailContext(context, context.getHelpContext());
         for (Entity template : templates) {
             IMObjectBean templateBean = new IMObjectBean(template);
             Act document = (Act) ServiceHelper.getArchetypeService().create(templateBean.getString("archetype"));
-            ActBean bean = new ActBean(document);
-            bean.addNodeParticipation("patient", context.getPatient());
-            bean.addNodeParticipation("documentTemplate", template);
+            IMObjectBean bean = new IMObjectBean(document);
+            bean.setTarget("patient", context.getPatient());
+            bean.setTarget("documentTemplate", template);
+            bean.setTarget("clinician", context.getClinician());
             addTask(createPrintTask(document, mailContext, printMode));
         }
         // now start the workflow to print the documents

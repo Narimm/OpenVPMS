@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -33,7 +33,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -189,7 +189,7 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
      * are being queried.
      *
      * @return {@code true} if customers with both overdue and non-overdue
-     * balances are being queried.
+     *         balances are being queried.
      */
     public boolean queryAllBalances() {
         return balanceType.getSelectedIndex() == ALL_BALANCE_INDEX;
@@ -199,8 +199,8 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
      * Determines if customers with overdue balances are being queried.
      *
      * @return {@code true} if customers with overdue balances are being
-     * queried, {@code false} if customers with outstanding balances are being
-     * queried
+     *         queried, {@code false} if customers with outstanding balances are being
+     *         queried
      */
     public boolean queryOverduebalances() {
         return balanceType.getSelectedIndex() == OVERDUE_INDEX;

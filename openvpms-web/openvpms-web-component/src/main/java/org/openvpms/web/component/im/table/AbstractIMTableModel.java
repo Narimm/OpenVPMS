@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -21,6 +21,7 @@ import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.echo.text.TextHelper;
 import org.openvpms.web.resource.i18n.Messages;
 
@@ -322,18 +323,7 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel impleme
      *         specified index doesn't exist
      */
     protected int getColumnOffset(TableColumnModel model, int column) {
-        int result = -1;
-        int offset = 0;
-        Iterator iterator = model.getColumns();
-        while (iterator.hasNext()) {
-            TableColumn col = (TableColumn) iterator.next();
-            if (col.getModelIndex() == column) {
-                result = offset;
-                break;
-            }
-            ++offset;
-        }
-        return result;
+        return TableHelper.getColumnOffset(model, column);
     }
 
     /**
@@ -383,15 +373,7 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel impleme
      * @return the next available model index.
      */
     protected int getNextModelIndex(TableColumnModel columns, int from) {
-        int index = from + 1;
-        Iterator iterator = columns.getColumns();
-        while (iterator.hasNext()) {
-            TableColumn col = (TableColumn) iterator.next();
-            if (col.getModelIndex() >= index) {
-                index = col.getModelIndex() + 1;
-            }
-        }
-        return index;
+        return TableHelper.getNextModelIndex(columns, from);
     }
 
     /**

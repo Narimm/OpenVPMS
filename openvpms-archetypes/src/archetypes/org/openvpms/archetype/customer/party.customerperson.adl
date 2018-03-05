@@ -20,10 +20,10 @@
         <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name"
               hidden="true" minCardinality="1" derived="true"  maxLength="100"
-              derivedValue="concat(/details/companyName,substring(concat(/details/lastName,',',/details/firstName),0,number(not(/details/companyName))*string-length(concat(/details/lastName,',',/details/firstName))+1))"/>
+              derivedValue="expr:ifempty(/details/companyName, concat(/details/lastName,',',/details/firstName))"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
-              derivedValue="concat(party:getBillingAddress(.),' - ',party:getHomeTelephone(.))"/>
+              derivedValue="concat(party:getBillingAddress(., true()),' - ',party:getHomeTelephone(.))"/>
         <node name="lastName" path="/details/lastName" type="java.lang.String"
               minCardinality="1" maxLength="30">
             <assertion name="propercase"/>
@@ -50,7 +50,6 @@
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.customerReferral"/>
-                <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
         <node displayName="Preferred Vet" name="preferredVet" path="/details/preferredVet" type="java.lang.String"
@@ -58,7 +57,6 @@
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.customerVet"/>
-                <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
         <node displayName="Insurance Plan" name="insurancePlan" path="/details/insurancePlan" type="java.lang.String"
@@ -66,7 +64,6 @@
             <assertion name="lookup">
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.customerInsurance"/>
-                <errorMessage>An error message</errorMessage>
             </assertion>
         </node>
         <node displayName="Travel" name="travel" path="/details/travel" type="java.lang.String" minCardinality="0"
@@ -80,111 +77,61 @@
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.patientOwner"/>
+                        <property name="shortName" value="entityRelationship.patientOwner"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.patientLocation"/>
+                        <property name="shortName" value="entityRelationship.patientLocation"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active patient relationship</errorMessage>
             </assertion>
         </node>
-        <node name="contacts" path="/contacts"
-              type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
+        <node name="contacts" path="/contacts" type="java.util.HashSet" baseName="Contact"
+              minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="contact.location"/>
+                        <property name="shortName" value="contact.location"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="contact.phoneNumber"/>
+                        <property name="shortName" value="contact.phoneNumber"/>
                     </propertyMap>
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="contact.email"/>
+                        <property name="shortName" value="contact.email"/>
                     </propertyMap>
                     <propertyMap name="archetype">
                         <property name="shortName" value="contact.website"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="identities" path="/identities"
-              type="java.util.HashSet" baseName="Identity" minCardinality="0"
-              maxCardinality="*">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityIdentity.code"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+        <node name="identities" path="/identities" type="java.util.HashSet" baseName="Identity"
+              minCardinality="0" maxCardinality="*" filter="entityIdentity.code"/>
         <node name="type" displayName="Account Type" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="1"
               filter="lookup.customerAccountType" defaultValue="openvpms:defaultLookup(.,'type')">
             <assertion name="archetypeRange">
                 <propertyList name="archetypes">
                     <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="lookup.customerAccountType"/>
+                        <property name="shortName" value="lookup.customerAccountType"/>
                     </propertyMap>
                 </propertyList>
-                <errorMessage>errorMessage</errorMessage>
             </assertion>
         </node>
-        <node name="discounts" path="/entityRelationships"
-              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.discountCustomer">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.discountCustomer"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
+        <node name="discounts" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink" minCardinality="0"
+              maxCardinality="*" filter="entityLink.customerDiscount">
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active discount customer relationship</errorMessage>
             </assertion>
         </node>
         <node name="taxes" displayName="Tax Exemptions" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
-              filter="lookup.taxType">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="lookup.taxType"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+              filter="lookup.taxType"/>
         <node name="classifications" displayName="Categories" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
-              filter="lookup.customerType">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="lookup.customerType"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
+              filter="lookup.customerType"/>
         <node name="practice" displayName="Practice Location" path="/entityLinks"
               type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="1"
               filter="entityLink.customerLocation"/>

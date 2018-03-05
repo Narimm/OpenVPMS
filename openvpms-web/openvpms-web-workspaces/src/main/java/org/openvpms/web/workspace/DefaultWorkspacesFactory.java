@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace;
@@ -97,12 +97,13 @@ public class DefaultWorkspacesFactory implements WorkspacesFactory {
     /**
      * Creates the reporting workspaces.
      *
-     * @param context the context
+     * @param context     the context
+     * @param preferences user preferences
      * @return the reporting workspaces
      */
     @Override
-    public Workspaces createReportingWorkspaces(Context context) {
-        return new ReportingWorkspaces(context);
+    public Workspaces createReportingWorkspaces(Context context, Preferences preferences) {
+        return new ReportingWorkspaces(context, preferences);
     }
 
     /**

@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper.lookup;
 
 import org.apache.commons.jxpath.JXPathContext;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -26,6 +25,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.archetype.AssertionDescriptor;
 
 import java.util.Collection;
 import java.util.List;
@@ -267,6 +267,12 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
         }
 
         String[] types = ndesc.getArchetypeRange();
+        if (types.length == 0) {
+            String type = ndesc.getFilter();
+            if (type != null) {
+                types = new String[]{type};
+            }
+        }
         if (types.length == 0) {
             throw new LookupHelperException(NoArchetypeRangeInLookupRelationship, new Object[]{relationship, node});
         }

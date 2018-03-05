@@ -449,7 +449,7 @@ public class ReminderFunctionsTestCase extends ArchetypeServiceTest {
         PatientRules patientRules = new PatientRules(null, service, lookups);
         ReminderFunctions functions = new ReminderFunctions(service,
                                                             new ReminderRules(service, patientRules),
-                                                            new CustomerRules(service, lookups));
+                                                            new CustomerRules(service, lookups, null));
         return JXPathHelper.newContext(context, functions);
     }
 

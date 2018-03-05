@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -92,19 +93,24 @@ public class Schedule {
     private final List<PropertySet> blockingEvents;
 
     /**
+     * The appointment rules.
+     */
+    private final AppointmentRules rules;
+
+    /**
      * The comparator to detect intersecting events.
      */
     private final Comparator<PropertySet> intersectComparator;
-
 
     /**
      * Constructs a {@link Schedule}.
      *
      * @param schedule the event schedule
      * @param cageType the cage type. May be {@code null}
+     * @param rules    the appointment rules
      */
-    public Schedule(Entity schedule, Entity cageType) {
-        this(schedule, cageType, -1, -1, 0);
+    public Schedule(Entity schedule, Entity cageType, AppointmentRules rules) {
+        this(schedule, cageType, -1, -1, 0, rules);
     }
 
     /**
@@ -115,15 +121,18 @@ public class Schedule {
      * @param startMins the schedule start time, as minutes since midnight
      * @param endMins   the schedule end time, as minutes since midnight
      * @param slotSize  the schedule slot size, in minutes
+     * @param rules     the appointment rules
      */
-    public Schedule(Entity schedule, Entity cageType, int startMins, int endMins, int slotSize) {
+    public Schedule(Entity schedule, Entity cageType, int startMins, int endMins, int slotSize,
+                    AppointmentRules rules) {
         this.schedule = schedule;
         this.cageType = cageType;
         this.startMins = startMins;
         this.endMins = endMins;
         this.slotSize = slotSize;
+        this.rules = rules;
         this.blockingEvents = new ArrayList<>();
-        intersectComparator = new IntersectComparator(slotSize);
+        intersectComparator = new IntersectComparator(slotSize, rules);
     }
 
     /**
@@ -135,16 +144,18 @@ public class Schedule {
      * @param endMins        the schedule end time, as minutes since midnight
      * @param slotSize       the schedule slot size, in minutes
      * @param blockingEvents the blocking events
+     * @param rules          the appointment rules
      */
     public Schedule(Entity schedule, Entity cageType, int startMins, int endMins, int slotSize,
-                    List<PropertySet> blockingEvents) {
+                    List<PropertySet> blockingEvents, AppointmentRules rules) {
         this.schedule = schedule;
         this.cageType = cageType;
         this.startMins = startMins;
         this.endMins = endMins;
         this.slotSize = slotSize;
+        this.rules = rules;
         this.blockingEvents = blockingEvents;
-        intersectComparator = new IntersectComparator(slotSize);
+        intersectComparator = new IntersectComparator(slotSize, rules);
     }
 
     /**
@@ -153,10 +164,11 @@ public class Schedule {
      * Only the blocking events are copied.
      *
      * @param source the source schedule
+     * @param rules  the appointment rules
      */
-    public Schedule(Schedule source) {
+    public Schedule(Schedule source, AppointmentRules rules) {
         this(source.getSchedule(), source.getCageType(), source.getStartMins(), source.getEndMins(),
-             source.getSlotSize(), source.blockingEvents);
+             source.getSlotSize(), source.blockingEvents, rules);
     }
 
     /**
@@ -441,8 +453,8 @@ public class Schedule {
             Date startTime2 = o2.getDate(ScheduleEvent.ACT_START_TIME);
             int result = DateRules.getDate(startTime1).compareTo(DateRules.getDate(startTime2));
             if (result == 0) {
-                int start1 = SchedulingHelper.getSlotMinutes(startTime1, slotSize, false);
-                int start2 = SchedulingHelper.getSlotMinutes(startTime2, slotSize, false);
+                int start1 = rules.getSlotMinutes(startTime1, slotSize, false);
+                int start2 = rules.getSlotMinutes(startTime2, slotSize, false);
                 result = start1 - start2;
             }
             return result;

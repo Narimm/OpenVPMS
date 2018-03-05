@@ -11,27 +11,32 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
 
+import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
+import org.openvpms.web.component.im.layout.ComponentGrid;
+import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.patient.PatientActEditor;
-import org.openvpms.web.component.property.Modifiable;
-import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * An editor for <em>act.patientPrescription</em> acts.
@@ -39,6 +44,11 @@ import java.util.Date;
  * @author Tim Anderson
  */
 public class PatientPrescriptionEditor extends PatientActEditor {
+
+    /**
+     * The dispensing notes.
+     */
+    private final DispensingNotes dispensingNotes;
 
     /**
      * Constructs a {@link PatientPrescriptionEditor}.
@@ -49,27 +59,55 @@ public class PatientPrescriptionEditor extends PatientActEditor {
      */
     public PatientPrescriptionEditor(Act act, Act parent, LayoutContext context) {
         super(act, parent, context);
+        dispensingNotes = new DispensingNotes();
         if (act.isNew()) {
             calculateEndTime();
         }
         addStartEndTimeListeners(); // startTime is read-only so only the end time listener will trigger
+        dispensingNotes.setProduct((Product) getParticipant("product"));
+    }
+
+    /**
+     * Creates the layout strategy.
+     *
+     * @return a new layout strategy
+     */
+    @Override
+    protected IMObjectLayoutStrategy createLayoutStrategy() {
+        return new PrescriptionLayoutStrategy() {
+            /**
+             * Lays out components in a grid.
+             *
+             * @param object     the object to lay out
+             * @param properties the properties
+             * @param context    the layout context
+             * @param columns    the no. of columns to use
+             */
+            @Override
+            protected ComponentGrid createGrid(IMObject object, List<Property> properties, LayoutContext context,
+                                               int columns) {
+                ComponentGrid grid = super.createGrid(object, properties, context, columns);
+                ComponentState usage = dispensingNotes.getComponent(context);
+                Component label = ColumnFactory.create(usage.getLabel());
+                Component text = ColumnFactory.create(usage.getComponent());
+                text.setLayoutData(ComponentGrid.layout(1, columns * 2 - 1));
+                grid.add(label, text);
+                return grid;
+            }
+
+        };
     }
 
     /**
      * Invoked when layout has completed.
-     * <p/>
+     * <p>
      * This registers a listener to be notified of product changes.
      */
     @Override
     protected void onLayoutCompleted() {
         ParticipationEditor<Entity> editor = getParticipationEditor("product", true);
         if (editor != null) {
-            editor.addModifiableListener(new ModifiableListener() {
-                @Override
-                public void modified(Modifiable modifiable) {
-                    onProductChanged();
-                }
-            });
+            editor.addModifiableListener(modifiable -> onProductChanged());
         }
     }
 
@@ -113,6 +151,7 @@ public class PatientPrescriptionEditor extends PatientActEditor {
                 label.setValue(bean.getValue("dispInstructions"));
             }
         }
+        dispensingNotes.setProduct(product);
     }
 
 }

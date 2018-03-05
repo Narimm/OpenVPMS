@@ -106,7 +106,7 @@ public class ScheduleDocumentTemplateQueryTestCase extends AbstractAppTest {
 
     /**
      * Tests querying for schedules and work lists with no {@code useAllTemplates=false} with duplicate templates.
-     * <p/>
+     * <p>
      * These should only appear once in the results.
      */
     @Test

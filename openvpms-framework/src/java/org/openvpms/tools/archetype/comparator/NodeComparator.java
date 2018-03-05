@@ -1,12 +1,28 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.tools.archetype.comparator;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
-import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
+import org.openvpms.component.model.archetype.NamedProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +46,7 @@ public class NodeComparator extends AbstractComparator {
      * @return the changes, or {@code null} if they are the same
      */
     public NodeChange compare(NodeDescriptor oldVersion, NodeDescriptor newVersion) {
-        List<NodeFieldChange> changes = new ArrayList<NodeFieldChange>();
+        List<NodeFieldChange> changes = new ArrayList<>();
         compare(Field.DISPLAY_NAME, oldVersion.getDisplayName(), newVersion.getDisplayName(), changes);
         compare(Field.TYPE, oldVersion.getType(), newVersion.getType(), changes);
         compare(Field.BASE_NAME, oldVersion.getBaseName(), newVersion.getBaseName(), changes);
@@ -74,8 +90,8 @@ public class NodeComparator extends AbstractComparator {
      */
     private void compareAssertions(NodeDescriptor oldVersion, NodeDescriptor newVersion,
                                    List<NodeFieldChange> changes) {
-        Map<String, AssertionDescriptor> oldAssertions = oldVersion.getAssertionDescriptors();
-        Map<String, AssertionDescriptor> newAssertions = newVersion.getAssertionDescriptors();
+        Map<String, AssertionDescriptor> oldAssertions = cast(oldVersion.getAssertionDescriptors());
+        Map<String, AssertionDescriptor> newAssertions = cast(newVersion.getAssertionDescriptors());
         Set<String> deleted = getDeleted(oldAssertions, newAssertions);
         Set<String> added = getAdded(oldAssertions, newAssertions);
         Set<String> retained = getRetained(oldAssertions, newAssertions);
@@ -90,6 +106,12 @@ public class NodeComparator extends AbstractComparator {
         for (String addedKey : added) {
             changes.add(new NodeFieldChange(Field.ASSERTION, null, newAssertions.get(addedKey)));
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, AssertionDescriptor> cast(
+            Map<String, org.openvpms.component.model.archetype.AssertionDescriptor> assertions) {
+        return (Map<String, AssertionDescriptor>) (Map) assertions;
     }
 
     /**

@@ -1,31 +1,29 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.component.business.dao.hibernate.im.query;
 
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.openvpms.component.business.service.archetype.helper.PropertyResolverException;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * {@link org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException} test case.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class QueryBuilderExceptionTestCase {
 
@@ -35,7 +33,7 @@ public class QueryBuilderExceptionTestCase {
     @Test
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
-                     19, QueryBuilderException.ErrorCode.values().length);
+                     20, QueryBuilderException.ErrorCode.values().length);
         checkException(QueryBuilderException.ErrorCode.NullQuery, "You must specify a non-null query");
         checkException(QueryBuilderException.ErrorCode.NoShortNamesSpecified,
                        "You must specify at least one short name");
@@ -70,6 +68,8 @@ public class QueryBuilderExceptionTestCase {
         checkException(QueryBuilderException.ErrorCode.DuplicateAlias, "Duplicate alias foo", "foo");
         checkException(QueryBuilderException.ErrorCode.CannotJoinDuplicateAlias,
                        "Cannot join on property foo with alias bar. Alias already exists", "foo", "bar");
+        checkException(QueryBuilderException.ErrorCode.CannotCountDistinctMultipleSelect,
+                       "Cannot count distinct results when multiple select clauses are present");
     }
 
     /**

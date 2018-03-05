@@ -11,9 +11,7 @@
  *  for the specific language governing rights and limitations under the
  *  License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $$Id$$
+ *  Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
 -->
 <archetypes>
     <archetype name="contact.location.1.0" latest="true" primary="false"
@@ -22,7 +20,7 @@
         <node name="name" type="java.lang.String" path="/name" defaultValue="'Location'"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
-              derivedValue="concat(/details/address,' ', openvpms:lookup(., 'suburb'),' ',/details/postCode, ' ',party:getContactPurposes())"/>
+              derivedValue="concat(expr:concatIf(/details/address, ' '),expr:concatIf(openvpms:lookup(., 'suburb'),' '),expr:concatIf(/details/postCode, ' '),party:getContactPurposes())"/>
         <node name="address" path="/details/address"
               type="java.lang.String" maxLength="300" minCardinality="0">
             <assertion name="propercase"/>

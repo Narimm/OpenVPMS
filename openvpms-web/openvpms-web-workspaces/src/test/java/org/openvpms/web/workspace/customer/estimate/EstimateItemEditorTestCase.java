@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -108,16 +108,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         location = TestHelper.createLocation();
 
         // register an ErrorHandler to collect errors
-        ErrorHandler.setInstance(new ErrorHandler() {
-            @Override
-            public void error(Throwable cause) {
-                errors.add(cause.getMessage());
-            }
+        initErrorHandler(errors);
 
-            public void error(String title, String message, Throwable cause, WindowPaneListener listener) {
-                errors.add(message);
-            }
-        });
         Context context = new LocalContext();
         context.setPractice(getPractice());
         context.setLocation(location);

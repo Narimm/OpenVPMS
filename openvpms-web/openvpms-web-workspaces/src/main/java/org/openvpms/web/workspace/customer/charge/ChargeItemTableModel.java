@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -126,8 +126,9 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
 
     /**
      * Used to access the product type name node from a charge/estimate item.
+     * NOTE: this must be prefixed by the alias.
      */
-    private static final String PRODUCT_TYPE = "product.entity.type.target.name";
+    private static final String PRODUCT_TYPE = "act.product.entity.type.target.name";
 
     /**
      * The id node name

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.problem;
@@ -22,12 +22,11 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
-import org.openvpms.web.component.im.act.PagedActHierarchyTableModel;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
+import org.openvpms.web.workspace.patient.history.AbstractPagedPatientHistoryTableModel;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryTableCellRenderer;
 
@@ -44,7 +43,7 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
     /**
      * The table model that wraps the underlying model, to filter acts.
      */
-    private PagedActHierarchyTableModel<Act> pagedModel;
+    private PagedProblemTableModel pagedModel;
 
     /**
      * The cell renderer.
@@ -82,6 +81,7 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
             // ensure the table model has the selected child act short names prior to performing the query
             ProblemQuery query = getQuery();
             pagedModel.setShortNames(query.getSelectedItemShortNames());
+            pagedModel.setSearch(query.getValue());
             pagedModel.setSortAscending(query.isSortAscending());
         }
         super.query();
@@ -146,7 +146,7 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
     @Override
     protected PagedIMTable<Act> createTable(IMTableModel<Act> model) {
         ProblemQuery query = getQuery();
-        pagedModel = new PagedProblemTableModel(model, query);
+        pagedModel = new PagedProblemTableModel((ProblemTableModel) model, query);
         pagedModel.setSortAscending(query.isSortAscending());
         return super.createTable(pagedModel);
     }
@@ -172,7 +172,7 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
         return getQuery().getPage(object);
     }
 
-    private class PagedProblemTableModel extends PagedActHierarchyTableModel<Act> {
+    private class PagedProblemTableModel extends AbstractPagedPatientHistoryTableModel {
 
         /**
          * Constructs a {@link PagedProblemTableModel}.
@@ -180,8 +180,8 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
          * @param model the underlying table model
          * @param query the problem query
          */
-        public PagedProblemTableModel(IMTableModel<Act> model, ProblemQuery query) {
-            super((IMObjectTableModel<Act>) model, query.getSelectedItemShortNames());
+        public PagedProblemTableModel(ProblemTableModel model, ProblemQuery query) {
+            super(model, query.getSelectedItemShortNames());
         }
 
         /**
@@ -193,7 +193,7 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
          */
         @Override
         protected ActHierarchyIterator<Act> createIterator(List<Act> objects, String[] shortNames) {
-            ProblemFilter filter = new ProblemFilter(shortNames, isSortAscending());
+            ProblemFilter filter = new ProblemFilter(shortNames, getSearch(), isSortAscending());
             return new ProblemHierarchyIterator(objects, filter);
         }
 

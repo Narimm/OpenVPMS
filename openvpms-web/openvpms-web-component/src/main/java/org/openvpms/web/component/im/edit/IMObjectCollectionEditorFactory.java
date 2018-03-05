@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.edit;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.web.component.im.archetype.ArchetypeHandler;
 import org.openvpms.web.component.im.archetype.ArchetypeHandlers;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -29,7 +30,7 @@ import java.lang.reflect.Constructor;
 
 /**
  * Factory for {@link IMObjectCollectionEditor} instances.
- * <p/>
+ * <p>
  * This uses two configuration files:
  * <ol>
  * <li>EditableIMObjectCollectionEditorFactory.properties - used for implementations of
@@ -39,7 +40,7 @@ import java.lang.reflect.Constructor;
  * </ol>
  * The former is used if the collection property returns {@code true} for
  * {@link CollectionProperty#isParentChild()}, indicating that the collection items are editable.
- * <p/>
+ * <p>
  * NOTE: default implementations for EditableIMObjectCollectionEditor instances can be registered in a
  * <em>DefaultEditableIMObjectCollectionEditorFactory.properties</em>; these are overridden by
  * <em>EditableIMObjectCollectionEditorFactory.properties</em>.
@@ -81,6 +82,11 @@ public class IMObjectCollectionEditorFactory {
     public static IMObjectCollectionEditor create(CollectionProperty property, IMObject object, LayoutContext context) {
         IMObjectCollectionEditor result = null;
         String[] shortNames = property.getArchetypeRange();
+        if (shortNames.length == 0) {
+            throw new IllegalStateException("Node=" + property.getName() + " of archetype="
+                                            + object.getArchetypeId().getShortName()
+                                            + " has an invalid archetype range");
+        }
 
         if (property.isParentChild()) {
             ArchetypeHandler<EditableIMObjectCollectionEditor> handler = getEditable().getHandler(shortNames);
@@ -144,7 +150,8 @@ public class IMObjectCollectionEditorFactory {
     private static synchronized ArchetypeHandlers<IMObjectCollectionEditor> getEditors() {
         if (editors == null) {
             editors = new ArchetypeHandlers<>("IMObjectCollectionEditorFactory.properties",
-                                              IMObjectCollectionEditor.class);
+                                              IMObjectCollectionEditor.class,
+                                              ArchetypeServiceHelper.getArchetypeService());
         }
         return editors;
     }
@@ -158,7 +165,8 @@ public class IMObjectCollectionEditorFactory {
         if (editable == null) {
             editable = new ArchetypeHandlers<>("EditableIMObjectCollectionEditorFactory.properties",
                                                "DefaultEditableIMObjectCollectionEditorFactory.properties",
-                                               EditableIMObjectCollectionEditor.class);
+                                               EditableIMObjectCollectionEditor.class,
+                                               ArchetypeServiceHelper.getArchetypeService());
         }
         return editable;
     }

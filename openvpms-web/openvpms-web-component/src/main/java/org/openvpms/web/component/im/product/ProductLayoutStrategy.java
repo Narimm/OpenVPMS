@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -33,6 +33,16 @@ import org.openvpms.web.component.property.PropertySet;
 public class ProductLayoutStrategy extends AbstractLayoutStrategy {
 
     /**
+     * Concentration node name.
+     */
+    private static final String CONCENTRATION = "concentration";
+
+    /**
+     * Concentration units node name.
+     */
+    private static final String CONCENTRATION_UNITS = "concentrationUnits";
+
+    /**
      * Apply the layout strategy.
      * <p/>
      * This renders an object in a {@code Component}, using a factory to create the child components.
@@ -49,6 +59,11 @@ public class ProductLayoutStrategy extends AbstractLayoutStrategy {
         ArchetypeNodes nodes = new ArchetypeNodes();
         if (!useLocationProducts) {
             nodes.exclude("locations");
+        }
+        if (properties.get(CONCENTRATION) != null && properties.get(CONCENTRATION_UNITS) != null) {
+            // display the concentration and concentration units next to each other
+            addComponent(createComponentPair(CONCENTRATION, CONCENTRATION_UNITS, object, properties, context));
+            nodes.exclude(CONCENTRATION_UNITS);
         }
         setArchetypeNodes(nodes);
         return super.apply(object, properties, parent, context);

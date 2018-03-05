@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.otc;
@@ -24,7 +24,6 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * Exceptions class for the over-the-counter workflow.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
  * @see OverTheCounterWorkflow
  */
 public class OTCException extends OpenVPMSException {

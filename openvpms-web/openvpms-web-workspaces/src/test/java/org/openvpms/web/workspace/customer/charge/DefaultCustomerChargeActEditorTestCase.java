@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -27,6 +27,7 @@ import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.finance.discount.DiscountTestHelper;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.patient.prescription.PrescriptionTestHelper;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
@@ -436,7 +437,7 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
 
     /**
      * Verifies that the {@link DefaultCustomerChargeActEditor#delete()} method deletes an invoice and its item.
-     * <p/>
+     * <p>
      * If any pharmacy or lab orders have been created, these are cancelled.
      */
     @Test
@@ -454,18 +455,21 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         Entity reminderType1 = addReminder(product1);
         Entity investigationType1 = addInvestigation(product1);
         Entity template1 = addTemplate(product1);
+        Entity alertType1 = addAlertType(product1);
 
         Product product2 = createProduct(ProductArchetypes.MERCHANDISE, fixedPrice, pharmacy);
         Entity reminderType2 = addReminder(product2);
         Entity investigationType2 = addInvestigation(product2);
         Entity investigationType3 = addInvestigation(product2);
         Entity template2 = addTemplate(product2);
+        Entity alertType2 = addAlertType(product2);
 
         Product product3 = createProduct(ProductArchetypes.SERVICE, fixedPrice);
         Entity reminderType3 = addReminder(product3);
         Entity investigationType4 = addInvestigation(product3, laboratory); // ordered via lab
         Entity investigationType5 = addInvestigation(product3);
         Entity investigationType6 = addInvestigation(product3);
+        Entity alertType3 = addAlertType(product3);
 
         Entity template3 = addTemplate(product3);
 
@@ -529,6 +533,14 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         doc3.setStatus(ActStatus.POSTED);
         save(doc1, doc2, doc3);
 
+        Act alert1 = getAlert(item1, alertType1);
+        Act alert2 = getAlert(item2, alertType2);
+        Act alert3 = getAlert(item3, alertType3);
+        alert1.setStatus(ActStatus.IN_PROGRESS);
+        alert2.setStatus(ActStatus.COMPLETED);
+        alert3.setStatus(ActStatus.COMPLETED);
+        save(alert1, alert2, alert3);
+
         charge = get(charge);
         ActBean bean = new ActBean(charge);
         List<FinancialAct> items = bean.getNodeActs("items", FinancialAct.class);
@@ -567,6 +579,10 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         assertNull(get(doc1));
         assertNotNull(get(doc2));
         assertNotNull(get(doc3));
+
+        assertNull(get(alert1));
+        assertNotNull(get(alert2));
+        assertNotNull(get(alert3));
 
         checkBalance(customer, ZERO, ZERO);
     }
@@ -748,6 +764,7 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
     public void testInitClinician() {
         Product product1 = createProduct(MEDICATION, BigDecimal.ONE);
         Entity reminderType1 = addReminder(product1);
+        Entity alertType1 = addAlertType(product1);
         Entity investigationType1 = addInvestigation(product1);
         Entity template1 = addTemplate(product1);
 
@@ -768,10 +785,12 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         assertNotNull(medication);
 
         Act reminder = getReminder(item, reminderType1);
+        Act alert = getAlert(item, alertType1);
         Act investigation = getInvestigation(item, investigationType1);
         Act document = getDocument(item, template1);
         checkClinician(medication, clinician);
         checkClinician(reminder, clinician);
+        checkClinician(alert, clinician);
         checkClinician(investigation, clinician);
         checkClinician(document, clinician);
     }
@@ -1111,6 +1130,111 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
     }
 
     /**
+     * Verifies that existing alerts are completed if a product is used with the same alert type.
+     */
+    @Test
+    public void testMarkMatchingAlertsCompleted() {
+        Product product1 = createProduct(MEDICATION);
+        Entity alertType = addAlertType(product1);
+
+        Act existing = ReminderTestHelper.createAlert(patient, alertType);
+        assertEquals(ActStatus.IN_PROGRESS, existing.getStatus());
+
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        EditorQueue queue = editor.getQueue();
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        CustomerChargeActItemEditor itemEditor = addItem(editor, patient, product1, BigDecimal.ONE, queue);
+        assertTrue(SaveHelper.save(editor));
+
+        Act alert = getAlert(itemEditor.getObject(), alertType);
+        existing = get(existing);
+        alert = get(alert);
+
+        assertEquals(ActStatus.COMPLETED, existing.getStatus());
+        assertEquals(ActStatus.IN_PROGRESS, alert.getStatus());
+    }
+
+    /**
+     * Verifies that when products are changed from one with an alert to one without, the alert is deleted.
+     */
+    @Test
+    public void testChangeProductWithAlertToOneWithout() {
+        // create a product with a reminder
+        Product product1 = createProduct(MEDICATION);
+        Entity alertType = addAlertType(product1);
+
+        // and one without
+        Product product2 = createProduct(MEDICATION);
+
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        EditorQueue queue = editor.getQueue();
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        CustomerChargeActItemEditor itemEditor = addItem(editor, patient, product1, BigDecimal.ONE, queue);
+        assertTrue(SaveHelper.save(editor));
+
+        Act alert = getAlert(itemEditor.getObject(), alertType);
+        assertEquals(ActStatus.IN_PROGRESS, alert.getStatus());
+
+        itemEditor.setProduct(product2);
+        assertTrue(SaveHelper.save(editor));
+
+        assertNull(get(alert));
+    }
+
+    /**
+     * Verifies that the product can be changed multiple times with alerts.
+     */
+    @Test
+    public void testChangeProductWithAlerts() {
+        // create a product with an alert
+        Product product1 = createProduct(MEDICATION);
+        Entity alertType1 = addAlertType(product1);
+
+        // and one without
+        Product product2 = createProduct(MEDICATION);
+
+        // and a 3rd with the same alert type
+        Product product3 = createProduct(MEDICATION);
+        addAlertType(product3, alertType1);
+
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        EditorQueue queue = editor.getQueue();
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        CustomerChargeActItemEditor itemEditor = addItem(editor, patient, product1, BigDecimal.ONE, queue);
+        assertTrue(SaveHelper.save(editor));
+
+        Act alert1 = getAlert(itemEditor.getObject(), alertType1);
+        assertEquals(ActStatus.IN_PROGRESS, alert1.getStatus());
+
+        // change to a product with no alert
+        itemEditor.setProduct(product2);
+
+        // immediately change to a product with an alert
+        itemEditor.setProduct(product3);
+
+        // make sure there is popup, as the alert is interactive
+        CustomerChargeTestHelper.checkSavePopup(queue, PatientArchetypes.ALERT, false);
+        assertTrue(SaveHelper.save(editor));
+
+        // make sure alert1 has been deleted, and alert2 is IN_PROGRESS
+        assertNull(get(alert1));
+        Act alert2 = getAlert(itemEditor.getObject(), alertType1);
+        assertEquals(ActStatus.IN_PROGRESS, alert2.getStatus());
+    }
+
+    /**
      * Tests the {@link DefaultCustomerChargeActEditor#newInstance()} method.
      */
     @Test
@@ -1167,6 +1291,50 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
                                   ONE, ZERO, new BigDecimal("0.091"), ONE, null, 1);
         checkChargeEventNote(item1, patient, "template 1 notes");
         checkChargeEventNote(item2, patient2, "template 2 notes");
+    }
+
+    /**
+     * Verifies that if a clinician is set before template expansion, this appears on all acts produced by the template
+     * expansion.
+     */
+    @Test
+    public void testSetClinicianBeforeTemplateExpansion() {
+        User clinician2 = TestHelper.createClinician();
+        Product template = ProductTestHelper.createTemplate("templateA");
+        Product product1 = createProduct(MEDICATION);
+        Product product2 = createProduct(MEDICATION);
+        Product product3 = createProduct(MEDICATION);
+        ProductTestHelper.addInclude(template, product1, 1, false);
+        ProductTestHelper.addInclude(template, product2, 2, false);
+        ProductTestHelper.addInclude(template, product3, 3, false);
+
+        FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
+
+        TestChargeEditor editor = createCustomerChargeActEditor(charge, layoutContext);
+        EditorQueue queue = editor.getQueue();
+
+        editor.getComponent();
+        assertTrue(editor.isValid());
+
+        CustomerChargeActItemEditor itemEditor = editor.addItem();
+        itemEditor.setClinician(clinician2);
+        setItem(editor, itemEditor, patient, template, BigDecimal.ONE, queue);
+        assertTrue(SaveHelper.save(editor));
+
+        charge = get(charge);
+        ActBean bean = new ActBean(charge);
+        List<FinancialAct> items = bean.getNodeActs("items", FinancialAct.class);
+        assertEquals(3, items.size());
+
+        checkItem(items, patient, product1, template, author, clinician2, ONE, ONE, ZERO, ZERO, ZERO, ZERO, ZERO,
+                  ZERO, ZERO, null, 1);
+        BigDecimal two = BigDecimal.valueOf(2);
+        checkItem(items, patient, product2, template, author, clinician2, two, two, ZERO, ZERO, ZERO, ZERO,
+                  ZERO, ZERO, ZERO, null, 1);
+
+        BigDecimal three = BigDecimal.valueOf(3);
+        checkItem(items, patient, product3, template, author, clinician2, three, three, ZERO, ZERO, ZERO, ZERO,
+                  ZERO, ZERO, ZERO, null, 1);
     }
 
     /**
@@ -1334,21 +1502,24 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
 
         Product product1 = createProduct(MEDICATION, fixedPrice, pharmacy);
         addReminder(product1);
+        addAlertType(product1);
         addInvestigation(product1);
         addTemplate(product1);
-        int product1Acts = invoice ? 4 : 0;
+        int product1Acts = invoice ? 5 : 0;
 
         Product product2 = createProduct(ProductArchetypes.MERCHANDISE, fixedPrice, pharmacy);
         addReminder(product2);
+        addAlertType(product2);
         addInvestigation(product2);
         addTemplate(product2);
-        int product2Acts = invoice ? 3 : 0;
+        int product2Acts = invoice ? 4 : 0;
 
         Product product3 = createProduct(ProductArchetypes.SERVICE, fixedPrice);
         addReminder(product3);
+        addAlertType(product3);
         Entity investigationType3 = addInvestigation(product3, laboratory);
         addTemplate(product3);
-        int product3Acts = invoice ? 3 : 0;
+        int product3Acts = invoice ? 4 : 0;
 
         BigDecimal product1Stock = BigDecimal.valueOf(100);
         BigDecimal product2Stock = BigDecimal.valueOf(50);

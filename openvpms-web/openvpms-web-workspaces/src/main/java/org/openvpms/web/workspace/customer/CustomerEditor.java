@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -21,7 +21,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.contact.ContactCollectionEditor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
@@ -78,7 +78,7 @@ public class CustomerEditor extends AbstractIMObjectEditor {
 
         CollectionProperty contacts = getCollectionProperty("contacts");
         if (contacts != null) {
-            ContactCollectionEditor editor = new ContactCollectionEditor(contacts, customer, context);
+            ContactCollectionEditor editor = createContactCollectionEditor(customer, context, contacts);
             getEditors().add(editor);
 
             if (contacts.getMinCardinality() == 0) {
@@ -118,6 +118,19 @@ public class CustomerEditor extends AbstractIMObjectEditor {
     }
 
     /**
+     * Creates a new editor for contacts.
+     *
+     * @param customer the customer
+     * @param context  the context
+     * @param contacts the contacts property
+     * @return a new editor for contacts
+     */
+    protected ContactCollectionEditor createContactCollectionEditor(Party customer, LayoutContext context,
+                                                                    CollectionProperty contacts) {
+        return new ContactCollectionEditor(contacts, customer, context);
+    }
+
+    /**
      * Returns the contacts editor.
      *
      * @return the contacts editor, or {@code null} if none is registered
@@ -132,14 +145,17 @@ public class CustomerEditor extends AbstractIMObjectEditor {
      *
      * @param editor    the contact editor
      * @param shortName the contact archetype short name
+     * @return the contact, or {@code null} if none was added
      */
-    private void addContact(ContactCollectionEditor editor, String shortName) {
+    protected Contact addContact(ContactCollectionEditor editor, String shortName) {
+        Contact contact = null;
         if (IMObjectHelper.getObject(shortName, editor.getCurrentObjects()) == null) {
-            Contact contact = (Contact) IMObjectCreator.create(shortName);
+            contact = (Contact) IMObjectCreator.create(shortName);
             if (contact != null) {
                 ServiceHelper.getArchetypeService().deriveValues(contact);
                 editor.add(contact);
             }
         }
+        return contact;
     }
 }

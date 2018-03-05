@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.summary;
@@ -29,6 +29,8 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
+import org.openvpms.archetype.rules.patient.insurance.InsuranceRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
@@ -38,12 +40,14 @@ import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
+import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditDialogFactory;
@@ -108,6 +112,11 @@ public class PatientSummary extends PartySummary {
     private final ReminderRules reminderRules;
 
     /**
+     * The insurance rules.
+     */
+    private final InsuranceRules insuranceRules;
+
+    /**
      * Value of <em>showReferrals</em> to indicate to always show referral information.
      */
     private static final String ALWAYS_SHOW_REFERRAL = "ALWAYS";
@@ -133,11 +142,12 @@ public class PatientSummary extends PartySummary {
         super(context, help, preferences);
         rules = ServiceHelper.getBean(PatientRules.class);
         reminderRules = ServiceHelper.getBean(ReminderRules.class);
+        insuranceRules = ServiceHelper.getBean(InsuranceRules.class);
     }
 
     /**
      * Returns summary information for a party.
-     * <p/>
+     * <p>
      * The summary includes any alerts.
      *
      * @param patient the patient
@@ -271,6 +281,7 @@ public class PatientSummary extends PartySummary {
         addDateOfBirth(patient, grid);
         addWeight(patient, grid);
         addMicrochip(patient, grid);
+        addInsurancePolicy(patient, grid);
         addReferral(patient, grid);
         return grid;
     }
@@ -423,6 +434,41 @@ public class PatientSummary extends PartySummary {
     }
 
     /**
+     * Displays the patient insurance policy in a grid.
+     *
+     * @param patient the patient
+     * @param grid    the grid
+     */
+    protected void addInsurancePolicy(Party patient, Grid grid) {
+        Label title = LabelFactory.create("patient.insurance");
+        Act policy = insuranceRules.getPolicy(patient);
+        String name;
+        if (policy == null) {
+            name = Messages.get("patient.insurance.none");
+        } else {
+            Date endTime = policy.getActivityEndTime();
+            if (endTime != null && endTime.compareTo(new Date()) < 0) {
+                name = Messages.get("patient.insurance.expired");
+            } else {
+                Party insurer = insuranceRules.getInsurer(policy);
+                name = (insurer != null) ? insurer.getName() : Messages.get("patient.insurance.none");
+            }
+        }
+
+        Button button = ButtonFactory.create(null, "hyperlink-bold", new ActionListener() {
+            public void onAction(ActionEvent event) {
+                ContextApplicationInstance instance = ContextApplicationInstance.getInstance();
+                ContextHelper.setPatient(instance.getContext(), patient);
+                instance.switchTo(InsuranceArchetypes.POLICY);
+            }
+        });
+        button.setText(name);
+
+        grid.add(title);
+        grid.add(button);
+    }
+
+    /**
      * Displays the patient referral in a grid, based on the practice <em>showReferrals</em> node. If it is:
      * <ul>
      * <li>ALWAYS - the active referral is displayed, or if there is none, {@code None} is displayed </li>
@@ -490,8 +536,20 @@ public class PatientSummary extends PartySummary {
      * @param party the party
      * @return the party's alerts
      */
+    @Override
     protected List<Alert> getAlerts(Party party) {
-        return queryAlerts(party);
+        List<Alert> result = new ArrayList<>();
+        ResultSet<Act> set = createAlertsResultSet(party, 20);
+        ResultSetIterator<Act> iterator = new ResultSetIterator<>(set);
+        while (iterator.hasNext()) {
+            Act act = iterator.next();
+            ActBean bean = new ActBean(act);
+            Entity alertType = bean.getNodeParticipant("alertType");
+            if (alertType != null) {
+                result.add(new Alert(alertType, act));
+            }
+        }
+        return result;
     }
 
     /**

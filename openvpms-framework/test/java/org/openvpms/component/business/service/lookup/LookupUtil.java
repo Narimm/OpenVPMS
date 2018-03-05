@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.model.object.Relationship;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
 
@@ -139,8 +140,7 @@ public class LookupUtil {
                                    String code, Lookup source,
                                    String relationshipShortName) {
         Lookup target = getLookup(service, shortName, code);
-        for (LookupRelationship relationship
-                : source.getLookupRelationships()) {
+        for (Relationship relationship : source.getLookupRelationships()) {
             if (relationship.getTarget().equals(target.getObjectReference())) {
                 return target;
             }

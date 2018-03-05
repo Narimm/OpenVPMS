@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.common;
@@ -20,12 +20,12 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
 /**
  * Describes a link between two entities.
- * <p/>
+ * <p>
  * This is used by {@link Entity} to establish uni-directional links where both the source and targets may be queried.
  *
  * @author Tim Anderson
  */
-public class EntityLink extends SequencedRelationship {
+public class EntityLink extends SequencedRelationship implements org.openvpms.component.model.entity.EntityLink {
 
     /**
      * Serialisation version identifier.

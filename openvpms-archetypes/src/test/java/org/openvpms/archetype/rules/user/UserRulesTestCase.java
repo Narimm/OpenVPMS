@@ -206,4 +206,57 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
         user.addClassification(adminClassification);
         assertTrue(rules.isAdministrator(user));
     }
+
+    /**
+     * Tests the {@link UserRules#getClinicians(Party)} method.
+     */
+    @Test
+    public void testGetClinicians() {
+        Party locationA = TestHelper.createLocation();
+        Party locationB = TestHelper.createLocation();
+        User user1 = TestHelper.createUser();      // user with no locations
+
+        User user2 = TestHelper.createUser();      // user linked to locationA
+        addLocation(user2, locationA);
+
+        User user3 = TestHelper.createClinician(); // clinician linked to location A
+        addLocation(user3, locationA);
+
+        User user4 = TestHelper.createClinician(); // clinician linked to location B
+        addLocation(user4, locationB);
+
+        User user5 = TestHelper.createClinician();  // clinician linked to both locations
+        addLocation(user5, locationA);
+        addLocation(user5, locationB);
+
+        User user6 = TestHelper.createClinician(); // clinician linked to no locations
+
+        List<User> clinicians1 = rules.getClinicians(locationA);
+        assertFalse(clinicians1.contains(user1));
+        assertFalse(clinicians1.contains(user2));
+        assertTrue(clinicians1.contains(user3));
+        assertFalse(clinicians1.contains(user4));
+        assertTrue(clinicians1.contains(user5));
+        assertTrue(clinicians1.contains(user6));
+
+        List<User> clinicians2 = rules.getClinicians(locationB);
+        assertFalse(clinicians2.contains(user1));
+        assertFalse(clinicians2.contains(user2));
+        assertFalse(clinicians2.contains(user3));
+        assertTrue(clinicians2.contains(user4));
+        assertTrue(clinicians2.contains(user5));
+        assertTrue(clinicians2.contains(user5));
+    }
+
+    /**
+     * Adds a relationship between a party and practice location.
+     *
+     * @param party    the party
+     * @param location the practice location
+     */
+    private void addLocation(Party party, Party location) {
+        IMObjectBean bean = new IMObjectBean(party);
+        bean.addNodeTarget("locations", location);
+        bean.save();
+    }
 }

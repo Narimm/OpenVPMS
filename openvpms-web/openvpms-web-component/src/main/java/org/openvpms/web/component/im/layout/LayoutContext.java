@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.layout;
@@ -24,8 +24,8 @@ import org.openvpms.component.system.common.cache.IMObjectCache;
 import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
+import org.openvpms.web.component.im.delete.IMObjectDeletionListener;
 import org.openvpms.web.component.im.filter.NodeFilter;
-import org.openvpms.web.component.im.util.IMObjectDeletionListener;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.echo.help.HelpContext;
@@ -62,16 +62,14 @@ public interface LayoutContext {
     /**
      * Determines if this is an edit context.
      *
-     * @return <code>true</code> if this is an edit context; <code>false</code>
-     *         if it is a view context. Defaults to <code>false</code>
+     * @return {@code true} if this is an edit context; {@code false} if it is a view context. Defaults to {@code false}
      */
     boolean isEdit();
 
     /**
      * Sets if this is an edit context.
      *
-     * @param edit if <code>true</code> this is an edit context; if
-     *             <code>false</code> it is a view context.
+     * @param edit if {@code true} this is an edit context; if {@code false} it is a view context.
      */
     void setEdit(boolean edit);
 
@@ -92,14 +90,14 @@ public interface LayoutContext {
     /**
      * Returns the default filter.
      *
-     * @return the default filter. May be <code>null</code>
+     * @return the default filter. May be {@code null}
      */
     NodeFilter getDefaultNodeFilter();
 
     /**
      * Sets the default filter.
      *
-     * @param filter the default filter. May be <code>null</code>
+     * @param filter the default filter. May be {@code null}
      */
     void setNodeFilter(NodeFilter filter);
 
@@ -120,8 +118,7 @@ public interface LayoutContext {
     /**
      * Returns the layout depth.
      *
-     * @return the layout depth. If unset, defaults to <code>0</code>
-     *         s
+     * @return the layout depth. If unset, defaults to {@code 0}
      */
     int getLayoutDepth();
 

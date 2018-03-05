@@ -79,7 +79,7 @@ public class InteractiveExportPrinter extends InteractivePrinter {
      */
     @Override
     protected PrintDialog createDialog() {
-        return new ExportPrintDialog(getTitle(), getHelpContext()) {
+        return new ExportPrintDialog(getTitle(), getContext().getLocation(), getHelpContext()) {
 
             @Override
             protected void onPreview() {

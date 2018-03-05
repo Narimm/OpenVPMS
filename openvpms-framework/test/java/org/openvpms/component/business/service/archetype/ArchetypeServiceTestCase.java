@@ -1,28 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
 
-// java-core
-
 import org.apache.commons.lang.StringUtils;
-import static org.junit.Assert.*;
 import org.junit.Test;
+import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.FailedToDeriveValueException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -32,7 +28,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.springframework.test.context.ContextConfiguration;
@@ -41,11 +36,17 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * Test the {@link org.openvpms.component.business.service.archetype.IArchetypeService}.
  *
  * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $LastChangedDate$
  */
 @ContextConfiguration("archetype-service-appcontext.xml")
 public class ArchetypeServiceTestCase extends AbstractArchetypeServiceTest {
@@ -244,7 +245,7 @@ public class ArchetypeServiceTestCase extends AbstractArchetypeServiceTest {
         save(lookup);
 
         Party party = createPerson("party.customerperson", "MR", "T", "Anderson");
-        Set<Lookup> classifications = party.getClassifications();
+        Set<org.openvpms.component.model.lookup.Lookup> classifications = party.getClassifications();
         assertEquals(1, classifications.size());
         assertTrue(classifications.contains(lookup));
     }

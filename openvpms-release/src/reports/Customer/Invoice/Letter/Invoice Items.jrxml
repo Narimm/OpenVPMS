@@ -19,7 +19,7 @@
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" hImageAlign="Left" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
 	<parameter name="incTax" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[]]></parameterDescription>
 	</parameter>
@@ -52,9 +52,8 @@
 	<field name="target.shortName" class="java.lang.String"/>
 	<field name="target.product.entity.sellingUnits.printedName" class="java.lang.String"/>
 	<sortField name="target.patient.entity.name"/>
-	<sortField name="showTemplate" order="Descending" type="Variable"/>
-	<sortField name="target.template.entity.name"/>
-	<sortField name="target.startTime"/>
+	<sortField name="sortDate" type="Variable"/>
+	<sortField name="target.product.entity.name"/>
 	<variable name="taxR" class="java.math.BigDecimal">
 		<variableExpression><![CDATA[$F{target.tax}.setScale(2, BigDecimal.ROUND_HALF_UP)]]></variableExpression>
 	</variable>
@@ -93,6 +92,9 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 	</variable>
 	<variable name="units" class="java.lang.String">
 		<variableExpression><![CDATA[$F{target.product.entity.sellingUnits.printedName}==null?" ":$F{target.product.entity.sellingUnits.printedName}]]></variableExpression>
+	</variable>
+	<variable name="sortDate" class="java.lang.String">
+		<variableExpression><![CDATA[DATEFORMAT($F{target.startTime}, "yyyyMMdd")]]></variableExpression>
 	</variable>
 	<group name="patientGroup" minHeightToStartNewPage="50">
 		<groupExpression><![CDATA[$F{target.patient.entity.name}]]></groupExpression>

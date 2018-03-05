@@ -1,0 +1,199 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="entity.reminderConfigurationType.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.common.Entity" displayName="Reminder Configuration">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="1" maxLength="100"
+              defaultValue="'Patient Reminder Configuration'">
+            <assertion name="propercase"/>
+        </node>
+        <node name="description" type="java.lang.String" path="/description"
+              defaultValue="'Determines how patient reminders will be processed'"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="location" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="1" maxCardinality="1" filter="entityLink.reminderConfigurationLocation"/>
+        <node name="emailInterval" path="/details/emailInterval" type="java.lang.Integer" minCardinality="1"
+              displayName="Email Lead Time" defaultValue="3">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0</errorMessage>
+            </assertion>
+        </node>
+        <node name="emailUnits" path="/details/emailUnits" type="java.lang.String"
+              minCardinality="1" defaultValue="'DAYS'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="DAYS" value="days"/>
+                    <property name="WEEKS" value="weeks"/>
+                    <property name="MONTHS" value="months"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="emailCancelInterval" path="/details/emailCancelInterval" type="java.lang.Integer" minCardinality="1"
+              displayName="Email Cancel Time" defaultValue="3">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0</errorMessage>
+            </assertion>
+        </node>
+        <node name="emailCancelUnits" path="/details/emailCancelUnits" type="java.lang.String"
+              minCardinality="1" defaultValue="'DAYS'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="DAYS" value="days"/>
+                    <property name="WEEKS" value="weeks"/>
+                    <property name="MONTHS" value="months"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="smsInterval" displayName="SMS Lead Time" path="/details/smsInterval" type="java.lang.Integer"
+              minCardinality="1" defaultValue="3">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0</errorMessage>
+            </assertion>
+        </node>
+        <node name="smsUnits" displayName="SMS Lead Time Units" path="/details/smsUnits" type="java.lang.String"
+              minCardinality="1" defaultValue="'DAYS'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="DAYS" value="days"/>
+                    <property name="WEEKS" value="weeks"/>
+                    <property name="MONTHS" value="months"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="smsCancelInterval" displayName="SMS Cancel Time" path="/details/smsCancelInterval"
+              type="java.lang.Integer" minCardinality="1" defaultValue="3">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0</errorMessage>
+            </assertion>
+        </node>
+        <node name="smsCancelUnits" displayName="SMS Cancel Time Units" path="/details/smsCancelUnits"
+              type="java.lang.String" minCardinality="1" defaultValue="'DAYS'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="DAYS" value="days"/>
+                    <property name="WEEKS" value="weeks"/>
+                    <property name="MONTHS" value="months"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="printInterval" path="/details/printInterval" type="java.lang.Integer" minCardinality="1"
+              displayName="Print Lead Time" defaultValue="2">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0</errorMessage>
+            </assertion>
+        </node>
+        <node name="printUnits" path="/details/printUnits" type="java.lang.String"
+              displayName="Print Lead Time Units" minCardinality="1" defaultValue="'WEEKS'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="DAYS" value="days"/>
+                    <property name="WEEKS" value="weeks"/>
+                    <property name="MONTHS" value="months"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="printCancelInterval" path="/details/printCancelInterval" type="java.lang.Integer" minCardinality="1"
+              displayName="Print Cancel Time" defaultValue="2">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0</errorMessage>
+            </assertion>
+        </node>
+        <node name="printCancelUnits" path="/details/printCancelUnits" type="java.lang.String"
+              displayName="Print Cancel Units" minCardinality="1" defaultValue="'WEEKS'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="DAYS" value="days"/>
+                    <property name="WEEKS" value="weeks"/>
+                    <property name="MONTHS" value="months"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="exportInterval" path="/details/exportInterval" type="java.lang.Integer" minCardinality="1"
+              displayName="Export Lead Time" defaultValue="2">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0</errorMessage>
+            </assertion>
+        </node>
+        <node name="exportUnits" path="/details/exportUnits" type="java.lang.String"
+              displayName="Export Lead Time Units" minCardinality="1" defaultValue="'WEEKS'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="DAYS" value="days"/>
+                    <property name="WEEKS" value="weeks"/>
+                    <property name="MONTHS" value="months"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="exportCancelInterval" path="/details/exportCancelInterval" type="java.lang.Integer"
+              displayName="Export Cancel Time" minCardinality="1" defaultValue="2">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0</errorMessage>
+            </assertion>
+        </node>
+        <node name="exportCancelUnits" path="/details/exportCancelUnits" type="java.lang.String"
+              displayName="Export Cancel Units" minCardinality="1" defaultValue="'WEEKS'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="DAYS" value="days"/>
+                    <property name="WEEKS" value="weeks"/>
+                    <property name="MONTHS" value="months"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="listInterval" path="/details/listInterval" type="java.lang.Integer" minCardinality="1"
+              displayName="List Lead Time" defaultValue="2">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0</errorMessage>
+            </assertion>
+        </node>
+        <node name="listUnits" path="/details/listUnits" type="java.lang.String"
+              displayName="List Lead Time Units" minCardinality="1" defaultValue="'WEEKS'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="DAYS" value="days"/>
+                    <property name="WEEKS" value="weeks"/>
+                    <property name="MONTHS" value="months"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="listCancelInterval" path="/details/listCancelInterval" type="java.lang.Integer" minCardinality="1"
+              displayName="List Cancel Time" defaultValue="2">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0</errorMessage>
+            </assertion>
+        </node>
+        <node name="listCancelUnits" path="/details/listCancelUnits" type="java.lang.String"
+              displayName="List Cancel Units" minCardinality="1" defaultValue="'WEEKS'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="DAYS" value="days"/>
+                    <property name="WEEKS" value="weeks"/>
+                    <property name="MONTHS" value="months"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="emailAttachments" displayName="Email Reminders as Attachments" path="/details/emailAttachments"
+              type="java.lang.Boolean" minCardinality="1" defaultValue="true()"/>
+        <node name="customerTemplate" displayName="Customer Grouped Reminder Template" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="0" maxCardinality="1" filter="entityLink.reminderConfigurationTemplateCustomer"/>
+        <node name="patientTemplate" displayName="Patient Grouped Reminder Template" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="1"
+              filter="entityLink.reminderConfigurationTemplatePatient"/>
+    </archetype>
+</archetypes>

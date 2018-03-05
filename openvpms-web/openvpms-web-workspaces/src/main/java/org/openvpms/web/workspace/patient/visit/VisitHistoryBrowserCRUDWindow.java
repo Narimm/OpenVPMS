@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -20,7 +20,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryCRUDWindow;
 import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryCRUDWindow;
@@ -66,7 +65,6 @@ public class VisitHistoryBrowserCRUDWindow extends AbstractVisitHistoryBrowserCR
         }
         setBrowser(browser);
         PatientHistoryCRUDWindow window = createWindow(context);
-        window.setMailContext(new CustomerMailContext(context, help));
         window.setQuery(query);
         window.setEvent(browser.getSelectedParent());
         setWindow(window);
@@ -104,7 +102,7 @@ public class VisitHistoryBrowserCRUDWindow extends AbstractVisitHistoryBrowserCR
 
     /**
      * Invoked when the tab is displayed.
-     * <p/>
+     * <p>
      * This refreshes the history if the current event being displayed.
      */
     @Override

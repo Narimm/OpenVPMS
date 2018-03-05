@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.hl7;
@@ -26,6 +26,7 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryFactory;
+import org.openvpms.web.component.workspace.BrowserCRUDWindowTab;
 import org.openvpms.web.component.workspace.DefaultCRUDWindow;
 import org.openvpms.web.component.workspace.TabComponent;
 import org.openvpms.web.component.workspace.TabbedWorkspace;
@@ -83,7 +84,7 @@ public class HL7Workspace extends TabbedWorkspace<IMObject> {
         Archetypes<IMObject> archetypes = Archetypes.create(HL7Archetypes.SERVICES, IMObject.class,
                                                             Messages.get("admin.hl7.service.type"));
         DefaultCRUDWindow<IMObject> window = new DefaultCRUDWindow<>(archetypes, context, help);
-        addTab("admin.hl7.services", model, new HL7BrowserCRUDWindow<>(browser, window));
+        addTab("admin.hl7.services", model, new BrowserCRUDWindowTab<>(browser, window));
     }
 
     /**
@@ -99,7 +100,7 @@ public class HL7Workspace extends TabbedWorkspace<IMObject> {
         Archetypes<Entity> archetypes = Archetypes.create(HL7Archetypes.CONNECTORS, Entity.class,
                                                           Messages.get("admin.hl7.connector.type"));
         HL7ConnectorCRUDWindow window = new HL7ConnectorCRUDWindow(archetypes, getContext(), help);
-        addTab("admin.hl7.connectors", model, new HL7BrowserCRUDWindow<>(browser, window));
+        addTab("admin.hl7.connectors", model, new BrowserCRUDWindowTab<>(browser, window));
     }
 
     /**
@@ -115,7 +116,7 @@ public class HL7Workspace extends TabbedWorkspace<IMObject> {
         Archetypes<Entity> archetypes = Archetypes.create(HL7Archetypes.MAPPINGS, Entity.class,
                                                           Messages.get("admin.hl7.mapping.type"));
         HL7MappingCRUDWindow window = new HL7MappingCRUDWindow(archetypes, context, help);
-        addTab("admin.hl7.mappings", model, new HL7BrowserCRUDWindow<>(browser, window));
+        addTab("admin.hl7.mappings", model, new BrowserCRUDWindowTab<>(browser, window));
     }
 
 }

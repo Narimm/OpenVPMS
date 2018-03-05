@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -174,16 +174,13 @@ public abstract class AbstractReadOnlyComponentFactory extends AbstractIMObjectC
         if (property.getMaxCardinality() == 1) {
             // handle the special case of a collection of one element.
             // This can be viewed inline
-            String[] shortNames = property.getArchetypeRange();
-            if (shortNames.length == 1) {
-                List values = property.getValues();
-                IMObject value;
-                if (!values.isEmpty()) {
-                    value = (IMObject) values.get(0);
-                    result = create(value, parent).getComponent();
-                } else {
-                    result = getEmptyCollectionViewer();
-                }
+            List values = property.getValues();
+            IMObject value;
+            if (!values.isEmpty()) {
+                value = (IMObject) values.get(0);
+                result = create(value, parent).getComponent();
+            } else {
+                result = getEmptyCollectionViewer();
             }
         } else if (property.getMinCardinality() == 0 && property.getMaxCardinality() == 0) {
             // nothing to display, so return an empty label

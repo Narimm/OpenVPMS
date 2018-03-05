@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -24,7 +24,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
@@ -701,16 +701,6 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     }
 
     /**
-     * Removes listeners associated with lookup nodes.
-     */
-    private void disposeLookups() {
-        for (Map.Entry<PropertyEditor, ModifiableListener> entry : lookups.entrySet()) {
-            entry.getKey().removeModifiableListener(entry.getValue());
-        }
-        lookups.clear();
-    }
-
-    /**
      * Returns the layout context.
      *
      * @return the layout context
@@ -945,6 +935,44 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
                 ((StringPropertyTransformer) transformer).setExpandMacros(false);
             }
         }
+    }
+
+    /**
+     * Helper to add a validation error for a required property.
+     *
+     * @param name      the required property name
+     * @param validator the validator
+     * @return {@code false}
+     */
+    protected boolean reportRequired(String name, Validator validator) {
+        Property property = getProperty(name);
+        if (property != null) {
+            reportRequired(property, validator);
+        }
+        return false;
+    }
+
+    /**
+     * Helper to add a validation error for a required property.
+     *
+     * @param property  the required property
+     * @param validator the validator
+     * @return {@code false}
+     */
+    protected boolean reportRequired(Property property, Validator validator) {
+        String message = Messages.format("property.error.required", property.getDisplayName());
+        validator.add(property, new ValidatorError(property, message));
+        return false;
+    }
+
+    /**
+     * Removes listeners associated with lookup nodes.
+     */
+    private void disposeLookups() {
+        for (Map.Entry<PropertyEditor, ModifiableListener> entry : lookups.entrySet()) {
+            entry.getKey().removeModifiableListener(entry.getValue());
+        }
+        lookups.clear();
     }
 
     private class ComponentFactory extends NodeEditorFactory {

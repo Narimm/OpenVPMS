@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -20,19 +20,22 @@ import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
 import org.junit.Before;
 import org.mockito.Mockito;
+import org.openvpms.archetype.rules.contact.BasicAddressFormatter;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
@@ -66,7 +69,8 @@ public abstract class AbstractMessageTest extends ArchetypeServiceTest {
     public void setUp() {
         ILookupService lookups = getLookupService();
         PatientRules rules = new PatientRules(null, getArchetypeService(), lookups);
-        CustomerRules customerRules = new CustomerRules(getArchetypeService(), lookups);
+        IArchetypeService service = getArchetypeService();
+        CustomerRules customerRules = new CustomerRules(service, lookups, new BasicAddressFormatter(service, lookups));
         MedicalRecordRules medicalRecordRules = new MedicalRecordRules(getArchetypeService());
         Party owner = TestHelper.createCustomer("Foo", "Bar", true);
         Party patient = TestHelper.createPatient(owner);
@@ -168,10 +172,9 @@ public abstract class AbstractMessageTest extends ArchetypeServiceTest {
      * @param notes   the allergy notes
      */
     private void createAllergy(Party patient, String reason, String notes) {
-        Act alert = (Act) create(PatientArchetypes.ALERT);
+        Entity alertType =  ReminderTestHelper.createAlertType("Allergy", "ALLERGY");
+        Act alert = ReminderTestHelper.createAlert(patient, alertType);
         ActBean bean = new ActBean(alert);
-        bean.setValue("alertType", TestHelper.getLookup("lookup.patientAlertType", "ALLERGY").getCode());
-        bean.addNodeParticipation("patient", patient);
         bean.setValue("reason", reason);
         bean.setValue("notes", notes);
         bean.save();

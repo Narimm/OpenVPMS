@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -23,12 +23,13 @@ import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
+import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.bound.BoundCheckBox;
 import org.openvpms.web.component.bound.BoundDateTimeField;
@@ -42,9 +43,9 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.patient.PatientParticipationEditor;
 import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -60,6 +61,9 @@ import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSerie
 
 import java.util.Date;
 
+import static org.openvpms.archetype.rules.workflow.ScheduleEvent.REMINDER_ERROR;
+import static org.openvpms.archetype.rules.workflow.ScheduleEvent.REMINDER_SENT;
+import static org.openvpms.archetype.rules.workflow.ScheduleEvent.SEND_REMINDER;
 import static org.openvpms.web.echo.style.Styles.BOLD;
 import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
 import static org.openvpms.web.echo.style.Styles.INSET;
@@ -73,6 +77,11 @@ import static org.openvpms.web.echo.style.Styles.INSET;
 public class AppointmentEditor extends CalendarEventEditor {
 
     /**
+     * The appointment rules.
+     */
+    private final AppointmentRules rules;
+
+    /**
      * The alerts row.
      */
     private Row alerts;
@@ -81,11 +90,6 @@ public class AppointmentEditor extends CalendarEventEditor {
      * Listener notified when the patient changes.
      */
     private ModifiableListener patientListener;
-
-    /**
-     * The appointment rules.
-     */
-    private final AppointmentRules rules;
 
     /**
      * Determines if SMS is enabled at the practice.
@@ -114,19 +118,9 @@ public class AppointmentEditor extends CalendarEventEditor {
     private BoundCheckBox sendReminder;
 
     /**
-     * The 'send reminder' node name.
+     * The online booking notes.
      */
-    private static final String SEND_REMINDER = "sendReminder";
-
-    /**
-     * The 'reminder sent' node name.
-     */
-    private static final String REMINDER_SENT = "reminderSent";
-
-    /**
-     * The 'reminder error' node name.
-     */
-    private static final String REMINDER_ERROR = "reminderError";
+    private static final String BOOKING_NOTES = ScheduleEvent.BOOKING_NOTES;
 
     /**
      * Constructs an {@link AppointmentEditor}.
@@ -170,11 +164,8 @@ public class AppointmentEditor extends CalendarEventEditor {
         }
         appointmentTypeReminders = rules.isRemindersEnabled(appointmentType);
 
-        getProperty("status").addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onStatusChanged();
-            }
-        });
+        getProperty("status").addModifiableListener(
+                modifiable -> onStatusChanged());
         sendReminder = new BoundCheckBox(getProperty(SEND_REMINDER));
         addStartEndTimeListeners();
         if (act.isNew()) {
@@ -249,11 +240,8 @@ public class AppointmentEditor extends CalendarEventEditor {
         super.onLayoutCompleted();
         Entity schedule = getSchedule();
         initSchedule(schedule);
-        getAppointmentTypeEditor().addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onAppointmentTypeChanged();
-            }
-        });
+        getAppointmentTypeEditor().addModifiableListener(
+                modifiable -> onAppointmentTypeChanged());
         getPatientEditor().addModifiableListener(getPatientListener());
 
         if (getEndTime() == null) {
@@ -273,7 +261,7 @@ public class AppointmentEditor extends CalendarEventEditor {
 
     /**
      * Invoked when the customer changes. Sets the patient to null if no relationship exists between the two.
-     * <p/>
+     * <p>
      * The alerts will be updated.
      */
     @Override
@@ -324,6 +312,31 @@ public class AppointmentEditor extends CalendarEventEditor {
         AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
         editor.setSchedule(schedule);
         scheduleReminders = schedule != null && rules.isRemindersEnabled(schedule);
+    }
+
+    /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        return validateCustomer(validator) && super.doValidation(validator);
+    }
+
+    /**
+     * Ensures a customer is selected.
+     *
+     * @param validator the validator
+     * @return {@code true} if a customer is selected
+     */
+    private boolean validateCustomer(Validator validator) {
+        boolean result = true;
+        if (getCustomer() == null) {
+            result = reportRequired("customer", validator);
+        }
+        return result;
     }
 
     /**
@@ -422,11 +435,7 @@ public class AppointmentEditor extends CalendarEventEditor {
      */
     private ModifiableListener getPatientListener() {
         if (patientListener == null) {
-            patientListener = new ModifiableListener() {
-                public void modified(Modifiable modifiable) {
-                    onPatientChanged();
-                }
-            };
+            patientListener = modifiable -> onPatientChanged();
         }
         return patientListener;
     }
@@ -491,9 +500,9 @@ public class AppointmentEditor extends CalendarEventEditor {
 
     /**
      * Updates the send reminder flag, based on the practice, schedule, customer and appointment type.
-     * <p/>
+     * <p>
      * If SMS is disabled for the practice, schedule or customer, the flag is toggled off and disabled.
-     * <p/>
+     * <p>
      * If not, it is enabled.
      *
      * @param select if {@code true} and reminders may be sent, select the flag, otherwise leave it
@@ -501,8 +510,10 @@ public class AppointmentEditor extends CalendarEventEditor {
     private void updateSendReminder(boolean select) {
         Date startTime = getStartTime();
         Date now = new Date();
-        boolean enabled = smsPractice && scheduleReminders && appointmentTypeReminders && noReminder != null &&
-                          startTime != null && startTime.after(now) && SMSHelper.canSMS(getCustomer());
+        Party customer = getCustomer();
+        boolean enabled = smsPractice && scheduleReminders && appointmentTypeReminders && noReminder != null
+                          && customer != null && startTime != null && startTime.after(now)
+                          && SMSHelper.canSMS(customer);
         if (!enabled) {
             sendReminder.setSelected(false);
         }
@@ -524,7 +535,7 @@ public class AppointmentEditor extends CalendarEventEditor {
          */
         public AppointmentLayoutStrategy() {
             ArchetypeNodes archetypeNodes = getArchetypeNodes();
-            archetypeNodes.excludeIfEmpty(REMINDER_SENT, REMINDER_ERROR);
+            archetypeNodes.excludeIfEmpty(REMINDER_SENT, REMINDER_ERROR, BOOKING_NOTES);
             if (!smsPractice || !scheduleReminders) {
                 archetypeNodes.exclude(SEND_REMINDER);
             } else {
@@ -553,7 +564,7 @@ public class AppointmentEditor extends CalendarEventEditor {
 
         /**
          * Returns the default focus component.
-         * <p/>
+         * <p>
          * This implementation returns the customer component.
          *
          * @param components the components

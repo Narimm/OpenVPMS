@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -42,17 +42,23 @@ public class ProductHelper {
     /**
      * Determines if a products are being filtered by practice location.
      *
+     * @param practice the practice
+     * @return {@code true} if products are being filtered by practice location
+     */
+    public static boolean useLocationProducts(Party practice) {
+        PracticeRules rules = ServiceHelper.getBean(PracticeRules.class);
+        return rules.useLocationProducts(practice);
+    }
+
+    /**
+     * Determines if a products are being filtered by practice location.
+     *
      * @param context the context
      * @return {@code true} if products are being filtered by practice location
      */
     public static boolean useLocationProducts(Context context) {
-        boolean useLocationProducts = false;
         Party practice = context.getPractice();
-        if (practice != null) {
-            PracticeRules rules = ServiceHelper.getBean(PracticeRules.class);
-            useLocationProducts = rules.useLocationProducts(practice);
-        }
-        return useLocationProducts;
+        return (practice != null) && useLocationProducts(practice);
     }
 
     /**

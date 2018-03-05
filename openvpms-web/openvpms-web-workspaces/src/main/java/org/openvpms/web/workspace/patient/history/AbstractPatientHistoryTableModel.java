@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -53,9 +53,9 @@ import org.openvpms.component.business.service.archetype.CachingReadOnlyArchetyp
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.system.common.cache.IMObjectCache;
 import org.openvpms.component.system.common.cache.LRUIMObjectCache;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.ContextSwitchListener;
@@ -85,7 +85,7 @@ import java.util.Map;
 
 /**
  * Base class for tables displaying summaries of patient medical history.
- * <p/>
+ * <p>
  * NOTE: this should ideally rendered using using TableLayoutDataEx row spanning but for a bug in TableEx that prevents
  * events on buttons when row selection is enabled in Firefox.
  * See http://forum.nextapp.com/forum/index.php?showtopic=4114 for details
@@ -116,16 +116,6 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     private final LayoutContext context;
 
     /**
-     * The selected parent act row.
-     */
-    private int selectedParent;
-
-    /**
-     * A map of jxpath expressions, keyed on archetype short name, used to format the text column.
-     */
-    private Map<String, String> expressions = new HashMap<>();
-
-    /**
      * The patient rules.
      */
     private final PatientRules patientRules;
@@ -144,6 +134,26 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * The archetype service.
      */
     private final IArchetypeService service;
+
+    /**
+     * The jxpath function library.
+     */
+    private final FunctionLibrary functions;
+
+    /**
+     * The object cache, used during rendering.
+     */
+    private final IMObjectCache cache;
+
+    /**
+     * The selected parent act row.
+     */
+    private int selectedParent;
+
+    /**
+     * A map of jxpath expressions, keyed on archetype short name, used to format the text column.
+     */
+    private Map<String, String> expressions = new HashMap<>();
 
     /**
      * Cache of clinician names. This is refreshed each time the table is rendered to ensure the data doesn't
@@ -170,16 +180,6 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * Listener to view a batch.
      */
     private ContextSwitchListener batchViewer;
-
-    /**
-     * The jxpath function library.
-     */
-    private final FunctionLibrary functions;
-
-    /**
-     * The object cache, used during rendering.
-     */
-    private final IMObjectCache cache;
 
     /**
      * Default fixed column width, in pixels.
@@ -322,6 +322,24 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
             act = acts.get(--index);
         }
         return (found) ? act : null;
+    }
+
+    /**
+     * Determines if the clinician is being displayed.
+     *
+     * @return {@code true} if the clinician is being displayed
+     */
+    public boolean showClinician() {
+        return showClinician;
+    }
+
+    /**
+     * Determines if product batches are being displayed.
+     *
+     * @return {@code true} if the batches are being displayed
+     */
+    public boolean showBatches() {
+        return showBatches;
     }
 
     /**
@@ -513,7 +531,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
 
     /**
      * Returns a component for the act type.
-     * <p/>
+     * <p>
      * This indents the type depending on the act's depth in the act hierarchy.
      *
      * @param bean the act
@@ -562,7 +580,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
 
     /**
      * Returns the depth of an act relative to an event or problem.
-     * <p/>
+     * <p>
      * This is used to inset child acts.
      *
      * @param bean the act
@@ -611,7 +629,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
 
     /**
      * Returns the clinician name associated with an act.
-     * <p/>
+     * <p>
      * This caches clinician names for the duration of a single table render, to improve performance.
      *
      * @param bean the act
@@ -703,12 +721,6 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
         return result;
     }
 
-    private void onShowBatch(IMObject object) {
-        HelpContext help = context.getHelpContext().topic(object, "view");
-        IMObjectViewerDialog dialog = new IMObjectViewerDialog(object, context.getContext(), help);
-        dialog.show();
-    }
-
     /**
      * Returns a component for the detail of an act.patientDocument*. or act.patientInvestigation*.
      *
@@ -764,7 +776,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
 
     /**
      * Returns the act detail as a string.
-     * <p/>
+     * <p>
      * If a jxpath expression is registered, this will be evaluated. If not, and {@code useDescription} is {@code true}
      * the act description will be used.
      *
@@ -837,6 +849,17 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
         LabelEx result = new LabelEx("");
         result.setStyleName("MedicalRecordSummary.date");
         return result;
+    }
+
+    /**
+     * Displays a batch in a popup.
+     *
+     * @param object the batch
+     */
+    private void onShowBatch(IMObject object) {
+        HelpContext help = context.getHelpContext().topic(object, "view");
+        IMObjectViewerDialog dialog = new IMObjectViewerDialog(object, context.getContext(), help);
+        dialog.show();
     }
 
     /**

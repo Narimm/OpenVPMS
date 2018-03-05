@@ -1,26 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
 package org.openvpms.component.business.domain.im.party;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.model.lookup.Lookup;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -30,10 +28,9 @@ import java.util.Set;
 /**
  * Defines a contact for a {@link Party}.
  *
- * @author <a href="mailto:support@openvpms.org>OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
  */
-public class Contact extends IMObject {
+public class Contact extends IMObject implements org.openvpms.component.model.party.Contact {
 
     /**
      * Serialization version identifier.
@@ -53,7 +50,7 @@ public class Contact extends IMObject {
     /**
      * The classification for the contact.
      */
-    private Set<Lookup> classifications = new HashSet<Lookup>();
+    private Set<Lookup> classifications = new HashSet<>();
 
     /**
      * A reference to the owning party.
@@ -94,10 +91,10 @@ public class Contact extends IMObject {
     }
 
     /**
-     * @param activeEndTime The activeEndTime to set.
+     * @param time The activeEndTime to set.
      */
-    public void setActiveEndTime(Date activeEndTime) {
-        this.activeEndTime = activeEndTime;
+    public void setActiveEndTime(Date time) {
+        this.activeEndTime = time;
     }
 
     /**
@@ -108,10 +105,10 @@ public class Contact extends IMObject {
     }
 
     /**
-     * @param activeStartTime The activeStartTime to set.
+     * @param time The activeStartTime to set.
      */
-    public void setActiveStartTime(Date activeStartTime) {
-        this.activeStartTime = activeStartTime;
+    public void setActiveStartTime(Date time) {
+        this.activeStartTime = time;
     }
 
     /**
@@ -166,7 +163,7 @@ public class Contact extends IMObject {
     @Override
     public Object clone() throws CloneNotSupportedException {
         Contact copy = (Contact) super.clone();
-        copy.classifications = new HashSet<Lookup>(classifications);
+        copy.classifications = new HashSet<>(classifications);
         return copy;
     }
 }

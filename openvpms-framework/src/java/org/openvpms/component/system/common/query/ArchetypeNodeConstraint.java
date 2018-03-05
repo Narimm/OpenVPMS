@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -49,46 +49,6 @@ public class ArchetypeNodeConstraint implements IConstraint {
 
 
     /**
-     * Construct an instance of this class specifying the archetype property
-     * you wish to constrain and the associated operator. In some instance, such
-     * as an 'is null' constraint a parameter is not required.
-     *
-     * @param property the archetype property to constrain
-     * @param operator the operator to use.
-     * @deprecated ArchetypeProperty no longer supported
-     */
-    @Deprecated
-    public ArchetypeNodeConstraint(ArchetypeProperty property,
-                                   RelationalOp operator) {
-        this(property, operator, null);
-    }
-
-    /**
-     * Construct an instance of this class specifying the archetype property,
-     * the relational operator and the associated parameter.
-     *
-     * @param property the archetype property to constraint
-     * @param operator the operator to use
-     * @param param    the parameter using in conjunction with the operator
-     * @deprecated ArchetypeProperty no longer supported
-     */
-    @Deprecated
-    public ArchetypeNodeConstraint(ArchetypeProperty property,
-                                   RelationalOp operator, Object param) {
-        this(operator, param);
-    }
-
-    /**
-     * Construct an instance of this class specifying the relational operator
-     * and the associated parameter.
-     *
-     * @param operator the operator to use
-     */
-    public ArchetypeNodeConstraint(RelationalOp operator) {
-        this(operator, null);
-    }
-
-    /**
      * Construct an instance of this class specifying the relational operator
      * and the associated parameter.
      *
@@ -117,14 +77,6 @@ public class ArchetypeNodeConstraint implements IConstraint {
      */
     public Object getParameter() {
         return parameter;
-    }
-
-    /**
-     * @return Returns the property.
-     */
-    @Deprecated
-    public ArchetypeProperty getProperty() {
-        return null;
     }
 
     /* (non-Javadoc)

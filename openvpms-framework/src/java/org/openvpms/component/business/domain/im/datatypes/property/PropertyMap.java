@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -34,7 +34,8 @@ import java.util.Map;
  *
  * @author Jim Alateras
  */
-public class PropertyMap extends NamedProperty implements PropertyCollection {
+public class PropertyMap extends NamedProperty implements PropertyCollection,
+        org.openvpms.component.model.archetype.PropertyMap {
 
     /**
      * Default SUID
@@ -44,7 +45,7 @@ public class PropertyMap extends NamedProperty implements PropertyCollection {
     /**
      * A container of mapped properties.
      */
-    private Map<String, NamedProperty> properties = new LinkedHashMap<>();
+    private Map<String, org.openvpms.component.model.archetype.NamedProperty> properties = new LinkedHashMap<>();
 
     /**
      * Default constructor.
@@ -65,14 +66,14 @@ public class PropertyMap extends NamedProperty implements PropertyCollection {
     /**
      * @return Returns the properties.
      */
-    public Map<String, NamedProperty> getProperties() {
+    public Map<String, org.openvpms.component.model.archetype.NamedProperty> getProperties() {
         return properties;
     }
 
     /**
      * @param properties The properties to set.
      */
-    public void setProperties(Map<String, NamedProperty> properties) {
+    public void setProperties(Map<String, org.openvpms.component.model.archetype.NamedProperty> properties) {
         this.properties = properties;
     }
 
@@ -81,7 +82,7 @@ public class PropertyMap extends NamedProperty implements PropertyCollection {
      *
      * @param property the property to add
      */
-    public void addProperty(NamedProperty property) {
+    public void addProperty(org.openvpms.component.model.archetype.NamedProperty property) {
         properties.put(property.getName(), property);
     }
 
@@ -90,7 +91,7 @@ public class PropertyMap extends NamedProperty implements PropertyCollection {
      *
      * @param property the property to remove
      */
-    public void removeProperty(NamedProperty property) {
+    public void removeProperty(org.openvpms.component.model.archetype.NamedProperty property) {
         properties.remove(property.getName());
     }
 
@@ -132,7 +133,7 @@ public class PropertyMap extends NamedProperty implements PropertyCollection {
     @Override
     @SuppressWarnings("unchecked")
     public void setValue(Object value) {
-        properties = (Map<String, NamedProperty>) value;
+        properties = (Map<String, org.openvpms.component.model.archetype.NamedProperty>) value;
     }
 
     /* (non-Javadoc)

@@ -11,16 +11,18 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.Predicate;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -28,6 +30,8 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -39,15 +43,14 @@ import java.util.List;
  */
 public class ReminderType {
 
+    public enum GroupBy {
+        CUSTOMER, PATIENT, NONE
+    }
+
     /**
      * The underlying <em>entity.reminderType</em>.
      */
     private final Entity reminderType;
-
-    /**
-     * The reminder type's templates.
-     */
-    private final List<Template> templates;
 
     /**
      * The default interval.
@@ -72,7 +75,12 @@ public class ReminderType {
     /**
      * Determines if the reminder can be grouped with other reminders in a single report.
      */
-    private final boolean canGroup;
+    private final GroupBy groupBy;
+
+    /**
+     * The reminder counts.
+     */
+    private final List<ReminderCount> counts = new ArrayList<>();
 
     /**
      * The reminder groups.
@@ -97,15 +105,25 @@ public class ReminderType {
         defaultUnits = getDateUnits(bean, "defaultUnits", DateUnits.YEARS);
         cancelInterval = bean.getInt("cancelInterval");
         cancelUnits = getDateUnits(bean, "cancelUnits", DateUnits.YEARS);
-        templates = new ArrayList<Template>();
-        for (EntityRelationship template
-                : bean.getValues("templates", EntityRelationship.class)) {
-            Entity documentTemplate = template.getTarget() != null ? (Entity) service.get(template.getTarget()) : null;
-            if (documentTemplate != null && documentTemplate.isActive()) {
-                templates.add(new Template(template, documentTemplate, service));
-            }
+        for (IMObject count : bean.getNodeTargetObjects("counts")) {
+            counts.add(new ReminderCount(count, service));
         }
-        canGroup = bean.getBoolean("group");
+        if (!counts.isEmpty()) {
+            Collections.sort(counts, new Comparator<ReminderCount>() {
+                @Override
+                public int compare(ReminderCount o1, ReminderCount o2) {
+                    return Integer.compare(o1.getCount(), o2.getCount());
+                }
+            });
+        }
+        String group = bean.getString("groupBy");
+        if (GroupBy.CUSTOMER.name().equals(group)) {
+            groupBy = GroupBy.CUSTOMER;
+        } else if (GroupBy.PATIENT.name().equals(group)) {
+            groupBy = GroupBy.PATIENT;
+        } else {
+            groupBy = GroupBy.NONE;
+        }
         groups = bean.getValues("groups", Lookup.class);
         interactive = bean.getBoolean("interactive");
         this.reminderType = reminderType;
@@ -132,8 +150,7 @@ public class ReminderType {
     /**
      * Determines if the reminder type is active or inactive.
      *
-     * @return {@code true} if the remidner type is active, {@code false} if
-     *         it is inactive
+     * @return {@code true} if the reminder type is active, {@code false} if it is inactive
      */
     public boolean isActive() {
         return reminderType.isActive();
@@ -167,8 +184,7 @@ public class ReminderType {
      *
      * @param dueDate the due date
      * @param date    the date
-     * @return {@code true} if the reminder needs to be cancelled,
-     *         otherwise {@code false}
+     * @return {@code true} if the reminder needs to be cancelled, otherwise {@code false}
      * @throws ArchetypeServiceException for any archetype service error
      */
     public boolean shouldCancel(Date dueDate, Date date) {
@@ -213,25 +229,27 @@ public class ReminderType {
     }
 
     /**
-     * Returns the template relationship for a particular reminder count.
+     * Returns the available reminder counts, sorted on increasing count.
      *
-     * @param reminderCount the reminder count
-     * @return the template relationship or {@code null} if none is found
+     * @return the available reminder counts
      */
-    public EntityRelationship getTemplateRelationship(int reminderCount) {
-        Template template = getTemplate(reminderCount);
-        return (template != null) ? template.getRelationship() : null;
+    public List<ReminderCount> getReminderCounts() {
+        return counts;
     }
 
     /**
-     * Returns the document template for a particular reminder count.
+     * Returns a reminder count.
      *
-     * @param reminderCount the reminder count
-     * @return the document template, or {@code null} if none is found
+     * @param count the reminder count
+     * @return the corresponding count, or {@code null} if none is found
      */
-    public Entity getDocumentTemplate(int reminderCount) {
-        Template template = getTemplate(reminderCount);
-        return (template != null) ? template.getDocumentTemplate() : null;
+    public ReminderCount getReminderCount(final int count) {
+        return CollectionUtils.find(counts, new Predicate<ReminderCount>() {
+            @Override
+            public boolean evaluate(ReminderCount object) {
+                return object.getCount() == count;
+            }
+        });
     }
 
     /**
@@ -243,53 +261,17 @@ public class ReminderType {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Date getNextDueDate(Date dueDate, int reminderCount) {
-        Template template = getTemplate(reminderCount);
-        if (template != null) {
-            return DateRules.getDate(dueDate, template.getInterval(),
-                                     template.getUnits());
-        }
-        return null;
+        ReminderCount count = getReminderCount(reminderCount);
+        return count != null ? count.getNextDueDate(dueDate) : null;
     }
 
     /**
-     * Determines if a reminder is due in the specified date range.
-     * <p/>
-     * NOTE: any time component of the specified dates is ignored.
+     * Determines if reminders can be grouped with others.
      *
-     * @param dueDate       the reminder's due date
-     * @param reminderCount the no. of times the reminder has been sent
-     * @param from          the 'from' due date. May be {@code null}
-     * @param to            the 'to' due date. May be {@code null}
-     * @return {@code true} if the reminder is due, otherwise {@code false}
+     * @return the grouping policy
      */
-    public boolean isDue(Date dueDate, int reminderCount, Date from, Date to) {
-        Template template = getTemplate(reminderCount);
-        Date nextDue;
-        if (template == null) {
-            nextDue = dueDate;
-        } else {
-            nextDue = getNextDueDate(dueDate, reminderCount);
-        }
-        if (from != null) {
-            from = DateRules.getDate(from); // remove time component
-        }
-        if (to != null) {
-            to = DateRules.getDate(to); // remove time component
-            to = DateRules.getDate(to, 1, DateUnits.DAYS); // add one day to get all reminders prior to this date
-        }
-        nextDue = DateRules.getDate(nextDue);
-
-        return (from == null || nextDue.getTime() >= from.getTime())
-               && (to == null || nextDue.getTime() < to.getTime());
-    }
-
-    /**
-     * Determines if the reminder can be grouped with other reminders in a single report.
-     *
-     * @return {@code true} if the reminder can be grouped, otherwise {@code false}
-     */
-    public boolean canGroup() {
-        return canGroup;
+    public GroupBy getGroupBy() {
+        return groupBy;
     }
 
     /**
@@ -311,21 +293,6 @@ public class ReminderType {
     }
 
     /**
-     * Returns the template for a reminder count
-     *
-     * @param reminderCount the reminder count
-     * @return the template relationship or {@code null} if none is found
-     */
-    private Template getTemplate(int reminderCount) {
-        for (Template template : templates) {
-            if (template.getReminderCount() == reminderCount) {
-                return template;
-            }
-        }
-        return null;
-    }
-
-    /**
      * Helper to return the date units for a particular node, or default units if none are present.
      *
      * @param bean         the bean
@@ -336,98 +303,6 @@ public class ReminderType {
     private static DateUnits getDateUnits(IMObjectBean bean, String node, DateUnits defaultUnits) {
         String units = bean.getString(node);
         return (!StringUtils.isEmpty(units)) ? DateUnits.valueOf(units) : defaultUnits;
-    }
-
-    /**
-     * Wrapper around an {@code entityRelationship.reminderTypeTemplate} to
-     * improve performance.
-     */
-    private static class Template {
-
-        /**
-         * The {@code entityRelationship.reminderTypeTemplate}.
-         */
-        private final EntityRelationship relationship;
-
-        /**
-         * The reminder count when this template should be used.
-         */
-        private final int reminderCount;
-
-        /**
-         * The date interval.
-         */
-        private final int interval;
-
-        /**
-         * The date interval units.
-         */
-        private final DateUnits units;
-
-        /**
-         * The entity.documentTemplate.
-         */
-        private final Entity documentTemplate;
-
-        /**
-         * Creates a new {@code Template}.
-         *
-         * @param relationship the relationship
-         * @param service      the archetype service
-         */
-        public Template(EntityRelationship relationship, Entity documentTemplate, IArchetypeService service) {
-            IMObjectBean templateBean = new IMObjectBean(relationship, service);
-            reminderCount = templateBean.getInt("reminderCount");
-            interval = templateBean.getInt("interval");
-            units = getDateUnits(templateBean, "units", DateUnits.DAYS);
-            this.relationship = relationship;
-            this.documentTemplate = documentTemplate;
-        }
-
-        /**
-         * Returns the {@code entityRelationship.reminderTypeTemplate}.
-         *
-         * @return the {@code entityRelationship.reminderTypeTemplate}
-         */
-        public EntityRelationship getRelationship() {
-            return relationship;
-        }
-
-        /**
-         * Returns the <em>entity.documentTemplate</em>.
-         *
-         * @return the <em>entity.documentTemplate</em>
-         */
-        public Entity getDocumentTemplate() {
-            return documentTemplate;
-        }
-
-        /**
-         * Returns the reminder count when this template should be used.
-         *
-         * @return the reminder count
-         */
-        public int getReminderCount() {
-            return reminderCount;
-        }
-
-        /**
-         * The date interval.
-         *
-         * @return the date interval
-         */
-        public int getInterval() {
-            return interval;
-        }
-
-        /**
-         * The date interval units.
-         *
-         * @return the date interval units
-         */
-        public DateUnits getUnits() {
-            return units;
-        }
     }
 
 }

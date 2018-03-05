@@ -13,7 +13,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <stylesheet>
@@ -710,6 +710,14 @@
         </properties>
     </style>
 
+    <style name="Appointment.OnlineBooking" type="nextapp.echo2.app.Label">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/computer.png"/>
+            </property>
+        </properties>
+    </style>
+
     <!--  Schedule table styles. -->
 
     <style name="ScheduleTable" base-name="default" type="nextapp.echo2.app.Table">
@@ -1202,6 +1210,22 @@
         </properties>
     </style>
 
+    <style name="ReminderGenerationDialog.Large" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${ReminderGenerationDialog.width}"/>
+            <property name="height" value="${ReminderGenerationDialog.large.height}"/>
+            <property name="resizable" value="true"/>
+        </properties>
+    </style>
+
+    <style name="ReminderGenerationDialog.Small" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${ReminderGenerationDialog.width}"/>
+            <property name="height" value="${ReminderGenerationDialog.small.height}"/>
+            <property name="resizable" value="true"/>
+        </properties>
+    </style>
+
     <style name="IMObjectViewerDialog" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
         <properties>
@@ -1364,7 +1388,7 @@
     <style name="ExportPrintDialog" base-name="PrintDialog"
            type="nextapp.echo2.app.WindowPane">
         <properties>
-            <property name="width" value="${dialog.medium.width}"/>
+            <property name="width" value="${ExportPrintDialog.width}"/>
             <property name="height" value="${dialog.small.height}"/>
         </properties>
     </style>
@@ -1833,6 +1857,19 @@
             <property name="icon" type="nextapp.echo2.app.HttpImageReference">
                 <http-image-reference url="../images/buttons/estimate.png"/>
             </property>
+        </properties>
+    </style>
+
+    <!-- =================================================================== -->
+    <!--  Remove Button                                                      -->
+    <!-- =================================================================== -->
+
+    <style name="button.remove" type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/${dialog.closeicon}"/>
+            </property>
+            <property name="insets" value="0px"/>
         </properties>
     </style>
 

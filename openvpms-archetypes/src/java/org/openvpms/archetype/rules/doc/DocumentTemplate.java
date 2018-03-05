@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.doc;
@@ -21,7 +21,6 @@ import org.apache.commons.collections.functors.AndPredicate;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -29,6 +28,7 @@ import org.openvpms.component.business.service.archetype.functor.IsActiveRelatio
 import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.object.IMObject;
 
 import javax.print.attribute.Size2DSyntax;
 import javax.print.attribute.standard.MediaSize;
@@ -106,6 +106,15 @@ public class DocumentTemplate {
      */
     private final IArchetypeService service;
 
+    /**
+     * Cached email template.
+     */
+    private Entity email;
+
+    /**
+     * Cached SMS template.
+     */
+    private Entity sms;
 
     /**
      * Constructs a {@link DocumentTemplate}.
@@ -391,7 +400,10 @@ public class DocumentTemplate {
      * @return the email template. May be {@code null}
      */
     public Entity getEmailTemplate() {
-        return bean.getNodeTargetEntity("email");
+        if (email == null) {
+            email = bean.getNodeTargetEntity("email");
+        }
+        return email;
     }
 
     /**
@@ -400,25 +412,10 @@ public class DocumentTemplate {
      * @return the SMS template. May be {@code null}
      */
     public Entity getSMSTemplate() {
-        return bean.getNodeTargetEntity("sms");
-    }
-
-    /**
-     * Returns the text to use when the template is sent via SMS.
-     *
-     * @return the SMS text. May be {@code null}
-     */
-    public String getSMS() {
-        return bean.getString("sms");
-    }
-
-    /**
-     * Sets the text to use when the the template is sent via SMS.
-     *
-     * @param text the text. May be {@code null}
-     */
-    public void setSMS(String text) {
-        bean.setValue("sms", text);
+        if (sms == null) {
+            sms = bean.getNodeTargetEntity("sms");
+        }
+        return sms;
     }
 
     /**

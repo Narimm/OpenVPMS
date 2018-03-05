@@ -16,21 +16,42 @@
 
 package org.openvpms.web.workspace.patient.mr;
 
+import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.event.ActionEvent;
+import nextapp.echo2.app.event.WindowPaneEvent;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.prescription.PrescriptionRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.system.common.cache.IMObjectCache;
+import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.EditDialogFactory;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.ComponentGrid;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.layout.PrintObjectLayoutStrategy;
+import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.ReadOnlyComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.ReadOnlyProperty;
+import org.openvpms.web.echo.button.ButtonSet;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.text.TextArea;
+import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 
@@ -56,6 +77,16 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
      * If so, then the quantity and label node should be displayed read-only.
      */
     private boolean prescription = false;
+
+    /**
+     * The prescriptions. If non-null, any prescription created via the medication will be added.
+     */
+    private Prescriptions prescriptions;
+
+    /**
+     * Button to create new prescriptions from the medication.
+     */
+    private Button newPrescription;
 
     /**
      * Factory for read-only components.
@@ -106,8 +137,17 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
     }
 
     /**
+     * Registers the prescriptions.
+     *
+     * @param prescriptions the prescriptions. May be {@code null}
+     */
+    public void setPrescriptions(Prescriptions prescriptions) {
+        this.prescriptions = prescriptions;
+    }
+
+    /**
      * Apply the layout strategy.
-     * <p/>
+     * <p>
      * This renders an object in a {@code Component}, using a factory to create the child components.
      *
      * @param object     the object to apply
@@ -117,8 +157,16 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
      * @return the component containing the rendered {@code object}
      */
     @Override
-    public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
+    public ComponentState apply(final IMObject object, PropertySet properties, IMObject parent,
+                                final LayoutContext context) {
         ComponentState result;
+
+        newPrescription = ButtonFactory.create("button.newprescription", new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                onNewPrescription((Act) object, context);
+            }
+        });
 
         ArchetypeNodes nodes = new ArchetypeNodes().exclude(LABEL);
         if (!showProduct) {
@@ -185,6 +233,19 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
     }
 
     /**
+     * Adds the print button.
+     * <p>
+     * This implementation also adds a New Prescription button.
+     *
+     * @param set the button set
+     */
+    @Override
+    protected void addButton(ButtonSet set) {
+        super.addButton(set);
+        set.add(newPrescription);
+    }
+
+    /**
      * Helper to return a read-only component. This uses an {@link ReadOnlyComponentFactory} rather than the default
      * factory as it renders differently (fields aren't greyed out).
      *
@@ -198,6 +259,71 @@ public class PatientMedicationActLayoutStrategy extends PrintObjectLayoutStrateg
             factory = new ReadOnlyComponentFactory(context);
         }
         return factory.create(property, parent);
+    }
+
+    /**
+     * Invoked to create a new prescription.
+     *
+     * @param medication the medication act
+     * @param context    the layout context
+     */
+    private void onNewPrescription(Act medication, final LayoutContext context) {
+        final ActBean bean = new ActBean(medication);
+        PrescriptionRules rules = ServiceHelper.getBean(PrescriptionRules.class);
+        IMObjectCache cache = context.getCache();
+        final Product product = (Product) cache.get(bean.getNodeParticipantRef("product"));
+        final Party patient = (Party) cache.get(bean.getNodeParticipantRef("patient"));
+        if (product != null && patient != null) {
+            Act existing = rules.getPrescription(patient, product);
+            if (existing != null) {
+                int repeats = rules.getRemainingRepeats(existing);
+                String title = Messages.get("patient.prescription.existing.title");
+                String message = Messages.format("patient.prescription.existing.message", product.getName(), repeats);
+                ConfirmationDialog.show(title, message, ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                    @Override
+                    public void onYes() {
+                        createPrescription(bean, patient, product, context);
+                    }
+                });
+            } else {
+                createPrescription(bean, patient, product, context);
+            }
+        }
+    }
+
+    /**
+     * Creates a new prescription.
+     *
+     * @param medication the medication to copy from
+     * @param patient    the patient
+     * @param product    the product
+     * @param context    the context
+     */
+    private void createPrescription(ActBean medication, Party patient, Product product, LayoutContext context) {
+        final Act prescription = (Act) IMObjectCreator.create(PatientArchetypes.PRESCRIPTION);
+        if (prescription != null) {
+            ActBean bean = new ActBean(prescription);
+            bean.setNodeParticipant("patient", patient);
+            bean.setNodeParticipant("product", product);
+            bean.setValue("quantity", medication.getValue("quantity"));
+            bean.setValue("label", medication.getValue("label"));
+            bean.setNodeParticipant("clinician", context.getContext().getClinician());
+            IMObjectEditorFactory factory = ServiceHelper.getBean(IMObjectEditorFactory.class);
+            final IMObjectEditor editor = factory.create(
+                    prescription, null, new DefaultLayoutContext(context.getContext(), context.getHelpContext()));
+            EditDialog dialog = EditDialogFactory.create(editor, context.getContext());
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onClose(WindowPaneEvent event) {
+                    if (prescriptions != null && editor.isSaved()) {
+                        // register the prescription so that it is availble for invoicing
+                        prescriptions.add(prescription);
+                    }
+                    super.onClose(event);
+                }
+            });
+            dialog.show();
+        }
     }
 
 }

@@ -67,7 +67,7 @@ class CustomerMergeWorkflow extends MergeWorkflow<Party> {
 
         // exclude the customer being merged from the search
         query.setConstraints(Constraints.not(new ObjectRefConstraint("customer", customer.getObjectReference())));
-        return new SelectIMObjectTask<Party>(query, getHelpContext().topic("customer"));
+        return new SelectIMObjectTask<>(query, getHelpContext().topic("customer"));
     }
 
     /**

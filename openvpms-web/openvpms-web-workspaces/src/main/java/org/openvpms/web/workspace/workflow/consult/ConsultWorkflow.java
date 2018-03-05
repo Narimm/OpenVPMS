@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.consult;
@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
@@ -110,15 +111,21 @@ public class ConsultWorkflow extends WorkflowImpl {
      * @return a new context
      */
     protected TaskContext createContext(Act act, Context external, HelpContext help) {
-        if (external.getPractice() == null) {
+        Party practice = external.getPractice();
+        if (practice == null) {
             throw new IllegalStateException("Context has no practice");
         }
         ActBean bean = new ActBean(act);
         Party customer = (Party) bean.getNodeParticipant("customer");
         Party patient = (Party) bean.getNodeParticipant("patient");
-        User clinician = (User) bean.getNodeParticipant("clinician");
-        if (clinician == null) {
-            clinician = external.getClinician();
+        User clinician;
+        if (UserHelper.useLoggedInClinician(external)) {
+            clinician = external.getUser();
+        } else {
+            clinician = (User) bean.getNodeParticipant("clinician");
+            if (clinician == null) {
+                clinician = external.getClinician();
+            }
         }
 
         TaskContext context = new DefaultTaskContext(help);
@@ -126,7 +133,7 @@ public class ConsultWorkflow extends WorkflowImpl {
         context.setPatient(patient);
         context.setClinician(clinician);
         context.setUser(external.getUser());
-        context.setPractice(external.getPractice());
+        context.setPractice(practice);
         context.setLocation(external.getLocation());
         context.addObject(act);
         return context;
@@ -191,10 +198,10 @@ public class ConsultWorkflow extends WorkflowImpl {
     /**
      * Creates a task to update the appointment/task act status to {@code IN_PROGRESS} if it is not {@code IN_PROGRESS},
      * {@code BILLED} or {@code COMPLETED}.
-     * <p/>
+     * <p>
      * if  the act has no clinician, and {@code setClinician == true} and there is a clinician in the context, this
      * will be used to update the act.
-     * <p/>
+     * <p>
      * For task acts, this also sets the "arrivalTime" node to the current time.
      *
      * @param act the appointment or task act

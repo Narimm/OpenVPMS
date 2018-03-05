@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.messaging;
@@ -25,8 +25,8 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.workspace.BrowserCRUDWorkspace;
 import org.openvpms.web.component.workspace.CRUDWindow;
+import org.openvpms.web.component.workspace.QueryBrowserCRUDWorkspace;
 
 
 /**
@@ -34,7 +34,7 @@ import org.openvpms.web.component.workspace.CRUDWindow;
  *
  * @author Tim Anderson
  */
-public class MessagingWorkspace extends BrowserCRUDWorkspace<User, Act> {
+public class MessagingWorkspace extends QueryBrowserCRUDWorkspace<User, Act> {
 
     /**
      * Constructs a {@link MessagingWorkspace}.

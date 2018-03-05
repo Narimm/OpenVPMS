@@ -11,14 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
 import org.junit.Test;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.workflow.MessageArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -46,14 +48,13 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 import org.openvpms.web.workspace.admin.hl7.PharmacyGroupEditor;
-import org.openvpms.web.workspace.admin.lookup.AlertTypeEditor;
 import org.openvpms.web.workspace.admin.lookup.CurrencyEditor;
+import org.openvpms.web.workspace.admin.lookup.CustomerAlertTypeEditor;
 import org.openvpms.web.workspace.admin.lookup.LookupEditor;
 import org.openvpms.web.workspace.admin.lookup.MacroEditor;
 import org.openvpms.web.workspace.admin.lookup.SpeciesLookupEditor;
 import org.openvpms.web.workspace.admin.lookup.SuburbLookupEditor;
 import org.openvpms.web.workspace.admin.template.DocumentTemplatePrinterEditor;
-import org.openvpms.web.workspace.admin.type.ReminderTypeTemplateEditor;
 import org.openvpms.web.workspace.customer.CustomerEditor;
 import org.openvpms.web.workspace.customer.PatientOwnerRelationshipEditor;
 import org.openvpms.web.workspace.customer.account.AdjustmentActEditor;
@@ -135,9 +136,6 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
                     break;
                 case "entityRelationship.productReminder":
                     checkCreate(shortName, ProductReminderRelationshipEditor.class);
-                    break;
-                case "entityRelationship.reminderTypeTemplate":
-                    checkCreate(shortName, ReminderTypeTemplateEditor.class);
                     break;
                 case "entityRelationship.scheduleDocumentTemplate":
                 case "entityRelationship.worklistDocumentTemplate":
@@ -266,36 +264,22 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     @Test
     public void testCreatePaymentItemEditor() {
-        checkCreate("act.customerAccountPaymentCash",
-                    PaymentItemEditor.class);
-        checkCreate("act.customerAccountPaymentCheque",
-                    PaymentItemEditor.class);
-        checkCreate("act.customerAccountPaymentCredit",
-                    PaymentItemEditor.class);
-        checkCreate("act.customerAccountPaymentEFT",
-                    PaymentItemEditor.class);
-        checkCreate("act.customerAccountRefundCash",
-                    PaymentItemEditor.class);
-        checkCreate("act.customerAccountRefundCredit",
-                    PaymentItemEditor.class);
-        checkCreate("act.customerAccountRefundEFT",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountPaymentCash",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountPaymentCheque",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountPaymentCredit",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountPaymentEFT",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundCash",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundCheque",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundCredit",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundEFT",
-                    PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.PAYMENT_CASH, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.PAYMENT_CHEQUE, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.PAYMENT_CREDIT, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.PAYMENT_EFT, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.REFUND_CASH, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.REFUND_CHEQUE, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.REFUND_CREDIT, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.REFUND_EFT, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.PAYMENT_CASH, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.PAYMENT_CHEQUE, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.PAYMENT_CREDIT, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.PAYMENT_EFT, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.REFUND_CASH, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.REFUND_CHEQUE, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.REFUND_CREDIT, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.REFUND_EFT, PaymentItemEditor.class);
     }
 
     /**
@@ -503,14 +487,11 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that a {@link AlertTypeEditor} is created for <em>lookup.customerAlertType</em> and
-     * <em>lookup.patientAlertType</em>.
+     * Verifies that a {@link CustomerAlertTypeEditor} is created for <em>lookup.customerAlertType</em>
      */
     @Test
     public void testCreateAlertTypeEditor() {
-        checkCreate("lookup.customerAlertType", AlertTypeEditor.class);
-        checkCreate("lookup.patientAlertType", AlertTypeEditor.class);
-
+        checkCreate("lookup.customerAlertType", CustomerAlertTypeEditor.class);
     }
 
     /**

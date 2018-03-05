@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -44,7 +44,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.bound.BoundProperty;
 import org.openvpms.web.component.edit.Editor;
@@ -86,6 +86,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
 import org.openvpms.web.workspace.patient.PatientIdentityEditor;
+import org.openvpms.web.workspace.patient.mr.PatientAlertEditor;
 import org.openvpms.web.workspace.patient.mr.PatientInvestigationActEditor;
 import org.openvpms.web.workspace.patient.mr.PatientMedicationActEditor;
 import org.openvpms.web.workspace.patient.mr.PrescriptionMedicationActEditor;
@@ -122,7 +123,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * The product participation editor.
-     * <p/>
+     * <p>
      * This needs to be created outside of the automatic layout, in order to ensure events
      * aren't lost when the layout changes.
      */
@@ -142,6 +143,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * Reminders act editor. May be {@code null}
      */
     private ActRelationshipCollectionEditor reminders;
+
+    /**
+     * Alerts act editor. May be {@code null}
+     */
+    private ActRelationshipCollectionEditor alerts;
 
     /**
      * Listener for changes to the quantity.
@@ -214,6 +220,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private static final String REMINDERS = "reminders";
 
     /**
+     * Alerts node name.
+     */
+    private static final String ALERTS = "alerts";
+
+    /**
      * Returned quantity node name.
      */
     private static final String RETURNED_QUANTITY = "returnedQuantity";
@@ -263,12 +274,12 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      */
     private static final ArchetypeNodes TEMPLATE_NODES = new ArchetypeNodes().exclude(
             QUANTITY, FIXED_PRICE, UNIT_PRICE, DISCOUNT, CLINICIAN, TOTAL, DISPENSING, INVESTIGATIONS,
-            REMINDERS, "batch");
+            REMINDERS, ALERTS, "batch");
 
 
     /**
      * Constructs a {@link CustomerChargeActItemEditor}.
-     * <p/>
+     * <p>
      * This recalculates the tax amount.
      *
      * @param act           the act to edit
@@ -294,6 +305,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         dispensing = createDispensingCollectionEditor();
         investigations = createCollectionEditor(INVESTIGATIONS, act);
         reminders = createCollectionEditor(REMINDERS, act);
+        alerts = createAlertsCollectionEditor();
 
         quantityListener = new ModifiableListener() {
             public void modified(Modifiable modifiable) {
@@ -321,6 +333,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         }
         if (reminders != null) {
             reminders.getEditor().setRemoveHandler(saveContext);
+        }
+        if (alerts != null) {
+            alerts.getEditor().setRemoveHandler(saveContext);
         }
 
         sellingUnits = LabelFactory.create();
@@ -595,7 +610,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Notifies the editor that the product has been ordered via a pharmacy.
-     * <p/>
+     * <p>
      * This refreshes the display to make the patient and product read-only, and display the received and returned
      * nodes if required.
      */
@@ -629,7 +644,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Updates the discount and checks that it isn't less than the total cost.
-     * <p/>
+     * <p>
      * If so, gives the user the opportunity to remove the discount.
      *
      * @return {@code true} if the discount was updated
@@ -673,10 +688,10 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Save any edits.
-     * <p/>
+     * <p>
      * This implementation saves the current object before children, to ensure deletion of child acts
      * don't result in StaleObjectStateException exceptions.
-     * <p/>
+     * <p>
      * This implementation will throw an exception if the product is an <em>product.template</em>.
      * Ideally, the act would be flagged invalid if this is the case, but template expansion only works for valid
      * acts. TODO
@@ -701,7 +716,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Saves the object.
-     * <p/>
+     * <p>
      * For invoice items, this implementation also creates/deletes document acts related to the document templates
      * associated with the product, using {@link ChargeItemDocumentLinker}.
      *
@@ -748,7 +763,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     @Override
     protected boolean disposeOnChangeLayout(Editor editor) {
         return editor != productCollectionEditor && editor != dispensing && editor != investigations
-               && editor != reminders;
+               && editor != reminders && editor != alerts;
     }
 
     /**
@@ -777,6 +792,12 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             });
         }
         updateBatch(getProduct(), getStockLocationRef());
+
+        Prescriptions prescriptions = getPrescriptions();
+        PatientMedicationActEditor medicationEditor = getMedicationActEditor();
+        if (prescriptions != null && medicationEditor != null) {
+            medicationEditor.setPrescriptions(prescriptions);
+        }
     }
 
     /**
@@ -857,9 +878,17 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             log.debug("productModified: " + debugString(true, fixedProductPrice, unitProductPrice));
         }
 
+        getProperty(FIXED_PRICE).addModifiableListener(discountListener);
+        getProperty(QUANTITY).addModifiableListener(discountListener);
+        getProperty(UNIT_PRICE).addModifiableListener(discountListener);
+        getProperty(TOTAL).addModifiableListener(totalListener);
+
         updatePatientMedication(product);
+        // NOTE this can update the quantity, if the product is dispensed from a prescription
+
         updateInvestigations(product);
         updateReminders(product);
+        updateAlerts(product);
         updateOnHandQuantity();
         if (product != null) {
             addPatientIdentity(product);
@@ -877,10 +906,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         updateLayout(product, showPrint, false);
 
         notifyProductListener(product);
-        getProperty(FIXED_PRICE).addModifiableListener(discountListener);
-        getProperty(QUANTITY).addModifiableListener(discountListener);
-        getProperty(UNIT_PRICE).addModifiableListener(discountListener);
-        getProperty(TOTAL).addModifiableListener(totalListener);
     }
 
     /**
@@ -951,7 +976,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             editor.setStartTime(parent.getActivityStartTime());
         }
         for (ReminderEditor editor : getReminderEditors()) {
-            editor.setStartTime(parent.getActivityStartTime());
+            // the reminder due date is mapped to the startTime node, for performance reasons.
+            // The due date is calculated relative to the createdTime node (TODO)
+            editor.setCreatedTime(parent.getActivityStartTime());
         }
         if (dispensing != null) {
             dispensing.refresh();
@@ -962,17 +989,20 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         if (reminders != null) {
             reminders.refresh();
         }
+        if (alerts != null) {
+            alerts.refresh();
+        }
     }
 
     /**
      * Invoked when the product changes to update patient medications.
-     * <p/>
+     * <p>
      * If the new product is a medication and there is:
      * <ul>
      * <li>an existing act, the existing act will be updated.
      * <li>no existing act, a new medication will be created
      * </ul>
-     * <p/>
+     * <p>
      * If the product is null, any existing act will be removed
      *
      * @param product the product. May be {@code null}
@@ -1074,7 +1104,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         boolean dispensingLabel = hasDispensingLabel(product);
         IMObjectEditor editor = createEditor(act, dispensing);
         if (editor instanceof PatientMedicationActEditor) {
-            ((PatientMedicationActEditor) editor).setQuantity(quantity);
+            PatientMedicationActEditor medicationEditor = (PatientMedicationActEditor) editor;
+            medicationEditor.setQuantity(quantity);
+            medicationEditor.setPrescriptions(getPrescriptions());
         }
         dispensing.addEdited(editor);
         if (dispensingLabel) {
@@ -1085,7 +1117,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Invoked when the product changes to update investigation acts.
-     * <p/>
+     * <p>
      * This removes any existing investigations, and creates new ones, if required.
      *
      * @param product the product. May be {@code null}
@@ -1118,7 +1150,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Invoked when the product changes, to update reminders acts.
-     * <p/>
+     * <p>
      * This removes any existing reminders, and creates new ones, if required.
      *
      * @param product the product. May be {@code null}
@@ -1139,7 +1171,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                         if (editor instanceof ReminderEditor) {
                             ReminderEditor reminder = (ReminderEditor) editor;
                             Date startTime = getStartTime();
-                            reminder.setStartTime(startTime);
+                            reminder.setCreatedTime(startTime);
                             reminder.setReminderType(reminderType);
                             reminder.setPatient(getPatient());
                             reminder.setProduct(product);
@@ -1158,6 +1190,55 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                         if (interactive) {
                             // queue editing of the act
                             queuePatientActEditor(editor, true, false, reminders);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Invoked when the product changes, to update alert acts.
+     * <p>
+     * This removes any existing alerts, and creates new ones, if required.
+     *
+     * @param product the product. May be {@code null}
+     */
+    private void updateAlerts(Product product) {
+        Alerts allAlerts = getEditContext().getAlerts();
+        if (alerts != null) {
+            for (Act act : alerts.getCurrentActs()) {
+                alerts.remove(act);
+                allAlerts.remove(act);
+            }
+            if (product != null) {
+                List<Entity> alertTypes = allAlerts.getAlertTypes(product);
+                for (Entity alertType : alertTypes) {
+                    Party patient = getPatient();
+                    if (patient != null && !allAlerts.hasAlert(patient, alertType)) {
+                        Act act = (Act) alerts.create();
+                        if (act != null) {
+                            IMObjectEditor editor = createEditor(act, alerts);
+                            if (editor instanceof PatientAlertEditor) {
+                                PatientAlertEditor alert = (PatientAlertEditor) editor;
+                                alert.getComponent();
+                                Date startTime = getStartTime();
+                                alert.setStartTime(startTime);
+                                alert.setPatient(patient);
+                                alert.setAlertType(alertType);
+                                alert.setProduct(product);
+
+                                // marking matching alerts completed are handled via CustomerChargeActEditor.
+                                // Need to disable it here to avoid the rule updating other alerts in the invoice.
+                                alert.setMarkMatchingAlertsCompleted(false);
+                            }
+                            alerts.addEdited(editor);
+                            IMObjectBean bean = new IMObjectBean(alertType);
+                            boolean interactive = bean.getBoolean("interactive");
+                            if (interactive) {
+                                // queue editing of the act
+                                queuePatientActEditor(editor, true, false, alerts);
+                            }
                         }
                     }
                 }
@@ -1264,7 +1345,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Helper to return the investigation types for a product.
-     * <p/>
+     * <p>
      * If there are multiple investigation types, these will be sorted on name.
      *
      * @param product the product
@@ -1284,7 +1365,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Queues an editor for display in a popup dialog.
      * Use this when there may be multiple editors requiring display.
-     * <p/>
+     * <p>
      * NOTE: all objects should be added to the collection prior to them being edited. If they are skipped,
      * they will subsequently be removed. This is necessary as the layout excludes nodes based on elements being
      * present.
@@ -1553,7 +1634,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Initialises the stock location if one isn't present and there is a medication or merchandise product.
-     * <p/>
+     * <p>
      * This is required due to a bug where charge quantities of zero would remove the stock location relationship,
      * and prevent subsequent quantity changes would not be reflected in the stock.
      *
@@ -1591,7 +1672,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Adds a patient identity for a product, if one is configured.
-     * <p/>
+     * <p>
      * Only one identity will be added, i.e. the quantity is ignored.
      *
      * @param product the product
@@ -1629,13 +1710,14 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Returns a node filter for the specified product reference.
-     * <p/>
+     * <p>
      * This excludes:
      * <ul>
      * <li>the dispensing node if the product isn't a <em>product.medication</em>
      * <li>the investigations node if the product isn't a <em>product.medication</em>, <em>product.merchandise</em>,
      * or <em>product.service</em>
      * <li>the reminders node is excluded if there are no reminders present.
+     * <li>the alerts node is excluded if there are no alerts present.
      * <li>the discount node, if discounts are disabled</li>
      * </ul>
      *
@@ -1652,6 +1734,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             filter.add(DISPENSING);
             filter.add(INVESTIGATIONS);
             filter.add(REMINDERS);
+            filter.add(ALERTS);
             if (disableDiscounts()) {
                 filter.add(DISCOUNT);
             }
@@ -1662,8 +1745,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             if (medication || TypeHelper.isA(product, MERCHANDISE, SERVICE)) {
                 filter.remove(INVESTIGATIONS);
             }
-            if (reminders != null && reminders.getCollection().size() > 0) {
+            if (reminders != null && !reminders.getCollection().isEmpty()) {
                 filter.remove(REMINDERS);
+            }
+            if (alerts != null && alerts.getCollection().isEmpty()) {
+                filter.remove(ALERTS);
             }
             if (!filter.isEmpty()) {
                 result = new ArchetypeNodes().exclude(filter);
@@ -1722,7 +1808,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Helper to create a collection editor for an act relationship node, if the node exists.
-     * <p/>
+     * <p>
      * The returned editor is configured to not exclude default value objects.
      *
      * @param name the collection node name
@@ -1750,7 +1836,25 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         DispensingActRelationshipCollectionEditor editor = null;
         CollectionProperty collection = (CollectionProperty) getProperty("dispensing");
         if (collection != null && !collection.isHidden()) {
-            editor = new DispensingActRelationshipCollectionEditor(collection, getObject(), getLayoutContext());
+            editor = new DispensingActRelationshipCollectionEditor(collection, getObject(),
+                                                                   new DefaultLayoutContext(getLayoutContext()));
+            getEditors().add(editor);
+        }
+        return editor;
+    }
+
+    /**
+     * Creates an editor for the "alerts" node.
+     *
+     * @return a new editor
+     */
+    private ActRelationshipCollectionEditor createAlertsCollectionEditor() {
+        AlertActRelationshipCollectionEditor editor = null;
+        CollectionProperty collection = (CollectionProperty) getProperty(ALERTS);
+        if (collection != null && !collection.isHidden()) {
+            editor = new AlertActRelationshipCollectionEditor(collection, getObject(),
+                                                              new DefaultLayoutContext(getLayoutContext()));
+            editor.setAlerts(getEditContext().getAlerts());
             getEditors().add(editor);
         }
         return editor;
@@ -1795,7 +1899,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
         /**
          * Apply the layout strategy.
-         * <p/>
+         * <p>
          * This renders an object in a {@code Component}, using a factory to create the child components.
          *
          * @param object     the object to apply
@@ -1821,6 +1925,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             }
             if (reminders != null) {
                 addComponent(new ComponentState(reminders));
+            }
+            if (alerts != null) {
+                addComponent(new ComponentState(alerts));
             }
             if (isOrdered()) {
                 // the item has been ordered via an HL7 service, the patient cannot be changed

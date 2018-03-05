@@ -11,22 +11,22 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.system.common.cache;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.Map;
 
 
 /**
  * Abstract implementation of the {@link IMObjectCache} interface.
- * <p/>
+ * <p>
  * Note that this implementation excludes {@link Document} instances which may be too large to cache for long periods.
  *
  * @author Tim Anderson
@@ -36,7 +36,7 @@ public abstract class AbstractIMObjectCache implements IMObjectCache {
     /**
      * The cache.
      */
-    private final Map<IMObjectReference, IMObject> cache;
+    private final Map<Reference, IMObject> cache;
 
     /**
      * The archetype service. May be {@code null}
@@ -49,7 +49,7 @@ public abstract class AbstractIMObjectCache implements IMObjectCache {
      * @param cache   the cache
      * @param service the archetype service. If non-null, non-cached objects may retrieved
      */
-    protected AbstractIMObjectCache(Map<IMObjectReference, IMObject> cache, IArchetypeService service) {
+    protected AbstractIMObjectCache(Map<Reference, IMObject> cache, IArchetypeService service) {
         this.cache = cache;
         this.service = service;
     }
@@ -74,13 +74,13 @@ public abstract class AbstractIMObjectCache implements IMObjectCache {
 
     /**
      * Returns an object given its reference.
-     * <p/>
+     * <p>
      * If the object isn't cached, it will be retrieved from the archetype service and added to the cache if it exists.
      *
      * @param reference the object reference. May be {@code null}
      * @return the object corresponding to {@code reference} or {@code null} if none exists
      */
-    public IMObject get(IMObjectReference reference) {
+    public IMObject get(Reference reference) {
         IMObject result = null;
         if (reference != null) {
             result = cache.get(reference);
@@ -101,7 +101,7 @@ public abstract class AbstractIMObjectCache implements IMObjectCache {
      * @return {@code true} if the object is cached
      */
     @Override
-    public boolean exists(IMObjectReference reference) {
+    public boolean exists(Reference reference) {
         return reference != null && cache.containsKey(reference);
     }
 

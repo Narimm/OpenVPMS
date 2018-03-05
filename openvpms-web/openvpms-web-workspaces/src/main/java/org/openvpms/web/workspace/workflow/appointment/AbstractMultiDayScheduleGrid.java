@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -21,6 +21,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -56,10 +57,11 @@ public abstract class AbstractMultiDayScheduleGrid extends AbstractScheduleEvent
      * @param date         the date
      * @param days         the number of days to display
      * @param events       the events
+     * @param rules        the appointment rules
      */
     public AbstractMultiDayScheduleGrid(Entity scheduleView, Date date, int days,
-                                        Map<Entity, List<PropertySet>> events) {
-        super(scheduleView, date, DateRules.getDate(date, days - 1, DateUnits.DAYS));
+                                        Map<Entity, List<PropertySet>> events, AppointmentRules rules) {
+        super(scheduleView, date, DateRules.getDate(date, days - 1, DateUnits.DAYS), rules);
         this.days = days;
         setEvents(events);
     }
@@ -195,7 +197,7 @@ public abstract class AbstractMultiDayScheduleGrid extends AbstractScheduleEvent
         for (Entity entity : events.keySet()) {
             IMObjectBean bean = new IMObjectBean(entity);
             Entity cageType = (Entity) cageTypes.get(bean.getNodeTargetObjectRef("cageType"));
-            Schedule schedule = new Schedule(entity, cageType, 0, 24 * 60, 24 * 60);
+            Schedule schedule = new Schedule(entity, cageType, 0, 24 * 60, 24 * 60, getAppointmentRules());
             if (!ObjectUtils.equals(last, entity)) {
                 index++;
             }
@@ -258,7 +260,7 @@ public abstract class AbstractMultiDayScheduleGrid extends AbstractScheduleEvent
         }
         if (!found) {
             // event intersects an existing one, so create a new Schedule. Any blocking event will be shared.
-            column = new Schedule(match);
+            column = new Schedule(match, getAppointmentRules());
             columns.add(index + 1, column);
         }
         column.addEvent(event);

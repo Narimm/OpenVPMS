@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.communication;
@@ -29,7 +29,6 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.doc.HtmlToTextFormatter;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Arrays;
 
@@ -72,6 +71,7 @@ public class CommunicationLogger {
      *
      * @param customer    the customer
      * @param patient     the patient. May be {@code null}
+     * @param from        the from address
      * @param to          the to addresses. May be {@code null}
      * @param cc          the CC addresses. May be {@code null}
      * @param bcc         the BCC addresses. May be {@code null}
@@ -82,14 +82,16 @@ public class CommunicationLogger {
      * @param attachments the attachments. May be {@code null}
      * @param location    the practice location where the communication took place. May be {@code null}
      */
-    public void logEmail(Party customer, Party patient, String[] to, String[] cc, String[] bcc, String subject,
-                         String reason, String message, String note, String attachments, Party location) {
+    public void logEmail(Party customer, Party patient, String from, String[] to, String[] cc, String[] bcc,
+                         String subject, String reason, String message, String note, String attachments,
+                         Party location) {
         if (message != null) {
             HtmlToTextFormatter formatter = new HtmlToTextFormatter();
             message = formatter.format(message);
         }
         ActBean bean = createLog(CommunicationArchetypes.EMAIL, customer, patient, getAddresses(to), subject, reason,
                                  note, location);
+        setValue(bean, "from", from);
         bean.setValue("cc", getAddresses(cc));
         bean.setValue("bcc", getAddresses(bcc));
         setValue(bean, "attachments", attachments);
@@ -195,14 +197,7 @@ public class CommunicationLogger {
      */
     protected ActBean createLog(String shortName, Party customer, Party patient, String address, String subject,
                                 String reason, String note, Party location) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        User author = null;
-        if (principal instanceof User) {
-            author = (User) principal;
-        } else if (principal instanceof UserDetails) {
-            String name = ((UserDetails) principal).getUsername();
-            author = rules.getUser(name);
-        }
+        User author = rules.getUser(SecurityContextHolder.getContext().getAuthentication());
         return createLog(shortName, customer, patient, author, address, subject, reason, note, location);
     }
 
@@ -245,7 +240,7 @@ public class CommunicationLogger {
         String result = null;
         if (addresses != null) {
             result = StringUtils.join(addresses, "\n");
-            result = truncate(result, 5000);
+            result = StringUtils.abbreviate(result, 5000);
         }
         return result;
     }
@@ -259,23 +254,8 @@ public class CommunicationLogger {
      */
     protected void setValue(ActBean bean, String name, String value) {
         if (!StringUtils.isEmpty(value)) {
-            bean.setValue(name, truncate(value, getLength(bean, name)));
+            bean.setValue(name, StringUtils.abbreviate(value, getLength(bean, name)));
         }
-    }
-
-    /**
-     * Truncates a string if it exceeds the specified length.
-     *
-     * @param value  the value to truncate
-     * @param length the maximum length
-     * @return the truncated string
-     */
-    private String truncate(String value, int length) {
-        if (value.length() > length) {
-            value = value.substring(0, length - 3);
-            value += "...";
-        }
-        return value;
     }
 
     /**

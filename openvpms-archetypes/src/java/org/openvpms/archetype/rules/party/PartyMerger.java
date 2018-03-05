@@ -11,20 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -33,6 +32,9 @@ import org.openvpms.component.business.service.archetype.helper.DefaultIMObjectC
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.PeriodRelationship;
+import org.openvpms.component.model.object.Relationship;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ObjectRefNodeConstraint;
 
@@ -78,17 +80,17 @@ public abstract class PartyMerger {
     public PartyMerger(String type, IArchetypeService service) {
         this.type = type;
         this.service = service;
-        relationshipCopier = new IMObjectCopier(new EntityRelationshipCopyHandler(), service);
+        relationshipCopier = new IMObjectCopier(new IMObjectRelationshipCopyHandler(), service);
         contactCopier = new IMObjectCopier(new ContactCopyHandler(), service);
     }
 
     /**
      * Merges one {@link Party} with another.
-     * <p/>
+     * <p>
      * On completion, the 'to' party will contain all of the 'from' party's contacts, identities, classifications and
      * relationships, any act participations will be changed to reference the 'to'
      * party. The 'from' party will be deleted.
-     * <p/>
+     * <p>
      * This operation should be invoked within a transaction.
      *
      * @param from the party to merge from
@@ -109,7 +111,7 @@ public abstract class PartyMerger {
 
     /**
      * Merges one {@link Party} with another.
-     * <p/>
+     * <p>
      * On completion, the 'to' party will contain all of the 'from' party's contacts, identities, classifications and
      * relationships, any act participations will be changed to reference the 'to'
      * party.
@@ -122,6 +124,7 @@ public abstract class PartyMerger {
         copyContacts(from, to);
         copyClassifications(from, to);
         copyEntityRelationships(from, to);
+        copyEntityLinks(from, to);
         copyIdentities(from, to);
 
         List<IMObject> participations = moveParticipations(from, to);
@@ -129,10 +132,10 @@ public abstract class PartyMerger {
         merged.add(to);
         merged.addAll(participations);
 
-        for (EntityRelationship relationship : from.getEntityRelationships()) {
-            Entity other = getRelated(from, to, relationship);
+        for (Relationship relationship : from.getEntityRelationships()) {
+            Entity other = getRelated(from, to, (EntityRelationship) relationship);
             if (other != null) {
-                other.removeEntityRelationship(relationship);
+                other.removeEntityRelationship((EntityRelationship) relationship);
                 merged.add(other);
             }
         }
@@ -175,10 +178,27 @@ public abstract class PartyMerger {
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected void copyEntityRelationships(Party from, Party to) {
-        for (EntityRelationship relationship : from.getEntityRelationships()) {
-            EntityRelationship copy = copyEntityRelationship(relationship, from, to);
-            if (!exists(copy, to)) {
+        for (Relationship relationship : from.getEntityRelationships()) {
+            EntityRelationship copy = copyEntityRelationship((EntityRelationship) relationship, from, to);
+            if (!exists(copy, to.getEntityRelationships())) {
                 to.addEntityRelationship(copy);
+            }
+        }
+    }
+
+    /**
+     * Copies entity links from one party to another, excluding any link which would duplicate an existing
+     * relationship in the 'to' party.
+     *
+     * @param from the party to copy from
+     * @param to   the party to copy to
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected void copyEntityLinks(Party from, Party to) {
+        for (Relationship relationship : from.getEntityLinks()) {
+            EntityLink copy = copyEntityLink((EntityLink) relationship, from, to);
+            if (!exists(copy, to.getEntityLinks())) {
+                to.addEntityLink(copy);
             }
         }
     }
@@ -210,6 +230,31 @@ public abstract class PartyMerger {
     }
 
     /**
+     * Copies entity links from one party to another.
+     * If the source of the link refers to the 'from' party, it will be replaced with the 'to' party; otherwise the
+     * target of the relationship will be replaced with the 'to' party.
+     *
+     * @param relationship the relationship to copy
+     * @param from         the party to copy from
+     * @param to           the party to copy to
+     * @return the copied relationship
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected EntityLink copyEntityLink(EntityLink relationship, Party from, Party to) {
+        IMObjectReference fromRef = from.getObjectReference();
+        IMObjectReference toRef = to.getObjectReference();
+
+        List<IMObject> objects = relationshipCopier.apply(relationship);
+        EntityLink copy = (EntityLink) objects.get(0);
+        if (ObjectUtils.equals(copy.getSource(), fromRef)) {
+            copy.setSource(toRef);
+        } else {
+            copy.setTarget(toRef);
+        }
+        return copy;
+    }
+
+    /**
      * Copies identities from one party to another.
      *
      * @param from the party to copy from
@@ -218,8 +263,8 @@ public abstract class PartyMerger {
     protected void copyIdentities(Party from, Party to) {
         IMObjectCopier copier = new IMObjectCopier(
                 new DefaultIMObjectCopyHandler(), service);
-        for (EntityIdentity identity : from.getIdentities()) {
-            List<IMObject> objects = copier.apply(identity);
+        for (org.openvpms.component.model.entity.EntityIdentity identity : from.getIdentities()) {
+            List<IMObject> objects = copier.apply((EntityIdentity) identity);
             EntityIdentity copy = (EntityIdentity) objects.get(0);
             to.addIdentity(copy);
         }
@@ -286,19 +331,18 @@ public abstract class PartyMerger {
     /**
      * Determines if a party already has an entity relationship.
      *
-     * @param relationship the relationship
-     * @param party        the party to check against
-     * @return {@code true} if a relationship exists that has the same
-     * archetype id, source, and target, and is still active;
-     * otherwise {@code false}
+     * @param relationship  the relationship
+     * @param relationships the relationships to check against
+     * @return {@code true} if a relationship exists that has the same archetype id, source, and target, and is
+     * still active; otherwise {@code false}
      */
-    protected boolean exists(EntityRelationship relationship, Party party) {
+    protected boolean exists(PeriodRelationship relationship, Set<? extends PeriodRelationship> relationships) {
         boolean result = false;
-        ArchetypeId id = relationship.getArchetypeId();
-        for (EntityRelationship r : party.getEntityRelationships()) {
+        String archetype = relationship.getArchetype();
+        for (PeriodRelationship r : relationships) {
             if (ObjectUtils.equals(r.getSource(), relationship.getSource())
                 && ObjectUtils.equals(r.getTarget(), relationship.getTarget())
-                && r.getArchetypeId().equals(id)
+                && r.getArchetype().equals(archetype)
                 && r.getActiveEndTime() == null
                 && relationship.getActiveEndTime() == null) {
                 result = true;

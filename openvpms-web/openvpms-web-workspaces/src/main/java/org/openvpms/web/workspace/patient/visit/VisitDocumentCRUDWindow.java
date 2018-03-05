@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -23,7 +23,6 @@ import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.patient.mr.PatientDocumentCRUDWindow;
 import org.openvpms.web.workspace.patient.mr.PatientDocumentQuery;
 
@@ -44,7 +43,6 @@ public class VisitDocumentCRUDWindow extends PatientDocumentCRUDWindow {
     public VisitDocumentCRUDWindow(Context context, HelpContext help) {
         super(Archetypes.create(PatientDocumentQuery.DOCUMENT_SHORT_NAMES, DocumentAct.class,
                                 Messages.get("patient.document.createtype")), context, help);
-        setMailContext(new CustomerMailContext(context, help));
     }
 
     /**

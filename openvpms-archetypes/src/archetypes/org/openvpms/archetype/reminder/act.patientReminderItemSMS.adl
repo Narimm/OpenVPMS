@@ -1,0 +1,45 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="act.patientReminderItemSMS.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.act.Act" displayName="Patient SMS Reminder">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
+              derivedValue="'Patient SMS Reminder'"/>
+        <node name="description" type="java.lang.String" path="/description" hidden="true" minCardinality="0"/>
+        <node name="startTime" displayName="Send" path="/activityStartTime" type="java.util.Date" minCardinality="1"/>
+        <node name="endTime" displayName="Due" path="/activityEndTime" type="java.util.Date" minCardinality="1"
+              readOnly="true"/>
+        <node name="count" path="/details/count" type="java.lang.Integer" minCardinality="1" defaultValue="0"
+              readOnly="true"/>
+        <node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'PENDING'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="PENDING" value="Queued"/>
+                    <property name="COMPLETED" value="Sent"/>
+                    <property name="CANCELLED" value="Dequeued"/>
+                    <property name="ERROR" value="Error"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="processed" path="/details/processed" type="java.util.Date" minCardinality="0" readOnly="true"/>
+        <node name="error" path="/details/error" type="java.lang.String" minCardinality="0" maxLength="5000"
+              readOnly="true"/>
+        <node name="reminder" path="/targetActRelationships" type="java.util.HashSet" baseName="TargetActRelationship"
+              minCardinality="0" maxCardinality="1" hidden="true" filter="actRelationship.patientReminderItem"/>
+    </archetype>
+</archetypes>

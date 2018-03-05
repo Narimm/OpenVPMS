@@ -11,14 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
 
 import org.joda.time.DateMidnight;
+import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.joda.time.Period;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.DefaultActCopyHandler;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -41,16 +43,33 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.IterableIMObjectQuery;
+import org.openvpms.component.system.common.query.JoinConstraint;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
+import org.openvpms.component.system.common.query.ObjectRefSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
+import org.openvpms.component.system.common.query.OrConstraint;
+import org.openvpms.component.system.common.query.ParticipationConstraint;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
+
+import static org.openvpms.component.system.common.query.Constraints.and;
+import static org.openvpms.component.system.common.query.Constraints.eq;
+import static org.openvpms.component.system.common.query.Constraints.gt;
+import static org.openvpms.component.system.common.query.Constraints.join;
+import static org.openvpms.component.system.common.query.Constraints.lt;
+import static org.openvpms.component.system.common.query.Constraints.sort;
+import static org.openvpms.component.system.common.query.ParticipationConstraint.Field.ActShortName;
 
 
 /**
@@ -351,6 +370,111 @@ public class AppointmentRules {
     public Iterable<Act> getPatientAppointments(Party patient, int interval, DateUnits units) {
         ArchetypeQuery query = createAppointmentQuery(patient, "patient", interval, units);
         return new IterableIMObjectQuery<>(service, query);
+    }
+
+    /**
+     * Returns the minutes from midnight for the specified time.
+     *
+     * @param time the time
+     * @return the minutes from midnight for {@code time}
+     */
+    public int getMinutes(Date time) {
+        return new DateTime(time).getMinuteOfDay();
+    }
+
+    /**
+     * Returns the minutes from midnight for the specified time, rounded up or down to the nearest slot.
+     *
+     * @param time     the time
+     * @param slotSize the slot size
+     * @param roundUp  if {@code true} round up to the nearest slot, otherwise round down
+     * @return the minutes from midnight for the specified time
+     */
+    public int getSlotMinutes(Date time, int slotSize, boolean roundUp) {
+        int mins = getMinutes(time);
+        int result = getNearestSlot(mins, slotSize);
+        if (result != mins && roundUp) {
+            result += slotSize;
+        }
+        return result;
+    }
+
+    /**
+     * Returns the time of the slot closest to that of the specified time.
+     *
+     * @param time     the time
+     * @param slotSize the size of the slot, in minutes
+     * @param roundUp  if {@code true} round up to the nearest slot, otherwise round down
+     * @return the nearest slot time to {@code time}
+     */
+    public Date getSlotTime(Date time, int slotSize, boolean roundUp) {
+        Date result;
+        int mins = getMinutes(time);
+        int nearestSlot = getNearestSlot(mins, slotSize);
+        if (nearestSlot != mins) {
+            if (roundUp) {
+                nearestSlot += slotSize;
+            }
+            GregorianCalendar calendar = new GregorianCalendar();
+            calendar.setTime(time);
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE, 0);
+            calendar.set(Calendar.SECOND, 0);
+            calendar.add(Calendar.MINUTE, nearestSlot);
+            result = calendar.getTime();
+        } else {
+            result = time;
+        }
+        return result;
+    }
+
+    /**
+     * Returns the first appointment that overlaps the specified date range.
+     * <p>
+     * This ignores cancelled appointments.
+     *
+     * @param startTime the start of the date range
+     * @param endTime   the end of the date range
+     * @param schedule  the schedule
+     * @return the appointment times, or {@code null} if none overlaps
+     */
+    public Times getOverlap(Date startTime, Date endTime, Entity schedule) {
+        Times result = null;
+        ArchetypeQuery query = new ArchetypeQuery(ScheduleArchetypes.APPOINTMENT);
+        query.getArchetypeConstraint().setAlias("act");
+        query.add(new ObjectRefSelectConstraint("act"));
+        query.add(new NodeSelectConstraint("startTime"));
+        query.add(new NodeSelectConstraint("endTime"));
+        JoinConstraint participation = join("schedule");
+        participation.add(eq("entity", schedule));
+
+        // to encourage mysql to use the correct index
+        participation.add(new ParticipationConstraint(ActShortName, ScheduleArchetypes.APPOINTMENT));
+        query.add(participation);
+        OrConstraint or = new OrConstraint();
+        or.add(and(lt("startTime", endTime), gt("endTime", startTime)));
+        query.add(or);
+        query.add(sort("startTime"));
+        query.add(Constraints.ne("status", ActStatus.CANCELLED));
+        query.setMaxResults(1);
+        ObjectSetQueryIterator iterator = new ObjectSetQueryIterator(service, query);
+        if (iterator.hasNext()) {
+            ObjectSet set = iterator.next();
+            result = new Times(set.getReference("act.reference"), set.getDate("act.startTime"),
+                               set.getDate("act.endTime"));
+        }
+        return result;
+    }
+
+    /**
+     * Returns the nearest slot.
+     *
+     * @param mins     the start minutes
+     * @param slotSize the slot size
+     * @return the minutes from midnight for the specified time
+     */
+    protected int getNearestSlot(int mins, int slotSize) {
+        return (mins / slotSize) * slotSize;
     }
 
     /**

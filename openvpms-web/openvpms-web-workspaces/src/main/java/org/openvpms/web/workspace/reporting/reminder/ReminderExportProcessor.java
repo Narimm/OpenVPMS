@@ -11,129 +11,166 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
+import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.party.ContactMatcher;
+import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
 import org.openvpms.archetype.rules.patient.reminder.ReminderExporter;
+import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderType;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
+import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.echo.servlet.DownloadServlet;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 
-import java.util.Date;
+import java.util.ArrayList;
 import java.util.List;
 
 
 /**
- * Processor that exports reminders to CSV.
+ * Processor that exports reminders using the {@link ReminderExporter}.
  *
  * @author Tim Anderson
  */
-public class ReminderExportProcessor extends AbstractReminderBatchProcessor {
+public class ReminderExportProcessor extends PatientReminderProcessor {
 
     /**
-     * The context.
+     * The practice location.
      */
-    private final Context context;
-
-    /**
-     * The logger.
-     */
-    private final ReminderCommunicationLogger logger;
-
+    private final Party location;
 
     /**
      * Constructs a {@link ReminderExportProcessor}.
      *
-     * @param reminders  the reminders
-     * @param statistics the reminder statistics
-     * @param context    the context
-     * @param logger     if specified, log exported reminders
+     * @param reminderTypes the reminder types
+     * @param rules         the reminder rules
+     * @param patientRules  the patient rules
+     * @param location      the current practice location
+     * @param practice      the practice
+     * @param service       the archetype service
+     * @param config        the reminder configuration
+     * @param logger        the communication logger. May be {@code null}
      */
-    public ReminderExportProcessor(List<List<ReminderEvent>> reminders, Statistics statistics, Context context,
-                                   ReminderCommunicationLogger logger) {
-        super(reminders, statistics);
-        this.context = context;
-        this.logger = logger;
+    public ReminderExportProcessor(ReminderTypes reminderTypes, ReminderRules rules, PatientRules patientRules,
+                                   Party location, Party practice, IArchetypeService service,
+                                   ReminderConfiguration config, CommunicationLogger logger) {
+        super(reminderTypes, rules, patientRules, practice, service, config, logger);
+        this.location = location;
     }
 
     /**
-     * The processor title.
+     * Returns the reminder item archetype that this processes.
      *
-     * @return the processor title
+     * @return the archetype
      */
-    public String getTitle() {
-        return Messages.get("reporting.reminder.run.export");
+    @Override
+    public String getArchetype() {
+        return ReminderArchetypes.EXPORT_REMINDER;
     }
 
     /**
-     * Processes the batch.
+     * Processes reminders.
+     *
+     * @param state the reminder state
      */
-    public void process() {
-        List<ReminderEvent> reminders = getReminders();
-        if (!reminders.isEmpty()) {
-            try {
-                ReminderExporter exporter = ServiceHelper.getBean(ReminderExporter.class);
-                Document document = exporter.export(reminders);
-                DownloadServlet.startDownload(document);
-                updateReminders();
-                notifyCompleted();
-            } catch (OpenVPMSException exception) {
-                notifyError(exception);
+    @Override
+    public void process(PatientReminders state) {
+        List<ReminderEvent> reminders = state.getReminders();
+        export(reminders);
+    }
+
+    /**
+     * Determines if reminder processing is performed asynchronously.
+     *
+     * @return {@code true} if reminder processing is performed asynchronously
+     */
+    @Override
+    public boolean isAsynchronous() {
+        return false;
+    }
+
+    /**
+     * Exports reminders.
+     *
+     * @param reminders the reminders to export
+     */
+    protected void export(List<ReminderEvent> reminders) {
+        ReminderExporter exporter = ServiceHelper.getBean(ReminderExporter.class);
+        Document document = exporter.export(reminders);
+        DownloadServlet.startDownload(document);
+    }
+
+    /**
+     * Prepares reminders for processing.
+     * <p>
+     * This:
+     * <ul>
+     * <li>filters out any reminders that can't be processed due to missing data</li>
+     * <li>adds meta-data for subsequent calls to {@link #process}</li>
+     * </ul>
+     *
+     * @param reminders the reminders to prepare
+     * @param groupBy   the reminder grouping policy. This determines which document template is selected
+     * @param cancelled reminder items that will be cancelled
+     * @param errors    reminders that can't be processed due to error
+     * @param updated   acts that need to be saved on completion
+     * @param resend    if {@code true}, reminders are being resent
+     * @return the reminders to process
+     */
+    @Override
+    protected PatientReminders prepare(List<ReminderEvent> reminders, ReminderType.GroupBy groupBy,
+                                       List<ReminderEvent> cancelled, List<ReminderEvent> errors, List<Act> updated,
+                                       boolean resend) {
+        List<ReminderEvent> toProcess = new ArrayList<>();
+        ContactMatcher matcher = createContactMatcher(ContactArchetypes.LOCATION);
+        for (ReminderEvent reminder : reminders) {
+            Party customer = reminder.getCustomer();
+            Contact contact = getContact(customer, matcher, reminder.getContact());
+            if (contact != null) {
+                populate(reminder, contact, getLocation(customer));
+                toProcess.add(reminder);
+            } else {
+                String message = Messages.format("reporting.reminder.nocontact", DescriptorHelper.getDisplayName(
+                        ContactArchetypes.LOCATION, getService()));
+                Act item = updateItem(reminder, ReminderItemStatus.ERROR, message);
+                updated.add(item);
+                errors.add(reminder);
             }
-        } else {
-            notifyCompleted();
         }
+        return new PatientReminders(toProcess, groupBy, cancelled, errors, updated, resend);
     }
 
     /**
-     * Restarts processing.
-     */
-    public void restart() {
-        // no-op
-    }
-
-    /**
-     * Updates a reminder.
+     * Logs reminder communications.
      *
-     * @param reminder the reminder to update
-     * @param date     the last-sent date
-     * @return {@code true} if the reminder was updated
+     * @param state  the reminder state
+     * @param logger the communication logger
      */
     @Override
-    protected boolean updateReminder(ReminderEvent reminder, Date date) {
-        boolean updated = super.updateReminder(reminder, date);
-        if (updated && logger != null) {
-            logger.logExport(reminder, context.getLocation());
+    protected void log(PatientReminders state, CommunicationLogger logger) {
+        List<ReminderEvent> reminders = state.getReminders();
+        String subject = Messages.get("reminder.log.export.subject");
+        for (ReminderEvent reminder : reminders) {
+            Contact contact = reminder.getContact();
+            String notes = getNote(reminder);
+            logger.logMail(reminder.getCustomer(), reminder.getPatient(), contact.getDescription(),
+                           subject, COMMUNICATION_REASON, null, notes, location);
         }
-        return updated;
-    }
-
-    /**
-     * Notifies the listener (if any) of processing completion.
-     */
-    @Override
-    protected void notifyCompleted() {
-        setStatus(Messages.get("reporting.reminder.export.status.end"));
-        super.notifyCompleted();
-    }
-
-    /**
-     * Invoked if an error occurs processing the batch.
-     * <p/>
-     * Sets the error message on each reminder, and notifies any listener.
-     *
-     * @param exception the cause
-     */
-    @Override
-    protected void notifyError(Throwable exception) {
-        setStatus(Messages.get("reporting.reminder.export.status.failed"));
-        super.notifyError(exception);
     }
 
 }

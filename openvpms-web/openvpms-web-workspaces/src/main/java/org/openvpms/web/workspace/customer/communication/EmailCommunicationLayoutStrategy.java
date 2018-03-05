@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.communication;
 
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -35,6 +36,11 @@ import static org.openvpms.web.component.im.layout.ArchetypeNodes.include;
  * @author Tim Anderson
  */
 public class EmailCommunicationLayoutStrategy extends CommunicationLayoutStrategy {
+
+    /**
+     * The from node name.
+     */
+    public static final String FROM = "from";
 
     /**
      * The Cc node name.
@@ -97,6 +103,7 @@ public class EmailCommunicationLayoutStrategy extends CommunicationLayoutStrateg
     @Override
     protected void addContactViewers(PropertySet properties, IMObject object, LayoutContext context) {
         super.addContactViewers(properties, object, context);
+        addContactViewer(properties.get(FROM), object, context, true);
         addContactViewer(properties.get(CC), object, context, true);
         addContactViewer(properties.get(BCC), object, context, true);
     }
@@ -112,6 +119,7 @@ public class EmailCommunicationLayoutStrategy extends CommunicationLayoutStrateg
     @Override
     protected void addContactEditors(IMObject object, PropertySet properties, Party customer, LayoutContext context) {
         super.addContactEditors(object, properties, customer, context);
+        addFromEmailSelector(properties.get(FROM), object, context);
         addContactSelector(properties.get(CC), object, customer, context);
         addContactSelector(properties.get(BCC), object, customer, context);
     }
@@ -124,7 +132,7 @@ public class EmailCommunicationLayoutStrategy extends CommunicationLayoutStrateg
      */
     @Override
     protected List<Property> getHeaderProperties(List<Property> properties) {
-        return ArchetypeNodes.include(properties, ADDRESS, CC, BCC, DESCRIPTION);
+        return ArchetypeNodes.include(properties, FROM, ADDRESS, CC, BCC, DESCRIPTION);
     }
 
     /**
@@ -135,12 +143,12 @@ public class EmailCommunicationLayoutStrategy extends CommunicationLayoutStrateg
      */
     @Override
     protected List<Property> excludeEmptyHeaderProperties(List<Property> properties) {
-        return excludeIfEmpty(properties, CC, BCC);
+        return excludeIfEmpty(properties, FROM, CC, BCC);
     }
 
     /**
      * Returns the text properties.
-     * <p/>
+     * <p>
      * These are rendered under each other.
      *
      * @param properties the properties
@@ -163,5 +171,18 @@ public class EmailCommunicationLayoutStrategy extends CommunicationLayoutStrateg
     @Override
     protected List<Property> excludeEmptyTextProperties(List<Property> properties) {
         return excludeIfEmpty(properties, NOTE, ATTACHMENTS);
+    }
+
+    /**
+     * Adds an editor for the from address.
+     *
+     * @param property the from address property
+     * @param object   the communication object
+     * @param context  the context
+     */
+    protected void addFromEmailSelector(Property property, IMObject object, LayoutContext context) {
+        List<Contact> contacts = getContacts(context.getContext().getPractice());
+        contacts.addAll(getContacts(context.getContext().getLocation()));
+        addContactSelector(property, object, contacts, context);
     }
 }

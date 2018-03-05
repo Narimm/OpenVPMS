@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkout;
@@ -136,7 +136,7 @@ class PrintDocumentsTask extends AbstractTask {
         } else {
             String title = Messages.get("workflow.print.title");
             String[] buttons = isRequired() ? PopupDialog.OK_CANCEL : PopupDialog.OK_SKIP_CANCEL;
-            dialog = new BatchPrintDialog(title, buttons, unprinted, help);
+            dialog = new BatchPrintDialog(title, null, buttons, unprinted, help);
             dialog.getButtons().add(MAIL_ID, new ActionListener() {
                 public void onAction(ActionEvent event) {
                     onMail(context);
@@ -242,11 +242,12 @@ class PrintDocumentsTask extends AbstractTask {
             HelpContext email = context.getHelpContext().subtopic("email");
             MailContext mailContext = new CustomerMailContext(context, email);
             MailDialogFactory factory = ServiceHelper.getBean(MailDialogFactory.class);
+            ReporterFactory reporterFactory = ServiceHelper.getBean(ReporterFactory.class);
             MailDialog dialog = factory.create(mailContext, new DefaultLayoutContext(context, email));
             MailEditor editor = dialog.getMailEditor();
             for (IMObject object : list) {
                 ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
-                Reporter<IMObject> reporter = ReporterFactory.create(object, locator, Reporter.class);
+                Reporter<IMObject> reporter = reporterFactory.create(object, locator, Reporter.class);
                 reporter.setFields(ReportContextFactory.create(context));
                 Document document = reporter.getDocument(Reporter.DEFAULT_MIME_TYPE, true);
                 editor.addAttachment(document);

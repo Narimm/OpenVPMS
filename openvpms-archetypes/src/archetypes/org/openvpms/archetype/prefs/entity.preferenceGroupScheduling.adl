@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -47,6 +47,27 @@
                     <property name="ALL" value="All"/>
                     <property name="AM_PM" value="Now (AM/PM)"/>
                     <property name="M_A_E" value="Now (Morning/Afternoon/Evening)"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="dates" path="/details/dates" type="java.lang.String" minCardinality="1" defaultValue="'FORTNIGHT'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="DAY" value="Day"/>
+                    <property name="WEEK" value="Week"/>
+                    <property name="FORTNIGHT" value="Fortnight"/>
+                    <property name="MONTH" value="Month"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="show" path="/details/show" type="java.lang.String" minCardinality="1" defaultValue="'ALL'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="ALL" value="All"/>
+                    <property name="CAGE" value="Cage"/>
+                    <property name="SUMMARY" value="Summary"/>
+                    <property name="CHECKIN" value="Check-Ins"/>
+                    <property name="CHECKOUT" value="Check-Outs"/>
                 </propertyList>
             </assertion>
         </node>

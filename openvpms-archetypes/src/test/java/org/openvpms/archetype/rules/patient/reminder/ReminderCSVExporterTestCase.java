@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -210,9 +210,11 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
      */
     private ReminderEvent createReminderEvent(Party customer, Contact contact, Party patient, Entity reminderType,
                                               Act reminder) {
-        return new ReminderEvent(ReminderEvent.Action.EXPORT, reminder,
-                                 new ReminderType(reminderType, getArchetypeService()), patient, customer, contact,
-                                 null);
+        Act item = (Act) create(ReminderArchetypes.EXPORT_REMINDER);
+        ReminderEvent event = new ReminderEvent(reminder, item, patient, customer);
+        event.setContact(contact);
+        event.setReminderType(reminderType);
+        return event;
     }
 
     /**

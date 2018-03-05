@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.dispatcher.invoice;
 
@@ -20,10 +20,10 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.i18n.Message;
 import org.openvpms.esci.adapter.dispatcher.DocumentProcessor;
 import org.openvpms.esci.adapter.dispatcher.InboxDocument;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
-import org.openvpms.esci.adapter.i18n.Message;
 import org.openvpms.esci.adapter.map.invoice.Delivery;
 import org.openvpms.esci.adapter.map.invoice.InvoiceMapper;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
@@ -34,7 +34,7 @@ import javax.annotation.Resource;
 
 /**
  * Maps invoices to <em>act.supplierDelivery</em> acts using {@link InvoiceMapper}.
- * <p/>
+ * <p>
  * UBL invoices are mapped to deliveries rather than <em>act.supplierAccountChargesInvoice</em> to reflect the fact
  * that practices may not use supplier invoices. An invoice can be created from the delivery if required.
  *

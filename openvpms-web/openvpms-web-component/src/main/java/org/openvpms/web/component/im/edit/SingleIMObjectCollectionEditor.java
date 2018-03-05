@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -19,7 +19,7 @@ package org.openvpms.web.component.im.edit;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreationListener;
 import org.openvpms.web.component.im.util.IMObjectCreator;

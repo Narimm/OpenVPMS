@@ -111,6 +111,10 @@ public class ProductPriceEditorTestCase extends AbstractAppTest {
     @Test
     public void testPriceRounding() {
         DefaultLayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        Lookup currency = TestHelper.getCurrency("AUD");
+        IMObjectBean bean = new IMObjectBean(currency);
+        bean.setValue("minPrice", "0.00");
+        bean.save();
 
         // first test without minPrice rounding
         ProductPrice price1 = (ProductPrice) create(ProductArchetypes.UNIT_PRICE);
@@ -126,8 +130,6 @@ public class ProductPriceEditorTestCase extends AbstractAppTest {
         checkPrice(editor1, "1.63", "75", "2.853", "3.14", "42.90");
 
         // now enable rounding to 0.20
-        Lookup currency = TestHelper.getCurrency("AUD");
-        IMObjectBean bean = new IMObjectBean(currency);
         bean.setValue("minPrice", "0.20");
         bean.save();
 

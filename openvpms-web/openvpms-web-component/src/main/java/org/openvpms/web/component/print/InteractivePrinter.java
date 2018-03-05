@@ -11,14 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.print;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -97,6 +99,11 @@ public class InteractivePrinter implements Printer {
      */
     private PrintDialog dialog;
 
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(InteractivePrinter.class);
+
 
     /**
      * Constructs an {@link InteractivePrinter}.
@@ -172,6 +179,9 @@ public class InteractivePrinter implements Printer {
      */
     public void print(String printer) {
         if (interactive || printer == null) {
+            printInteractive(printer);
+        } else if (!PrintHelper.exists(printer)) {
+            log.warn("Printer not found: " + printer);
             printInteractive(printer);
         } else {
             printDirect(printer);
@@ -353,7 +363,7 @@ public class InteractivePrinter implements Printer {
             title = Messages.get("printdialog.title");
         }
         boolean mail = mailContext != null;
-        return new PrintDialog(title, true, mail, skip, help) {
+        return new PrintDialog(title, true, mail, skip, context.getLocation(), help) {
             @Override
             protected void onPreview() {
                 doPrintPreview();
@@ -383,22 +393,7 @@ public class InteractivePrinter implements Printer {
         dialog.addWindowPaneListener(new WindowPaneListener() {
             public void onClose(WindowPaneEvent event) {
                 try {
-                    String action = dialog.getAction();
-                    if (PrintDialog.OK_ID.equals(action)) {
-                        String printerName = dialog.getPrinter();
-                        if (printerName == null) {
-                            doPrintPreview();
-                        } else {
-                            printer.setCopies(dialog.getCopies());
-                            doPrint(printerName);
-                        }
-                    } else if (PrintDialog.SKIP_ID.equals(action)) {
-                        skipped();
-                    } else if (MailDialog.SEND_ID.equals(action)) {
-                        mailed();
-                    } else {
-                        cancelled();
-                    }
+                    handleAction(dialog);
                 } finally {
                     dialog = null;
                 }
@@ -415,6 +410,30 @@ public class InteractivePrinter implements Printer {
      */
     protected void printDirect(String printer) {
         doPrint(printer);
+    }
+
+    /**
+     * Handles a print dialog action.
+     *
+     * @param dialog the dialog
+     */
+    protected void handleAction(PrintDialog dialog) {
+        String action = dialog.getAction();
+        if (PrintDialog.OK_ID.equals(action)) {
+            String printerName = dialog.getPrinter();
+            if (printerName == null) {
+                doPrintPreview();
+            } else {
+                printer.setCopies(dialog.getCopies());
+                doPrint(printerName);
+            }
+        } else if (PrintDialog.SKIP_ID.equals(action)) {
+            skipped();
+        } else if (MailDialog.SEND_ID.equals(action)) {
+            mailed();
+        } else {
+            cancelled();
+        }
     }
 
     /**
@@ -445,7 +464,7 @@ public class InteractivePrinter implements Printer {
 
     /**
      * Generates a document and pops up a mail document with it as an attachment.
-     * <p/>
+     * <p>
      * If emailed, then the print dialog is closed.
      *
      * @param parent the parent print dialog
@@ -518,7 +537,7 @@ public class InteractivePrinter implements Printer {
 
     /**
      * Mails a document as an attachment.
-     * <p/>
+     * <p>
      * If emailed, then the print dialog is closed.
      *
      * @param document the document to mail
@@ -533,18 +552,16 @@ public class InteractivePrinter implements Printer {
                 if (MailDialog.SEND_ID.equals(dialog.getAction())) {
                     // close the parent dialog. This will notify registered listeners of the action taken,
                     // so need to propagate the action to the parent.
-                    parent.setDefaultCloseAction(MailDialog.SEND_ID);
-                    parent.close();
+                    parent.close(MailDialog.SEND_ID);
                 }
             }
         });
         show(dialog);
-        dialog.show();
     }
 
     /**
      * Creates a dialog to email a document as an attachment.
-     * <p/>
+     * <p>
      * If emailed, then the print dialog is closed.
      *
      * @param document      the document to mail

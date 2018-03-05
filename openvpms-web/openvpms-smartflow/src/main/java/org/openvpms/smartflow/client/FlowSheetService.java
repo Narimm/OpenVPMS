@@ -11,25 +11,30 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.client;
 
 import org.apache.commons.logging.Log;
 import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.filter.LoggingFilter;
+import org.glassfish.jersey.client.proxy.WebResourceFactory;
 import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.logging.LoggingFeature;
+import org.openvpms.component.i18n.Message;
 import org.openvpms.smartflow.i18n.FlowSheetMessages;
 
 import javax.net.ssl.SSLHandshakeException;
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
+import java.util.Collections;
 import java.util.TimeZone;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -39,6 +44,11 @@ import java.util.logging.Logger;
  * @author benjamincharlton on 21/10/2015.
  */
 public abstract class FlowSheetService {
+
+    /**
+     * Empty form.
+     */
+    protected static final Form EMPTY_FORM = new Form();
 
     /**
      * The Smart Flow Sheet service root URL.
@@ -64,11 +74,6 @@ public abstract class FlowSheetService {
      * The logger.
      */
     private final Log log;
-
-    /**
-     * Empty form.
-     */
-    protected static final Form EMPTY_FORM = new Form();
 
     /**
      * Constructs a {@link FlowSheetService}.
@@ -115,18 +120,36 @@ public abstract class FlowSheetService {
      * Creates a JAX-RS client.
      *
      * @return a new JAX-RS client
+     * @throws FlowSheetException if the timezone is unsupported
      */
     protected javax.ws.rs.client.Client getClient() {
+        if (timeZone.getID().startsWith("GMT")) {
+            // see OVPMS-1995
+            throw new FlowSheetException(FlowSheetMessages.unsupportedTimeZone(timeZone.getID()));
+        }
         ObjectMapperContextResolver resolver = new ObjectMapperContextResolver(timeZone);
         ClientConfig config = new ClientConfig()
                 .register(resolver)
                 .register(JacksonFeature.class)
                 .register(new ErrorResponseFilter(resolver.getContext(Object.class)));
-        javax.ws.rs.client.Client resource = ClientBuilder.newClient(config);
         if (log.isDebugEnabled()) {
-            resource.register(new LoggingFilter(new DebugLog(log), true));
+            config.register(new LoggingFeature(new DebugLog(log), Level.INFO, LoggingFeature.Verbosity.PAYLOAD_TEXT,
+                                               null));
         }
-        return resource;
+        return ClientBuilder.newClient(config);
+    }
+
+    /**
+     * Returns a proxy for the specified type.
+     *
+     * @param type   the type
+     * @param client the client
+     * @return a proxy for the type
+     */
+    protected <T> T getResource(Class<T> type, javax.ws.rs.client.Client client) {
+        WebTarget target = getWebTarget(client);
+        return WebResourceFactory.newResource(type, target, false, getHeaders(), Collections.<Cookie>emptyList(),
+                                              EMPTY_FORM);
     }
 
     /**
@@ -153,6 +176,54 @@ public abstract class FlowSheetService {
     }
 
     /**
+     * Makes a call to a resource, handling common exceptions.
+     *
+     * @param resource the resource type
+     * @param call     the call to make on the resource
+     * @return the result of the call
+     * @throws FlowSheetException for any error
+     */
+    protected <T, R> T call(Class<R> resource, Call<T, R> call) {
+        T result = null;
+        javax.ws.rs.client.Client client = getClient();
+        try {
+            R instance = getResource(resource, client);
+            result = call.call(instance);
+        } catch (FlowSheetException exception) {
+            throw exception;
+        } catch (NotAuthorizedException exception) {
+            notAuthorised(exception);
+        } catch (Exception exception) {
+            checkSSL(exception);
+            Message message = call.failed(exception);
+            throw new FlowSheetException(message, exception);
+        } finally {
+            client.close();
+        }
+        return result;
+    }
+
+    protected interface Call<T, R> {
+
+        /**
+         * Makes a call to a resource.
+         *
+         * @param resource the resource
+         * @return the result of the call
+         * @throws Exception for any error
+         */
+        T call(R resource) throws Exception;
+
+        /**
+         * Returns a message when a call fails.
+         *
+         * @param exception the cause of the failure
+         * @return a message for the failure.
+         */
+        Message failed(Exception exception);
+    }
+
+    /**
      * Workaround to allow JAX-RS logging to be delegated to log4j.
      */
     private static final class DebugLog extends Logger {
@@ -164,10 +235,20 @@ public abstract class FlowSheetService {
             this.log = log;
         }
 
+        /**
+         * Log a message, with no arguments.
+         * <p>
+         * If the logger is currently enabled for the given message
+         * level then the given message is forwarded to all the
+         * registered output Handler objects.
+         * <p>
+         *
+         * @param level One of the message level identifiers, e.g., SEVERE
+         * @param msg   The string message (or a key in the message catalog)
+         */
         @Override
-        public void info(String msg) {
+        public void log(Level level, String msg) {
             log.debug(msg);
         }
-
     }
 }

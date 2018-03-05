@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.client;
@@ -109,7 +109,7 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
     public void setUp() {
         dateOfBirth = TestHelper.getDate("2014-06-21");
         startTime = TestHelper.getDatetime("2015-08-25 12:51:01");
-        Party customer = TestHelper.createCustomer("J", "Bloggs", true);
+        Party customer = TestHelper.createCustomer("J", "Bloggs", false, true);
         customer.addContact(TestHelper.createPhoneContact("", "123456789"));
         Party patient = PatientTestHelper.createPatient("Fido", "CANINE", "KELPIE", dateOfBirth, customer);
         Party location = TestHelper.createLocation();
@@ -169,7 +169,7 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
                                             .withBody(expected)));
 
         HospitalizationService client = createService();
-        client.add(context, 2, null);
+        client.add(context, 2, -1, null);
 
         List<LoggedRequest> requests = WireMock.findAll(postRequestedFor(urlEqualTo("/hospitalization")));
         assertEquals(1, requests.size());
@@ -193,10 +193,11 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
 
         HospitalizationService client = createService();
         try {
-            client.add(context, 2, null);
+            client.add(context, 2, -1, null);
             fail("Expected add() to fail");
         } catch (FlowSheetException exception) {
-            assertEquals("SFS-0101: Failed to create Flow Sheet for Fido", exception.getMessage());
+            assertEquals("SFS-0101: Failed to create Flow Sheet for Fido\n\nHospitalization already exists",
+                         exception.getMessage());
             Throwable cause = exception.getCause();
             assertTrue(cause instanceof BadRequestException);
             assertEquals("Hospitalization already exists", cause.getMessage());
@@ -216,7 +217,7 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
                                             .withBody(body)));
         HospitalizationService client = createService();
         try {
-            client.add(context, 2, null);
+            client.add(context, 2, -1, null);
             fail("Expected add() to fail");
         } catch (FlowSheetException exception) {
             assertEquals("SFS-0103: Failed to connect to Smart Flow Sheet.\n\n"
@@ -306,7 +307,8 @@ public class HospitalizationServiceTestCase extends ArchetypeServiceTest {
         String url = "http://localhost:" + wireMockRule.port() + "/";
         return new HospitalizationService(url, "foo", "bar", TimeZone.getTimeZone("Australia/Sydney"),
                                           getArchetypeService(), getLookupService(),
-                                          new DocumentHandlers(getArchetypeService()));
+                                          new DocumentHandlers(getArchetypeService()),
+                                          new MedicalRecordRules(getArchetypeService()));
     }
 
 }

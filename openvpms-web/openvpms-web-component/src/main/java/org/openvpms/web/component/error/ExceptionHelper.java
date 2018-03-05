@@ -11,9 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.error;
+
+import org.hibernate.ObjectNotFoundException;
+import org.hibernate.StaleObjectStateException;
 
 /**
  * Exception helper methods.
@@ -34,5 +37,18 @@ public class ExceptionHelper {
         }
         return exception;
     }
+
+    /**
+     * Determines if an exception indicates that an object being operated on (or a related object) was modified
+     * externally.
+     *
+     * @param exception the exception
+     * @return {@code true} if the object was modified externally
+     */
+    public static boolean isModifiedExternally(Throwable exception) {
+        return exception instanceof StaleObjectStateException || exception instanceof ObjectNotFoundException;
+    }
+
+
 
 }

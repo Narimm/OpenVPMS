@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -25,13 +25,13 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.Table;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
-import org.openvpms.web.workspace.workflow.scheduling.ScheduleColours;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableCellRenderer;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel;
 
@@ -138,11 +138,8 @@ public abstract class AbstractAppointmentTableCellRender extends ScheduleTableCe
     protected TableLayoutDataEx getEventLayoutData(PropertySet event, ScheduleTableModel.Highlight highlight) {
         TableLayoutDataEx result = null;
         if (Schedule.isBlockingEvent(event)) {
-            ScheduleColours colours = getBlockingEventColours();
-            Color colour = null;
-            if (colours != null) {
-                colour = colours.getColour(event.getReference(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
-            }
+            IMObjectReference reference = event.getReference(ScheduleEvent.SCHEDULE_TYPE_REFERENCE);
+            Color colour = getColour(reference);
             if (colour != null) {
                 result = new TableLayoutDataEx();
                 result.setBackground(colour);
@@ -173,6 +170,9 @@ public abstract class AbstractAppointmentTableCellRender extends ScheduleTableCe
             }
 
             if (patient == null) {
+                if (customer == null) {
+                    customer = Messages.get("workflow.scheduling.appointment.table.nocustomer");
+                }
                 text = Messages.format("workflow.scheduling.appointment.table.customer",
                                        customer, reason, status);
             } else {
@@ -181,8 +181,8 @@ public abstract class AbstractAppointmentTableCellRender extends ScheduleTableCe
             }
         }
         String notes = event.getString(ScheduleEvent.ACT_DESCRIPTION);
-        boolean onlineBooking = event.exists(ScheduleEvent.BOOKING_NOTES)
-                                && !StringUtils.isEmpty(event.getString(ScheduleEvent.BOOKING_NOTES));
+        boolean onlineBooking = event.exists(ScheduleEvent.ONLINE_BOOKING)
+                                && event.getBoolean(ScheduleEvent.ONLINE_BOOKING);
         result = createLabelWithNotes(text, notes, event.getBoolean(ScheduleEvent.SEND_REMINDER),
                                       event.getDate(ScheduleEvent.REMINDER_SENT),
                                       event.getString(ScheduleEvent.REMINDER_ERROR), onlineBooking);

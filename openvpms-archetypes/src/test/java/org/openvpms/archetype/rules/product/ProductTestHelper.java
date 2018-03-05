@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -21,12 +21,13 @@ import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.Relationship;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -49,6 +50,26 @@ public class ProductTestHelper {
      */
     public static Product createMedication() {
         return TestHelper.createProduct();
+    }
+
+    /**
+     * Creates a medication product.
+     *
+     * @param restricted if {@code true}, assign the medication a restricted drug schedule, otherwise use an
+     *                   unrestricted one
+     * @return a new medication
+     */
+    public static Product createMedication(boolean restricted) {
+        Product product = createMedication();
+        IMObjectBean bean = new IMObjectBean(product);
+        String code = (restricted) ? "S3" : "S4";
+        Lookup schedule = TestHelper.getLookup(ProductArchetypes.DRUG_SCHEDULE, code, code, restricted);
+        IMObjectBean scheduleBean = new IMObjectBean(schedule);
+        scheduleBean.setValue("restricted", restricted);
+        scheduleBean.save();
+        bean.setValue("drugSchedule", code);
+        bean.save();
+        return product;
     }
 
     /**
@@ -454,4 +475,26 @@ public class ProductTestHelper {
         bean.save();
     }
 
+    /**
+     * Creates a new batch.
+     *
+     * @param batchNumber    the batch number
+     * @param product        the product
+     * @param expiryDate     the expiry date. May be {@code null}
+     * @param stockLocations the stock locations
+     * @return a new batch
+     */
+    public static Entity createBatch(String batchNumber, Product product, Date expiryDate, Party... stockLocations) {
+        Entity batch = (Entity) create(ProductArchetypes.PRODUCT_BATCH);
+        IMObjectBean bean = new IMObjectBean(batch);
+        bean.setValue("name", batchNumber);
+        Relationship relationship = bean.addTarget("product", product);
+        IMObjectBean relBean = new IMObjectBean(relationship);
+        relBean.setValue("activeEndTime", expiryDate);
+        for (Party stockLocation : stockLocations) {
+            bean.addTarget("stockLocations", stockLocation);
+        }
+        save(batch, product);
+        return batch;
+    }
 }

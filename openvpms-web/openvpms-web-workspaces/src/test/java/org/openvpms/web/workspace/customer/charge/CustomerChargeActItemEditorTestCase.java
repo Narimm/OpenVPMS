@@ -11,12 +11,11 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -40,7 +39,6 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -49,6 +47,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.entity.EntityIdentity;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -57,7 +56,6 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.transaction.TransactionStatus;
@@ -109,16 +107,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         customer = TestHelper.createCustomer();
 
         // register an ErrorHandler to collect errors
-        ErrorHandler.setInstance(new ErrorHandler() {
-            @Override
-            public void error(Throwable cause) {
-                errors.add(cause.getMessage());
-            }
-
-            public void error(String title, String message, Throwable cause, WindowPaneListener listener) {
-                errors.add(message);
-            }
-        });
+        initErrorHandler(errors);
         context = new LocalContext();
         context.setPractice(getPractice());
         Party location = TestHelper.createLocation(true); // enable stock control
@@ -248,7 +237,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         Party patient = TestHelper.createPatient();
         User author = TestHelper.createUser();
-        User clinician = TestHelper.createUser();
+        User clinician = TestHelper.createClinician();
 
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);
@@ -312,7 +301,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         Party patient = TestHelper.createPatient();
         User author = TestHelper.createUser();
-        User clinician = TestHelper.createUser();
+        User clinician = TestHelper.createClinician();
 
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);
@@ -374,7 +363,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         Party patient = TestHelper.createPatient();
         User author = TestHelper.createUser();
-        User clinician = TestHelper.createUser();
+        User clinician = TestHelper.createClinician();
 
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);
@@ -466,7 +455,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
     /**
      * Tests a product with a 10% discount where discounts are disabled at the practice location.
-     * <p/>
+     * <p>
      * The calculated discount should be zero.
      */
     @Test
@@ -620,7 +609,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         assertTrue(editContext.getEditorQueue().getCurrent() instanceof EditDialog);
         EditDialog dialog = (EditDialog) editContext.getEditorQueue().getCurrent();
         IMObjectEditor microchip = dialog.getEditor();
-        microchip.getProperty("microchip").setValue("123456789");
+        microchip.getProperty("identity").setValue("123456789");
         checkSavePopup(editContext.getEditorQueue(), PatientArchetypes.MICROCHIP, false);
         checkSave(charge, editor);
 
@@ -636,7 +625,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
     /**
      * Verifies that the editor is invalid if a quantity is less than a minimum quantity.
-     * <p/>
+     * <p>
      * Note that in practice, the minimum quantity is set by expanding a template or invoicing an estimate.
      */
     @Test
@@ -674,7 +663,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
     /**
      * Verifies that a user with the appropriate user type can override minimum quantities.
-     * <p/>
+     * <p>
      * Note that in practice, the minimum quantity is set by expanding a template or invoicing an estimate.
      */
     @Test
@@ -981,10 +970,10 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         Party patient2 = TestHelper.createPatient();
         User author1 = TestHelper.createUser();
         User author2 = TestHelper.createUser();
-        User clinician1 = TestHelper.createUser();
-        User clinician2 = TestHelper.createUser();
+        User clinician1 = TestHelper.createClinician();
+        User clinician2 = TestHelper.createClinician();
 
-        // create product1 with reminder and investigation type
+        // create product1 with reminder, investigation type and alert type
         BigDecimal quantity1 = BigDecimal.valueOf(2);
         BigDecimal unitCost1 = BigDecimal.valueOf(5);
         BigDecimal unitPrice1 = new BigDecimal("9.09");
@@ -999,6 +988,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         Entity reminderType = addReminder(product1);
         Entity investigationType = addInvestigation(product1);
         Entity template = addTemplate(product1);
+        Entity alertType = addAlertType(product1);
 
         // create  product2 with no reminder no investigation type, and a service ratio that doubles the unit and
         // fixed prices
@@ -1054,6 +1044,9 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
             assertFalse(editor.isValid()); // not valid while popup is displayed
             checkSavePopup(queue, ReminderArchetypes.REMINDER, false);
+
+            assertFalse(editor.isValid()); // not valid while popup is displayed
+            checkSavePopup(queue, PatientArchetypes.ALERT, false);
         }
 
         // editor should now be valid
@@ -1082,16 +1075,19 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
             assertEquals(1, itemBean.getActs(InvestigationArchetypes.PATIENT_INVESTIGATION).size());
             assertEquals(1, itemBean.getActs(ReminderArchetypes.REMINDER).size());
             assertEquals(1, itemBean.getActs("act.patientDocument*").size());
+            assertEquals(1, itemBean.getActs(PatientArchetypes.ALERT).size());
 
             checkInvestigation(item, patient1, investigationType, author1, clinician1);
             checkReminder(item, patient1, product1, reminderType, author1, clinician1);
             checkDocument(item, patient1, product1, template, author1, clinician1);
+            checkAlert(item, patient1, product1, alertType, author1, clinician1);
         } else {
             // verify there are no medication, investigation, reminder nor document acts
             assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
             assertTrue(itemBean.getActs(InvestigationArchetypes.PATIENT_INVESTIGATION).isEmpty());
             assertTrue(itemBean.getActs(ReminderArchetypes.REMINDER).isEmpty());
             assertTrue(itemBean.getActs("act.patientDocument*").isEmpty());
+            assertTrue(itemBean.getActs(PatientArchetypes.ALERT).isEmpty());
         }
 
         // now replace the patient, product, author and clinician
@@ -1132,6 +1128,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         assertTrue(itemBean.getActs(InvestigationArchetypes.PATIENT_INVESTIGATION).isEmpty());
         assertTrue(itemBean.getActs(ReminderArchetypes.REMINDER).isEmpty());
         assertTrue(itemBean.getActs("act.patientDocument*").isEmpty());
+        assertTrue(itemBean.getActs(PatientArchetypes.ALERT).isEmpty());
 
         // make sure that clinicians can be set to null, as a test for OVPMS-1104
         if (itemBean.hasNode("clinician")) {
@@ -1155,7 +1152,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
     /**
      * Checks populating a charge item with a template product.
-     * <p/>
+     * <p>
      * NOTE: currently, charge items with template products validate correctly, but fail to save.
      * <p/>This is because the charge item relationship editor will only expand templates if the charge item itself
      * is valid - marking the item invalid for having a template would prevent this.
@@ -1177,7 +1174,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         Product product = createProduct(ProductArchetypes.TEMPLATE, fixedCost, fixedPrice, unitCost, unitPrice);
         // costs and prices should be ignored
         User author = TestHelper.createUser();
-        User clinician = TestHelper.createUser();
+        User clinician = TestHelper.createClinician();
         context.getContext().setUser(author); // to propagate to acts
         context.getContext().setClinician(clinician);
 
@@ -1283,12 +1280,12 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
      * @param charge the charge
      * @param item   the charge item
      */
-    protected void checkProductDose(FinancialAct charge, FinancialAct item) {
+    private void checkProductDose(FinancialAct charge, FinancialAct item) {
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         Party patient = TestHelper.createPatient();
         PatientTestHelper.createWeight(patient, new Date(), new BigDecimal("4.2"), WeightUnits.KILOGRAMS);
         User author = TestHelper.createUser();
-        User clinician = TestHelper.createUser();
+        User clinician = TestHelper.createClinician();
 
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);
@@ -1387,7 +1384,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
         /**
          * Constructs a {@link TestCustomerChargeActItemEditor}.
-         * <p/>
+         * <p>
          * This recalculates the tax amount.
          *
          * @param act           the act to edit

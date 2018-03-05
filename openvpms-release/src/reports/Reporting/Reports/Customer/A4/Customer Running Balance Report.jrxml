@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-12-14T09:37:44 -->
+<!-- 2017-08-01T14:30:20 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Customer Running Balance" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="30" bottomMargin="30" isSummaryWithPageHeaderAndFooter="true" uuid="af2fba84-9169-45c8-a7de-fcdc063c03c2">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -357,7 +357,7 @@ ORDER BY
 				<text><![CDATA[Reference/Notes/Reversal]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="141" y="3" width="42" height="14" uuid="6fc2f815-8b91-4605-8a14-a123dc405c9b"/>
+				<reportElement x="131" y="3" width="52" height="14" uuid="6fc2f815-8b91-4605-8a14-a123dc405c9b"/>
 				<textElement textAlignment="Right">
 					<font isBold="true"/>
 					<paragraph lineSpacing="Single"/>
@@ -445,7 +445,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$V{refNotes2}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="141" y="1" width="42" height="13" uuid="d26a33be-fa1e-489f-bfb9-61685cb9e925"/>
+				<reportElement x="131" y="1" width="52" height="13" uuid="d26a33be-fa1e-489f-bfb9-61685cb9e925"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<paragraph lineSpacing="Single"/>
 				</textElement>

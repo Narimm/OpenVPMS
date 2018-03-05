@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -87,23 +87,6 @@ public class ArchetypeQuery extends AbstractArchetypeQuery
     public ArchetypeQuery(ArchetypeId archetypeId, boolean activeOnly) {
         archetypeConstraint = new ArchetypeIdConstraint(archetypeId,
                                                         activeOnly);
-    }
-
-    /**
-     * Create an instance of this query specifying one or more elements.
-     * Any of the parameters can be null or may  include the wild card character
-     *
-     * @param rmName      the reference model name (optional)
-     * @param entityName  the entity name (optional)
-     * @param conceptName the concept name (optional)
-     * @param primaryOnly only deal with the primary archetypes
-     * @param activeOnly  if <tt>true</tt> only return active objects
-     */
-    @Deprecated
-    public ArchetypeQuery(String rmName, String entityName,
-                          String conceptName, boolean primaryOnly,
-                          boolean activeOnly) {
-        this(entityName, conceptName, primaryOnly, activeOnly);
     }
 
     /**

@@ -1,31 +1,27 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.common;
 
-import org.apache.commons.jxpath.Pointer;
-import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.StandardToStringStyle;
+import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.datatypes.property.PropertyCollection;
-import org.openvpms.component.system.common.jxpath.JXPathHelper;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.service.uuid.JUGGenerator;
 
 import java.io.Serializable;
@@ -40,15 +36,15 @@ import java.util.Map;
  * on the object. These constraints are the foundation of archetypes and
  * archetype languages such as ADL
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Jim Alateras
+ * @author Tim Anderson
  */
-public class IMObject implements Serializable, Cloneable {
+public class IMObject implements org.openvpms.component.model.object.IMObject, Serializable, Cloneable {
 
     /**
-     * Serialization version identifier.
+     * toString() style.
      */
-    private static final long serialVersionUID = 2L;
+    protected static final StandardToStringStyle STYLE;
 
     /**
      * Identifier assigned when the object is saved.
@@ -95,13 +91,12 @@ public class IMObject implements Serializable, Cloneable {
     /**
      * Dynamic details of the object.
      */
-    private Map<String, Object> details
-            = new HashMap<String, Object>();
+    private Map<String, Object> details = new HashMap<>();
 
     /**
-     * toString() style.
+     * Serialization version identifier.
      */
-    protected static final StandardToStringStyle STYLE;
+    private static final long serialVersionUID = 2L;
 
     /**
      * An internal UUID generator.
@@ -114,18 +109,12 @@ public class IMObject implements Serializable, Cloneable {
     private static final Log log = LogFactory.getLog(IMObject.class);
 
 
-    static {
-        STYLE = new StandardToStringStyle();
-        STYLE.setUseShortClassName(true);
-        STYLE.setUseIdentityHashCode(false);
-    }
-
-
     /**
      * Default constructor.
      */
     public IMObject() {
     }
+
 
     /**
      * Creates a new <tt>IMObject</tt>.
@@ -134,8 +123,9 @@ public class IMObject implements Serializable, Cloneable {
      */
     public IMObject(ArchetypeId archetypeId) {
         this.archetypeId = archetypeId;
-        if (this.archetypeId != null)
+        if (this.archetypeId != null) {
             this.description = archetypeId.getConcept();
+        }
     }
 
     /**
@@ -155,7 +145,7 @@ public class IMObject implements Serializable, Cloneable {
      * Returns the object's persistent identifier.
      *
      * @return the object identifier, or <tt>-1</tt> if the object has not been
-     *         saved
+     * saved
      */
     public long getId() {
         return id;
@@ -168,24 +158,6 @@ public class IMObject implements Serializable, Cloneable {
      */
     public void setId(long id) {
         this.id = id;
-    }
-
-    /**
-     * @return Returns the id.
-     * @deprecated use {@link #getId).
-     */
-    @Deprecated
-    public long getUid() {
-        return getId();
-    }
-
-    /**
-     * @param id The id to set.
-     * @deprecated use {@link #setId(long)} 
-     */
-    @Deprecated
-    public void setUid(long id) {
-        setId(id);
     }
 
     /* (non-Javadoc)
@@ -214,6 +186,16 @@ public class IMObject implements Serializable, Cloneable {
     }
 
     /**
+     * Returns the archetype identifier.
+     *
+     * @return the archetype identifier.
+     */
+    @Override
+    public String getArchetype() {
+        return archetypeId != null ? archetypeId.getShortName() : null;
+    }
+
+    /**
      * @return Returns the archetypeId.
      */
     public ArchetypeId getArchetypeId() {
@@ -224,11 +206,10 @@ public class IMObject implements Serializable, Cloneable {
      * Return the archetypeId as a string
      *
      * @return String
-     *         the fully qualified archetype id
+     * the fully qualified archetype id
      */
     public String getArchetypeIdAsString() {
-        return (this.archetypeId == null) ? null
-                : archetypeId.getQualifiedName();
+        return (this.archetypeId == null) ? null : archetypeId.getQualifiedName();
     }
 
     /**
@@ -236,6 +217,7 @@ public class IMObject implements Serializable, Cloneable {
      *
      * @return IMObjectReference
      */
+    @Override
     public IMObjectReference getObjectReference() {
         return new IMObjectReference(this);
     }
@@ -243,6 +225,7 @@ public class IMObject implements Serializable, Cloneable {
     /**
      * @return Returns the description.
      */
+    @Override
     public String getDescription() {
         return description;
     }
@@ -256,7 +239,7 @@ public class IMObject implements Serializable, Cloneable {
 
     /**
      * Returns the object link identifier.
-     * <p/>
+     * <p>
      * This is a UUID that is used to link objects until they can be made
      * persistent, and to provide support for object equality.
      *
@@ -324,53 +307,6 @@ public class IMObject implements Serializable, Cloneable {
      */
     public void setDetails(Map<String, Object> details) {
         this.details = details;
-    }
-
-    /**
-     * This method will retrieve a reference to a value collection. If the
-     * returned object is already an instance of a collection then it will
-     * return it as is. If the returned object is an instance of a Map then
-     * it will return the value objects
-     *
-     * @param path a xpath expression in to this object
-     * @return Pointer
-     *         a pointer to the location
-     */
-    @Deprecated
-    public Pointer pathToCollection(String path) {
-        Pointer ptr = pathToObject(path);
-        if (ptr != null) {
-            Object obj = ptr.getValue();
-            if (obj instanceof Map) {
-                ptr = JXPathHelper.newContext(obj).getPointer("values(.)");
-            } else if (obj instanceof PropertyCollection) {
-                ptr = JXPathHelper.newContext(obj).getPointer("values(.)");
-            }
-        }
-
-        return ptr;
-    }
-
-    /**
-     * This method will retrieve an attribute of this object
-     * give an xpath
-     *
-     * @param path an xpath expression in to this object
-     * @return Pointer
-     *         a pointer ot the object or null.
-     */
-    @Deprecated
-    public Pointer pathToObject(String path) {
-        Pointer ptr = null;
-
-        try {
-            ptr = JXPathHelper.newContext(this).getPointer(path);
-        } catch (Exception exception) {
-            log.warn("No path to: " + path + " for object of type: "
-                    + this.getClass().getName(), exception);
-        }
-
-        return ptr;
     }
 
     /**
@@ -443,6 +379,34 @@ public class IMObject implements Serializable, Cloneable {
                 .append("version", version)
                 .append("name", name)
                 .toString();
+    }
+
+    /**
+     * Determines if this is an instance of a particular archetype.
+     *
+     * @param archetype the archetype short name. May contain wildcards
+     * @return {@code true} if the object is an instance of {@code archetype}
+     */
+    @Override
+    public boolean isA(String archetype) {
+        return TypeHelper.isA(this, archetype);
+    }
+
+    /**
+     * Determines if an object is one of a set of archetypes.
+     *
+     * @param archetypes the archetype short names. May contain wildcards
+     * @return {@code true} if object is one of {@code archetypes}
+     */
+    @Override
+    public boolean isA(String... archetypes) {
+        return TypeHelper.isA(this, archetypes);
+    }
+
+    static {
+        STYLE = new StandardToStringStyle();
+        STYLE.setUseShortClassName(true);
+        STYLE.setUseIdentityHashCode(false);
     }
 }
 

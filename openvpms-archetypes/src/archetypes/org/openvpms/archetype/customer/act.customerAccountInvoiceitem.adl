@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -135,8 +135,17 @@
         <node name="reminders" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
               filter="actRelationship.invoiceItemReminder"/>
+        <node name="alerts" path="/sourceActRelationships"
+              type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
+              filter="actRelationship.invoiceItemAlert"/>
         <node name="event" path="/targetActRelationships"
               type="java.util.HashSet" baseName="TargetActRelationship" minCardinality="0" maxCardinality="1"
               filter="actRelationship.patientClinicalEventChargeItem" hidden="true"/>
+        <node name="invoice" path="/targetActRelationships"
+              type="java.util.HashSet" baseName="TargetActRelationship" minCardinality="0" maxCardinality="1"
+              filter="actRelationship.customerAccountInvoiceItem" hidden="true"/>
+        <node name="claims" path="/sourceActRelationships"
+              type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
+              filter="actRelationship.insuranceClaimInvoiceItem"/>
     </archetype>
 </archetypes>

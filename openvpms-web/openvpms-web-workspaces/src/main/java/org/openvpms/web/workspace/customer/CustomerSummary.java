@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -43,6 +43,7 @@ import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.query.ResultSetIterator;
 import org.openvpms.web.component.im.sms.SMSDialog;
 import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
@@ -57,6 +58,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.alert.Alert;
 import org.openvpms.web.workspace.alert.AlertSummary;
@@ -65,6 +67,7 @@ import org.openvpms.web.workspace.customer.communication.CustomerAlertQuery;
 import org.openvpms.web.workspace.summary.PartySummary;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -102,7 +105,7 @@ public class CustomerSummary extends PartySummary {
 
     /**
      * Returns summary information for a party.
-     * <p/>
+     * <p>
      * The summary includes any alerts.
      *
      * @param party the party
@@ -119,9 +122,7 @@ public class CustomerSummary extends PartySummary {
         column.add(ColumnFactory.create(Styles.SMALL_INSET, phone));
 
         Contact email = ContactHelper.getPreferredEmail(party);
-        if (email != null) {
-            column.add(ColumnFactory.create(Styles.SMALL_INSET, getEmail(email)));
-        }
+        column.add(ColumnFactory.create(Styles.SMALL_INSET, getEmail(email)));
         final Context context = getContext();
         if (getPreferences().getBoolean(PreferenceArchetypes.SUMMARY, "showCustomerAccount", true)) {
             Label balanceTitle = create("customer.account.balance");
@@ -230,6 +231,7 @@ public class CustomerSummary extends PartySummary {
      * @param party the party
      * @return the party's alerts
      */
+    @Override
     protected List<Alert> getAlerts(Party party) {
         List<Alert> result = queryAlerts(party);
         Lookup accountTypeLookup = partyRules.getAccountType(party);
@@ -238,6 +240,26 @@ public class CustomerSummary extends PartySummary {
             Lookup alertLookup = accountType.getAlert();
             if (alertLookup != null) {
                 result.add(new Alert(alertLookup));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the alerts for a party.
+     *
+     * @param party the party
+     * @return the party's alerts
+     */
+    protected List<Alert> queryAlerts(Party party) {
+        List<Alert> result = new ArrayList<>();
+        ResultSet<Act> set = createAlertsResultSet(party, 20);
+        ResultSetIterator<Act> iterator = new ResultSetIterator<>(set);
+        while (iterator.hasNext()) {
+            Act act = iterator.next();
+            Lookup lookup = ServiceHelper.getLookupService().getLookup(act, "alertType");
+            if (lookup != null) {
+                result.add(new Alert(lookup, act));
             }
         }
         return result;
@@ -258,8 +280,10 @@ public class CustomerSummary extends PartySummary {
 
     /**
      * Returns a button to launch an {@link MailDialog} for a customer.
+     * <p/>
+     * If the customer has no email address, displays 'No email', but still allows emails to be sent.
      *
-     * @param email the preferred email
+     * @param email the preferred email. May be {@code null}
      * @return a new button to launch the dialog
      */
     private Component getEmail(final Contact email) {
@@ -273,7 +297,8 @@ public class CustomerSummary extends PartySummary {
                 dialog.show();
             }
         });
-        mail.setText(ContactHelper.getEmail(email));
+        String address = (email != null) ? ContactHelper.getEmail(email) : Messages.get("customer.email.none");
+        mail.setText(address);
         return mail;
     }
 

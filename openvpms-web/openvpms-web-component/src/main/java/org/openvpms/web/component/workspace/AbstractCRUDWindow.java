@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -27,11 +27,14 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.DelegatingContext;
 import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.component.im.delete.AbstractIMObjectDeletionListener;
+import org.openvpms.web.component.im.delete.ConfirmingDeleter;
+import org.openvpms.web.component.im.delete.IMObjectDeleter;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditDialogFactory;
 import org.openvpms.web.component.im.edit.IMObjectActions;
@@ -43,11 +46,8 @@ import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
-import org.openvpms.web.component.im.util.AbstractIMObjectDeletionListener;
-import org.openvpms.web.component.im.util.DefaultIMObjectDeleter;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectCreatorListener;
-import org.openvpms.web.component.im.util.IMObjectDeleter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.mail.MailContext;
@@ -64,6 +64,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 
 /**
@@ -94,6 +95,21 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     public static final String PRINT_ID = "print";
 
     /**
+     * The archetypes that this may create.
+     */
+    private final Archetypes<T> archetypes;
+
+    /**
+     * The context.
+     */
+    private final Context context;
+
+    /**
+     * Help context.
+     */
+    private final HelpContext help;
+
+    /**
      * The object.
      */
     private T object;
@@ -107,11 +123,6 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * Determines the operations that may be performed on the selected object.
      */
     private IMObjectActions<T> actions;
-
-    /**
-     * The archetypes that this may create.
-     */
-    private final Archetypes<T> archetypes;
 
     /**
      * The listener.
@@ -129,19 +140,9 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     private ButtonSet buttons;
 
     /**
-     * The context.
-     */
-    private final Context context;
-
-    /**
      * Email context.
      */
     private MailContext mailContext;
-
-    /**
-     * Help context.
-     */
-    private final HelpContext help;
 
     /**
      * Constructs an {@code AbstractCRUDWindow}.
@@ -258,13 +259,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @return {@code true} if an object exists and there is no edit button or it is enabled
      */
     public boolean canEdit() {
-        boolean edit = false;
-        if (actions.canEdit(object)) {
-            ButtonSet buttons = getButtons();
-            Button button = (buttons != null) ? buttons.getButton(EDIT_ID) : null;
-            edit = button != null && button.isEnabled();
-        }
-        return edit;
+        return canEdit(object);
     }
 
     /**
@@ -283,7 +278,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     public void edit(List<Selection> path) {
         T object = getObject();
         if (object != null) {
-            if (canEdit()) {
+            if (canEdit(object)) {
                 if (object.isNew()) {
                     edit(object, path);
                 } else {
@@ -329,7 +324,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
 
     /**
      * Sets the mail context.
-     * <p/>
+     * <p>
      * This is used to determine email addresses when mailing.
      *
      * @param context the mail context. May be {@code null}
@@ -395,13 +390,15 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     }
 
     /**
-     * Creates a deleter to delete an object.
+     * Returns an {@link IMObjectDeleter} to delete an object.
+     * <p>
+     * This implementation returns an instance that prompts for confirmation.
      *
-     * @param object the object to delete
      * @return a new deleter
      */
-    protected IMObjectDeleter createDeleter(T object) {
-        return new DefaultIMObjectDeleter(getContext());
+    @SuppressWarnings("unchecked")
+    protected IMObjectDeleter<T> getDeleter() {
+        return (IMObjectDeleter<T>) ServiceHelper.getBean(ConfirmingDeleter.class);
     }
 
     /**
@@ -574,6 +571,22 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     }
 
     /**
+     * Determines if an object can be edited.
+     *
+     * @param object the object
+     * @return {@code true} if an object exists and there is no edit button or it is enabled
+     */
+    protected boolean canEdit(T object) {
+        boolean edit = false;
+        if (actions.canEdit(object)) {
+            ButtonSet buttons = getButtons();
+            Button button = (buttons != null) ? buttons.getButton(EDIT_ID) : null;
+            edit = button != null && button.isEnabled();
+        }
+        return edit;
+    }
+
+    /**
      * Edits an object.
      *
      * @param object the object to edit
@@ -597,9 +610,9 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @param object the object to delete
      */
     protected void delete(T object) {
-        IMObjectDeleter deleter = createDeleter(object);
+        IMObjectDeleter<T> deleter = getDeleter();
         HelpContext delete = getHelpContext().subtopic("delete");
-        deleter.delete(object, delete, new AbstractIMObjectDeletionListener<T>() {
+        deleter.delete(object, context, delete, new AbstractIMObjectDeletionListener<T>() {
             public void deleted(T object) {
                 onDeleted(object);
             }
@@ -612,7 +625,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
 
     /**
      * Invoked if an object may not be deleted.
-     * <p/>
+     * <p>
      * This implementation is a no-op
      *
      * @param object the object
@@ -701,7 +714,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
 
     /**
      * Creates a new edit dialog.
-     * <p/>
+     * <p>
      * This implementation uses {@link EditDialogFactory#create}.
      *
      * @param editor the editor
@@ -775,7 +788,8 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      */
     protected IMPrinter<T> createPrinter(T object) {
         ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
-        IMPrinter<T> printer = IMPrinterFactory.create(object, locator, context);
+        IMPrinterFactory factory = ServiceHelper.getBean(IMPrinterFactory.class);
+        IMPrinter<T> printer = factory.create(object, locator, context);
         HelpContext help = createPrintTopic(object);
         InteractiveIMPrinter<T> interactive = new InteractiveIMPrinter<>(printer, context, help);
         interactive.setMailContext(getMailContext());
@@ -792,8 +806,9 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
             ErrorDialog.show(Messages.format("imobject.noexist", DescriptorHelper.getDisplayName(previous)));
         } else {
             try {
-                ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, getContext());
-                IMPrinter<T> printer = IMPrinterFactory.create(object, locator, getContext());
+                ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
+                IMPrinterFactory factory = ServiceHelper.getBean(IMPrinterFactory.class);
+                IMPrinter<T> printer = factory.create(object, locator, context);
                 Document document = printer.getDocument(DocFormats.PDF_TYPE, false);
                 DownloadServlet.startDownload(document);
             } catch (OpenVPMSException exception) {
@@ -865,8 +880,42 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     }
 
     /**
+     * Creates an action listener that runs an action against the selected object when clicked.
+     * <p>
+     * The action is run with the latest instance of the selected object, but only if it matches the supplied archetype.
+     *
+     * @param archetype the archetype. May contain wildcards
+     * @param action    the action to execute, when the selected object is an instance of {@code archetype}
+     * @param title     the title resource bundle key, used when displaying an error dialog if the action fails
+     * @return a new listener
+     */
+    protected ActionListener action(final String archetype, final Consumer<T> action, final String title) {
+        return new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                T object = getObject();
+                if (TypeHelper.isA(object, archetype)) {
+                    try {
+                        T latest = IMObjectHelper.reload(object);
+                        if (latest != null) {
+                            action.accept(latest);
+                        } else {
+                            String displayName = DescriptorHelper.getDisplayName(object);
+                            ErrorDialog.show(Messages.get(title), Messages.format("imobject.noexist", displayName));
+                            onRefresh(object);
+                        }
+                    } catch (Throwable exception) {
+                        String displayName = DescriptorHelper.getDisplayName(object);
+                        ErrorHelper.show(Messages.get(title), displayName, object, exception);
+                    }
+                }
+            }
+        };
+    }
+
+    /**
      * A delegating context where location and stock location changes are not propagated.
-     * <p/>
+     * <p>
      * This is to prevent changes that an editor makes to the location/stock location from propagating to the global
      * context.
      */

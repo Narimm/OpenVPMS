@@ -11,20 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
 
 import org.openvpms.archetype.rules.prefs.Preferences;
-import org.openvpms.archetype.rules.user.UserArchetypes;
-import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.scheduling.Cell;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleColours;
@@ -44,14 +44,14 @@ import java.util.Map;
 public class TaskBrowser extends ScheduleBrowser {
 
     /**
-     * The task colours.
+     * The colour cache.
      */
-    private final ScheduleColours taskColours;
+    private final ScheduleColours colours;
 
     /**
-     * The clinician colours.
+     * The appointment rules.
      */
-    private final ScheduleColours clinicianColours;
+    private final AppointmentRules rules;
 
     /**
      * Constructs a {@link TaskBrowser}.
@@ -61,8 +61,8 @@ public class TaskBrowser extends ScheduleBrowser {
      */
     public TaskBrowser(Preferences prefs, Context context) {
         super(new TaskQuery(context, prefs), context);
-        taskColours = new ScheduleColours(ScheduleArchetypes.TASK_TYPE);
-        clinicianColours = new ScheduleColours(UserArchetypes.USER);
+        colours = ServiceHelper.getBean(ScheduleColours.class);
+        rules = ServiceHelper.getBean(AppointmentRules.class);
     }
 
     /**
@@ -104,7 +104,7 @@ public class TaskBrowser extends ScheduleBrowser {
      * @param events the events
      */
     protected ScheduleEventGrid createEventGrid(Date date, Map<Entity, List<PropertySet>> events) {
-        return new TaskGrid(getScheduleView(), date, events);
+        return new TaskGrid(getScheduleView(), date, events, rules);
     }
 
     /**
@@ -115,9 +115,9 @@ public class TaskBrowser extends ScheduleBrowser {
      */
     protected ScheduleTableModel createTableModel(ScheduleEventGrid grid) {
         if (grid.getSchedules().size() == 1) {
-            return new SingleScheduleTaskTableModel((TaskGrid) grid, getContext(), taskColours, clinicianColours);
+            return new SingleScheduleTaskTableModel((TaskGrid) grid, getContext(), colours);
         }
-        return new MultiScheduleTaskTableModel((TaskGrid) grid, getContext(), taskColours, clinicianColours);
+        return new MultiScheduleTaskTableModel((TaskGrid) grid, getContext(), colours);
     }
 
 }

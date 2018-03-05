@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
@@ -22,18 +22,16 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
-import org.openvpms.component.system.common.query.NodeSet;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
@@ -42,7 +40,6 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -70,7 +67,7 @@ public class IMObjectHelper {
      * @param reference the object reference. May be {@code null}
      * @return the object corresponding to {@code reference} or {@code null} if none exists
      */
-    public static IMObject getObject(IMObjectReference reference) {
+    public static IMObject getObject(Reference reference) {
         return getObject(reference, (Context) null);
     }
 
@@ -78,7 +75,7 @@ public class IMObjectHelper {
      * Returns an object given its reference.
      * This checks the specified context first. If not found in the context,
      * tries to retrieve it from the archetype service.
-     * <p/>
+     * <p>
      * Note that if the object in the context is only partially populated,
      * (as indicated by a {@code version < 0}), the actual object will
      * be retrieved from the archetype service.
@@ -87,7 +84,7 @@ public class IMObjectHelper {
      * @param context   the context to use. If {@code null} accesses the archetype service
      * @return the object corresponding to {@code reference} or {@code null} if none exists
      */
-    public static IMObject getObject(IMObjectReference reference, Context context) {
+    public static IMObject getObject(Reference reference, Context context) {
         IMObject result = null;
         if (reference != null) {
             if (context != null) {
@@ -95,8 +92,7 @@ public class IMObjectHelper {
             }
             if (result == null || result.getVersion() < 0) {
                 try {
-                    IArchetypeService service
-                            = ArchetypeServiceHelper.getArchetypeService();
+                    IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
                     result = service.get(reference);
                 } catch (OpenVPMSException error) {
                     log.error(error, error);
@@ -107,41 +103,12 @@ public class IMObjectHelper {
     }
 
     /**
-     * Returns nodes for an object, given its reference.
-     *
-     * @param reference the object reference. May be {@code null}
-     * @param nodes     the nodes to return
-     * @return the nodes of the object corresponding to {@code reference}
-     * or {@code null} if none exists
-     */
-    public static NodeSet getNodes(IMObjectReference reference,
-                                   String... nodes) {
-        NodeSet result = null;
-        if (reference != null) {
-            try {
-                IArchetypeService service
-                        = ArchetypeServiceHelper.getArchetypeService();
-                ArchetypeQuery query = new ArchetypeQuery(reference);
-                query.setCountResults(false);
-                IPage<NodeSet> page = service.getNodes(query,
-                                                       Arrays.asList(nodes));
-                if (page.getResults().size() == 1) {
-                    result = page.getResults().get(0);
-                }
-            } catch (OpenVPMSException error) {
-                log.error(error, error);
-            }
-        }
-        return result;
-    }
-
-    /**
      * Returns the name of an object, given its reference.
      *
      * @param reference the object reference. May be {@code null}
      * @return the name or {@code null} if none exists
      */
-    public static String getName(IMObjectReference reference) {
+    public static String getName(Reference reference) {
         return reference != null ? getName(reference, ServiceHelper.getArchetypeService()) : null;
     }
 
@@ -152,7 +119,7 @@ public class IMObjectHelper {
      * @param service   the archetype service
      * @return the name or {@code null} if none exists
      */
-    public static String getName(IMObjectReference reference, IArchetypeService service) {
+    public static String getName(Reference reference, IArchetypeService service) {
         String result = null;
         try {
             result = ArchetypeQueryHelper.getName(reference, service);
@@ -168,7 +135,7 @@ public class IMObjectHelper {
      * @param reference the object reference. May be {@code null}
      * @return {@code true} if the object is active, otherwise {@code false}
      */
-    public static boolean isActive(IMObjectReference reference) {
+    public static boolean isActive(Reference reference) {
         if (reference != null) {
             try {
                 ObjectRefConstraint constraint
@@ -199,8 +166,7 @@ public class IMObjectHelper {
      * @return the object matching {@code reference}, or {@code shortNames},
      * or {@code null} if there are no matches
      */
-    public static IMObject getObject(IMObjectReference reference,
-                                     String[] shortNames, Context context) {
+    public static IMObject getObject(Reference reference, String[] shortNames, Context context) {
         IMObject result;
         if (reference == null) {
             result = match(shortNames, context);
@@ -221,8 +187,7 @@ public class IMObjectHelper {
         T result = null;
         if (object != null) {
             try {
-                IArchetypeService service
-                        = ArchetypeServiceHelper.getArchetypeService();
+                IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
                 result = (T) service.get(object.getObjectReference());
             } catch (OpenVPMSException error) {
                 log.error(error, error);
@@ -253,8 +218,7 @@ public class IMObjectHelper {
      * @return the first object from the collection with matching short name, or
      * {@code null} if none exists.
      */
-    public static <T extends IMObject> T
-    getObject(String shortName, Collection<T> objects) {
+    public static <T extends IMObject> T getObject(String shortName, Collection<T> objects) {
         T result = null;
         for (T object : objects) {
             if (TypeHelper.isA(object, shortName)) {
@@ -267,13 +231,14 @@ public class IMObjectHelper {
 
     /**
      * Returns an object corresponding to a reference, from a list of objects.
-     * <p/>
+     * <p>
      *
      * @param reference the reference. May be {@code null}
      * @param objects   the list of objects. May contain nulls.
      * @return the corresponding object, or {@code null} if none is found
      */
-    public static <T extends IMObject> T getObject(IMObjectReference reference, Collection<T> objects) {
+    public static <T extends org.openvpms.component.model.object.IMObject> T getObject(Reference reference,
+                                                                                       Collection<T> objects) {
         if (reference != null) {
             for (T object : objects) {
                 if (object != null && ObjectUtils.equals(object.getObjectReference(), reference)) {
@@ -351,41 +316,6 @@ public class IMObjectHelper {
     }
 
     /**
-     * Determines if the current object being edited matches the specified
-     * archetype range.
-     *
-     * @param shortNames the archetype range
-     * @param context    the context
-     * @return the current object being edited, or {@code null} if its type
-     * doesn't matches the specified descriptor's archetype range
-     */
-    private static IMObject match(String[] shortNames, Context context) {
-        IMObject result = null;
-        IMObject object = context.getCurrent();
-        if (object != null) {
-            for (String shortName : shortNames) {
-                if (TypeHelper.matches(object.getArchetypeId(), shortName)) {
-                    result = object;
-                    break;
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Determines if string matches a regular expression.
-     *
-     * @param value  the value. May be {@code null}
-     * @param regexp the regular expression
-     * @return {@code true} if it matches; otherwise {@code false}
-     * @throws PatternSyntaxException if the expression is invalid
-     */
-    private static boolean matches(String value, String regexp) {
-        return (value != null && value.toLowerCase().matches(regexp));
-    }
-
-    /**
      * Determines if an object has the same object reference and version
      * as another.
      *
@@ -428,5 +358,28 @@ public class IMObjectHelper {
         }
         return result;
     }
+
+    /**
+     * Determines if the current object being edited matches the specified archetype range.
+     *
+     * @param shortNames the archetype range
+     * @param context    the context
+     * @return the current object being edited, or {@code null} if its type doesn't matches the specified
+     * descriptor's archetype range
+     */
+    private static IMObject match(String[] shortNames, Context context) {
+        IMObject result = null;
+        IMObject object = context.getCurrent();
+        if (object != null) {
+            for (String shortName : shortNames) {
+                if (TypeHelper.matches(object.getArchetypeId(), shortName)) {
+                    result = object;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
 }
 

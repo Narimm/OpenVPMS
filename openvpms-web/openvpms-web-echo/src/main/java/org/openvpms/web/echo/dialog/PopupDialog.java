@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.dialog;
@@ -21,7 +21,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.VetoListener;
-import org.openvpms.web.echo.event.Vetoable;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 
@@ -355,11 +354,9 @@ public abstract class PopupDialog extends PopupWindow {
      */
     protected void onCancel() {
         if (cancelListener != null) {
-            cancelListener.onVeto(new Vetoable() {
-                public void veto(boolean veto) {
-                    if (!veto) {
-                        doCancel();
-                    }
+            cancelListener.onVeto(veto -> {
+                if (!veto) {
+                    doCancel();
                 }
             });
         } else {
@@ -399,11 +396,9 @@ public abstract class PopupDialog extends PopupWindow {
      */
     protected void onSkip() {
         if (skipListener != null) {
-            skipListener.onVeto(new Vetoable() {
-                public void veto(boolean veto) {
-                    if (!veto) {
-                        doSkip();
-                    }
+            skipListener.onVeto(veto -> {
+                if (!veto) {
+                    doSkip();
                 }
             });
         } else {
@@ -450,7 +445,7 @@ public abstract class PopupDialog extends PopupWindow {
      *
      * @param action the action
      */
-    protected void close(String action) {
+    public void close(String action) {
         setAction(action);
         close();
     }

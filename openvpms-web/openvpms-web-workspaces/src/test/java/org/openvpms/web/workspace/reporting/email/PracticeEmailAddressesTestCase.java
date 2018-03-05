@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.email;
@@ -24,11 +24,9 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.mail.EmailAddress;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -45,9 +43,8 @@ public class PracticeEmailAddressesTestCase extends ArchetypeServiceTest {
     @Test
     public void testGetAddress() {
         Party practice = TestHelper.getPractice();
-        List<Contact> contacts = new ArrayList<>(practice.getContacts());
-        for (Contact contact : contacts) {
-            if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
+        for (org.openvpms.component.model.party.Contact contact : new ArrayList<>(practice.getContacts())) {
+            if (contact.isA(ContactArchetypes.EMAIL)) {
                 practice.removeContact(contact);
             }
         }

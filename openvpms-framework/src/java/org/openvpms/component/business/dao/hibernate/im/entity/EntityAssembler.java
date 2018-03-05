@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
@@ -28,6 +28,8 @@ import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+
+import java.util.Set;
 
 
 /**
@@ -83,18 +85,20 @@ public abstract class EntityAssembler<T extends Entity, DO extends EntityDO> ext
      * @param context the assembly context
      */
     @Override
+    @SuppressWarnings("unchecked")
     protected void assembleDO(DO target, T source, DOState state, Context context) {
         super.assembleDO(target, source, state, context);
 
-        IDENT.assembleDO(target.getIdentities(), source.getIdentities(), state, context);
+        IDENT.assembleDO(target.getIdentities(), (Set<EntityIdentity>) (Set) source.getIdentities(), state, context);
 
-        LOOKUPS.assembleDO(target.getClassifications(), source.getClassifications(), state, context);
+        LOOKUPS.assembleDO(target.getClassifications(), (Set<Lookup>) (Set) source.getClassifications(), state,
+                           context);
 
-        RELATIONSHIP.assembleDO(target.getSourceEntityRelationships(), source.getSourceEntityRelationships(),
-                                state, context);
-        RELATIONSHIP.assembleDO(target.getTargetEntityRelationships(), source.getTargetEntityRelationships(),
-                                state, context);
-        LINKS.assembleDO(target.getEntityLinks(), source.getEntityLinks(), state, context);
+        RELATIONSHIP.assembleDO(target.getSourceEntityRelationships(),
+                                (Set<EntityRelationship>) (Set) source.getSourceEntityRelationships(), state, context);
+        RELATIONSHIP.assembleDO(target.getTargetEntityRelationships(),
+                                (Set<EntityRelationship>) (Set) source.getTargetEntityRelationships(), state, context);
+        LINKS.assembleDO(target.getEntityLinks(), (Set<EntityLink>) (Set) source.getEntityLinks(), state, context);
     }
 
     /**
@@ -105,19 +109,20 @@ public abstract class EntityAssembler<T extends Entity, DO extends EntityDO> ext
      * @param context the assembly context
      */
     @Override
+    @SuppressWarnings("unchecked")
     protected void assembleObject(T target, DO source, Context context) {
         super.assembleObject(target, source, context);
-        IDENT.assembleObject(target.getIdentities(), source.getIdentities(), context);
+        IDENT.assembleObject((Set<EntityIdentity>) (Set) target.getIdentities(), source.getIdentities(), context);
 
-        LOOKUPS.assembleObject(target.getClassifications(), source.getClassifications(), context);
+        LOOKUPS.assembleObject((Set<Lookup>) (Set) target.getClassifications(), source.getClassifications(), context);
 
-        RELATIONSHIP.assembleObject(target.getSourceEntityRelationships(), source.getSourceEntityRelationships(),
-                                    context);
+        RELATIONSHIP.assembleObject((Set<EntityRelationship>) (Set) target.getSourceEntityRelationships(),
+                                    source.getSourceEntityRelationships(), context);
 
-        RELATIONSHIP.assembleObject(target.getTargetEntityRelationships(), source.getTargetEntityRelationships(),
-                                    context);
+        RELATIONSHIP.assembleObject((Set<EntityRelationship>) (Set) target.getTargetEntityRelationships(),
+                                    source.getTargetEntityRelationships(), context);
 
-        LINKS.assembleObject(target.getEntityLinks(), source.getEntityLinks(), context);
+        LINKS.assembleObject((Set<EntityLink>) (Set) target.getEntityLinks(), source.getEntityLinks(), context);
     }
 
 }

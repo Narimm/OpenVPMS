@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.system.common.util;
@@ -28,7 +28,7 @@ public class DateHelper {
 
     /**
      * Determines if a time is between two dates.
-     * <p/>
+     * <p>
      * The lower bound is inclusive, the upper bound exclusive.
      * <ul>
      * <li>if both {@code from} and {@code to} are non-null, {@code time} is between
@@ -37,7 +37,7 @@ public class DateHelper {
      * <li>if {@code to} is {@code null}, then {@code time} is between if {@code from <= time}</li>
      * <li>if {@code from} and {@code to} are both {@code null}, this always returns {@code true}</li>
      * </ul>
-     * <p/>
+     * <p>
      * NOTE: if both {@code from} and {@code to} are specified, {@code to} must be {@code >= from}
      *
      * @param time the time
@@ -51,7 +51,7 @@ public class DateHelper {
 
     /**
      * Determines if two date ranges intersect.
-     * <p/>
+     * <p>
      * NOTE: if both {@code fromN} and {@code toN} are specified, {@code toN} must be {@code >= fromN}
      *
      * @param from1 the start of the first date range. May be {@code null}
@@ -79,23 +79,47 @@ public class DateHelper {
 
     /**
      * Helper to compare two dates.
-     * <p/>
+     * <p>
      * This is functionally equivalent to the {@link Date#compareTo(Date)} method, except that it doesn't throw
      * {@code ClassCastExceptions} if {@code lhs} is an instance of a {@link Timestamp Timestamp} and {@code rhs} isn't.
-     * <p/>
+     * <p>
      * For timestamps, the nanoseconds are ignored.
      *
      * @param lhs the date
      * @param rhs the date to compare with
      * @return {@code 0} if the {@code lhs} is equal to {@code rhs};
-     *         a value less than {@code 0} if {@code lhs} is before
-     *         {@code rhs}; and a value greater than
-     *         {@code 0} if {@code lhs} is after {@code rhs}.
+     * a value less than {@code 0} if {@code lhs} is before
+     * {@code rhs}; and a value greater than
+     * {@code 0} if {@code lhs} is after {@code rhs}.
      */
     public static int compareTo(Date lhs, Date rhs) {
         long lhsTime = lhs.getTime();
         long rhsTime = rhs.getTime();
         return (lhsTime < rhsTime ? -1 : (lhsTime == rhsTime ? 0 : 1));
     }
+
+    /**
+     * Compares two date/times, with support for nulls.
+     *
+     * @param d1       the first date/time. May be {@code null}
+     * @param d2       the second date/time. May be {@code null}
+     * @param nullHigh if {@code true} nulls are considered greater than any date, else they are lower
+     * @return the {@code 0} if {@code d1} is equal to this {@code d2};
+     * a value less than {@code 0} if {@code d1}  is before the {@code d2};
+     * and a value greater than {@code 0} if {@code d1} is after {@code d2}.
+     */
+    public static int compareTo(Date d1, Date d2, boolean nullHigh) {
+        if (d1 == null || d2 == null) {
+            if (d1 == null && d2 == null) {
+                return 0;
+            } else if (d1 == null) {
+                return nullHigh ? 1 : -1;
+            } else {
+                return nullHigh ? -1 : 1;
+            }
+        }
+        return DateHelper.compareTo(d1, d2);
+    }
+
 
 }

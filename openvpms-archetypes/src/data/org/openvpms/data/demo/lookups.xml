@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetype>
@@ -83,6 +83,7 @@
     <data archetype="lookup.uom" code="GRAMS" unitCode="GRM" printedName="g"/>
     <data archetype="lookup.uom" code="LITRES" unitCode="LTR" printedName="l"/>
     <data archetype="lookup.uom" code="AMPOULE" unitCode="AM"/>
+    <data archetype="lookup.uom" code="MG" unitCode="MGM" printedName="mg"/>
     <data archetype="lookup.uom" code="MLS" unitCode="MLT" printedName="ml"/>
     <data archetype="lookup.uom" code="TUBE" unitCode="TU"/>
     <data id="Kilogram" archetype="lookup.uom" code="KILOGRAM" unitCode="KGM" printedName="kg"/>
@@ -140,10 +141,8 @@
     <data archetype="lookup.personTitle" code="MS"/>
     <data archetype="lookup.personTitle" code="DR"/>
     <data archetype="lookup.personTitle" code="LADY"/>
-    <data archetype="lookup.customerAlertType" code="BAD_DEBT" priority="HIGH" colour="0xFF0000"/>
-    <data archetype="lookup.patientAlertType" code="ALLERGY" priority="HIGH" colour="0xFF0000"/>
-    <data archetype="lookup.patientAlertType" code="AGGRESSION" priority="HIGH" colour="0xFF0000"/>
-    <data archetype="lookup.patientAlertType" code="OTHER" defaultLookup="true" priority="MEDIUM" colour="0xFFFF00"/>
+    <data archetype="lookup.patientAlertType" code="ALLERGY"/>
+    <data archetype="lookup.patientAlertType" code="AGGRESSION"/>
     <data archetype="lookup.reportType" code="CUSTOMER"/>
     <data archetype="lookup.reportType" code="PATIENT"/>
     <data archetype="lookup.reportType" code="SUPPLIER"/>
@@ -156,6 +155,7 @@
     <data archetype="lookup.pricingGroup" code="MAIN" name="Main Pricing Group"/>
     <data archetype="lookup.pricingGroup" code="BRANCH" name="Branch Pricing Group"/>
 
+    <data archetype="lookup.addressformat" code="DEFAULT_ADDRESS_FORMAT" name="Default Address Format"/>
     <data archetype="lookup.fileNameFormat" code="DOC_NAME_DOC_DATE"
           name="Document name - document date"
           description="Valid for customer, patient, and supplier documents only"
@@ -214,4 +214,13 @@
           name="Description"
           description="User name format including the description"
           expression="expr:ifempty($description, $name)"/>
+
+    <data archetype="lookup.productDrugSchedule" code="S1" name="S1"/>
+    <data archetype="lookup.productDrugSchedule" code="S2" name="S2"/>
+    <data archetype="lookup.productDrugSchedule" code="S3" name="S3"/>
+    <data archetype="lookup.productDrugSchedule" code="S4" name="S4" restricted="true"/>
+    <data archetype="lookup.productDrugSchedule" code="S5" name="S5"/>
+    <data archetype="lookup.productDrugSchedule" code="S6" name="S6"/>
+    <data archetype="lookup.productDrugSchedule" code="S7" name="S7"/>
+    <data archetype="lookup.productDrugSchedule" code="S8" name="S8"/>
 </archetype>

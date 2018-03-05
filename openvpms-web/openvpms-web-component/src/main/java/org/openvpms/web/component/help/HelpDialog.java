@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.help;
@@ -37,6 +37,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.util.StringUtilities;
+import org.openvpms.version.Version;
 import org.openvpms.web.component.subscription.SubscriptionHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.dialog.ModalDialog;
@@ -50,7 +51,6 @@ import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.version.Version;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -59,6 +59,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import static org.openvpms.web.echo.style.Styles.BOLD;
 import static org.openvpms.web.echo.style.Styles.INSET;
@@ -312,7 +313,8 @@ public class HelpDialog extends ModalDialog {
         version.setText(Messages.format("helpdialog.version", Version.VERSION, Version.REVISION));
 
         Label locale = LabelFactory.create(null, "small");
-        locale.setText(Messages.format("helpdialog.locale", Locale.getDefault().toLanguageTag()));
+        locale.setText(Messages.format("helpdialog.locale", Locale.getDefault().toLanguageTag(),
+                                       TimeZone.getDefault().getID()));
 
         Row labelRow = RowFactory.create("InsetX", RowFactory.create(Styles.CELL_SPACING, version, locale));
         RowLayoutData right = new RowLayoutData();

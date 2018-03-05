@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -25,7 +25,7 @@ import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.customer.CustomerBrowser;
 import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.component.workspace.BrowserCRUDWorkspace;
+import org.openvpms.web.component.workspace.QueryBrowserCRUDWorkspace;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 
@@ -35,7 +35,7 @@ import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
  *
  * @author Tim Anderson
  */
-public abstract class CustomerActWorkspace<T extends Act> extends BrowserCRUDWorkspace<Party, T> {
+public abstract class CustomerActWorkspace<T extends Act> extends QueryBrowserCRUDWorkspace<Party, T> {
 
     /**
      * User preferences.

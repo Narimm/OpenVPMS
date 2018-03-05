@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.act;
@@ -23,13 +23,14 @@ import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Participation;
 
+import java.util.Set;
 
 /**
- * An {@link Assembler} responsible for assembling {@link ActDO} instances from
- * {@link Act}s and vice-versa.
+ * An {@link Assembler} responsible for assembling {@link ActDO} instances from {@link Act}s and vice-versa.
  *
  * @author Tim Anderson
  */
@@ -37,18 +38,22 @@ public abstract class AbstractActAssembler<T extends Act, DO extends ActDO>
         extends IMObjectAssembler<T, DO> {
 
     /**
+     * Assembles sets of identities.
+     */
+    private static final SetAssembler<ActIdentity, ActIdentityDO> IDENTITIES
+            = SetAssembler.create(ActIdentity.class, ActIdentityDO.class);
+
+    /**
      * Assembles sets of participations.
      */
     private static final SetAssembler<Participation, ParticipationDO>
-            PARTICIPATIONS = SetAssembler.create(Participation.class,
-                                                 ParticipationDO.class);
+            PARTICIPATIONS = SetAssembler.create(Participation.class, ParticipationDO.class);
 
     /**
      * Assembles sets of act relationships.
      */
     private static final SetAssembler<ActRelationship, ActRelationshipDO>
-            RELATIONSHIPS = SetAssembler.create(ActRelationship.class,
-                                                ActRelationshipDO.class);
+            RELATIONSHIPS = SetAssembler.create(ActRelationship.class, ActRelationshipDO.class);
 
     /**
      * Constructs an {@link AbstractActAssembler}.
@@ -57,8 +62,7 @@ public abstract class AbstractActAssembler<T extends Act, DO extends ActDO>
      * @param typeDO the data object interface type
      * @param impl   the data object implementation type
      */
-    public AbstractActAssembler(Class<T> type, Class<DO> typeDO,
-                                Class<? extends IMObjectDOImpl> impl) {
+    public AbstractActAssembler(Class<T> type, Class<DO> typeDO, Class<? extends IMObjectDOImpl> impl) {
         super(type, typeDO, impl);
     }
 
@@ -71,8 +75,8 @@ public abstract class AbstractActAssembler<T extends Act, DO extends ActDO>
      * @param context the assembly context
      */
     @Override
-    protected void assembleDO(DO target, T source, DOState state,
-                              Context context) {
+    @SuppressWarnings("unchecked")
+    protected void assembleDO(DO target, T source, DOState state, Context context) {
         super.assembleDO(target, source, state, context);
         target.setTitle(source.getTitle());
         target.setActivityStartTime(source.getActivityStartTime());
@@ -80,14 +84,12 @@ public abstract class AbstractActAssembler<T extends Act, DO extends ActDO>
         target.setReason(source.getReason());
         target.setStatus(source.getStatus());
         target.setStatus2(source.getStatus2());
+        IDENTITIES.assembleDO(target.getIdentities(), (Set<ActIdentity>) (Set) source.getIdentities(), state, context);
         RELATIONSHIPS.assembleDO(target.getSourceActRelationships(),
-                                 source.getSourceActRelationships(),
-                                 state, context);
+                                 (Set<ActRelationship>) (Set) source.getSourceActRelationships(), state, context);
         RELATIONSHIPS.assembleDO(target.getTargetActRelationships(),
-                                 source.getTargetActRelationships(),
-                                 state, context);
-        PARTICIPATIONS.assembleDO(target.getParticipations(),
-                                  source.getParticipations(),
+                                 (Set<ActRelationship>) (Set) source.getTargetActRelationships(), state, context);
+        PARTICIPATIONS.assembleDO(target.getParticipations(), (Set<Participation>) (Set) source.getParticipations(),
                                   state, context);
 
         // duplicate the act's timestamps to improve performance of queries
@@ -105,6 +107,7 @@ public abstract class AbstractActAssembler<T extends Act, DO extends ActDO>
      * @param context the assembly context
      */
     @Override
+    @SuppressWarnings("unchecked")
     protected void assembleObject(T target, DO source, Context context) {
         super.assembleObject(target, source, context);
         target.setTitle(source.getTitle());
@@ -113,14 +116,12 @@ public abstract class AbstractActAssembler<T extends Act, DO extends ActDO>
         target.setReason(source.getReason());
         target.setStatus(source.getStatus());
         target.setStatus2(source.getStatus2());
-        RELATIONSHIPS.assembleObject(target.getSourceActRelationships(),
-                                     source.getSourceActRelationships(),
-                                     context);
-        RELATIONSHIPS.assembleObject(target.getTargetActRelationships(),
-                                     source.getTargetActRelationships(),
-                                     context);
-        PARTICIPATIONS.assembleObject(target.getParticipations(),
-                                      source.getParticipations(),
+        IDENTITIES.assembleObject((Set<ActIdentity>) (Set) target.getIdentities(), source.getIdentities(), context);
+        RELATIONSHIPS.assembleObject((Set<ActRelationship>) (Set) target.getSourceActRelationships(),
+                                     source.getSourceActRelationships(), context);
+        RELATIONSHIPS.assembleObject((Set<ActRelationship>) (Set) target.getTargetActRelationships(),
+                                     source.getTargetActRelationships(), context);
+        PARTICIPATIONS.assembleObject((Set<Participation>) (Set) target.getParticipations(), source.getParticipations(),
                                       context);
     }
 

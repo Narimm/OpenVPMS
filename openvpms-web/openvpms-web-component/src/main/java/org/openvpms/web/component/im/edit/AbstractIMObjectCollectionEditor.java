@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -19,7 +19,7 @@ package org.openvpms.web.component.im.edit;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.AbstractModifiable;
@@ -272,12 +272,13 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     }
 
     /**
-     * Adds an object to the collection.
+     * Adds an object to the collection, if it doesn't exist.
      *
      * @param object the object to add
+     * @return {@code true} if the object was added, otherwise {@code false}
      */
-    public void add(IMObject object) {
-        collection.add(object);
+    public boolean add(IMObject object) {
+        return collection.add(object);
     }
 
     /**
@@ -291,7 +292,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
 
     /**
      * Returns the listener to receive update notifications.
-     * <p>
+     * <p/>
      * This delegates to {@link #onModified(Modifiable)}.
      *
      * @return the listener
@@ -302,7 +303,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
 
     /**
      * Validates the object.
-     * <p>
+     * <p/>
      * This validates the collection.
      *
      * @param validator the validator
@@ -369,7 +370,7 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
 
     /**
      * Helper to return an object given its reference.
-     * <p>
+     * <p/>
      * This implementation uses the cache associated with the layout context.
      *
      * @param reference the reference. May be {@code null}

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.problem;
@@ -104,7 +104,7 @@ public class ProblemHierarchyIteratorTestCase extends ArchetypeServiceTest {
      */
     private void check(List<Act> problems, String[] shortNames, boolean sortAscending, Act... expected) {
         int index = 0;
-        ProblemFilter filter = new ProblemFilter(shortNames, sortAscending);
+        ProblemFilter filter = new ProblemFilter(shortNames, null, sortAscending);
         for (Act act : new ProblemHierarchyIterator(problems, filter)) {
             assertEquals(expected[index++], act);
         }

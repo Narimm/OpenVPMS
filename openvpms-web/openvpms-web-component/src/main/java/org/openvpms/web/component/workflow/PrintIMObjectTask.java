@@ -11,13 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workflow;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
@@ -25,6 +25,7 @@ import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -155,7 +156,8 @@ public class PrintIMObjectTask extends AbstractTask {
     protected void print(final IMObject object, final TaskContext context) {
         try {
             ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
-            IMPrinter<IMObject> printer = IMPrinterFactory.create(object, locator, context);
+            IMPrinterFactory factory = ServiceHelper.getBean(IMPrinterFactory.class);
+            IMPrinter<IMObject> printer = factory.create(object, locator, context);
             boolean skip = !isRequired() && enableSkip;
             HelpContext help = context.getHelpContext().topic(object, "print");
             InteractiveIMPrinter<IMObject> iPrinter = createPrinter(printer, skip, context, help);

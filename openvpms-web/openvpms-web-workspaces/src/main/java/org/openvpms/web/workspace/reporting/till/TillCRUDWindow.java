@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.till;
@@ -38,7 +38,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -50,8 +50,9 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
-import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.till.CashDrawer;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
@@ -371,8 +372,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         final FinancialAct object = IMObjectHelper.reload(getObject());
         if (object != null) {
             try {
-                IPage<ObjectSet> set = new TillBalanceQuery(object, ServiceHelper.getArchetypeService()).query();
-                IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), TILL_BALANCE, getContext());
+                IMPrinter<ObjectSet> printer = createTillBalanceReport(object);
                 String displayName = DescriptorHelper.getDisplayName(TILL_BALANCE);
                 String title = Messages.format("imobject.print.title", displayName);
                 HelpContext help = getHelpContext().subtopic("print");
@@ -402,8 +402,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         final FinancialAct object = IMObjectHelper.reload(getObject());
         if (object != null) {
             try {
-                IPage<ObjectSet> set = new TillBalanceQuery(object, ServiceHelper.getArchetypeService()).query();
-                IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), TILL_BALANCE, getContext());
+                IMPrinter<ObjectSet> printer = createTillBalanceReport(object);
                 Document document = printer.getDocument();
                 DownloadServlet.startDownload(document);
             } catch (OpenVPMSException exception) {
@@ -620,13 +619,27 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     }
 
     /**
+     * Creates a printer to generate a till balance report.
+     *
+     * @param object thhe till balance
+     * @return a new printer
+     */
+    private IMPrinter<ObjectSet> createTillBalanceReport(FinancialAct object) {
+        IPage<ObjectSet> set = new TillBalanceQuery(object, ServiceHelper.getArchetypeService()).query();
+        IMPrinterFactory factory = ServiceHelper.getBean(IMPrinterFactory.class);
+        Context context = getContext();
+        ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(TILL_BALANCE, context);
+        return factory.createObjectSetReportPrinter(set.getResults(), locator, context);
+    }
+
+    /**
      * Layout strategy for till balance acts that displays the start and end times as date/times.
      */
     private class TillBalanceActLayoutStrategy extends LayoutStrategy {
 
         /**
          * Apply the layout strategy.
-         * <p/>
+         * <p>
          * This renders an object in a {@code Component}, using a factory to create the child components.
          *
          * @param object     the object to apply

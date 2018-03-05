@@ -11,14 +11,18 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workflow;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.web.component.im.delete.AbstractIMObjectDeleter;
+import org.openvpms.web.component.im.delete.DefaultIMObjectDeletionListener;
+import org.openvpms.web.component.im.delete.IMObjectDeletionHandlerFactory;
+import org.openvpms.web.component.im.delete.SilentIMObjectDeleter;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditDialogFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -26,10 +30,7 @@ import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
-import org.openvpms.web.component.im.util.IMObjectDeleter;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.im.util.SilentIMObjectDeleter;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.WindowPaneListener;
@@ -43,6 +44,11 @@ import org.openvpms.web.system.ServiceHelper;
  * @author Tim Anderson
  */
 public class EditIMObjectTask extends AbstractTask {
+
+    /**
+     * Determines if the object should be edited displaying a UI.
+     */
+    private final boolean interactive;
 
     /**
      * The object to edit.
@@ -73,11 +79,6 @@ public class EditIMObjectTask extends AbstractTask {
      * Properties to create the object with.
      */
     private TaskProperties createProperties;
-
-    /**
-     * Determines if the object should be edited displaying a UI.
-     */
-    private final boolean interactive;
 
     /**
      * Determines if the UI should be displayed if a the object is invalid.
@@ -191,11 +192,11 @@ public class EditIMObjectTask extends AbstractTask {
 
     /**
      * Determines if the object should be deleted if the task is cancelled or skipped.
-     * <p/>
+     * <p>
      * Defaults to {@code false}.
-     * <p/>
+     * <p>
      * Note that no checking is performed to see if the object participates in entity relationships before being
-     * deleted. To do this, use {@link IMObjectDeleter} instead.
+     * deleted. To do this, use {@link AbstractIMObjectDeleter} instead.
      *
      * @param delete if {@code true} delete the object on cancel or skip
      */
@@ -205,7 +206,7 @@ public class EditIMObjectTask extends AbstractTask {
 
     /**
      * Starts the task.
-     * <p/>
+     * <p>
      * The registered {@link TaskListener} will be notified on completion or failure.
      *
      * @param context the task context
@@ -271,7 +272,7 @@ public class EditIMObjectTask extends AbstractTask {
 
     /**
      * Edits an object.
-     * <p/>
+     * <p>
      * Creates a new editor via {@link #createEditor} before delegating
      * to {@link #interactiveEdit}, if editing is interactive, or {@link #backgroundEdit} if not.
      *
@@ -339,7 +340,7 @@ public class EditIMObjectTask extends AbstractTask {
     /**
      * Attempts to edit an object in the background. Editing is delegated
      * to {@link #edit(IMObjectEditor, TaskContext)}.
-     * <p/>
+     * <p>
      * If the editor is valid after editing, the object will be saved.
      * If not,  and {@link #showEditorOnError} is {@code true}, an interactive
      * edit will occur, otherwise the edit will be cancelled.
@@ -447,8 +448,10 @@ public class EditIMObjectTask extends AbstractTask {
                 object = IMObjectHelper.reload(object);
                 if (object != null) {
                     // make sure the the last saved instance is being deleted to avoid validation errors
-                    IMObjectDeleter deleter = new SilentIMObjectDeleter(context);
-                    deleter.delete(object, context.getHelpContext(), new DefaultIMObjectDeletionListener<IMObject>());
+                    IMObjectDeletionHandlerFactory factory
+                            = ServiceHelper.getBean(IMObjectDeletionHandlerFactory.class);
+                    SilentIMObjectDeleter<IMObject> deleter = new SilentIMObjectDeleter<>(factory);
+                    deleter.delete(object, context, context.getHelpContext(), new DefaultIMObjectDeletionListener<>());
                 }
             } catch (OpenVPMSException exception) {
                 ErrorHelper.show(exception);

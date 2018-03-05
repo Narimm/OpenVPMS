@@ -22,7 +22,6 @@ import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.mail.EmailAddress;
 import org.openvpms.web.component.property.Property;
@@ -38,7 +37,7 @@ import javax.mail.internet.InternetAddress;
  *
  * @author Tim Anderson
  */
-public class EmailEditor extends AbstractIMObjectEditor {
+public class EmailEditor extends AbstractContactEditor {
 
     /**
      * The default value for the name node.

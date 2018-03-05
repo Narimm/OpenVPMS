@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetype>
@@ -60,9 +60,8 @@
     <data archetype="lookup.contactPurpose" code="MOBILE"/>
     <data archetype="lookup.contactPurpose" code="FAX"/>
     <data id="GST" archetype="lookup.taxType" code="GST" rate="10.0" taxScheme="GST" taxCategory="S"/>
-    <data archetype="lookup.patientAlertType" code="ALLLERGY" priority="HIGH" colour="0xFF0000"/>
-    <data archetype="lookup.patientAlertType" code="AGGRESSION" priority="HIGH" colour="0xFF0000"/>
-    <data archetype="lookup.patientAlertType" code="OTHER" priority="HIGH" colour="0xFF0000" defaultLookup="true"/>
+    <data archetype="lookup.patientAlertType" code="ALLERGY"/>
+    <data archetype="lookup.patientAlertType" code="AGGRESSION"/>
     <data archetype="lookup.customerAlertType" code="BAD_DEBT" priority="HIGH" colour="0xFF0000"/>
     <data archetype="lookup.customerCommunicationReason" code="AD_HOC_EMAIL" name="Ad hoc Email"/>
     <data archetype="lookup.customerCommunicationReason" code="AD_HOC_SMS" name="Ad hoc SMS"/>
@@ -153,5 +152,14 @@
           name="Description"
           description="User name format including the description"
           expression="expr:ifempty($description, $name)"/>
+
+    <data archetype="lookup.productDrugSchedule" code="S1" name="S1"/>
+    <data archetype="lookup.productDrugSchedule" code="S2" name="S2"/>
+    <data archetype="lookup.productDrugSchedule" code="S3" name="S3"/>
+    <data archetype="lookup.productDrugSchedule" code="S4" name="S4" restricted="true"/>
+    <data archetype="lookup.productDrugSchedule" code="S5" name="S5"/>
+    <data archetype="lookup.productDrugSchedule" code="S6" name="S6"/>
+    <data archetype="lookup.productDrugSchedule" code="S7" name="S7"/>
+    <data archetype="lookup.productDrugSchedule" code="S8" name="S8"/>
 
 </archetype>

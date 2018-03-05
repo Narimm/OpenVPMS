@@ -23,7 +23,7 @@ import org.openvpms.report.IMReport;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
-import org.openvpms.web.component.im.report.ObjectSetReporter;
+import org.openvpms.web.component.im.report.ReporterFactory;
 
 
 /**
@@ -34,39 +34,44 @@ import org.openvpms.web.component.im.report.ObjectSetReporter;
 public class ObjectSetReportPrinter extends TemplatedIMPrinter<ObjectSet> {
 
     /**
-     * Constructs an {@code ObjectSetReportPrinter}.
+     * Constructs an {@link ObjectSetReportPrinter}.
      *
      * @param set      the set to print
      * @param template the document template to use
      * @param context  the context
+     * @param factory  the reporter factory
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public ObjectSetReportPrinter(Iterable<ObjectSet> set, DocumentTemplate template, Context context) {
-        super(new ObjectSetReporter(set, template), context);
+    public ObjectSetReportPrinter(Iterable<ObjectSet> set, DocumentTemplate template, Context context,
+                                  ReporterFactory factory) {
+        super(factory.createObjectSetReporter(set, template), context, factory.getService());
     }
 
     /**
-     * Constructs a {@code ObjectSetReportPrinter}.
+     * Constructs an {@link ObjectSetReportPrinter}.
      *
      * @param set     the set to print
      * @param locator the document template locator
      * @param context the context
+     * @param factory the reporter factory
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public ObjectSetReportPrinter(Iterable<ObjectSet> set, DocumentTemplateLocator locator, Context context) {
-        super(new ObjectSetReporter(set, locator), context);
+    public ObjectSetReportPrinter(Iterable<ObjectSet> set, DocumentTemplateLocator locator, Context context,
+                                  ReporterFactory factory) {
+        super(factory.createObjectSetReporter(set, locator), context, factory.getService());
     }
 
     /**
-     * Constructs a {@code ObjectSetReportPrinter}.
+     * Constructs a {@link ObjectSetReportPrinter}.
      *
      * @param set       the set to print
      * @param shortName the archetype short name to determine the template to use
      * @param context   the context
+     * @param factory   the reporter factory
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public ObjectSetReportPrinter(Iterable<ObjectSet> set, String shortName, Context context) {
-        this(set, new ContextDocumentTemplateLocator(shortName, context), context);
+    public ObjectSetReportPrinter(Iterable<ObjectSet> set, String shortName, Context context, ReporterFactory factory) {
+        this(set, new ContextDocumentTemplateLocator(shortName, context), context, factory);
     }
 
 }

@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <!-- ======================================================================================================== -->
@@ -39,6 +39,10 @@
             <message>Printer is not accepting job.</message>
             <message>No printer found.</message>
         </cause>
+        <cause>
+            <className>net.sf.jasperreports.engine.JRException</className>
+            <message>No suitable print service found.</message>
+        </cause>
     </exclude-exception>
     <exclude-exception>
         <className>org.openvpms.archetype.rules.finance.statement.StatementProcessorException</className>
@@ -49,6 +53,9 @@
     </exclude-exception>
     <exclude-exception>
         <className>org.openvpms.smartflow.client.FlowSheetException</className>
+    </exclude-exception>
+    <exclude-exception>
+        <className>org.openvpms.insurance.exception.InsuranceException</className>
     </exclude-exception>
     <exclude-exception>
         <className>org.openvpms.web.component.mail.MailException</className>

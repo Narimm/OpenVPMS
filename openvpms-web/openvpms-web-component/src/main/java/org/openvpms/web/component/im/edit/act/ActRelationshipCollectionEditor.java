@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -31,10 +31,12 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.DefaultCollectionResultSetFactory;
@@ -71,6 +73,11 @@ import static org.openvpms.archetype.rules.product.ProductArchetypes.TEMPLATE;
 public class ActRelationshipCollectionEditor extends MultipleRelationshipCollectionTargetEditor {
 
     /**
+     * Listener for product change events.
+     */
+    private final ProductListener productListener;
+
+    /**
      * Determines if a new object has been modified since its editor was created (i.e has been user modified).
      */
     private Map<IMObjectReference, Boolean> modified = new HashMap<>();
@@ -84,11 +91,6 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
      * Listener for template product expansion events. May be {@code null}
      */
     private TemplateProductListener templateProductListener;
-
-    /**
-     * Listener for product change events.
-     */
-    private final ProductListener productListener;
 
 
     /**
@@ -199,31 +201,8 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
     }
 
     /**
-     * Adds any object being edited to the collection, if it is valid.
-     *
-     * @param validator the validator
-     * @return {@code true} if the object is valid, otherwise {@code false}
-     */
-    @Override
-    protected boolean addCurrentEdits(Validator validator) {
-        boolean valid = true;
-        IMObjectEditor editor = getCurrentEditor();
-        if (editor != null) {
-            valid = validator.validate(editor);
-            if (valid) {
-                boolean checkValid = needsTemplateExpansion(editor);
-                addEdited(editor);
-                if (checkValid) {
-                    valid = validator.validate(editor);
-                }
-            }
-        }
-        return valid;
-    }
-
-    /**
      * Adds the object being edited to the collection, if it doesn't exist.
-     * <p/>
+     * <p>
      * The object will be selected.
      *
      * @param editor the editor
@@ -245,14 +224,14 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
 
     /**
      * Determines if a new object in the collection that has default values should be removed prior to save.
-     * <p/>
+     * <p>
      * This only applies to the object currently being edited.
-     * <p/>
+     * <p>
      * An object is considered to have default values if it hasn't been modified since the editor was created.
-     * <p/>
+     * <p>
      * This is so that incomplete objects that contain no user-entered data can be excluded from commits.
      * An object will only be removed if its removal won't invalidate the collection's minimum cardinality.
-     * <p/>
+     * <p>
      * Defaults to {@code true}.
      *
      * @param exclude if {@code true} exclude objects with
@@ -280,75 +259,6 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
      */
     public void setModified(Act act, boolean modified) {
         this.modified.put(act.getObjectReference(), modified);
-    }
-
-    /**
-     * Validates the object.
-     * <p/>
-     * This validates the current object being edited, and if valid, the collection.
-     *
-     * @param validator the validator
-     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
-     */
-    @Override
-    protected boolean doValidation(Validator validator) {
-        boolean valid;
-        if (!excludeObjectWithDefaultValues()) {
-            // validate both the current editor and the collection
-            valid = super.doValidation(validator);
-        } else {
-            // validate just the collection
-            valid = getCollectionPropertyEditor().validate(validator);
-        }
-        return valid;
-    }
-
-    /**
-     * Saves any current edits.
-     *
-     * @throws OpenVPMSException if the save fails
-     */
-    @Override
-    protected void doSave() {
-        if (!excludeObjectWithDefaultValues()) {
-            // save the current editor and collection
-            super.doSave();
-        } else {
-            // save the collection, excluding the current editor
-            getCollectionPropertyEditor().save();
-        }
-    }
-
-    /**
-     * Adds a new editor for an object.
-     * <p/>
-     * This flags the object as unmodified, if no modified flag already exists.
-     *
-     * @param object the object
-     * @param editor the editor for the object
-     */
-    @Override
-    protected void addEditor(IMObject object, IMObjectEditor editor) {
-        super.addEditor(object, editor);
-        if (modified.get(object.getObjectReference()) == null) {
-            // default to unmodified
-            setModified((Act) object, false);
-        }
-    }
-
-    /**
-     * Invoked when the current editor is modified.
-     */
-    @Override
-    protected void onCurrentEditorModified() {
-        IMObjectEditor editor = getCurrentEditor();
-        if (editor != null) {
-            // flag the editor as modified before delegating to super, otherwise it may be needlessly unmapped from the
-            // collection by excludeObjectWithDefaultValues()
-            Act object = (Act) editor.getObject();
-            setModified(object, true);
-        }
-        super.onCurrentEditorModified();
     }
 
     /**
@@ -390,6 +300,98 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
     }
 
     /**
+     * Adds any object being edited to the collection, if it is valid.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object is valid, otherwise {@code false}
+     */
+    @Override
+    protected boolean addCurrentEdits(Validator validator) {
+        boolean valid = true;
+        IMObjectEditor editor = getCurrentEditor();
+        if (editor != null) {
+            valid = validator.validate(editor);
+            if (valid) {
+                boolean checkValid = needsTemplateExpansion(editor);
+                addEdited(editor);
+                if (checkValid) {
+                    valid = validator.validate(editor);
+                }
+            }
+        }
+        return valid;
+    }
+
+    /**
+     * Validates the object.
+     * <p>
+     * This validates the current object being edited, and if valid, the collection.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        boolean valid;
+        if (!excludeObjectWithDefaultValues()) {
+            // validate both the current editor and the collection
+            valid = super.doValidation(validator);
+        } else {
+            // validate just the collection
+            valid = getCollectionPropertyEditor().validate(validator);
+        }
+        return valid;
+    }
+
+    /**
+     * Saves any current edits.
+     *
+     * @throws OpenVPMSException if the save fails
+     */
+    @Override
+    protected void doSave() {
+        if (!excludeObjectWithDefaultValues()) {
+            // save the current editor and collection
+            super.doSave();
+        } else {
+            // save the collection, excluding the current editor
+            getCollectionPropertyEditor().save();
+        }
+    }
+
+    /**
+     * Adds a new editor for an object.
+     * <p>
+     * This flags the object as unmodified, if no modified flag already exists.
+     *
+     * @param object the object
+     * @param editor the editor for the object
+     */
+    @Override
+    protected void addEditor(IMObject object, IMObjectEditor editor) {
+        super.addEditor(object, editor);
+        if (modified.get(object.getObjectReference()) == null) {
+            // default to unmodified
+            setModified((Act) object, false);
+        }
+    }
+
+    /**
+     * Invoked when the current editor is modified.
+     */
+    @Override
+    protected void onCurrentEditorModified() {
+        IMObjectEditor editor = getCurrentEditor();
+        if (editor != null) {
+            // flag the editor as modified before delegating to super, otherwise it may be needlessly unmapped from the
+            // collection by excludeObjectWithDefaultValues()
+            Act object = (Act) editor.getObject();
+            setModified(object, true);
+        }
+        super.onCurrentEditorModified();
+    }
+
+    /**
      * Copies an act item for each product referred to in its template.
      *
      * @param editor   the editor
@@ -406,14 +408,20 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
         Act act = editor.getObject();
         Act copy = act; // replace the existing act with the first
         Date startTime = act.getActivityStartTime();
+
+        // during template expansion, any child acts need to inherit the clinician of the item.
+        Context context = getContext().getContext();
+        User currentClinician = context.getClinician();
+        context.setClinician(editor.getClinician());
+
         for (TemplateProduct include : includes) {
             if (copy == null) {
                 // copy the act, and associate the product
                 List<IMObject> objects = copier.apply(act);
                 copy = (Act) objects.get(0);
-                LayoutContext context = new DefaultLayoutContext(getContext());
-                context.setComponentFactory(new ReadOnlyComponentFactory(context));
-                editor = (ActItemEditor) createEditor(copy, context);
+                LayoutContext layoutContext = new DefaultLayoutContext(getContext());
+                layoutContext.setComponentFactory(new ReadOnlyComponentFactory(layoutContext));
+                editor = (ActItemEditor) createEditor(copy, layoutContext);
 
                 // reset the start-time, which may have been set by the editor
                 copy.setActivityStartTime(startTime);
@@ -429,6 +437,10 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
             result.add(copy);
             copy = null;
         }
+
+        // after template expansion is complete, any new child acts should pick up the current clinician
+        context.setClinician(currentClinician);
+
         return result;
     }
 
@@ -481,7 +493,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
 
     /**
      * Invoked when a product changes.
-     * <p/>
+     * <p>
      * This expands any template products
      *
      * @param editor  the editor
@@ -500,7 +512,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
      * <li>it has default values; and
      * <li>excluding the object won't invalidate the collection's minimum cardinality
      * </ul>
-     * <p/>
+     * <p>
      * This is so that incomplete objects that contain no user-entered data can be excluded from commits.
      *
      * @return {@code true} if an incomplete object was excluded; otherwise {@code false}
@@ -539,7 +551,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
 
     /**
      * Determines if an object associated with an editor contains default values.
-     * <p/>
+     * <p>
      * This only applies to new objects. These are considered to have default values if they haven't been modified
      * since the editor was created (the editor typically initialises default values within its constructor).
      *
@@ -602,7 +614,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
 
         /**
          * Helper to determine if a node is copyable.
-         * <p/>
+         * <p>
          * For charge items, this only copies the <em>quantity</em>,
          * <em>patient</em>, <em>product</em>, <em>author</em> and
          * <em>clinician<em> nodes.

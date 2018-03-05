@@ -1349,7 +1349,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     private void addProductSupplierRelationship(Product product, Party supplier, String reorderCode, int packageSize,
                                                 String packageUnits, BigDecimal listPrice) {
-        ProductRules rules = new ProductRules(getArchetypeService());
+        ProductRules rules = new ProductRules(getArchetypeService(), getLookupService());
         ProductSupplier ps = rules.createProductSupplier(product, supplier);
         ps.setReorderCode(reorderCode);
         ps.setPackageSize(packageSize);
