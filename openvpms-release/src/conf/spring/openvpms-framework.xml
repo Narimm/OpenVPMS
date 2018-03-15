@@ -141,6 +141,7 @@
             <list>
                 <ref bean="lookupService"/>
                 <ref bean="txnManager"/>
+                <ref bean="customerBalanceUpdater"/>
             </list>
         </property>
     </bean>

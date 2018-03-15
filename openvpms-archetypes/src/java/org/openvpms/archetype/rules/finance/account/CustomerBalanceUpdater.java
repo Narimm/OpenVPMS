@@ -91,7 +91,7 @@ public class CustomerBalanceUpdater {
 
     /**
      * Verifies that a customer has no account acts.
-     * <p>
+     * <p/>
      * This should be invoked prior to saving an initial balance act for the first time.
      *
      * @param initialBalance the initial balance act
@@ -109,7 +109,7 @@ public class CustomerBalanceUpdater {
 
     /**
      * Adds an act to the customer balance.
-     * <p>
+     * <p/>
      * Should be invoked prior to the act being saved.
      *
      * @param act the act to add
@@ -136,11 +136,9 @@ public class CustomerBalanceUpdater {
      * @throws CustomerAccountRuleException if the act is posted but contains no customer
      */
     public void updateBalance(FinancialAct act) {
-        if (FinancialActStatus.POSTED.equals(act.getStatus())
-            && hasBalanceParticipation(act)) {
+        if (FinancialActStatus.POSTED.equals(act.getStatus()) && hasBalanceParticipation(act)) {
             ActBean bean = new ActBean(act, service);
-            Party customer = (Party) bean.getParticipant(
-                    CUSTOMER_PARTICIPATION);
+            Party customer = (Party) bean.getParticipant(CUSTOMER_PARTICIPATION);
             if (customer == null) {
                 throw new CustomerAccountRuleException(MissingCustomer, act);
             }
@@ -228,6 +226,28 @@ public class CustomerBalanceUpdater {
     }
 
     /**
+     * Returns unallocated acts for a customer.
+     *
+     * @param customer the customer
+     * @param exclude  the act to exclude. May be {@code null}
+     * @return unallocated acts for the customer
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    protected Iterator<FinancialAct> getUnallocatedActs(Party customer, Act exclude) {
+        ArchetypeQuery query = CustomerAccountQueryFactory.createUnallocatedQuery(customer, DEBITS_CREDITS, exclude);
+        return new IMObjectQueryIterator<>(service, query);
+    }
+
+    /**
+     * Returns the archetype service.
+     *
+     * @return the archetype service
+     */
+    protected IArchetypeService getService() {
+        return service;
+    }
+
+    /**
      * Calculates the balance for the supplied customer.
      *
      * @param act      the act that triggered the update.
@@ -245,11 +265,9 @@ public class CustomerBalanceUpdater {
      * @param act the act
      */
     private void addBalanceParticipation(ActBean act) {
-        IMObjectReference customer
-                = act.getParticipantRef(CUSTOMER_PARTICIPATION);
+        IMObjectReference customer = act.getParticipantRef(CUSTOMER_PARTICIPATION);
         if (customer == null) {
-            throw new CustomerAccountRuleException(MissingCustomer,
-                                                   act.getAct());
+            throw new CustomerAccountRuleException(MissingCustomer, act.getAct());
         }
         act.addParticipation(BALANCE_PARTICIPATION, customer);
     }
@@ -273,21 +291,6 @@ public class CustomerBalanceUpdater {
      */
     private boolean hasBalanceParticipation(ActBean act) {
         return act.getParticipantRef(BALANCE_PARTICIPATION) != null;
-    }
-
-    /**
-     * Returns unallocated acts for a customer.
-     *
-     * @param customer the customer
-     * @param exclude  the act to exclude. May be {@code null}
-     * @return unallocated acts for the customer
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private Iterator<FinancialAct> getUnallocatedActs(Party customer,
-                                                      Act exclude) {
-        ArchetypeQuery query = CustomerAccountQueryFactory.createUnallocatedQuery(
-                customer, DEBITS_CREDITS, exclude);
-        return new IMObjectQueryIterator<>(service, query);
     }
 
     /**

@@ -190,6 +190,7 @@
             <list>
                 <ref bean="currencies"/>
                 <ref bean="lookupService"/>
+                <ref bean="customerBalanceUpdater"/>
             </list>
         </property>
     </bean>

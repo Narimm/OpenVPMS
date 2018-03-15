@@ -106,6 +106,10 @@
         <constructor-arg ref="lookupService"/>
     </bean>
 
+    <bean id="customerBalanceUpdater" class="org.openvpms.archetype.rules.finance.account.CustomerBalanceUpdater">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
     <bean id="customerAccountRules" class="org.openvpms.archetype.rules.finance.account.CustomerAccountRules">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="archetypeRuleService"/>
