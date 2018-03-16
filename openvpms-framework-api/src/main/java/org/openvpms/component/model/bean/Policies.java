@@ -158,6 +158,18 @@ public class Policies {
     }
 
     /**
+     * Returns a policy that selects relationships using the supplied predicate, and returns active or inactive objects.
+     * <p/>
+     * This is synonymous with {@link #any(Predicate)}, but makes more sense in terms of collection nodes.
+     *
+     * @param predicate the predicate
+     * @return a new policy
+     */
+    public static Policy<Relationship> all(Predicate<Relationship> predicate) {
+        return any(predicate);
+    }
+
+    /**
      * Returns a policy that matches the specified criteria.
      *
      * @param active    if {@code true}, objects must be active, otherwise they can be either active or inactive
