@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -21,6 +21,9 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.im.doc.DocumentActEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
@@ -63,6 +66,42 @@ public class PatientDocumentActEditor extends DocumentActEditor {
             // document; this will version the existing document
             versions.setCardinalityReadOnly(true);
         }
+    }
+
+    /**
+     * Sets the patient.
+     *
+     * @param patient the patient. May be {@code null}
+     */
+    public void setPatient(Party patient) {
+        setPatient(patient != null ? patient.getObjectReference() : null);
+    }
+
+    /**
+     * Sets the patient.
+     *
+     * @param patient the patient reference. May be {@code null}
+     */
+    public void setPatient(IMObjectReference patient) {
+        setParticipant("patient", patient);
+    }
+
+    /**
+     * Sets the clinician.
+     *
+     * @param clinician the clinician. May be {@code null}.
+     */
+    public void setClinician(User clinician) {
+        setParticipant("clinician", clinician);
+    }
+
+    /**
+     * Sets the clinician.
+     *
+     * @param clinician the clinician reference. May be {@code null}.
+     */
+    public void setClinician(IMObjectReference clinician) {
+        setParticipant("clinician", clinician);
     }
 
     /**

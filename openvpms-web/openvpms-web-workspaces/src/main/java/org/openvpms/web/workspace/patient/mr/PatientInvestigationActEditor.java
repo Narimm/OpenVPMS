@@ -47,8 +47,6 @@ import org.openvpms.web.component.im.product.ProductQuery;
 import org.openvpms.web.component.im.product.ProductReferenceEditor;
 import org.openvpms.web.component.im.product.ProductResultSet;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.property.Modifiable;
-import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 
 
@@ -60,14 +58,14 @@ import org.openvpms.web.component.property.Property;
 public class PatientInvestigationActEditor extends PatientDocumentActEditor {
 
     /**
-     * Flag to indicate if the Print Form button should be enabled or disabled.
-     */
-    private boolean enableButton;
-
-    /**
      * The product participation editor.
      */
     private final SingleParticipationCollectionEditor productEditor;
+
+    /**
+     * Flag to indicate if the Print Form button should be enabled or disabled.
+     */
+    private boolean enableButton;
 
     /**
      * Constructs an {@link PatientInvestigationActEditor}.
@@ -85,16 +83,16 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
             @Override
             protected IMObjectEditor createEditor(IMObject object, LayoutContext context) {
                 return new ProductParticipationEditor((Participation) object, (Act) getObject(), context) {
+                    @Override
+                    protected IMObjectReferenceEditor<Product> createEntityEditor(Property property) {
+                        return new ProductInvestigationTypeReferenceEditor(this, property, getContext());
+                    }
+
                     {
                         if (useLocationProducts()) {
                             // make sure products are restricted to the location where the investigation was created
                             setLocations(PatientInvestigationActEditor.this.getLocation());
                         }
-                    }
-
-                    @Override
-                    protected IMObjectReferenceEditor<Product> createEntityEditor(Property property) {
-                        return new ProductInvestigationTypeReferenceEditor(this, property, getContext());
                     }
                 };
             }
@@ -190,33 +188,6 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
     }
 
     /**
-     * Sets the patient.
-     *
-     * @param patient the patient. May be {@code null}
-     */
-    public void setPatient(Party patient) {
-        setPatient(patient != null ? patient.getObjectReference() : null);
-    }
-
-    /**
-     * Sets the patient.
-     *
-     * @param patient the patient reference. May be {@code null}
-     */
-    public void setPatient(IMObjectReference patient) {
-        setParticipant("patient", patient);
-    }
-
-    /**
-     * Sets the clinician.
-     *
-     * @param clinician the clinician reference. May be {@code null}.
-     */
-    public void setClinician(IMObjectReference clinician) {
-        setParticipant("clinician", clinician);
-    }
-
-    /**
      * Determines if an editor should be disposed on layout change.
      *
      * @param editor the editor
@@ -251,12 +222,7 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
         super.onLayoutCompleted();
         ParticipationEditor editor = getParticipationEditor("investigationType", false);
         if (editor != null) {
-            editor.addModifiableListener(new ModifiableListener() {
-                @Override
-                public void modified(Modifiable modifiable) {
-                    onInvestigationTypeChanged();
-                }
-            });
+            editor.addModifiableListener(modifiable -> onInvestigationTypeChanged());
         }
     }
 

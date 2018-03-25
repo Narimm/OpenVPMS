@@ -16,18 +16,14 @@
 
 package org.openvpms.archetype.rules.doc;
 
-import org.apache.commons.collections.Predicate;
-import org.apache.commons.collections.functors.AndPredicate;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
-import org.openvpms.component.business.service.archetype.functor.RefEquals;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.bean.Predicates;
 import org.openvpms.component.model.object.IMObject;
 
 import javax.print.attribute.Size2DSyntax;
@@ -37,10 +33,12 @@ import javax.print.attribute.standard.OrientationRequested;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.InvalidOrientation;
 import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.InvalidPaperSize;
 import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.InvalidUnits;
+import static org.openvpms.component.model.bean.Policies.active;
 
 
 /**
@@ -99,7 +97,7 @@ public class DocumentTemplate {
     /**
      * The bean to access the template's properties.
      */
-    private final EntityBean bean;
+    private final IMObjectBean bean;
 
     /**
      * The archetype service.
@@ -123,7 +121,7 @@ public class DocumentTemplate {
      * @param service  the archetype service
      */
     public DocumentTemplate(Entity template, IArchetypeService service) {
-        bean = new EntityBean(template, service);
+        bean = service.getBean(template);
         this.service = service;
     }
 
@@ -401,7 +399,7 @@ public class DocumentTemplate {
      */
     public Entity getEmailTemplate() {
         if (email == null) {
-            email = bean.getNodeTargetEntity("email");
+            email = bean.getTarget("email", Entity.class, active());
         }
         return email;
     }
@@ -413,7 +411,7 @@ public class DocumentTemplate {
      */
     public Entity getSMSTemplate() {
         if (sms == null) {
-            sms = bean.getNodeTargetEntity("sms");
+            sms = bean.getTarget("sms", Entity.class, active());
         }
         return sms;
     }
@@ -456,7 +454,7 @@ public class DocumentTemplate {
      */
     public List<DocumentTemplatePrinter> getPrinters() {
         List<DocumentTemplatePrinter> result = new ArrayList<>();
-        List<EntityRelationship> printers = bean.getNodeRelationships("printers");
+        List<EntityRelationship> printers = bean.getValues("printers", EntityRelationship.class);
         for (EntityRelationship printer : printers) {
             result.add(new DocumentTemplatePrinter(printer, service));
         }
@@ -470,21 +468,23 @@ public class DocumentTemplate {
      * @return the corresponding printer, or {@code null} if none is defined
      */
     public DocumentTemplatePrinter getPrinter(Entity location) {
-        Predicate predicate = AndPredicate.getInstance(
-                IsActiveRelationship.isActiveNow(), RefEquals.getTargetEquals(location.getObjectReference()));
-        EntityRelationship printer = bean.getNodeRelationship("printers", predicate);
+        Predicate<EntityRelationship> predicate = Predicates.<EntityRelationship>activeNow()
+                .and(Predicates.targetEquals(location));
+        EntityRelationship printer = bean.getValue("printers", EntityRelationship.class, predicate);
         return (printer != null) ? new DocumentTemplatePrinter(printer, service) : null;
     }
 
     /**
-     * Addsa a new printer relationship.
+     * Adds a new printer relationship.
      *
      * @param location an <em>party.organisationPractice</em> or <em>party.organisationLocation</em>
      * @return the new printer relationship
      */
     public DocumentTemplatePrinter addPrinter(Entity location) {
-        EntityRelationship result = bean.addNodeRelationship("printers", location);
-        return new DocumentTemplatePrinter(result, service);
+        EntityRelationship relationship = (EntityRelationship) bean.addTarget("printers", location);
+        // TODO - printer relationships should be EntityLinks
+        location.addEntityRelationship(relationship);
+        return new DocumentTemplatePrinter(relationship, service);
     }
 
     /**
@@ -494,7 +494,7 @@ public class DocumentTemplate {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Document getDocument() {
-        return new TemplateHelper(service).getDocumentFromTemplate(bean.getEntity());
+        return new TemplateHelper(service).getDocumentFromTemplate(getEntity());
     }
 
     /**
@@ -504,7 +504,7 @@ public class DocumentTemplate {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public String getDocumentName() {
-        DocumentAct act = new TemplateHelper(service).getDocumentAct(bean.getEntity());
+        DocumentAct act = new TemplateHelper(service).getDocumentAct(getEntity());
         return (act != null) ? act.getName() : null;
     }
 
@@ -516,7 +516,7 @@ public class DocumentTemplate {
     public String getFileNameExpression() {
         List<IMObject> fileNameFormat = bean.getValues("fileNameFormat");
         if (!fileNameFormat.isEmpty()) {
-            IMObjectBean format = new IMObjectBean(fileNameFormat.get(0));
+            IMObjectBean format = service.getBean(fileNameFormat.get(0));
             return format.getString("expression");
         }
         return null;
@@ -528,7 +528,16 @@ public class DocumentTemplate {
      * @return the document act, or {@code null} if none exists
      */
     public DocumentAct getDocumentAct() {
-        return new TemplateHelper(service).getDocumentAct(bean.getEntity());
+        return new TemplateHelper(service).getDocumentAct(getEntity());
+    }
+
+    /**
+     * Returns the <em>entit.documentTemplate</em> entity.
+     *
+     * @return the entity
+     */
+    public Entity getEntity() {
+        return (Entity) bean.getObject();
     }
 
     /**
@@ -547,7 +556,7 @@ public class DocumentTemplate {
      */
     @Override
     public int hashCode() {
-        return bean.getObject().hashCode();
+        return getEntity().hashCode();
     }
 
     /**
@@ -558,7 +567,7 @@ public class DocumentTemplate {
      */
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof DocumentTemplate) && ((DocumentTemplate) obj).bean.getObject().equals(bean.getObject());
+        return (obj instanceof DocumentTemplate) && ((DocumentTemplate) obj).getEntity().equals(getEntity());
     }
 
     /**
@@ -589,6 +598,8 @@ public class DocumentTemplate {
         PORTRAIT(OrientationRequested.PORTRAIT),
         LANDSCAPE(OrientationRequested.LANDSCAPE);
 
+        private final OrientationRequested orientation;
+
         Orientation(OrientationRequested orientation) {
             this.orientation = orientation;
         }
@@ -605,8 +616,6 @@ public class DocumentTemplate {
             }
             throw new DocumentException(InvalidOrientation, orientation);
         }
-
-        private final OrientationRequested orientation;
     }
 
     /**
@@ -619,6 +628,8 @@ public class DocumentTemplate {
         A5(MediaSizeName.ISO_A5),
         LETTER(MediaSizeName.NA_LETTER),
         CUSTOM(null);
+
+        private final MediaSizeName mediaName;
 
         PaperSize(MediaSizeName name) {
             mediaName = name;
@@ -636,8 +647,6 @@ public class DocumentTemplate {
             }
             throw new DocumentException(InvalidPaperSize, name);
         }
-
-        private final MediaSizeName mediaName;
     }
 
     /**
@@ -648,6 +657,8 @@ public class DocumentTemplate {
 
         MM(Size2DSyntax.MM),
         INCH(Size2DSyntax.INCH);
+
+        private final int units;
 
         Units(int units) {
             this.units = units;
@@ -665,9 +676,6 @@ public class DocumentTemplate {
             }
             throw new DocumentException(InvalidUnits, units);
         }
-
-        private final int units;
     }
-
 
 }

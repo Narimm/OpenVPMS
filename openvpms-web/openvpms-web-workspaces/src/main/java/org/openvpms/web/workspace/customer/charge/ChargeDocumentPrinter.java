@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -44,7 +44,7 @@ import java.util.Set;
  *
  * @author Tim Anderson
  */
-public class CustomerChargeDocuments {
+public class ChargeDocumentPrinter {
 
     /**
      * The charge editor.
@@ -62,12 +62,12 @@ public class CustomerChargeDocuments {
     private Set<IMObjectReference> exclude = new HashSet<>();
 
     /**
-     * Constructs a {@link CustomerChargeDocuments}.
+     * Constructs a {@link ChargeDocumentPrinter}.
      *
      * @param editor  the charge editor
      * @param context the layout context
      */
-    public CustomerChargeDocuments(CustomerChargeActEditor editor, LayoutContext context) {
+    public ChargeDocumentPrinter(CustomerChargeActEditor editor, LayoutContext context) {
         this.editor = editor;
         this.context = context;
         List<Act> documents = getUnprintedDocuments(); // exclude any existing unprinted documents
