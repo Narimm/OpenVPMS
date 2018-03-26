@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.openoffice;
@@ -113,6 +113,16 @@ public class OpenOfficeIMReport<T> implements IMReport<T> {
         this.lookups = lookups;
         this.handlers = handlers;
         this.functions = functions;
+    }
+
+    /**
+     * Returns the report name.
+     *
+     * @return the report name.
+     */
+    @Override
+    public String getName() {
+        return template.getName();
     }
 
     /**

@@ -30,6 +30,7 @@ import org.openvpms.report.ReportFactory;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.doc.FileNameFormatter;
 import org.openvpms.web.component.im.report.ReportContextFactory;
+import org.openvpms.web.component.im.report.ReportRunner;
 import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.print.AbstractPrinter;
 
@@ -40,6 +41,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.TemplateHasNoDocument;
 import static org.openvpms.web.workspace.reporting.report.SQLReportException.ErrorCode.ConnectionError;
@@ -62,6 +64,11 @@ public class SQLReportPrinter extends AbstractPrinter {
      * The report.
      */
     private final Report report;
+
+    /**
+     * The report runner.
+     */
+    private final ReportRunner runner;
 
     /**
      * The context.
@@ -129,6 +136,7 @@ public class SQLReportPrinter extends AbstractPrinter {
             throw new DocumentException(TemplateHasNoDocument, template.getName());
         }
         report = factory.createReport(document);
+        this.runner = new ReportRunner(report);
         this.template = template;
         this.context = context;
         this.formatter = formatter;
@@ -180,9 +188,9 @@ public class SQLReportPrinter extends AbstractPrinter {
      */
     public void print(String printer) {
         Map<String, Object> params = getParameters(false);
-        try (Connection connection = dataSource.getConnection()){
+        try (Connection connection = dataSource.getConnection()) {
             params.put(connectionName, connection);
-            report.print(params, ReportContextFactory.create(context), getProperties(printer));
+            runner.run(() -> report.print(params, ReportContextFactory.create(context), getProperties(printer)));
         } catch (SQLException exception) {
             throw new SQLReportException(ConnectionError, exception);
         }
@@ -222,7 +230,11 @@ public class SQLReportPrinter extends AbstractPrinter {
         Map<String, Object> params = getParameters(email);
         try (Connection connection = dataSource.getConnection()) {
             params.put(connectionName, connection);
-            Document document = report.generate(params, ReportContextFactory.create(context), mimeType);
+            Supplier<Document> generator = () -> {
+                Map<String, Object> fields = ReportContextFactory.create(context);
+                return report.generate(params, fields, mimeType);
+            };
+            Document document = runner.run(generator);
             String fileName = formatter.format(template.getName(), null, template);
             String extension = FilenameUtils.getExtension(document.getName());
             document.setName(fileName + "." + extension);
