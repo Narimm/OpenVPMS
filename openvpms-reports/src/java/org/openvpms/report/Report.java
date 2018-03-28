@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -29,6 +29,13 @@ import java.util.Set;
  * @author Tim Anderson
  */
 public interface Report {
+
+    /**
+     * Returns the report name.
+     *
+     * @return the report name.
+     */
+    String getName();
 
     /**
      * Returns the set of parameter types that may be supplied to the report.

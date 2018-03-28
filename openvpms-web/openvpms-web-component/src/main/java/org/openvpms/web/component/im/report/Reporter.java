@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 
 /**
@@ -65,7 +66,7 @@ public abstract class Reporter<T> {
     /**
      * The parameters to pass to the report.
      */
-    private Map<String, Object> parameters = new HashMap<String, Object>();
+    private Map<String, Object> parameters = new HashMap<>();
 
     /**
      * The fields to pass to the report.
@@ -112,7 +113,7 @@ public abstract class Reporter<T> {
 
     /**
      * Creates the document.
-     * <p/>
+     * <p>
      * Documents are formatted according to the default mime type. If the document has an {@link #IS_EMAIL} parameter,
      * then this will be set {@code false}.
      *
@@ -137,8 +138,9 @@ public abstract class Reporter<T> {
         if (type == null) {
             type = report.getDefaultMimeType();
         }
+        String mimeType = type;
         Map<String, Object> map = new HashMap<>(getParameters(email));
-        Document document = report.generate(getObjects(), map, fields, type);
+        Document document = generate(report, () -> report.generate(getObjects(), map, fields, mimeType));
         setName(document);
         return document;
     }
@@ -149,7 +151,8 @@ public abstract class Reporter<T> {
      * @param properties the print properties
      */
     public void print(PrintProperties properties) {
-        getReport().print(getObjects(), getParameters(false), fields, properties);
+        IMReport<T> report = getReport();
+        generate(report, () -> report.print(getObjects(), getParameters(false), fields, properties));
     }
 
     /**
@@ -167,8 +170,9 @@ public abstract class Reporter<T> {
         if (type == null) {
             type = report.getDefaultMimeType();
         }
+        String mimeType = type;
         Map<String, Object> map = new HashMap<>(getParameters(email));
-        report.generate(getObjects(), map, fields, type, stream);
+        generate(report, () -> report.generate(getObjects(), map, fields, mimeType, stream));
     }
 
     /**
@@ -193,13 +197,13 @@ public abstract class Reporter<T> {
 
     /**
      * Returns the set of parameter types that may be supplied to the report.
-     * <p/>
+     * <p>
      * This suppresses return of the {@link #IS_EMAIL} parameter as this is dealt with automatically.
      *
      * @return the parameter types
      */
     public Set<ParameterType> getParameterTypes() {
-        Set<ParameterType> result = new LinkedHashSet<ParameterType>();
+        Set<ParameterType> result = new LinkedHashSet<>();
         for (ParameterType type : getReport().getParameterTypes()) {
             if (!IS_EMAIL.equals(type.getName())) {
                 result.add(type);
@@ -260,15 +264,36 @@ public abstract class Reporter<T> {
 
     /**
      * Updates the document name.
-     * <p/>
+     * <p>
      * This can be used to update the document name from its default value, prior to returning it to the caller.
-     * <p/>
+     * <p>
      * This implementation is a no-op.
      *
      * @param document the document to update
      */
     protected void setName(Document document) {
         // no-op
+    }
+
+    /**
+     * Generates a document, performing performance logging if logging is enabled.
+     *
+     * @param report    the report
+     * @param generator the report generator
+     * @return the generated document
+     */
+    private Document generate(IMReport<T> report, Supplier<Document> generator) {
+        return new ReportRunner(report, object).run(generator);
+    }
+
+    /**
+     * Generates a document, performing performance logging if logging is enabled.
+     *
+     * @param report    the report
+     * @param generator the report generator
+     */
+    private void generate(IMReport<T> report, Runnable generator) {
+        new ReportRunner(report, object).run(generator);
     }
 
 }

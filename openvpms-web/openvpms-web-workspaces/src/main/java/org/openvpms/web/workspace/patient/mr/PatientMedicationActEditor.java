@@ -349,8 +349,9 @@ public class PatientMedicationActEditor extends PatientActEditor {
      */
     @Override
     protected void onLayoutCompleted() {
-        final ProductParticipationEditor product = getProductEditor();
+        ProductParticipationEditor product = getProductEditor();
         if (product != null) {
+            product.setPatient(getPatient());
             product.addModifiableListener(modifiable -> productModified(product.getEntity()));
         }
         updateBatch(getProduct());

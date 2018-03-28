@@ -146,6 +146,6 @@
               filter="actRelationship.customerAccountInvoiceItem" hidden="true"/>
         <node name="claims" path="/sourceActRelationships"
               type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
-              filter="actRelationship.insuranceClaimInvoiceItem"/>
+              filter="actRelationship.insuranceClaimInvoiceItem" readOnly="true" hidden="true"/>
     </archetype>
 </archetypes>

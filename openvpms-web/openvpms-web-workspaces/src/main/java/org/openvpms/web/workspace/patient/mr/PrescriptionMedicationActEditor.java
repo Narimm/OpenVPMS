@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -21,7 +21,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.product.ProductParticipationEditor;
 
 /**
  * An editor for <em>act.patientMedication</em> that enables the medication to be dispensed from a prescription.
@@ -110,16 +109,4 @@ public class PrescriptionMedicationActEditor extends PatientMedicationActEditor 
         }
     }
 
-    /**
-     * Invoked when layout has completed. This can be used to perform
-     * processing that requires all editors to be created.
-     */
-    @Override
-    protected void onLayoutCompleted() {
-        super.onLayoutCompleted();
-        final ProductParticipationEditor product = getProductEditor();
-        if (product != null) {
-            product.setPatient(getPatient());
-        }
-    }
 }

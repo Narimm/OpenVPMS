@@ -19,7 +19,6 @@ package org.openvpms.web.workspace.patient.mr;
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -30,6 +29,7 @@ import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.patient.PatientActEditor;
+import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -105,8 +105,10 @@ public class PatientPrescriptionEditor extends PatientActEditor {
      */
     @Override
     protected void onLayoutCompleted() {
-        ParticipationEditor<Entity> editor = getParticipationEditor("product", true);
+        ProductParticipationEditor editor
+                = (ProductParticipationEditor) (ParticipationEditor) getParticipationEditor("product", true);
         if (editor != null) {
+            editor.setPatient(getPatient());
             editor.addModifiableListener(modifiable -> onProductChanged());
         }
     }
