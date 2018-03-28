@@ -37,6 +37,7 @@ import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleServ
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.insurance.claim.Attachment;
 import org.openvpms.report.DocFormats;
+import org.openvpms.report.openoffice.Converter;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
@@ -244,7 +245,18 @@ class AttachmentGenerator {
                 if (document == null) {
                     setStatus(bean, Attachment.Status.ERROR, Messages.get("patient.insurance.nodocument"));
                 } else {
-                    copy(bean, document);
+                    String mimeType = source.getString("mimeType");
+                    if (!StringUtils.isEmpty(mimeType) && !DocFormats.PDF_TYPE.equals(mimeType)) {
+                        Converter converter = ServiceHelper.getBean(Converter.class);
+                        if (converter.canConvert(document, DocFormats.PDF_TYPE)) {
+                            document = converter.convert(document, DocFormats.PDF_TYPE);
+                            result = save(bean, document);
+                        } else {
+                            result = copy(bean, document);
+                        }
+                    } else {
+                        result = copy(bean, document);
+                    }
                 }
             }
         } catch (Throwable exception) {
