@@ -101,6 +101,16 @@ public abstract class AbstractPrintPatientDocumentsTask extends Tasks {
                 public void selected(Entity object) {
                     enableOK(browser);
                 }
+
+                /**
+                 * Invoked when an object is browsed.
+                 *
+                 * @param object the browsed object
+                 */
+                @Override
+                public void browsed(Entity object) {
+                    enableOK(browser);
+                }
             });
             dialog.setCloseOnSelection(false);
             dialog.addWindowPaneListener(new PopupDialogListener() {
