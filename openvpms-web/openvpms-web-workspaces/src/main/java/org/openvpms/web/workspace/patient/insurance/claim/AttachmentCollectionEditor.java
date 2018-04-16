@@ -41,12 +41,20 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.document.CustomerPatientDocumentBrowser;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Editor for the collection of attachments associated with a claim.
  *
  * @author Tim Anderson
  */
 class AttachmentCollectionEditor extends ActRelationshipCollectionEditor implements Deletable {
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeRuleService service;
 
     /**
      * Constructs an {@link AttachmentCollectionEditor}.
@@ -57,6 +65,8 @@ class AttachmentCollectionEditor extends ActRelationshipCollectionEditor impleme
      */
     public AttachmentCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
         super(property, act, context);
+        service = ServiceHelper.getArchetypeService();
+        setExcludeDefaultValueObject(false);
         getCollectionPropertyEditor().setRemoveHandler(new CollectionPropertyEditor.RemoveHandler() {
             @Override
             public void remove(IMObject object) {
@@ -115,19 +125,32 @@ class AttachmentCollectionEditor extends ActRelationshipCollectionEditor impleme
     }
 
     /**
+     * Refresh the display of an attachment when it is changed outside of an editor.
+     *
+     * @param document the attachment to refresh
+     */
+    public void refresh(DocumentAct document) {
+        IMObjectEditor editor = getEditor(document);
+        if (editor instanceof AttachmentEditor) {
+            ((AttachmentEditor) editor).refresh();
+        }
+    }
+
+    /**
      * Perform deletion.
      */
     @Override
     public void delete() {
         IMObjectBean bean = new IMObjectBean(getObject());
-        boolean updated = false;
-        // need to remove relationships to the parent claim item and save it, before removing this
+        List<IMObject> toSave = new ArrayList<>();
+        // need to remove relationships to the parent claim and save it, before removing this
         for (Act act : getCurrentActs()) {
-            bean.removeTargets("attachments", act, "item");
-            updated = true;
+            bean.removeTargets("attachments", act, "claim");
+            toSave.add(act);
         }
-        if (updated) {
-            bean.save();
+        if (!toSave.isEmpty()) {
+            toSave.add(getObject());
+            service.save(toSave);
 
             // remove the attachments
             for (Act act : getCurrentActs()) {
@@ -143,7 +166,6 @@ class AttachmentCollectionEditor extends ActRelationshipCollectionEditor impleme
      */
     protected void remove(DocumentAct object) {
         IMObjectReference reference = object.getDocument();
-        IArchetypeRuleService service = ServiceHelper.getArchetypeService();
         if (!object.isNew()) {
             service.remove(object);
         }

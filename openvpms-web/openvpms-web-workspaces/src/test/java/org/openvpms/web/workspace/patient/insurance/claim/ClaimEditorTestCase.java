@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.insurance.claim;
@@ -154,6 +154,9 @@ public class ClaimEditorTestCase extends AbstractAppTest {
         save(policyAct);
     }
 
+    /**
+     * Tests the {@link ClaimEditor#delete()} method.
+     */
     @Test
     public void testDelete() {
         Product product1 = TestHelper.createProduct();
@@ -168,30 +171,44 @@ public class ClaimEditorTestCase extends AbstractAppTest {
 
         FinancialAct claimAct = InsuranceTestHelper.createClaim(policyAct, location, clinician, user, item1Act);
         ActBean bean = new ActBean(claimAct);
-        DocumentAct documentAct = PatientTestHelper.createDocumentAttachment(itemDate1, patient);
-        DocumentAct attachment = InsuranceTestHelper.createAttachment(documentAct);
-        Document content = (Document) create(DocumentArchetypes.DEFAULT_DOCUMENT);
-        content.setName(documentAct.getName());
-        attachment.setDocument(content.getObjectReference());
-        bean.addNodeRelationship("attachments", attachment);
-        save(claimAct, item1Act, attachment, content);
 
-        ClaimEditor editor = createEditor(claimAct);
+        // add some attachments
+        DocumentAct documentAct1 = PatientTestHelper.createDocumentAttachment(itemDate1, patient);
+        DocumentAct attachment1 = InsuranceTestHelper.createAttachment(documentAct1);
+        Document content1 = (Document) create(DocumentArchetypes.DEFAULT_DOCUMENT);
+        content1.setName(documentAct1.getName());
+        attachment1.setDocument(content1.getObjectReference());
+        bean.addNodeRelationship("attachments", attachment1);
+
+        DocumentAct documentAct2 = PatientTestHelper.createDocumentAttachment(itemDate1, patient);
+        DocumentAct attachment2 = InsuranceTestHelper.createAttachment(documentAct2);
+        Document content2 = (Document) create(DocumentArchetypes.DEFAULT_DOCUMENT);
+        content2.setName(documentAct2.getName());
+        attachment2.setDocument(content2.getObjectReference());
+        bean.addNodeRelationship("attachments", attachment2);
+
+        save(claimAct, item1Act, attachment1, content1, attachment2, content2);
+
         TransactionTemplate template = new TransactionTemplate(transactionManager);
         template.execute(new TransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                ClaimEditor editor = createEditor(claimAct);
                 editor.delete();
             }
         });
 
         assertNull(get(claimAct));
         assertNull(get(item1Act));
-        assertNull(get(attachment));
-        assertNull(get(content));
+        assertNull(get(attachment1));
+        assertNull(get(content1));
+        assertNull(get(claimAct));
+        assertNull(get(attachment2));
+        assertNull(get(content2));
 
-        // verify the original document hasn't been deleted
-        assertNotNull(get(documentAct));
+        // verify the original documents haven't been deleted
+        assertNotNull(get(documentAct1));
+        assertNotNull(get(documentAct2));
 
         // verify the policy hasn't been deleted
         assertNotNull(get(policyAct));

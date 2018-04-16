@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -48,7 +48,7 @@
         <node name="original" path="/sourceActRelationships" type="java.util.HashSet"
               baseName="SourceActRelationship" minCardinality="0" maxCardinality="1" hidden="true"
               filter="actRelationship.insuranceClaimDocument"/>
-        <node name="item" path="/targetActRelationships" type="java.util.HashSet"
+        <node name="claim" path="/targetActRelationships" type="java.util.HashSet"
               baseName="TargetActRelationship" minCardinality="0" maxCardinality="1" hidden="true"
               filter="actRelationship.insuranceClaimAttachment"/>
     </archetype>

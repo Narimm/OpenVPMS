@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.delete;
@@ -147,6 +147,7 @@ public abstract class AbstractIMObjectDeletionHandler<T extends IMObject> implem
     protected void remove(T object, Context context, HelpContext help) {
         DefaultLayoutContext layout = new DefaultLayoutContext(true, context, help);
         final IMObjectEditor editor = factory.create(object, layout);
+        editor.getComponent();
         editor.delete();
     }
 
