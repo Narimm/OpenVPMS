@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <ehcache updateCheck="false">
@@ -47,7 +47,7 @@
       overflowToDisk    - Sets whether elements can overflow to disk when the in-memory cache
       has reached the maxInMemory limit.
     -->
-    <defaultCache maxElementsInMemory="10000" eternal="false"
+    <defaultCache maxElementsInMemory="100000" eternal="false"
                   timeToIdleSeconds="120" timeToLiveSeconds="120"
                   overflowToDisk="false"/>
 
@@ -75,7 +75,7 @@
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
     <cache name="org.openvpms.component.business.dao.hibernate.im.lookup.LookupRelationshipDOImpl"
-           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+           maxElementsInMemory="20000" eternal="true" overflowToDisk="false"/>
 
     <cache name="org.openvpms.component.business.dao.hibernate.im.product.ProductPriceDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>

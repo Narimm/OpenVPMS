@@ -1,3 +1,19 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <archetype>
     <data id="V1" archetype="lookup.staff" code="VET" description="Vet"/>
     <data id="C1" archetype="party.customerperson" title="MR" firstName="Foo"
@@ -9,11 +25,10 @@
               postcode="3456"/>
         <data collection="classifications"
               archetype="lookup.staff" childId="id:V1"/>
+        <data collection="patients" archetype="entityRelationship.patientOwner" source="id:C1" target="id:P1"/>
     </data>
     <data id="P1" archetype="party.patientpet" name="Spot" species="CANINE"
           breed="GERMAN_SHEPHERD_DOG" colour="Black" sex="MALE"
           dateOfBirth="01/06/1993" desexed="false" deceased="false">
     </data>
-    <data archetype="entityRelationship.patientOwner" source="id:C1"
-          target="id:P1"/>
 </archetype>

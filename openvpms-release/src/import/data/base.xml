@@ -49,8 +49,8 @@
     <data id="Kilogram" archetype="lookup.uom" code="KILOGRAM" printedName="kg"/>
     <data id="Pounds" archetype="lookup.uom" code="POUNDS" printedName="lb"/>
     <data id="Weight" archetype="lookup.uomGroup" code="WEIGHT"/>
-    <data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Kilogram"/>
-    <data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Pounds"/>
+    <!--data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Kilogram"/>
+    <data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Pounds"/-->
     <data archetype="lookup.contactPurpose" code="HOME"/>
     <data archetype="lookup.contactPurpose" code="WORK"/>
     <data archetype="lookup.contactPurpose" code="POSTAL"/>

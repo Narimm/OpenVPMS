@@ -50,6 +50,7 @@ public class ArchetypeDataLoaderException extends OpenVPMSException {
         NullReference,
         ReferenceNotFound,
         UnexpectedElement,
+        ObjectMustBeInCollection
     }
 
     /**

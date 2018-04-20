@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetype>
@@ -25,9 +25,13 @@
               emailAddress="reminder.opv.demo@gmail.com" preferred="false">
             <data collection="purposes" archetype="lookup.contactPurpose" childId="id:REMINDER"/>
         </data>
+        <data collection="locations" archetype="entityRelationship.practiceLocation" source="id:OP1" target="id:OL1"
+              default="true"/>
+        <data collection="locations" archetype="entityRelationship.practiceLocation" source="id:OP1" target="id:OL2"/>
         <data collection="serviceUser" archetype="entityLink.practiceServiceUser" source="id:OP1" target="id:ADMIN"/>
         <data collection="mailServer" archetype="entityLink.organisationMailServer" source="id:OP1" target="id:MS1"/>
-        <data archetype="entityLink.practiceReminderConfiguration" source="id:OP1" target="id:REMINDER_CONFIG"/>
+        <data collection="reminderConfiguration" archetype="entityLink.practiceReminderConfiguration" source="id:OP1"
+              target="id:REMINDER_CONFIG"/>
     </data>
     <data id="OL1" archetype="party.organisationLocation" name="Main Clinic" stockControl="true">
         <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97628777"/>
@@ -43,45 +47,49 @@
             <data collection="purposes" archetype="lookup.contactPurpose" childId="id:REMINDER"/>
         </data>
         <data collection="contacts" archetype="contact.website" url="openvpms.org"/>
+        <data collection="tills" archetype="entityRelationship.locationTill" source="id:OL1" target="id:OT1"
+              default="true"/>
+        <data collection="tills" archetype="entityRelationship.locationTill" source="id:OL1" target="id:OT2"/>
+        <data collection="depositAccounts" archetype="entityRelationship.locationDeposit" source="id:OL1"
+              target="id:OD1"/>
+        <data collection="stockLocations" archetype="entityRelationship.locationStockLocation" source="id:OL1"
+              target="id:OSL1"/>
+        <data collection="OTC" archetype="entityRelationship.locationOTC" source="id:OL1" target="id:OTC1"/>
         <data collection="followupWorkLists" archetype="entityLink.followupWorkList" source="id:OL1" target="id:OW5"
               sequence="0"/>
         <data collection="followupWorkLists" archetype="entityLink.followupWorkList" source="id:OL1" target="id:OW6"
               sequence="1"/>
         <data collection="followupWorkLists" archetype="entityLink.followupWorkList" source="id:OL1" target="id:OW7"
               sequence="2"/>
-        <data archetype="entityLink.locationLetterhead" source="id:OL1" target="id:LH1"/>
+        <data collection="smsAppointment" archetype="entityLink.organisationSMSAppointment" source="id:OP1" target="id:ART1"/>
+        <data collection="letterhead" archetype="entityLink.locationLetterhead" source="id:OL1" target="id:LH1"/>
     </data>
     <data id="OL2" archetype="party.organisationLocation" name="Branch Clinic" stockControl="true">
         <data collection="contacts" archetype="contact.phoneNumber" areaCode="03" telephoneNumber="97629865"/>
         <data collection="contacts" archetype="contact.location" address="4/18 Station Street" suburb="Bayswater"
               state="VIC" postcode="3082"/>
         <data collection="contacts" archetype="contact.website" url="openvpms.org"/>
-        <data archetype="entityLink.locationLetterhead" source="id:OL2" target="id:LH1"/>
+        <data collection="tills" archetype="entityRelationship.locationTill" source="id:OL2" target="id:OT3"/>
+        <data collection="depositAccounts" archetype="entityRelationship.locationDeposit" source="id:OL2"
+              target="id:OD1"/>
+        <data collection="stockLocations" archetype="entityRelationship.locationStockLocation" source="id:OL2"
+              target="id:OSL2"/>
+        <data collection="OTC" archetype="entityRelationship.locationOTC" source="id:OL2" target="id:OTC2"/>
+        <data collection="letterhead" archetype="entityLink.locationLetterhead" source="id:OL2" target="id:LH1"/>
     </data>
     <data id="MS1" archetype="entity.mailServer" name="Bigpond" host="mail.bigpond.com" port="587"
           username="opv.demo@bigpond.com" password="sample"/>
     <data id="MS2" archetype="entity.mailServer" name="iinet" host="mail.iinet.net.au" port="587"
           username="opv.demo@iinet.com.au" password="sample" security="STARTTLS"/>
-    <data archetype="entityRelationship.practiceLocation" source="id:OP1" target="id:OL1" default="true"/>
-    <data archetype="entityRelationship.practiceLocation" source="id:OP1" target="id:OL2"/>
     <data id="OD1" archetype="party.organisationDeposit" name="OpenVPMS Account" accountName="OpenVPMS Pty Ltd"
           bank="BEN" branch="Boronia" accountNumber="123-456-789"/>
-    <data archetype="entityRelationship.locationDeposit" source="id:OL1" target="id:OD1"/>
-    <data archetype="entityRelationship.locationDeposit" source="id:OL2" target="id:OD1"/>
     <data id="OT1" archetype="party.organisationTill" name="Main Reception Till" tillFloat="200.00"/>
     <data id="OT2" archetype="party.organisationTill" name="Main Shop Till" tillFloat="200.00"/>
     <data id="OT3" archetype="party.organisationTill" name="Branch Reception Till" tillFloat="100.00"/>
-    <data archetype="entityRelationship.locationTill" source="id:OL1" target="id:OT1" default="true"/>
-    <data archetype="entityRelationship.locationTill" source="id:OL1" target="id:OT2"/>
-    <data archetype="entityRelationship.locationTill" source="id:OL2" target="id:OT3"/>
     <data id="OSL1" archetype="party.organisationStockLocation" name="Main Clinic Stock"/>
-    <data archetype="entityRelationship.locationStockLocation" source="id:OL1" target="id:OSL1"/>
     <data id="OSL2" archetype="party.organisationStockLocation" name="Branch Clinic Stock"/>
-    <data archetype="entityRelationship.locationStockLocation" source="id:OL2" target="id:OSL2"/>
     <data id="OTC1" archetype="party.organisationOTC" name="Main OTC"/>
     <data id="OTC2" archetype="party.organisationOTC" name="Branch OTC"/>
-    <data archetype="entityRelationship.locationOTC" source="id:OL1" target="id:OTC1"/>
-    <data archetype="entityRelationship.locationOTC" source="id:OL2" target="id:OTC2"/>
     <data id="LH1" archetype="entity.letterhead" name="Letterhead" companyID="ABN 123 456 789" logoFile="openvpms.png"
           useProductTypes="true" remindersInvoice="true" appointmentsInvoice="true"
           lastPageFooter="Optional last page footer. This is configurable via Slogan in the Letterhead &amp; Document Control. E.g. We are open 8am-6m Monday to Saturday. For out of hours emergencies, call (03) 9123 4567 for immediate veterinarian attention."
@@ -126,7 +134,6 @@ Our records indicate that your pet(s) named above are due for some in-clinic tre
           content="concat(expr:if(expr:var('patient.name') != '', concat(expr:var('patient.name'), &quot;&apos;s&quot;), 'Your'),
 ' appointment at ' , $location.name,' is confirmed for ', date:formatDate($appointment.startTime, 'short'), ' @ ', date:formatTime($appointment.startTime, 'short'), $nl,
 'Call us on ', party:getTelephone($location), ' if you need to change the appointment')"/>
-    <data archetype="entityLink.organisationSMSAppointment" source="id:OP1" target="id:ART1"/>
     <data id="PRT1" archetype="entity.documentTemplateSMSReminder"
           name="Sample Vaccination Reminder SMS Template"
           description="&lt;patient&gt; is due for a vaccination at &lt;location&gt;. Call us on &lt;phone&gt; to make an appointment"

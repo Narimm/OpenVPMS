@@ -11,27 +11,48 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetype>
-    <data id="CTY1" archetype="lookup.country" code="AU" name="Australia" defaultLookup="true"/>
-    <data id="VIC" archetype="lookup.state" code="VIC" name="Victoria" defaultLookup="true"/>
-    <data id="NSW" archetype="lookup.state" code="NSW" name="New South Wales"/>
+    <data id="CTY1" archetype="lookup.country" code="AU" name="Australia" defaultLookup="true">
+        <data collection="source" archetype="lookupRelationship.countryState" source="id:CTY1" target="id:VIC"/>
+        <data collection="source" archetype="lookupRelationship.countryState" source="id:CTY1" target="id:NSW"/>
+        <data collection="source" archetype="lookupRelationship.countryState" source="id:CTY1" target="id:WA"/>
+        <data collection="source" archetype="lookupRelationship.countryState" source="id:CTY1" target="id:SA"/>
+        <data collection="source" archetype="lookupRelationship.countryState" source="id:CTY1" target="id:NT"/>
+        <data collection="source" archetype="lookupRelationship.countryState" source="id:CTY1" target="id:TAS"/>
+        <data collection="source" archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ACT"/>
+        <data collection="source" archetype="lookupRelationship.countryState" source="id:CTY1" target="id:QLD"/>
+    </data>
+    <data id="VIC" archetype="lookup.state" code="VIC" name="Victoria" defaultLookup="true">
+        <data collection="source" archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:UPWEY_3158"/>
+        <data collection="source" archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:CROYDON_3136"/>
+        <data collection="source" archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:DOREEN_3754"/>
+        <data collection="source" archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:GREENSBOROUGH_3088"/>
+        <data collection="source" archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:KANGAROO_GROUND_3097"/>
+        <data collection="source" archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:KILMORE_3764"/>
+        <data collection="source" archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:PAKENHAM_3810"/>
+        <data collection="source" archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:STRATHMORE_3041"/>
+        <data collection="source" archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:UPWEY_3158"/>
+        <data collection="source" archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:VIEWBANK_3084"/>
+        <data collection="source" archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:WHITTLESEA_3757"/>
+    </data>
+    <data id="NSW" archetype="lookup.state" code="NSW" name="New South Wales">
+        <data collection="source" archetype="lookupRelationship.stateSuburb" source="id:NSW" target="id:NORTH_RYDE_2113"/>
+    </data>
     <data id="WA" archetype="lookup.state" code="WA" name="Western Australia"/>
-    <data id="SA" archetype="lookup.state" code="SA" name="South Australia"/>
+    <data id="SA" archetype="lookup.state" code="SA" name="South Australia">
+        <data collection="source" archetype="lookupRelationship.stateSuburb" source="id:SA" target="id:BLACK_ROCK_5431"/>
+    </data>
     <data id="NT" archetype="lookup.state" code="NT" name="Northern Territory"/>
-    <data id="TAS" archetype="lookup.state" code="TAS" name="Tasmania"/>
+    <data id="TAS" archetype="lookup.state" code="TAS" name="Tasmania">
+        <data collection="source" archetype="lookupRelationship.stateSuburb" source="id:TAS" target="id:CURRIE_7256"/>
+    </data>
     <data id="ACT" archetype="lookup.state" code="ACT" name="Australian Capital Territory"/>
-    <data id="QLD" archetype="lookup.state" code="QLD" name="Queensland"/>
-    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:VIC"/>
-    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:NSW"/>
-    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:WA"/>
-    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:SA"/>
-    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:NT"/>
-    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:TAS"/>
-    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:ACT"/>
-    <data archetype="lookupRelationship.countryState" source="id:CTY1" target="id:QLD"/>
+    <data id="QLD" archetype="lookup.state" code="QLD" name="Queensland">
+        <data collection="source" archetype="lookupRelationship.stateSuburb" source="id:QLD" target="id:KENMORE_4069"/>
+    </data>
     <data id="BLACK_ROCK_5431" archetype="lookup.suburb" code="BLACK_ROCK_5431" name="Black Rock" postCode="5431"/>
     <data id="CROYDON_3136" archetype="lookup.suburb" code="CROYDON_3136" name="Croydon" postCode="3136"/>
     <data id="CURRIE_7256" archetype="lookup.suburb" code="CURRIE_7256" name="Currie" postCode="7256"/>
@@ -48,21 +69,6 @@
     <data id="VIEWBANK_3084" archetype="lookup.suburb" code="VIEWBANK_3084" name="Viewbank" postCode="3084"/>
     <data id="WHITTLESEA_3757" archetype="lookup.suburb" code="WHITTLESEA_3757" name="Whittlesea" postCode="3757"/>
     <data id="NORTH_RYDE_2113" archetype="lookup.suburb" code="NORTH_RYDE_2113" name="North Ryde" postCode="2113"/>
-    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:UPWEY_3158"/>
-    <data archetype="lookupRelationship.stateSuburb" source="id:SA" target="id:BLACK_ROCK_5431"/>
-    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:CROYDON_3136"/>
-    <data archetype="lookupRelationship.stateSuburb" source="id:TAS" target="id:CURRIE_7256"/>
-    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:DOREEN_3754"/>
-    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:GREENSBOROUGH_3088"/>
-    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:KANGAROO_GROUND_3097"/>
-    <data archetype="lookupRelationship.stateSuburb" source="id:QLD" target="id:KENMORE_4069"/>
-    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:KILMORE_3764"/>
-    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:PAKENHAM_3810"/>
-    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:STRATHMORE_3041"/>
-    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:UPWEY_3158"/>
-    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:VIEWBANK_3084"/>
-    <data archetype="lookupRelationship.stateSuburb" source="id:VIC" target="id:WHITTLESEA_3757"/>
-    <data archetype="lookupRelationship.stateSuburb" source="id:NSW" target="id:NORTH_RYDE_2113"/>
     <data archetype="lookup.currency" code="AUD" name="Australian Dollar" defaultLookup="true" roundingMode="HALF_UP"
           minDenomination="0.05"/>
     <data archetype="lookup.currency" code="NZD" name="New Zealand Dollar" roundingMode="HALF_UP"
@@ -89,8 +95,8 @@
     <data id="Kilogram" archetype="lookup.uom" code="KILOGRAM" unitCode="KGM" printedName="kg"/>
     <data id="Pounds" archetype="lookup.uom" code="POUNDS" unitCode="LBR" printedName="lb"/>
     <data id="Weight" archetype="lookup.uomGroup" code="WEIGHT"/>
-    <data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Kilogram"/>
-    <data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Pounds"/>
+    <!--data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Kilogram"/>
+    <data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Pounds"/-->
     <data archetype="lookup.contactPurpose" code="HOME"/>
     <data archetype="lookup.contactPurpose" code="WORK"/>
     <data archetype="lookup.contactPurpose" code="MOBILE"/>

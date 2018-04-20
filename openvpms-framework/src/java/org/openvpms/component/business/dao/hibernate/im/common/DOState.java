@@ -36,11 +36,9 @@ import java.util.Set;
 
 
 /**
- * Manages the state of an {@link IMObjectDO} as it is being assembled by an
- * {@link Assembler}.
+ * Manages the state of an {@link IMObjectDO} as it is being assembled by an {@link Assembler}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DOState {
 
@@ -50,14 +48,14 @@ public class DOState {
     private final IMObjectDO object;
 
     /**
-     * The source object. May be <tt>null<tt>.
-     */
-    private IMObject source;
-
-    /**
      * Determines if the object was new when the state was first created.
      */
     private final boolean isNew;
+
+    /**
+     * The source object. May be {@code null}.
+     */
+    private IMObject source;
 
     /**
      * The source version.
@@ -75,8 +73,7 @@ public class DOState {
     private List<ReferenceUpdater> updaters;
 
     /**
-     * The reference update reverters, used to revert reference updates
-     * on transaction rollback
+     * The reference update reverters, used to revert reference updates on transaction rollback.
      */
     private Map<Reference, ReferenceUpdater> reverters;
 
@@ -86,8 +83,7 @@ public class DOState {
     private Map<String, DOState> states;
 
     /**
-     * Creates a new <tt>DOState</tt> for an object retrieved from the
-     * database.
+     * Constructs a {@link DOState} for an object retrieved from the database.
      *
      * @param object the object
      */
@@ -96,8 +92,7 @@ public class DOState {
     }
 
     /**
-     * Creates a new <tt>DOState</tt> for an object being assembled
-     * from an {@link IMObject}.
+     * Constructs a {@link DOState} for an object being assembled from an {@link IMObject}.
      *
      * @param object the object
      * @param source the source object
@@ -109,8 +104,7 @@ public class DOState {
         version = (source != null) ? source.getVersion() : 0;
         if (!isNew && source != null) {
             if (source.getVersion() != object.getVersion()) {
-                throw new StaleObjectStateException(object.getClass().getName(),
-                                                    object.getId());
+                throw new StaleObjectStateException(object.getClass().getName(), object.getId());
             }
         }
     }
@@ -127,8 +121,8 @@ public class DOState {
     /**
      * Returns the source object.
      *
-     * @return the source object, or <tt>null</tt> if the object is not
-     *         being assembled from an {@link IMObject}.
+     * @return the source object, or {@code null} if the object is not
+     * being assembled from an {@link IMObject}.
      */
     public IMObject getSource() {
         return source;
@@ -142,18 +136,12 @@ public class DOState {
      * load.
      *
      * @param other the reference object with which to compare.
-     * @return <tt>true</tt> if this object is the same as the obj
-     *         argument; <tt>false</tt> otherwise.
+     * @return {@code true} if this object is the same as the obj
+     * argument; {@code false} otherwise.
      */
     @Override
     public boolean equals(Object other) {
-        if (other == this) {
-            return true;
-        }
-        if (other instanceof DOState) {
-            return object.equals(((DOState) other).object);
-        }
-        return false;
+        return other == this || other instanceof DOState && object.equals(((DOState) other).object);
     }
 
     /**
@@ -194,14 +182,12 @@ public class DOState {
     public void removeState(IMObjectDO object) {
         if (states != null) {
             if (states.remove(getKey(object)) == null) {
-                if (!HibernateHelper.isUnintialised(object)
-                        && object.getId() != -1) {
+                if (!HibernateHelper.isUnintialised(object) && object.getId() != -1) {
                     // the object may have been loaded subsequent to the state
                     // being added, in which case its key has changed
                     object = (IMObjectDO) HibernateHelper.deproxy(object);
                     Class impl = object.getClass();
-                    while (impl != IMObjectDOImpl.class
-                            && impl != Object.class) {
+                    while (impl != IMObjectDOImpl.class && impl != Object.class) {
                         String key = impl.getName() + "#" + object.getId();
                         if (states.remove(key) != null) {
                             break;
@@ -261,7 +247,7 @@ public class DOState {
      * Determines if the object is complete. It is considered complete if
      * it or any of its related states have no deferred updaters registers.
      *
-     * @return <tt>true</tt> if the object is complete; otherwise <tt>false</tt>
+     * @return {@code true} if the object is complete; otherwise {@code false}
      */
     public boolean isComplete() {
         return new CompleteVistor().visit(this);
@@ -278,17 +264,6 @@ public class DOState {
      */
     public void updateIds(Context context) {
         new IdUpdater(context).visit(this);
-    }
-
-    /**
-     * Reverts the identifiers and versions of the {@link IMObject}s associated
-     * with this object.
-     * <p/>
-     * This is used to rollback identifier and version changes after a
-     * transaction rolls back.
-     */
-    public void rollbackIds() {
-        new IdReverter().visit(this);
     }
 
     /**
@@ -341,10 +316,106 @@ public class DOState {
      * Determines if the object associated with the state is an object which
      * is yet to be loaded from the database.
      *
-     * @return <tt>true</tt> if the object is yet to be loaded from the database
+     * @return {@code true} if the object is yet to be loaded from the database
      */
     public boolean isUninitialised() {
         return HibernateHelper.isUnintialised(object);
+    }
+
+    /**
+     * Collects the {@link DeferredAssembler}s for each state reachable from the set of supplied states.
+     *
+     * @param states the states
+     * @return all states, and their corresponding deferred assemblers
+     */
+    public static Map<DOState, Set<DeferredAssembler>> getDeferred(Collection<DOState> states) {
+        Map<DOState, Set<DeferredAssembler>> result = new HashMap<>();
+        DeferredCollector collector = new DeferredCollector();
+        for (DOState state : states) {
+            collector.visit(state);
+            result.put(state, collector.getAssemblers());
+        }
+        return result;
+    }
+
+    /**
+     * Returns a string representation of this.
+     *
+     * @return a string representation of this
+     */
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        Visitor visitor = new Visitor() {
+            boolean first = true;
+
+            @Override
+            protected boolean doVisit(DOState state) {
+                if (!first) {
+                    builder.append("\n -> ");
+                } else {
+                    first = false;
+                }
+                if (state.getSource() != null) {
+                    builder.append(state.getSource().getObjectReference());
+                } else if (state.isUninitialised()) {
+                    builder.append("uninitialised=").append(state.getKey());
+                } else {
+                    builder.append(state.getObject().getObjectReference());
+                }
+                return true;
+            }
+        };
+        visitor.visit(this);
+        return builder.toString();
+    }
+
+    /**
+     * Returns all objects from the specified states and their related states.
+     * <p/>
+     * This orders objects so that the top-level states are returned first, followed by those at lower levels.
+     *
+     * @param states the states
+     * @return the objects
+     */
+    public static Collection<IMObjectDO> getObjects(Collection<DOState> states) {
+        ObjectCollector collector = new ObjectCollector();
+        for (DOState state : states) {
+            collector.visitFirst(state);
+        }
+        for (DOState state : states) {
+            collector.visit(state);
+        }
+        return collector.getObjects();
+    }
+
+    /**
+     * Invoked after successful commit.
+     * <p/>
+     * This propagates identifier and version changes from the committed {@code IMObjectDO}s to their corresponding
+     * {@code IMObject}s.
+     *
+     * @param states  the states to update
+     * @param context the context
+     */
+    public static void updateIds(Collection<DOState> states, Context context) {
+        IdUpdater updater = new IdUpdater(context);
+        for (DOState state : states) {
+            updater.visit(state);
+        }
+    }
+
+    /**
+     * Invoked on transaction rollback.
+     * <p/>
+     * This reverts identifier and version changes.
+     *
+     * @param states the states to update
+     */
+    public static void rollbackIds(Collection<DOState> states) {
+        DOState.IdReverter reverter = new DOState.IdReverter();
+        for (DOState state : states) {
+            reverter.visit(state);
+        }
     }
 
     /**
@@ -374,7 +445,7 @@ public class DOState {
             LazyInitializer init = proxy.getHibernateLazyInitializer();
             if (init.isUninitialized()) {
                 id = init.getPersistentClass().getName()
-                        + "#" + init.getIdentifier().toString();
+                     + "#" + init.getIdentifier().toString();
             }
         }
         if (id == null) {
@@ -394,9 +465,8 @@ public class DOState {
         private Set<String> visited = new HashSet<>();
 
         /**
-         * Visits each state reachable from the specified state, invoking
-         * {@link #doVisit(DOState)}. If the method returns <tt>false</tt>,
-         * iteration terminates.
+         * Visits each state reachable from the specified state, invoking {@link #doVisit(DOState)}.
+         * If the method returns {@code false}, iteration terminates.
          *
          * @param state the starting state
          * @return the result of {@link #doVisit(DOState)}.
@@ -411,17 +481,35 @@ public class DOState {
         }
 
         /**
+         * Visits each state reachable from the specified states, invoking {@link #doVisit(DOState)}.
+         * If the method returns {@code false}, iteration terminates.
+         *
+         * @param states the states
+         * @return the result of {@link #doVisit(DOState)}.
+         */
+        public boolean visit(List<DOState> states) {
+            boolean result = true;
+            for (DOState state : states) {
+                result = visit(state);
+                if (!result) {
+                    break;
+                }
+            }
+            return result;
+        }
+
+        /**
          * Visits the specified state.
          *
          * @param state the state to visit
-         * @return <tt>true</tt> to visit any other state, <tt>false</tt> to
-         *         terminate
+         * @return {@code true} to visit any other state, {@code false} to
+         * terminate
          */
         protected abstract boolean doVisit(DOState state);
 
         /**
          * Invokes {@link #visit(DOState)} for each child of the specified
-         * state. If the method returns <tt>false</tt>, iteration terminates.
+         * state. If the method returns {@code false}, iteration terminates.
          *
          * @param state the state
          * @return the result of {@link #visit(DOState)}
@@ -431,7 +519,7 @@ public class DOState {
             Map<String, DOState> states = state.states;
             if (states != null) {
                 for (DOState child : states.values()) {
-                    if (!visited.contains(child.getKey())) {
+                    if (!visited(child)) {
                         if (!visit(child)) {
                             result = false;
                             break;
@@ -446,9 +534,20 @@ public class DOState {
          * Marks a state visited.
          *
          * @param state the visited state
+         * @return {@code true} if the state hadn't already been visited
          */
-        protected void addVisited(DOState state) {
-            visited.add(state.getKey());
+        protected boolean addVisited(DOState state) {
+            return visited.add(state.getKey());
+        }
+
+        /**
+         * Determines if a state has been visited.
+         *
+         * @param state the state
+         * @return {@code true} if the state has been visited
+         */
+        private boolean visited(DOState state) {
+            return visited.contains(state.getKey());
         }
     }
 
@@ -463,8 +562,8 @@ public class DOState {
          * Visits the specified state.
          *
          * @param state the state to visit
-         * @return <tt>true</tt> to visit any other state, <tt>false</tt> to
-         *         terminate
+         * @return {@code true} to visit any other state, {@code false} to
+         * terminate
          */
         protected boolean doVisit(DOState state) {
             List<DeferredAssembler> deferred = state.deferred;
@@ -485,7 +584,7 @@ public class DOState {
 
 
         /**
-         * Creates a new <tt>IdUpdater</tt>.
+         * Creates a new {@code IdUpdater}.
          *
          * @param context the context
          */
@@ -497,7 +596,7 @@ public class DOState {
          * Visits the specified state.
          *
          * @param state the state to visit
-         * @return <tt>true</tt>
+         * @return {@code true}
          */
         protected boolean doVisit(DOState state) {
             IMObjectDO object = state.getObject();
@@ -511,8 +610,7 @@ public class DOState {
                 for (ReferenceUpdater updater : updaters) {
                     DOState target = context.getCached(updater.getReference());
                     if (target != null) {
-                        IMObjectReference ref
-                                = target.getObject().getObjectReference();
+                        IMObjectReference ref = target.getObject().getObjectReference();
                         updater.doUpdate(ref);
                     }
                 }
@@ -531,7 +629,7 @@ public class DOState {
          * Visits the specified state.
          *
          * @param state the state to visit
-         * @return <tt>true</tt>
+         * @return {@code true}
          */
         protected boolean doVisit(DOState state) {
             if (state.isNew) {
@@ -563,14 +661,26 @@ public class DOState {
         /**
          * Empty helper.
          */
-        private static final Set<DeferredAssembler> EMPTY
-                = Collections.emptySet();
+        private static final Set<DeferredAssembler> EMPTY = Collections.emptySet();
+
+        /**
+         * Returns the assemblers from the last visited state(s).
+         * <p/>
+         * This list is reset.
+         *
+         * @return the assemblers
+         */
+        public Set<DeferredAssembler> getAssemblers() {
+            Set<DeferredAssembler> result = assemblers;
+            assemblers = null;
+            return (result != null) ? result : EMPTY;
+        }
 
         /**
          * Visits the specified state.
          *
          * @param state the state to visit
-         * @return <tt>true</tt>
+         * @return {@code true}
          */
         protected boolean doVisit(DOState state) {
             List<DeferredAssembler> deferred = state.deferred;
@@ -581,15 +691,6 @@ public class DOState {
                 assemblers.addAll(deferred);
             }
             return true;
-        }
-
-        /**
-         * Returns the collected assemblers.
-         *
-         * @return the assemblers
-         */
-        public Set<DeferredAssembler> getAssemblers() {
-            return (assemblers != null) ? assemblers : EMPTY;
         }
     }
 
@@ -603,7 +704,7 @@ public class DOState {
          * {@link #doVisit(DOState)}.
          *
          * @param state the starting state
-         * @return <tt>true</tt>
+         * @return {@code true}
          */
         @Override
         public boolean visit(DOState state) {
@@ -617,7 +718,7 @@ public class DOState {
          * Visits the specified state.
          *
          * @param state the state to visit
-         * @return <tt>true</tt>
+         * @return {@code true}
          */
         protected boolean doVisit(DOState state) {
             List<DeferredAssembler> deferred = state.deferred;
@@ -660,26 +761,20 @@ public class DOState {
         }
 
         /**
-         * Visits each state reachable from the specified state, invoking
-         * {@link #doVisit(DOState)}. If the method returns <tt>false</tt>,
-         * iteration terminates.
+         * Visits the first state.
          *
-         * @param state the starting state
-         * @return <tt>true</tt>
+         * @param state the state
          */
-        @Override
-        public boolean visit(DOState state) {
+        public void visitFirst(DOState state) {
             addVisited(state);
-            visitChildren(state);
             doVisit(state);
-            return true;
         }
 
         /**
          * Visits the specified state.
          *
          * @param state the state to visit
-         * @return <tt>true</tt>
+         * @return {@code true}
          */
         protected boolean doVisit(DOState state) {
             IMObjectDO object = state.getObject();

@@ -56,8 +56,7 @@ public class Context {
     private final Session session;
 
     /**
-     * Key used to bind the context with
-     * <tt>TransactionSynchronizationManager.bindResource()</tt>
+     * Key used to bind the context with {@code TransactionSynchronizationManager.bindResource()}.
      */
     private final ResourceKey key;
 
@@ -79,23 +78,22 @@ public class Context {
     /**
      * The set of data objects that have been saved in the session.
      */
-    private Set<DOState> saved = new HashSet<DOState>();
+    private Set<DOState> saved = new HashSet<>();
 
     /**
      * The set of data objects that are yet to be saved.
      */
-    private Set<DOState> saveDeferred = new LinkedHashSet<DOState>();
+    private Set<DOState> saveDeferred = new LinkedHashSet<>();
 
     /**
      * The set of objects currently being assembled.
      */
-    private Map<Object, Object> assembling = new IdentityHashMap<Object, Object>();
+    private Map<Object, Object> assembling = new IdentityHashMap<>();
 
     /**
      * The references to assemble.
      */
-    private List<DeferredReference> deferredRefs
-            = new ArrayList<DeferredReference>();
+    private List<DeferredReference> deferredRefs = new ArrayList<>();
 
     /**
      * Determines if transaction synchronization is active.
@@ -103,12 +101,12 @@ public class Context {
     private final boolean syncActive;
 
     /**
-     * The context handler. May be <tt>null</tt>
+     * The context handler. May be {@code null}
      */
     private ContextHandler handler;
 
     /**
-     * Creates a new <tt>Context</tt>.
+     * Constructs a {@link Context}.
      *
      * @param assembler  the assembler
      * @param session    the hibernate session
@@ -137,13 +135,10 @@ public class Context {
         if (TransactionSynchronizationManager.isSynchronizationActive()) {
             if (!TransactionSynchronizationManager.hasResource(key)) {
                 context = new Context(assembler, session, true);
-                TransactionSynchronizationManager.bindResource(
-                        context.getResourceKey(), context);
-                TransactionSynchronizationManager.registerSynchronization(
-                        new ContextSynchronization(context));
+                TransactionSynchronizationManager.bindResource(context.getResourceKey(), context);
+                TransactionSynchronizationManager.registerSynchronization(new ContextSynchronization(context));
             } else {
-                context = (Context) TransactionSynchronizationManager.getResource(
-                        key);
+                context = (Context) TransactionSynchronizationManager.getResource(key);
             }
         } else {
             context = new Context(assembler, session, false);
@@ -154,7 +149,7 @@ public class Context {
     /**
      * Registers the context handler.
      *
-     * @param handler the handler. May be <tt>null</tt>
+     * @param handler the handler. May be {@code null}
      */
     public void setContextHandler(ContextHandler handler) {
         this.handler = handler;
@@ -191,8 +186,8 @@ public class Context {
      * Determines if a data object is being assembled.
      *
      * @param state the data object state
-     * @return <tt>true</tt> if the object is being assembled; otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if the object is being assembled; otherwise
+     *         {@code false}
      */
     public boolean isAssembling(DOState state) {
         return assembling.containsKey(state);
@@ -220,8 +215,8 @@ public class Context {
      * Determines if a data object is being assembled.
      *
      * @param object the object
-     * @return <tt>true</tt> if the object is being assembled; otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if the object is being assembled; otherwise
+     *         {@code false}
      */
     public boolean isAssembling(IMObject object) {
         return assembling.containsKey(object);
@@ -240,8 +235,8 @@ public class Context {
      * Determines if transaction synchronization is active.
      * TODO - still required?
      *
-     * @return <tt>true</tt> if synchronization is active, otherwise
-     *         <tt>false</tt>
+     * @return {@code true} if synchronization is active, otherwise
+     *         {@code false}
      */
     public boolean isSynchronizationActive() {
         return syncActive;
@@ -289,20 +284,20 @@ public class Context {
     }
 
     /**
-     * Returns the assembled data object for the specified <tt>IMObject</tt>.
+     * Returns the assembled data object for the specified {@code IMObject}.
      *
      * @param source the source object
-     * @return the assembled state, or <tt>null</tt> if none is found
+     * @return the assembled state, or {@code null} if none is found
      */
     public DOState getCached(IMObject source) {
         return objectToDOMap.get(source);
     }
 
     /**
-     * Returns the assembled <tt>IMObject</tt> for the specified data object.
+     * Returns the assembled {@code IMObject} for the specified data object.
      *
      * @param source the data object
-     * @return the corresponding <tt>IMObject</tt> or <tt>null<tt> if none is
+     * @return the corresponding {@code IMObject} or {@code null{@code  if none is
      *         found
      */
     public IMObject getCached(IMObjectDO source) {
@@ -314,7 +309,7 @@ public class Context {
      * reference.
      *
      * @param reference the reference
-     * @return the corresponding state, or <tt>null</tt> if none is found
+     * @return the corresponding state, or {@code null} if none is found
      */
     public DOState getCached(Reference reference) {
         return refToDOMap.get(reference);
@@ -326,7 +321,7 @@ public class Context {
      * @param reference the reference
      * @param type      the data object type
      * @param impl      the data object implementation type
-     * @return the corresponding object, or <tt>null</tt> if none is found
+     * @return the corresponding object, or {@code null} if none is found
      */
     public <T extends IMObjectDO, Impl extends IMObjectDOImpl> T get(Reference reference, Class<T> type, Class<Impl> impl) {
         Object result = session.load(impl, reference.getId());
@@ -347,7 +342,7 @@ public class Context {
      *
      * @param object the object
      * @param type   the implementation type
-     * @return the object's reference. May be <tt>null</tt>
+     * @return the object's reference. May be {@code null}
      */
     public IMObjectReference getReference(
             IMObjectDO object, Class<? extends IMObjectDOImpl> type) {
@@ -376,12 +371,10 @@ public class Context {
      * @param type    the implementation type
      * @return a map of the object ids to their corresponding references
      */
-    public Map<Long, IMObjectReference> getReferences(
-            Map<Long, IMObjectDO> objects,
-            Class<? extends IMObjectDOImpl> type) {
-        List<Long> ids = new ArrayList<Long>();
-        Map<Long, IMObjectReference> result
-                = new HashMap<Long, IMObjectReference>();
+    public Map<Long, IMObjectReference> getReferences(Map<Long, IMObjectDO> objects,
+                                                      Class<? extends IMObjectDOImpl> type) {
+        List<Long> ids = new ArrayList<>();
+        Map<Long, IMObjectReference> result = new HashMap<>();
         for (Map.Entry<Long, IMObjectDO> entry : objects.entrySet()) {
             IMObjectDO object = entry.getValue();
             if (Hibernate.isInitialized(object)) {
@@ -464,6 +457,25 @@ public class Context {
             }
             deferred.clear();
         }
+    }
+
+    /**
+     * Invoked after successful commit.
+     * <p/>
+     * This propagates identifier and version changes from the committed
+     * {@code IMObjectDO}s to their corresponding {@code IMObject}s.
+     */
+    public void commit() {
+        DOState.updateIds(getSaved(), this);
+    }
+
+    /**
+     * Invoked on transaction rollback.
+     * <p/>
+     * This reverts identifier and version changes.
+     */
+    public void rollback() {
+        DOState.rollbackIds(getSaved());
     }
 
     /**
@@ -591,7 +603,7 @@ public class Context {
 
     /**
      * Helper class for binding the context with
-     * <tt>TransactionSynchronizationManager</tt>.
+     * {@code TransactionSynchronizationManager}.
      */
     private static class ResourceKey {
 
@@ -602,7 +614,7 @@ public class Context {
 
 
         /**
-         * Creates a new <tt>ResourceKey</tt>.
+         * Creates a new {@code ResourceKey}.
          *
          * @param session the session
          */
@@ -624,8 +636,8 @@ public class Context {
          * Indicates whether some other object is "equal to" this one.
          *
          * @param obj the reference object with which to compare.
-         * @return <tt>true</tt> if this object is the same as the obj
-         *         argument; <tt>false</tt> otherwise.
+         * @return {@code true} if this object is the same as the obj
+         *         argument; {@code false} otherwise.
          */
         @Override
         public boolean equals(Object obj) {

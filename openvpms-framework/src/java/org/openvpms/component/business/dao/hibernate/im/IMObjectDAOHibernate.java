@@ -156,7 +156,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     public void save(final IMObject object) {
         try {
             update(session -> {
-                save(object, session);
+                save(Collections.singletonList(object), session);
                 return null;
             });
         } catch (Throwable exception) {
@@ -222,7 +222,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * Retrieves partially populated objects that match the query.
      * This may be used to selectively load parts of object graphs to improve
      * performance.
-     * <p>
+     * <p/>
      * All simple properties of the returned objects are populated - the
      * <code>nodes</code> argument is used to specify which collection nodes to
      * populate. If empty, no collections will be loaded, and the behaviour of
@@ -266,15 +266,15 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      * Retrieve the objects that matches the specified search criteria.
      * This is a very generic method that provides a mechanism to return
      * objects based on, one or more criteria.
-     * <p>
+     * <p/>
      * All parameters are optional and can either denote an exact or partial
      * match semantics. If a parameter has a '*' at the start or end of the
      * value then it will perform a wildcard match.  If not '*' is specified in
      * the value then it will only return objects with the exact value.
-     * <p>
+     * <p/>
      * If two or more parameters are specified then it will return entities
      * that matching all criteria.
-     * <p>
+     * <p/>
      * The results will be returned in a {@link Page} object, which may contain
      * a subset of the total result set. The caller can then use the context
      * information in the {@link Page} object to make subsequent calls.
@@ -428,27 +428,25 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
 
     /**
      * Invoked after successful commit.
-     * <p>
+     * <p/>
      * This propagates identifier and version changes from the committed
      * <tt>IMObjectDO</tt>s to their corresponding <tt>IMObject</tt>s.
      *
      * @param context the assembly context
      */
     public void commit(Context context) {
-        updateIds(context);
+        context.commit();
     }
 
     /**
      * Invoked on transaction rollback.
-     * <p>
-     * This reverts identifier and version changes
+     * <p/>
+     * This reverts identifier and version changes.
      *
      * @param context the assembly context
      */
     public void rollback(Context context) {
-        for (DOState state : context.getSaved()) {
-            state.rollbackIds();
-        }
+        context.rollback();
     }
 
     /**
@@ -726,39 +724,6 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     }
 
     /**
-     * Save an object.
-     *
-     * @param object  the object to save
-     * @param session the session to use
-     */
-    private void save(IMObject object, Session session) {
-        Context context = getContext(session);
-        boolean deferred = !context.getSaveDeferred().isEmpty();
-        save(object, context);
-        if (deferred) {
-            saveDeferred(context, false);
-        }
-        if (!context.isSynchronizationActive()) { // todo - required?
-            preCommit(context);
-        }
-    }
-
-    /**
-     * Saves an object.
-     *
-     * @param object  the object to save
-     * @param context the context
-     */
-    private void save(IMObject object, Context context) {
-        DOState state = assembler.assemble(object, context);
-        if (state.isComplete()) {
-            save(state, context);
-        } else {
-            context.addSaveDeferred(state);
-        }
-    }
-
-    /**
      * Save a collection of objects.
      *
      * @param objects the objects to save
@@ -767,8 +732,17 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     private void save(Collection<? extends IMObject> objects, Session session) {
         Context context = getContext(session);
         boolean deferred = !context.getSaveDeferred().isEmpty();
+        List<DOState> toSave = new ArrayList<>();
         for (IMObject object : objects) {
-            save(object, context);
+            DOState state = assembler.assemble(object, context);
+            if (state.isComplete()) {
+                toSave.add(state);
+            } else {
+                context.addSaveDeferred(state);
+            }
+        }
+        if (!toSave.isEmpty()) {
+            save(toSave, context);
         }
         if (deferred || context.getSaveDeferred().size() > 1) {
             saveDeferred(context, false);
@@ -800,9 +774,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
      */
     private void saveDeferred(Context context, boolean failOnIncomplete) {
         List<DOState> states = assembleDeferred(context);
-        for (DOState state : states) {
-            save(state, context);
-        }
+        save(states, context);
         Set<DOState> saveDeferred = context.getSaveDeferred();
         if (!saveDeferred.isEmpty() && failOnIncomplete) {
             DOState state = saveDeferred.iterator().next();
@@ -812,8 +784,7 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
                 DeferredAssembler assembler = deferred.iterator().next();
                 ref = assembler.getReference();
             }
-            throw new IMObjectDAOException(
-                    IMObjectDAOException.ErrorCode.ObjectNotFound, ref);
+            throw new IMObjectDAOException(IMObjectDAOException.ErrorCode.ObjectNotFound, ref);
 
         }
     }
@@ -829,20 +800,21 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
         boolean processed;
         do {
             processed = false;
-            DOState[] states = context.getSaveDeferred().toArray(
-                    new DOState[context.getSaveDeferred().size()]);
-            Set<DeferredAssembler> deferred = new HashSet<>();
-            for (DOState state : states) {
-                Set<DeferredAssembler> set = state.getDeferred();
+            Set<DeferredAssembler> assemblers = new HashSet<>();
+            Map<DOState, Set<DeferredAssembler>> deferred = DOState.getDeferred(context.getSaveDeferred());
+            for (Map.Entry<DOState, Set<DeferredAssembler>> entry : deferred.entrySet()) {
+                DOState state = entry.getKey();
+                Set<DeferredAssembler> set = entry.getValue();
                 if (!set.isEmpty()) {
-                    deferred.addAll(set);
+                    assemblers.addAll(set);
                 } else {
+                    // state requires no more assembly
                     context.removeSaveDeferred(state);
                     result.add(state);
                 }
             }
-            if (!deferred.isEmpty()) {
-                for (DeferredAssembler assembler : deferred) {
+            if (!assemblers.isEmpty()) {
+                for (DeferredAssembler assembler : assemblers) {
                     if (context.getCached(assembler.getReference()) != null) {
                         assembler.assemble(context);
                         processed = true;
@@ -854,18 +826,21 @@ public class IMObjectDAOHibernate extends HibernateDaoSupport
     }
 
     /**
-     * Saves a data object.
+     * Saves data objects.
      *
-     * @param state   the data object state
+     * @param states  the data object states
      * @param context the assembly context
      */
-    private void save(DOState state, Context context) {
+    private void save(List<DOState> states, Context context) {
         Session session = context.getSession();
-        for (IMObjectDO object : state.getObjects()) {
+        Collection<IMObjectDO> objects = DOState.getObjects(states);
+        for (IMObjectDO object : objects) {
             session.saveOrUpdate(object);
         }
-        state.updateIds(context);
-        context.addSaved(state);
+        DOState.updateIds(states, context);
+        for (DOState state : states) {
+            context.addSaved(state);
+        }
     }
 
     /**
