@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.event.impl;
@@ -111,6 +111,7 @@ public class DischargeEventProcessor extends EventProcessor<DischargeEvent> {
         hospitalizationService.saveMedicalRecordsReport(patient, visit, clinician);
         hospitalizationService.saveBillingReport(patient, visit, clinician);
         hospitalizationService.saveNotesReport(patient, visit, clinician);
+        hospitalizationService.saveFormsReports(patient, visit, clinician);
     }
 
     /**

@@ -234,6 +234,16 @@ public class FlowSheetMessages {
     }
 
     /**
+     * Creates a message indicating that forms couldn't be retrieved for a patient.
+     *
+     * @param patient the patient
+     * @return a new message
+     */
+    public static Message failedToGetForms(Party patient) {
+        return messages.create(120, patient.getName());
+    }
+
+    /**
      * Returns a message indicating that a clinical note cannot be deleted as it has been locked.
      *
      * @return the message
