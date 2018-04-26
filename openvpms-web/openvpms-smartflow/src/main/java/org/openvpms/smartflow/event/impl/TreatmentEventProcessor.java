@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.event.impl;
 
+import org.apache.commons.collections4.ComparatorUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -50,6 +51,8 @@ import org.openvpms.smartflow.model.event.TreatmentEvent;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static org.openvpms.archetype.rules.finance.order.CustomerOrder.addNote;
@@ -115,7 +118,19 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
     public void process(TreatmentEvent event) {
         Treatments list = event.getObject();
         if (list != null && list.getTreatments() != null) {
-            for (Treatment treatment : list.getTreatments()) {
+            List<Treatment> treatments = new ArrayList<>(list.getTreatments());
+            // sort treatments to process removals first, as a workaround for OVPMS-2028
+            Collections.sort(treatments, (o1, o2) -> {
+                Comparator<Object> comparator = ComparatorUtils.nullLowComparator(null);
+                int result = comparator.compare(o1.getTreatmentGuid(), o2.getTreatmentGuid());
+                if (result == 0) {
+                    Status status1 = Status.fromString(o1.getStatus());
+                    Status status2 = Status.fromString(o2.getStatus());
+                    result = status1.compareTo(status2);
+                }
+                return result;
+            });
+            for (Treatment treatment : treatments) {
                 treated(treatment);
             }
         }
@@ -130,7 +145,7 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
      */
     protected void treated(Treatment treatment) {
         if (log.isDebugEnabled()) {
-            log.debug("treatment=" + treatment.getTreatmentGuid() + ", inventoryId=" +treatment.getInventoryId()
+            log.debug("treatment=" + treatment.getTreatmentGuid() + ", inventoryId=" + treatment.getInventoryId()
                       + ", name=" + treatment.getName() + ", quantity=" + treatment.getQty()
                       + ", status=" + treatment.getStatus() + ", billed=" + treatment.getBilled());
         }
@@ -603,6 +618,32 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
          */
         public CustomerPharmacyOrder getInProgress() {
             return inProgress;
+        }
+    }
+
+    /**
+     * Treatment statuses, ordered such that removals are processed first.
+     */
+    private enum Status {
+        removed, added, changed, not_changed, unknown;
+
+        /**
+         * Returns the status for a status name.
+         * @param status the status name
+         * @return the corresponding status code, or {@code unknown} if it is {@code null} or invalid
+         */
+        public static Status fromString(String status) {
+            Status result;
+            if (status != null) {
+                try {
+                    result = Status.valueOf(status);
+                } catch (IllegalArgumentException ignore) {
+                    result = Status.unknown;
+                }
+            } else {
+                result = Status.unknown;
+            }
+            return result;
         }
     }
 
