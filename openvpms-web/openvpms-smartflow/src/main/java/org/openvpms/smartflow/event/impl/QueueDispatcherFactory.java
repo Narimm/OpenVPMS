@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.event.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
@@ -55,6 +56,11 @@ class QueueDispatcherFactory {
     private final PlatformTransactionManager transactionManager;
 
     /**
+     * The practice service.
+     */
+    private final PracticeService practiceService;
+
+    /**
      * The patient rules.
      */
     private final PatientRules rules;
@@ -72,14 +78,17 @@ class QueueDispatcherFactory {
      * @param service            the archetype service
      * @param lookups            the lookup service
      * @param transactionManager the transaction manager
+     * @param practiceService    the practice service
      * @param rules              the patient rules
      */
     public QueueDispatcherFactory(FlowSheetServiceFactory factory, IArchetypeService service, ILookupService lookups,
-                                  PlatformTransactionManager transactionManager, PatientRules rules) {
+                                  PlatformTransactionManager transactionManager, PracticeService practiceService,
+                                  PatientRules rules) {
         this.factory = factory;
         this.service = service;
         this.lookups = lookups;
         this.transactionManager = transactionManager;
+        this.practiceService = practiceService;
         this.rules = rules;
         mapper = new ObjectMapper();
     }
@@ -116,7 +125,7 @@ class QueueDispatcherFactory {
      * @return a new event dispatcher
      */
     protected EventDispatcher createEventDispatcher(Party location) {
-        return new DefaultEventDispatcher(location, service, lookups, factory, rules);
+        return new DefaultEventDispatcher(location, service, lookups, factory, practiceService, rules);
     }
 
     /**

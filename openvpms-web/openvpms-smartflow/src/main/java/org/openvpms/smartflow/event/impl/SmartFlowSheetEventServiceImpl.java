@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.event.impl;
@@ -117,7 +117,7 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
             }
         };
         QueueDispatcherFactory readerFactory = new QueueDispatcherFactory(factory, service, lookups, transactionManager,
-                                                                          rules);
+                                                                          practiceService, rules);
         dispatchers = new QueueDispatchers(readerFactory);
         dispatcher = new ScheduledDispatcher(dispatchers, practiceService);
     }

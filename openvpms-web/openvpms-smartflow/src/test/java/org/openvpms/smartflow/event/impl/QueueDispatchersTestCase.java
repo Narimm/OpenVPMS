@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.event.impl;
@@ -22,6 +22,8 @@ import org.mockito.Mockito;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.model.ServiceBusConfig;
@@ -46,13 +48,19 @@ public class QueueDispatchersTestCase extends AbstractDispatcherTest {
      * The transaction manager.
      */
     @Autowired
-    PlatformTransactionManager transactionManager;
+    private PlatformTransactionManager transactionManager;
 
     /**
      * The patient rules.
      */
     @Autowired
-    PatientRules rules;
+    private PatientRules rules;
+
+    /**
+     * The practice rules.
+     */
+    @Autowired
+    private PracticeRules practiceRules;
 
     /**
      * The dispatchers.
@@ -68,8 +76,10 @@ public class QueueDispatchersTestCase extends AbstractDispatcherTest {
                                                                          getLookupService(),
                                                                          Mockito.mock(DocumentHandlers.class),
                                                                          Mockito.mock(MedicalRecordRules.class));
+        PracticeService practiceService = new PracticeService(getArchetypeService(), practiceRules, null);
         QueueDispatcherFactory factory = new QueueDispatcherFactory(sfsFactory, getArchetypeService(),
-                                                                    getLookupService(), transactionManager, rules) {
+                                                                    getLookupService(), transactionManager,
+                                                                    practiceService, rules) {
             @Override
             protected ServiceBusConfig getConfig(Party location) {
                 return new ServiceBusConfig();

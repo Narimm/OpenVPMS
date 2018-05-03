@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.event.impl;
@@ -27,6 +27,7 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.practice.PracticeService;
+import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -89,10 +90,13 @@ public class ScheduledDispatcherTestCase extends AbstractDispatcherTest {
                                                                          getLookupService(),
                                                                          Mockito.mock(DocumentHandlers.class),
                                                                          Mockito.mock(MedicalRecordRules.class));
-        factory = new TestQueueDispatcherFactory(sfsFactory, getArchetypeService(), getLookupService(),
-                                                 transactionManager, rules);
+        Party practice = TestHelper.getPractice();
         practiceService = Mockito.mock(PracticeService.class);
         when(practiceService.getServiceUser()).thenReturn(new User());
+        when(practiceService.getPractice()).thenReturn(practice);
+
+        factory = new TestQueueDispatcherFactory(sfsFactory, getArchetypeService(), getLookupService(),
+                                                 transactionManager, practiceService, rules);
     }
 
     /**
@@ -299,12 +303,13 @@ public class ScheduledDispatcherTestCase extends AbstractDispatcherTest {
          * @param service            the archetype service
          * @param lookups            the lookup service
          * @param transactionManager the transaction manager
+         * @param practiceService    the practice service
          * @param rules              the patient rules
          */
         public TestQueueDispatcherFactory(FlowSheetServiceFactory factory, IArchetypeService service,
                                           ILookupService lookups, PlatformTransactionManager transactionManager,
-                                          PatientRules rules) {
-            super(factory, service, lookups, transactionManager, rules);
+                                          PracticeService practiceService, PatientRules rules) {
+            super(factory, service, lookups, transactionManager, practiceService, rules);
         }
 
         /**

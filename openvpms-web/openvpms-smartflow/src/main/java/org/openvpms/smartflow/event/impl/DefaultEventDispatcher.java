@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.event.impl;
@@ -20,6 +20,7 @@ import org.apache.commons.collections4.map.ReferenceMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
@@ -78,30 +79,31 @@ public class DefaultEventDispatcher implements EventDispatcher {
     private final MedicsImportedEventProcessor medicsImportedProcessor;
 
     /**
-     * Listeners for specific messages.
-     * These are held on to with soft references, to avoid memory leaks if the client doesn't de-register them.
-     */
-    private Map<String, Listener<Event>> listeners = Collections.synchronizedMap(
-            new ReferenceMap<String, Listener<Event>>());
-
-    /**
      * The logger.
      */
     private final Log log = LogFactory.getLog(DefaultEventDispatcher.class);
 
     /**
+     * Listeners for specific messages.
+     * These are held on to with soft references, to avoid memory leaks if the client doesn't de-register them.
+     */
+    private Map<String, Listener<Event>> listeners = Collections.synchronizedMap(new ReferenceMap<>());
+
+    /**
      * Constructs a {@link DefaultEventDispatcher}.
      *
-     * @param location the practice location. May be {@code null}
-     * @param service  the archetype service
-     * @param lookups  the lookups
-     * @param factory  the Smart Flow Sheet service factory
-     * @param rules    the patient rules
+     * @param location        the practice location. May be {@code null}
+     * @param service         the archetype service
+     * @param lookups         the lookups
+     * @param factory         the Smart Flow Sheet service factory
+     * @param practiceService the practice service
+     * @param rules           the patient rules
      */
     public DefaultEventDispatcher(Party location, IArchetypeService service, ILookupService lookups,
-                                  FlowSheetServiceFactory factory, PatientRules rules) {
+                                  FlowSheetServiceFactory factory, PracticeService practiceService,
+                                  PatientRules rules) {
         treatmentProcessor = new TreatmentEventProcessor(location, service, lookups, rules);
-        notesProcessor = new NotesEventProcessor(service);
+        notesProcessor = new NotesEventProcessor(service, practiceService);
         anestheticsProcessor = new AnestheticsEventProcessor(service, factory);
         dischargeProcessor = new DischargeEventProcessor(service, factory);
         inventoryImportedProcessor = new InventoryImportedEventProcessor(service);

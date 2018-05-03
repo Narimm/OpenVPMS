@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.event.impl;
@@ -20,12 +20,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -49,6 +51,11 @@ import static org.openvpms.component.system.common.query.Constraints.shortName;
 public class NotesEventProcessor extends EventProcessor<NotesEvent> {
 
     /**
+     * The practice.
+     */
+    private final PracticeService practiceService;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(NotesEventProcessor.class);
@@ -56,10 +63,12 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
     /**
      * Constructs a {@link NotesEventProcessor}.
      *
-     * @param service the archetype service
+     * @param service         the archetype service
+     * @param practiceService the practice service
      */
-    public NotesEventProcessor(IArchetypeService service) {
+    public NotesEventProcessor(IArchetypeService service, PracticeService practiceService) {
         super(service);
+        this.practiceService = practiceService;
     }
 
     /**
@@ -69,38 +78,45 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
      */
     @Override
     public void process(NotesEvent event) {
-        Notes notes = event.getObject();
-        if (notes != null && notes.getNotes() != null) {
-            for (Note note : notes.getNotes()) {
-                process(note);
+        Config config = getConfig();
+        if (config.isSynchroniseNotes()) {
+            Notes notes = event.getObject();
+            if (notes != null && notes.getNotes() != null) {
+                for (Note note : notes.getNotes()) {
+                    process(note, config);
+                }
             }
-        }
-    }
-
-    /**
-     * Processes a note event.
-     *
-     * @param event the event
-     */
-    protected void process(Note event) {
-        Act visit = getVisit(event.getHospitalizationId());
-        if (visit != null) {
-            process(event, visit);
         } else {
-            log.error("No visit for hospitalization: " + event.getHospitalizationId());
+            log.debug("Note synchronisation is disabled - notes will be ignored");
         }
     }
 
     /**
-     * Processes a note event.
+     * Processes a note.
      *
-     * @param event the event
-     * @param visit the visit the event relates to
+     * @param note   the note
+     * @param config the configuration
      */
-    private void process(Note event, Act visit) {
+    protected void process(Note note, Config config) {
+        Act visit = getVisit(note.getHospitalizationId());
+        if (visit != null) {
+            process(note, visit, config);
+        } else {
+            log.error("No visit for hospitalization: " + note.getHospitalizationId());
+        }
+    }
+
+    /**
+     * Processes a note.
+     *
+     * @param note   the note
+     * @param visit  the visit the note relates to
+     * @param config the notes configuration
+     */
+    private void process(Note note, Act visit, Config config) {
         IArchetypeService service = getService();
-        Act act = getNote(event, visit);
-        String status = event.getStatus();
+        Act act = getNote(note, visit);
+        String status = note.getStatus();
         List<IMObject> toSave = new ArrayList<>();
         if (Note.REMOVED_STATUS.equals(status)) {
             if (act != null) {
@@ -113,32 +129,70 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
                 }
             }
         } else {
-            ActBean bean;
+            ActBean bean = null;
             Party patient = getPatient(visit);
             if (act == null) {
-                act = (Act) service.create(PatientArchetypes.CLINICAL_NOTE);
+                if (!exclude(note, config)) {
+                    act = (Act) service.create(PatientArchetypes.CLINICAL_NOTE);
 
-                bean = new ActBean(act, service);
-                bean.addNodeParticipation("patient", patient);
-                ActIdentity identity = createIdentity(event.getNoteGuid());
-                act.addIdentity(identity);
+                    bean = new ActBean(act, service);
+                    bean.addNodeParticipation("patient", patient);
+                    ActIdentity identity = createIdentity(note.getNoteGuid());
+                    act.addIdentity(identity);
 
-                ActBean visitBean = new ActBean(visit, service);
-                visitBean.addNodeRelationship("items", act);
-                toSave.add(visit);
+                    ActBean visitBean = new ActBean(visit, service);
+                    visitBean.addNodeRelationship("items", act);
+                    toSave.add(visit);
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Excluding note=" + note.getText());
+                    }
+                }
             } else {
                 bean = new ActBean(act, service);
             }
-            if (ActStatus.POSTED.equals(act.getStatus())) {
-                addAddendum(visit, act, patient, event.getText(), toSave);
-            } else {
-                bean.setValue("note", event.getText());
-                toSave.add(act);
+            if (bean != null) {
+                if (ActStatus.POSTED.equals(act.getStatus())) {
+                    addAddendum(visit, act, patient, note.getText(), toSave);
+                } else {
+                    bean.setValue("note", note.getText());
+                    toSave.add(act);
+                }
             }
         }
         if (!toSave.isEmpty()) {
             service.save(toSave);
         }
+    }
+
+    /**
+     * Determines if a note is excluded based on the number of words present.
+     *
+     * @param note   the note
+     * @param config the configuration
+     * @return {@code true} if the note should be excluded
+     */
+    private boolean exclude(Note note, Config config) {
+        boolean result = false;
+        int minimumWordCount = config.getMinimumWordCount();
+        if (minimumWordCount > 1) {
+            int count = countWords(note);
+            if (count < minimumWordCount) {
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Counts the number of words in a note.
+     *
+     * @param note the note
+     * @return the number of words
+     */
+    private int countWords(Note note) {
+        String text = note.getText();
+        return (text != null) ? text.trim().split("\\s+").length : 0;
     }
 
     /**
@@ -195,6 +249,66 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
         query.setMaxResults(1);
         IMObjectQueryIterator<Act> iterator = new IMObjectQueryIterator<>(getService(), query);
         return (iterator.hasNext()) ? iterator.next() : null;
+    }
+
+    /**
+     * Returns the SFS configuration.
+     *
+     * @return the configuration
+     */
+    private Config getConfig() {
+        Config config = null;
+        Party practice = practiceService.getPractice();
+        if (practice != null) {
+            IArchetypeService service = getService();
+            IMObjectBean bean = service.getBean(practice);
+            IMObject object = bean.getTarget("smartflowConfiguration", IMObject.class);
+            if (object != null) {
+                config = new Config(service.getBean(object));
+            }
+        }
+        return (config != null) ? config : new Config();
+    }
+
+    private static class Config {
+
+        private final boolean synchroniseNotes;
+
+        private final int minimumWordCount;
+
+        public Config() {
+            this(true, 5);
+        }
+
+        public Config(IMObjectBean bean) {
+            this(bean.getBoolean("synchroniseNotes"), bean.getInt("minimumWordCount"));
+        }
+
+        public Config(boolean synchroniseNotes, int minimumWordCount) {
+            this.synchroniseNotes = synchroniseNotes;
+            this.minimumWordCount = minimumWordCount;
+        }
+
+        /**
+         * Determines if note synchronisation is enabled.
+         *
+         * @return {@code true} if note synchronisation is enabled, {@code false} if it is disabled
+         */
+        public boolean isSynchroniseNotes() {
+            return synchroniseNotes;
+        }
+
+        /**
+         * Determines the minimum word count for new notes.
+         * <p>
+         * Notes with fewer words will be excluded.
+         *
+         * @return the minimum word count
+         */
+        public int getMinimumWordCount() {
+            return minimumWordCount;
+        }
+
     }
 
 }
