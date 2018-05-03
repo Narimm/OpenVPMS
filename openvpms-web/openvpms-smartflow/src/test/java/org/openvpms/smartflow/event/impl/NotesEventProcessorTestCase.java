@@ -88,9 +88,10 @@ public class NotesEventProcessorTestCase extends ArchetypeServiceTest {
         setMinimumWordCount(0); // include all notes
 
         IMObjectBean practiceBean = service.getBean(practice);
-        practiceBean.addTarget("smartflowConfiguration", config);
+        practiceBean.setTarget("smartflowConfiguration", config);
 
-        processor = new NotesEventProcessor(getArchetypeService(), practiceService);
+        FlowSheetConfigService configService = new FlowSheetConfigService(service, practiceService);
+        processor = new NotesEventProcessor(getArchetypeService(), configService);
     }
 
     /**

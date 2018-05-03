@@ -181,8 +181,8 @@
               filter="entityLink.organisationSMSAppointment"/>
         <node name="reminderConfiguration" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
               minCardinality="0" maxCardinality="1" filter="entityLink.practiceReminderConfiguration"/>
-        <node name="smartflowConfiguration" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
-              minCardinality="0"
-              maxCardinality="1" filter="entityLink.smartflowConfiguration"/>
+        <node name="smartflowConfiguration" displayName="Smart Flow Sheet Configuration" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="1"
+              filter="entityLink.smartflowConfiguration"/>
     </archetype>
 </archetypes>

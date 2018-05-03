@@ -166,7 +166,7 @@ public class HospitalizationService extends FlowSheetService {
             }
 
             @Override
-            public Message failed(Exception exception) {
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToGetHospitalization(context.getPatient());
             }
         };
@@ -225,7 +225,7 @@ public class HospitalizationService extends FlowSheetService {
             }
 
             @Override
-            public Message failed(Exception exception) {
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToCreateFlowSheet(context.getPatient(), exception.getMessage());
             }
         };
@@ -249,7 +249,7 @@ public class HospitalizationService extends FlowSheetService {
             }
 
             @Override
-            public Message failed(Exception exception) {
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToGetAnaesthetics(patient);
             }
         };
@@ -274,7 +274,7 @@ public class HospitalizationService extends FlowSheetService {
             }
 
             @Override
-            public Message failed(Exception exception) {
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToGetForms(patient);
             }
         };
@@ -298,7 +298,7 @@ public class HospitalizationService extends FlowSheetService {
             }
 
             @Override
-            public Message failed(Exception exception) {
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToDischargePatient(patient, exception.getMessage());
             }
         };
@@ -395,6 +395,26 @@ public class HospitalizationService extends FlowSheetService {
     public void saveNotesReport(Party patient, Act visit, User clinician) {
         String name = FlowSheetMessages.reportFileName(FlowSheetMessages.notesReportName());
         saveReport(name, patient, visit, clinician, Hospitalizations::getNotesReport);
+    }
+
+    /**
+     * Saves all anaesthetic sheet report and associated anaesthetic records report for a patient.
+     * <p>
+     * If there are existing reports with the same surgery identifier associated with the patient visit, they will
+     * be versioned.
+     *
+     * @param patient the patient
+     * @param visit   the visit
+     * @throws FlowSheetException for any error
+     */
+    public void saveAnestheticsReports(Party patient, Act visit) {
+        Anesthetics anesthetics = getAnesthetics(patient, visit);
+        List<Anesthetic> list = anesthetics.getAnesthetics();
+        if (list != null) {
+            for (Anesthetic anesthetic : list) {
+                saveAnestheticReports(patient, visit, anesthetic);
+            }
+        }
     }
 
     /**
@@ -514,8 +534,8 @@ public class HospitalizationService extends FlowSheetService {
         } catch (Exception exception) {
             checkSSL(exception);
             if (isAccessToDocumentDenied(exception)) {
-                throw new FlowSheetException(FlowSheetMessages.accessToDocumentDenied(name, exception.getMessage()),
-                                             exception);
+                throw new AccessToDocumentDeniedException(
+                        FlowSheetMessages.accessToDocumentDenied(name, exception.getMessage()));
             }
             throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(patient, name), exception);
         }
@@ -544,11 +564,26 @@ public class HospitalizationService extends FlowSheetService {
                 return null;
             }
 
+            /**
+             * Wraps an exception in a {@link FlowSheetException}, with an appropriate message.
+             *
+             * @param exception the exception
+             * @return a new {@link FlowSheetException}
+             */
             @Override
-            public Message failed(Exception exception) {
+            public FlowSheetException failed(Exception exception) {
+                FlowSheetException result;
                 if (isAccessToDocumentDenied(exception)) {
-                    return FlowSheetMessages.accessToDocumentDenied(name, exception.getMessage());
+                    result = new AccessToDocumentDeniedException(
+                            FlowSheetMessages.accessToDocumentDenied(name, exception.getMessage()));
+                } else {
+                    result = super.failed(exception);
                 }
+                return result;
+            }
+
+            @Override
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToDownloadPDF(patient, name);
             }
         };

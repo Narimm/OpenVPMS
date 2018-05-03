@@ -111,7 +111,7 @@ public class InventoryService extends FlowSheetService {
             }
 
             @Override
-            public Message failed(Exception exception) {
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToGetInventory();
             }
         };
@@ -136,7 +136,7 @@ public class InventoryService extends FlowSheetService {
             }
 
             @Override
-            public Message failed(Exception exception) {
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToUpdateInventory();
             }
         };
@@ -157,7 +157,7 @@ public class InventoryService extends FlowSheetService {
             }
 
             @Override
-            public Message failed(Exception exception) {
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToRemoveInventoryItem(item.getId(), item.getName());
             }
         };

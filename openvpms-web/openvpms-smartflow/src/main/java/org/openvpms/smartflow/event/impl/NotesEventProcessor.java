@@ -20,14 +20,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -51,9 +49,9 @@ import static org.openvpms.component.system.common.query.Constraints.shortName;
 public class NotesEventProcessor extends EventProcessor<NotesEvent> {
 
     /**
-     * The practice.
+     * The configuration service.
      */
-    private final PracticeService practiceService;
+    private final FlowSheetConfigService configService;
 
     /**
      * The logger.
@@ -63,12 +61,12 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
     /**
      * Constructs a {@link NotesEventProcessor}.
      *
-     * @param service         the archetype service
-     * @param practiceService the practice service
+     * @param service       the archetype service
+     * @param configService the configuration service
      */
-    public NotesEventProcessor(IArchetypeService service, PracticeService practiceService) {
+    public NotesEventProcessor(IArchetypeService service, FlowSheetConfigService configService) {
         super(service);
-        this.practiceService = practiceService;
+        this.configService = configService;
     }
 
     /**
@@ -78,7 +76,7 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
      */
     @Override
     public void process(NotesEvent event) {
-        Config config = getConfig();
+        FlowSheetConfig config = configService.getConfig();
         if (config.isSynchroniseNotes()) {
             Notes notes = event.getObject();
             if (notes != null && notes.getNotes() != null) {
@@ -97,7 +95,7 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
      * @param note   the note
      * @param config the configuration
      */
-    protected void process(Note note, Config config) {
+    protected void process(Note note, FlowSheetConfig config) {
         Act visit = getVisit(note.getHospitalizationId());
         if (visit != null) {
             process(note, visit, config);
@@ -113,7 +111,7 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
      * @param visit  the visit the note relates to
      * @param config the notes configuration
      */
-    private void process(Note note, Act visit, Config config) {
+    private void process(Note note, Act visit, FlowSheetConfig config) {
         IArchetypeService service = getService();
         Act act = getNote(note, visit);
         String status = note.getStatus();
@@ -172,7 +170,7 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
      * @param config the configuration
      * @return {@code true} if the note should be excluded
      */
-    private boolean exclude(Note note, Config config) {
+    private boolean exclude(Note note, FlowSheetConfig config) {
         boolean result = false;
         int minimumWordCount = config.getMinimumWordCount();
         if (minimumWordCount > 1) {
@@ -251,64 +249,5 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
         return (iterator.hasNext()) ? iterator.next() : null;
     }
 
-    /**
-     * Returns the SFS configuration.
-     *
-     * @return the configuration
-     */
-    private Config getConfig() {
-        Config config = null;
-        Party practice = practiceService.getPractice();
-        if (practice != null) {
-            IArchetypeService service = getService();
-            IMObjectBean bean = service.getBean(practice);
-            IMObject object = bean.getTarget("smartflowConfiguration", IMObject.class);
-            if (object != null) {
-                config = new Config(service.getBean(object));
-            }
-        }
-        return (config != null) ? config : new Config();
-    }
-
-    private static class Config {
-
-        private final boolean synchroniseNotes;
-
-        private final int minimumWordCount;
-
-        public Config() {
-            this(true, 5);
-        }
-
-        public Config(IMObjectBean bean) {
-            this(bean.getBoolean("synchroniseNotes"), bean.getInt("minimumWordCount"));
-        }
-
-        public Config(boolean synchroniseNotes, int minimumWordCount) {
-            this.synchroniseNotes = synchroniseNotes;
-            this.minimumWordCount = minimumWordCount;
-        }
-
-        /**
-         * Determines if note synchronisation is enabled.
-         *
-         * @return {@code true} if note synchronisation is enabled, {@code false} if it is disabled
-         */
-        public boolean isSynchroniseNotes() {
-            return synchroniseNotes;
-        }
-
-        /**
-         * Determines the minimum word count for new notes.
-         * <p>
-         * Notes with fewer words will be excluded.
-         *
-         * @return the minimum word count
-         */
-        public int getMinimumWordCount() {
-            return minimumWordCount;
-        }
-
-    }
 
 }

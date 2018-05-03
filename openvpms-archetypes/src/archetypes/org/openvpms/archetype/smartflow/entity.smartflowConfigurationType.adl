@@ -17,10 +17,10 @@
 <archetypes>
     <archetype name="entity.smartflowConfigurationType.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.common.Entity"
-               displayName="SmartFlow Sheet Configuration">
+               displayName="Smart Flow Sheet Configuration">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" minCardinality="1" maxLength="100"
-              defaultValue="'SmartFlow Sheet Configuration'">
+              defaultValue="'Smart Flow Sheet Configuration'">
             <assertion name="propercase"/>
         </node>
         <node name="description" type="java.lang.String" path="/description"
@@ -28,5 +28,17 @@
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="synchroniseNotes" path="/details/synchroniseNotes" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="minimumWordCount" path="/details/minimumWordCount" type="java.lang.Integer" defaultValue="5"/>
+        <node name="saveFlowSheetReportOnDischarge" path="/details/saveFlowSheetReportOnDischarge"
+              type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="saveMedicalRecordsReportOnDischarge" path="/details/saveMedicalRecordsReportOnDischarge"
+              type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="saveBillingReportOnDischarge" path="/details/saveBillingReportOnDischarge" type="java.lang.Boolean"
+              defaultValue="true()"/>
+        <node name="saveNotesReportOnDischarge" path="/details/saveNotesReportOnDischarge" type="java.lang.Boolean"
+              defaultValue="true()"/>
+        <node name="saveFormsReportOnDischarge" path="/details/saveFormsReportOnDischarge" type="java.lang.Boolean"
+              defaultValue="true()"/>
+        <node name="saveAnestheticsReportsOnDischarge" path="/details/saveAnestheticsReportsOnDischarge"
+              type="java.lang.Boolean" defaultValue="true()"/>
     </archetype>
 </archetypes>

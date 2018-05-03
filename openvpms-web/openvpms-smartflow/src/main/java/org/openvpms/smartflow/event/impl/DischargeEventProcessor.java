@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.smartflow.client.AccessToDocumentDeniedException;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.HospitalizationService;
 import org.openvpms.smartflow.model.Hospitalization;
@@ -44,6 +45,11 @@ public class DischargeEventProcessor extends EventProcessor<DischargeEvent> {
     private final FlowSheetServiceFactory factory;
 
     /**
+     * The configuration service.
+     */
+    private final FlowSheetConfigService configService;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(DischargeEventProcessor.class);
@@ -54,9 +60,11 @@ public class DischargeEventProcessor extends EventProcessor<DischargeEvent> {
      * @param service the archetype service
      * @param factory the Smart Flow Sheet service factory
      */
-    public DischargeEventProcessor(IArchetypeService service, FlowSheetServiceFactory factory) {
+    public DischargeEventProcessor(IArchetypeService service, FlowSheetServiceFactory factory,
+                                   FlowSheetConfigService configService) {
         super(service);
         this.factory = factory;
+        this.configService = configService;
     }
 
     /**
@@ -68,8 +76,13 @@ public class DischargeEventProcessor extends EventProcessor<DischargeEvent> {
     public void process(DischargeEvent event) {
         Hospitalizations list = event.getObject();
         String apiKey = event.getClinicApiKey();
-        for (Hospitalization hospitalization : list.getHospitalizations()) {
-            discharged(hospitalization, apiKey);
+        FlowSheetConfig config = configService.getConfig();
+        if (saveReportsOnDischarge(config)) {
+            for (Hospitalization hospitalization : list.getHospitalizations()) {
+                discharged(hospitalization, apiKey, config);
+            }
+        } else {
+            log.debug("Saving reports on discharge is disabled");
         }
     }
 
@@ -78,15 +91,16 @@ public class DischargeEventProcessor extends EventProcessor<DischargeEvent> {
      *
      * @param hospitalization the hospitalization
      * @param apiKey          the clinic API key
+     * @param config          the Smart Flow Sheet configuration
      */
-    protected void discharged(Hospitalization hospitalization, String apiKey) {
+    protected void discharged(Hospitalization hospitalization, String apiKey, FlowSheetConfig config) {
         String reportPath = hospitalization.getReportPath();
         if (!StringUtils.isEmpty(reportPath)) {
             Act visit = getVisit(hospitalization.getHospitalizationId());
             if (visit != null) {
                 Party patient = getPatient(visit);
                 if (patient != null) {
-                    downloadFlowSheet(patient, visit, hospitalization, apiKey);
+                    saveReports(patient, visit, hospitalization, apiKey, config);
                 }
             } else {
                 log.error("No visit for hospitalization: " + toString(hospitalization));
@@ -103,15 +117,30 @@ public class DischargeEventProcessor extends EventProcessor<DischargeEvent> {
      * @param visit           the visit
      * @param hospitalization the hospitalization
      * @param apiKey          the clinic API key
+     * @param config          the Smart Flow Sheet configuration
      */
-    protected void downloadFlowSheet(Party patient, Act visit, Hospitalization hospitalization, String apiKey) {
-        HospitalizationService hospitalizationService = factory.getHospitalizationService(apiKey);
+    protected void saveReports(Party patient, Act visit, Hospitalization hospitalization, String apiKey,
+                               FlowSheetConfig config) {
+        HospitalizationService service = factory.getHospitalizationService(apiKey);
         User clinician = getClinician(hospitalization);
-        hospitalizationService.saveFlowSheetReport(patient, visit, clinician);
-        hospitalizationService.saveMedicalRecordsReport(patient, visit, clinician);
-        hospitalizationService.saveBillingReport(patient, visit, clinician);
-        hospitalizationService.saveNotesReport(patient, visit, clinician);
-        hospitalizationService.saveFormsReports(patient, visit, clinician);
+        if (config.isSaveFlowSheetReportOnDischarge()) {
+            saveFlowSheet(patient, visit, clinician, service);
+        }
+        if (config.isSaveMedicalRecordsReportOnDischarge()) {
+            saveMedicalRecords(patient, visit, clinician, service);
+        }
+        if (config.isSaveBillingReportOnDischarge()) {
+            saveBillingReport(patient, visit, clinician, service);
+        }
+        if (config.isSaveNotesReportOnDischarge()) {
+            saveNotesReport(patient, visit, clinician, service);
+        }
+        if (config.isSaveFormsReportsOnDischarge()) {
+            saveForms(patient, visit, clinician, service);
+        }
+        if (config.isSaveAnestheticsReportsOnDischarge()) {
+            saveAnestheticsReports(patient, visit, service);
+        }
     }
 
     /**
@@ -122,6 +151,108 @@ public class DischargeEventProcessor extends EventProcessor<DischargeEvent> {
      */
     protected User getClinician(Hospitalization hospitalization) {
         return (User) getObject(hospitalization.getMedicId(), UserArchetypes.USER);
+    }
+
+    /**
+     * Determines if any reports are being saved on discharge.
+     *
+     * @param config the configuration
+     * @return {@code true} if any reports are being saved on discharge
+     */
+    private boolean saveReportsOnDischarge(FlowSheetConfig config) {
+        return config.isSaveFlowSheetReportOnDischarge()
+               || config.isSaveMedicalRecordsReportOnDischarge()
+               || config.isSaveBillingReportOnDischarge()
+               || config.isSaveNotesReportOnDischarge()
+               || config.isSaveFormsReportsOnDischarge()
+               || config.isSaveAnestheticsReportsOnDischarge();
+    }
+
+    /**
+     * Saves the Flow Sheet report for the patient visit.
+     *
+     * @param patient   the patient
+     * @param visit     the visit
+     * @param clinician the clinician to link to the report
+     * @param service   the hospitalisation service
+     */
+    private void saveFlowSheet(Party patient, Act visit, User clinician, HospitalizationService service) {
+        runProtected(patient, "flow sheet", () -> service.saveFlowSheetReport(patient, visit, clinician));
+    }
+
+    /**
+     * Saves the Medical Records report for the patient visit.
+     *
+     * @param patient   the patient
+     * @param visit     the visit
+     * @param clinician the clinician to link to the report
+     * @param service   the hospitalisation service
+     */
+    private void saveMedicalRecords(Party patient, Act visit, User clinician, HospitalizationService service) {
+        runProtected(patient, "medical records", () -> service.saveMedicalRecordsReport(patient, visit, clinician));
+    }
+
+    /**
+     * Saves the Billing report for the patient visit.
+     *
+     * @param patient   the patient
+     * @param visit     the visit
+     * @param clinician the clinician to link to the report
+     * @param service   the hospitalisation service
+     */
+    private void saveBillingReport(Party patient, Act visit, User clinician, HospitalizationService service) {
+        runProtected(patient, "billing report", () -> service.saveBillingReport(patient, visit, clinician));
+    }
+
+    /**
+     * Saves the Notes report for the patient visit.
+     *
+     * @param patient   the patient
+     * @param visit     the visit
+     * @param clinician the clinician to link to the report
+     * @param service   the hospitalisation service
+     */
+    private void saveNotesReport(Party patient, Act visit, User clinician, HospitalizationService service) {
+        runProtected(patient, "notes report", () -> service.saveNotesReport(patient, visit, clinician));
+    }
+
+    /**
+     * Saves the forms reports for the patient visit.
+     *
+     * @param patient   the patient
+     * @param visit     the visit
+     * @param clinician the clinician to link to the reports
+     * @param service   the hospitalisation service
+     */
+    private void saveForms(Party patient, Act visit, User clinician, HospitalizationService service) {
+        runProtected(patient, "forms report", () -> service.saveFormsReports(patient, visit, clinician));
+    }
+
+    /**
+     * Saves the anesthetics reports for the patient visit.
+     *
+     * @param patient the patient
+     * @param visit   the visit
+     * @param service the hospitalisation service
+     */
+    private void saveAnestheticsReports(Party patient, Act visit, HospitalizationService service) {
+        runProtected(patient, "anesthetics", () -> service.saveAnestheticsReports(patient, visit));
+    }
+
+    /**
+     * Saves a report, swallowing any {@link AccessToDocumentDeniedException}.
+     *
+     * @param patient    the patient
+     * @param reportName the report name
+     * @param runnable   the code to save the report
+     */
+    private void runProtected(Party patient, String reportName, Runnable runnable) {
+        try {
+            runnable.run();
+        } catch (AccessToDocumentDeniedException exception) {
+            log.warn("Unable to save " + reportName + " for patient=[id=" + patient.getId() + ", name="
+                     + patient.getName() + "]. Accesss is denied", exception);
+        }
     }
 
     /**

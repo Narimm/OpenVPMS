@@ -102,10 +102,11 @@ public class DefaultEventDispatcher implements EventDispatcher {
     public DefaultEventDispatcher(Party location, IArchetypeService service, ILookupService lookups,
                                   FlowSheetServiceFactory factory, PracticeService practiceService,
                                   PatientRules rules) {
+        FlowSheetConfigService configService = new FlowSheetConfigService(service, practiceService);
         treatmentProcessor = new TreatmentEventProcessor(location, service, lookups, rules);
-        notesProcessor = new NotesEventProcessor(service, practiceService);
+        notesProcessor = new NotesEventProcessor(service, configService);
         anestheticsProcessor = new AnestheticsEventProcessor(service, factory);
-        dischargeProcessor = new DischargeEventProcessor(service, factory);
+        dischargeProcessor = new DischargeEventProcessor(service, factory, configService);
         inventoryImportedProcessor = new InventoryImportedEventProcessor(service);
         medicsImportedProcessor = new MedicsImportedEventProcessor(service);
     }
@@ -126,7 +127,9 @@ public class DefaultEventDispatcher implements EventDispatcher {
         } else if (event instanceof DischargeEvent) {
             dischargeProcessor.process((DischargeEvent) event);
         } else if (event instanceof AnestheticsEvent) {
-            anestheticsProcessor.process((AnestheticsEvent) event);
+            // TODO: ignoring AnestheticsEvent for now as they can be handled at discharge and there is currently
+            // no easy way to avoid duplicates
+            // anestheticsProcessor.process((AnestheticsEvent) event);
         } else if (event instanceof InventoryImportedEvent) {
             inventoryImportedProcessor.process((InventoryImportedEvent) event);
         } else if (event instanceof MedicsImportedEvent) {

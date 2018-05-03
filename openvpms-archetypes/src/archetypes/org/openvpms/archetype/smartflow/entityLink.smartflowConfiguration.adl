@@ -17,15 +17,15 @@
 <archetypes>
     <archetype name="entityLink.smartflowConfiguration.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.common.EntityLink"
-               displayName="SmartFlow Sheet Configuration">
+               displayName="Smart Flow Sheet Configuration">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
         <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" derived="true"
-              derivedValue="'SmartFlow Sheet Configuration'"/>
+              derivedValue="'Smart Flow Sheet Configuration'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true" minCardinality="0"/>
         <node name="source" displayName="Practice" path="/source"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference"
               minCardinality="1" filter="party.organisationPractice"/>
-        <node name="target" displayName="SmartFlow Sheet Configuration" path="/target"
+        <node name="target" displayName="Smart Flow Sheet Configuration" path="/target"
               type="org.openvpms.component.business.domain.im.common.IMObjectReference"
               minCardinality="1" filter="entity.smartflowConfigurationType"/>
     </archetype>
