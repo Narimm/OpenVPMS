@@ -10,7 +10,7 @@
 	<import value="java.util.*"/>
 	<import value="org.openvpms.component.business.domain.im.party.Party"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="7"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" hImageAlign="Left" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" fontSize="7"/>
 	<queryString>
 		<![CDATA[]]>
 	</queryString>
@@ -22,9 +22,10 @@
 	<group name="patientGroup" isReprintHeaderOnEachPage="true" minHeightToStartNewPage="50" keepTogether="true">
 		<groupExpression><![CDATA[$F{target.patient.entity.name}]]></groupExpression>
 		<groupHeader>
-			<band height="13" splitType="Stretch">
+			<band height="18" splitType="Stretch">
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				<textField>
-					<reportElement x="57" y="1" width="141" height="10" uuid="2b97979c-ea27-442a-87b2-ec4ead313aac"/>
+					<reportElement x="57" y="5" width="141" height="11" uuid="2b97979c-ea27-442a-87b2-ec4ead313aac"/>
 					<textElement>
 						<font isBold="true"/>
 						<paragraph lineSpacing="Single"/>
@@ -32,8 +33,8 @@
 					<textFieldExpression><![CDATA[$F{target.patient.entity.name}]]></textFieldExpression>
 				</textField>
 				<staticText>
-					<reportElement x="4" y="1" width="53" height="10" uuid="d1e915c9-c699-4a0f-829d-693695a11e77">
-						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<reportElement x="4" y="5" width="53" height="11" uuid="d1e915c9-c699-4a0f-829d-693695a11e77">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					</reportElement>
 					<textElement>
 						<font size="7" isBold="true"/>
@@ -42,17 +43,15 @@
 					<text><![CDATA[Patient Notes:]]></text>
 				</staticText>
 				<line>
-					<reportElement x="0" y="12" width="381" height="1" uuid="eee1f8fb-c5a8-406e-8a2c-cb5aaea5029d">
+					<reportElement x="0" y="4" width="381" height="1" uuid="eee1f8fb-c5a8-406e-8a2c-cb5aaea5029d">
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
 				</line>
 				<line>
-					<reportElement x="0" y="0" width="381" height="1" uuid="a2bcf842-492a-4d93-b0b1-3633c94384ca"/>
+					<reportElement x="0" y="17" width="381" height="1" uuid="a2bcf842-492a-4d93-b0b1-3633c94384ca"/>
 				</line>
 				<textField isBlankWhenNull="true">
-					<reportElement x="212" y="1" width="169" height="10" uuid="26e81b16-0040-41ca-aa02-20deca27da39">
-						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					</reportElement>
+					<reportElement x="212" y="5" width="169" height="11" uuid="26e81b16-0040-41ca-aa02-20deca27da39"/>
 					<textElement textAlignment="Right">
 						<font isBold="false"/>
 						<paragraph lineSpacing="Single"/>
@@ -76,12 +75,13 @@
 		<band splitType="Stretch"/>
 	</pageHeader>
 	<columnHeader>
-		<band height="5">
+		<band>
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 		</band>
 	</columnHeader>
 	<detail>
 		<band height="10">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="19" y="0" width="362" height="9" uuid="46538348-febe-49cd-a2c4-d2d34e956c0a"/>
 				<textElement>
