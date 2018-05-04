@@ -128,7 +128,7 @@
 					<reportElement key="textField-5" positionType="Float" x="19" y="49" width="344" height="25" isRemoveLineWhenBlank="true" uuid="6fac8c80-1f29-4755-b16b-4548b4901c06">
 						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					</reportElement>
-					<box>
+					<box topPadding="2" bottomPadding="2">
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -229,7 +229,7 @@
 						<printWhenExpression><![CDATA[($F{OpenVPMS.location.letterhead.target.invoiceMsg}==null)?Boolean.FALSE:
 ($F{OpenVPMS.location.letterhead.target.invoiceMsg}.trim().length()>0)]]></printWhenExpression>
 					</reportElement>
-					<box>
+					<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -576,7 +576,7 @@
 					<printWhenExpression><![CDATA[($F{OpenVPMS.location.letterhead.target.lastPageFooter}==null)?Boolean.FALSE:
 ($F{OpenVPMS.location.letterhead.target.lastPageFooter}.trim().length()>0)]]></printWhenExpression>
 				</reportElement>
-				<box>
+				<box topPadding="2" leftPadding="2" bottomPadding="2" rightPadding="2">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

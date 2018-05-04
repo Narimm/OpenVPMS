@@ -195,32 +195,11 @@ public abstract class FlowSheetService {
             notAuthorised(exception);
         } catch (Exception exception) {
             checkSSL(exception);
-            Message message = call.failed(exception);
-            throw new FlowSheetException(message, exception);
+            throw call.failed(exception);
         } finally {
             client.close();
         }
         return result;
-    }
-
-    protected interface Call<T, R> {
-
-        /**
-         * Makes a call to a resource.
-         *
-         * @param resource the resource
-         * @return the result of the call
-         * @throws Exception for any error
-         */
-        T call(R resource) throws Exception;
-
-        /**
-         * Returns a message when a call fails.
-         *
-         * @param exception the cause of the failure
-         * @return a message for the failure.
-         */
-        Message failed(Exception exception);
     }
 
     /**
@@ -249,6 +228,37 @@ public abstract class FlowSheetService {
         @Override
         public void log(Level level, String msg) {
             log.debug(msg);
+        }
+    }
+
+    protected abstract class Call<T, R> {
+
+        /**
+         * Makes a call to a resource.
+         *
+         * @param resource the resource
+         * @return the result of the call
+         * @throws Exception for any error
+         */
+        public abstract T call(R resource) throws Exception;
+
+        /**
+         * Returns a message when a call fails.
+         *
+         * @param exception the cause of the failure
+         * @return a message for the failure.
+         */
+        public abstract Message getMessage(Exception exception);
+
+        /**
+         * Wraps an exception in a {@link FlowSheetException}, with an appropriate message.
+         *
+         * @param exception the exception
+         * @return a new {@link FlowSheetException}
+         */
+        public FlowSheetException failed(Exception exception) {
+            Message message = getMessage(exception);
+            return new FlowSheetException(message, exception);
         }
     }
 }

@@ -84,7 +84,8 @@ INSERT INTO tmp_reminder_counts (relationship_id,
     LEFT JOIN entity_relationship_details sms
       ON r.entity_relationship_id = sms.entity_relationship_id
          AND sms.name = 'sms'
-  WHERE r.arch_short_name = 'entityRelationship.reminderTypeTemplate';
+  WHERE r.arch_short_name = 'entityRelationship.reminderTypeTemplate'
+  GROUP BY r.source_id, reminder_count.value;
 
 #
 # Create an entity.reminderCount for each entityRelationship.reminderTypeTemplate

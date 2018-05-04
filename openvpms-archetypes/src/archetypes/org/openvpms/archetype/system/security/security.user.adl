@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -30,7 +30,8 @@
               minCardinality="1" maxLength="20">
             <assertion name="password"/>
             <assertion name="regularExpression">
-                <property name="expression" value="[a-zA-Z0-9_]*"/>
+                <property name="expression" value="[\\!-~]*"/>
+                <!-- i.e ASCII characters from 33 to 126 -->
                 <errorMessage>Invalid password</errorMessage>
             </assertion>
         </node>

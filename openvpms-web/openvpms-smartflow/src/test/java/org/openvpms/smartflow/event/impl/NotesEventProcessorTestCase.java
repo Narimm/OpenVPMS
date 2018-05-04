@@ -11,21 +11,26 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.event.impl;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.smartflow.model.Note;
 import org.openvpms.smartflow.model.Notes;
 import org.openvpms.smartflow.model.event.NotesEvent;
@@ -57,19 +62,14 @@ public class NotesEventProcessorTestCase extends ArchetypeServiceTest {
     private Act visit;
 
     /**
-     * The test event.
-     */
-    private NotesEvent event;
-
-    /**
-     * The test note.
-     */
-    private Note note;
-
-    /**
      * The event processor.
      */
     private NotesEventProcessor processor;
+
+    /**
+     * The SmartFlow Sheet configuration.
+     */
+    private Entity config;
 
     /**
      * Sets up the test case.
@@ -78,16 +78,20 @@ public class NotesEventProcessorTestCase extends ArchetypeServiceTest {
     public void setUp() {
         patient = TestHelper.createPatient();
         visit = PatientTestHelper.createEvent(new Date(), patient);
-        note = new Note();
-        note.setNoteGuid(UUID.randomUUID().toString());
-        note.setHospitalizationId(Long.toString(visit.getId()));
-        note.setStatus(Note.ADDED_STATUS);
-        note.setText("a note");
-        event = new NotesEvent();
-        Notes list = new Notes();
-        list.setNotes(Collections.singletonList(note));
-        event.setObject(list);
-        processor = new NotesEventProcessor(getArchetypeService());
+
+        Party practice = TestHelper.getPractice();
+        PracticeService practiceService = Mockito.mock(PracticeService.class);
+        Mockito.when(practiceService.getPractice()).thenReturn(practice);
+
+        IArchetypeService service = getArchetypeService();
+        config = (Entity) service.create("entity.smartflowConfigurationType");
+        setMinimumWordCount(0); // include all notes
+
+        IMObjectBean practiceBean = service.getBean(practice);
+        practiceBean.setTarget("smartflowConfiguration", config);
+
+        FlowSheetConfigService configService = new FlowSheetConfigService(service, practiceService);
+        processor = new NotesEventProcessor(getArchetypeService(), configService);
     }
 
     /**
@@ -95,6 +99,8 @@ public class NotesEventProcessorTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testNote() {
+        Note note = createNote("a note");
+        NotesEvent event = createEvent(note);
         processor.process(event);
 
         List<Act> items = getItems(visit);
@@ -121,6 +127,8 @@ public class NotesEventProcessorTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testUpdatePostedNote() {
+        Note note = createNote("a note");
+        NotesEvent event = createEvent(note);
         processor.process(event);
 
         List<Act> items = getItems(visit);
@@ -133,7 +141,7 @@ public class NotesEventProcessorTestCase extends ArchetypeServiceTest {
 
         note.setStatus(Note.CHANGED_STATUS);
         note.setText("different note");
-        processor.process(note);
+        processor.process(event);
 
         item = get(item);
         assertNotNull(item);
@@ -146,6 +154,8 @@ public class NotesEventProcessorTestCase extends ArchetypeServiceTest {
      */
     @Test
     public void testRemovePostedNote() {
+        Note note = createNote("a note");
+        NotesEvent event = createEvent(note);
         processor.process(event);
 
         List<Act> items = getItems(visit);
@@ -157,12 +167,80 @@ public class NotesEventProcessorTestCase extends ArchetypeServiceTest {
         save(item);
 
         note.setStatus(Note.REMOVED_STATUS);
-        processor.process(note);
+        processor.process(event);
 
         item = get(item);
         assertNotNull(item);
         checkNote(item, "a note");
         checkAddendum(item, "This note was deleted in Smart Flow Sheet but cannot be removed as it is locked");
+    }
+
+    /**
+     * Verifies that notes that are too short are excluded. This only applies to notes being added for the first
+     * time.
+     */
+    @Test
+    public void testExcludeShortNotes() {
+        setMinimumWordCount(5);
+
+        // create a note that is too short to be included
+        Note note = createNote("a note");
+        NotesEvent event = createEvent(note);
+        processor.process(event);
+
+        List<Act> item1 = getItems(visit);
+        assertEquals(0, item1.size());
+
+        // now amended it, so it will be included
+        note.setStatus(Note.CHANGED_STATUS);
+        note.setText("amended note to be longer");
+        processor.process(event);
+
+        List<Act> items2 = getItems(visit);
+        assertEquals(1, items2.size());
+        checkNote(items2.get(0), "amended note to be longer");
+
+        // make the note too short. This will be updated as the record exists
+        note.setText("amended note shorter");
+        processor.process(event);
+
+        List<Act> items3 = getItems(visit);
+        assertEquals(1, items3.size());
+        checkNote(items3.get(0), "amended note shorter");
+
+        // now verify it is removed
+        note.setStatus(Note.REMOVED_STATUS);
+        processor.process(event);
+        List<Act> items4 = getItems(visit);
+        assertEquals(0, items4.size());
+    }
+
+    /**
+     * Verify that notes aren't processed if {@code synchroniseNotes} is {@code false}.
+     */
+    @Test
+    public void testDisableSynchroniseNotes() {
+        setSynchroniseNotes(false);
+
+        Note note = createNote("a note");
+        NotesEvent event = createEvent(note);
+        processor.process(event);
+
+        List<Act> item1 = getItems(visit);
+        assertEquals(0, item1.size());
+
+        note.setStatus(Note.CHANGED_STATUS);
+        note.setText("different note");
+        processor.process(event);
+
+        List<Act> item2 = getItems(visit);
+        assertEquals(0, item2.size());
+
+        note.setStatus(Note.REMOVED_STATUS);
+        processor.process(event);
+
+        List<Act> item3 = getItems(visit);
+        assertEquals(0, item3.size());
     }
 
     /**
@@ -206,4 +284,56 @@ public class NotesEventProcessorTestCase extends ArchetypeServiceTest {
         assertEquals(expectedNote, addendum.getString("note"));
         assertEquals(visit, addendum.getNodeSourceObject("event"));
     }
+
+    /**
+     * Set the {@code synchroniseNotes} configuration option.
+     *
+     * @param synchroniseNotes if {@code true}, synchronise notes, otherwise ignore them
+     */
+    private void setSynchroniseNotes(boolean synchroniseNotes) {
+        IMObjectBean bean = getArchetypeService().getBean(config);
+        bean.setValue("synchroniseNotes", synchroniseNotes);
+        bean.save();
+    }
+
+    /**
+     * Sets the {@code minimumWordCount} configuration option.
+     *
+     * @param count exclude notes with words less than that specified
+     */
+    private void setMinimumWordCount(int count) {
+        IMObjectBean bean = getArchetypeService().getBean(config);
+        bean.setValue("minimumWordCount", count);
+        bean.save();
+    }
+
+    /**
+     * Creates a new note.
+     *
+     * @param text the note text
+     * @return a new note
+     */
+    private Note createNote(String text) {
+        Note note = new Note();
+        note.setNoteGuid(UUID.randomUUID().toString());
+        note.setHospitalizationId(Long.toString(visit.getId()));
+        note.setStatus(Note.ADDED_STATUS);
+        note.setText(text);
+        return note;
+    }
+
+    /**
+     * Creates a new notes event, with a single note.
+     *
+     * @param note the note
+     * @return a new event
+     */
+    private NotesEvent createEvent(Note note) {
+        NotesEvent event = new NotesEvent();
+        Notes list = new Notes();
+        list.setNotes(Collections.singletonList(note));
+        event.setObject(list);
+        return event;
+    }
+
 }

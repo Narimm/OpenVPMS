@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.service;
 
 import org.openvpms.smartflow.model.Anesthetics;
+import org.openvpms.smartflow.model.Form;
 import org.openvpms.smartflow.model.Hospitalization;
 
 import javax.ws.rs.Consumes;
@@ -28,6 +29,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
 
 /**
  * Smart Flow Sheet Hospitalizations API.
@@ -94,6 +96,17 @@ public interface Hospitalizations {
     void remove(@PathParam("hospitalizationId") String hospitalizationId);
 
     /**
+     * Returns the forms for a patient.
+     *
+     * @param hospitalizationId the hospitalization identifier
+     * @return the hospitalization
+     */
+    @GET
+    @Path("/{hospitalizationId}/forms")
+    @Produces({MediaType.APPLICATION_JSON})
+    List<Form> getForms(@PathParam("hospitalizationId") String hospitalizationId);
+
+    /**
      * Returns the medical records report PDF for a hospitalization.
      *
      * @param hospitalizationId the hospitalization identifier
@@ -136,5 +149,18 @@ public interface Hospitalizations {
     @Path("/{hospitalizationId}/flowsheetreport")
     @Produces({"application/pdf"})
     Response getFlowSheetReport(@PathParam("hospitalizationId") String hospitalizationId);
+
+    /**
+     * Returns the form report PDF for a hospitalization.
+     *
+     * @param hospitalizationId the hospitalization identifier
+     * @param formGuid          the form identifier
+     * @return the flow sheet report PDF
+     */
+    @GET
+    @Path("/{hospitalizationId}/formreport/{formGuid}")
+    @Produces({"application/pdf"})
+    Response getFormReport(@PathParam("hospitalizationId") String hospitalizationId,
+                           @PathParam("formGuid") String formGuid);
 
 }

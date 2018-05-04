@@ -120,6 +120,8 @@ class AttachmentGenerator {
             if (!generate(attachment, claim)) {
                 result = false;
                 break;
+            } else {
+                attachments.refresh((DocumentAct) attachment);
             }
         }
         attachments.save();

@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.event.impl;
 
+import org.apache.commons.collections4.ComparatorUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,8 +35,8 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -50,6 +51,8 @@ import org.openvpms.smartflow.model.event.TreatmentEvent;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import static org.openvpms.archetype.rules.finance.order.CustomerOrder.addNote;
@@ -84,6 +87,7 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
      */
     private static final String[] PRODUCT_ARCHETYPES = {ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE,
                                                         ProductArchetypes.SERVICE};
+
     /**
      * The logger.
      */
@@ -114,7 +118,19 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
     public void process(TreatmentEvent event) {
         Treatments list = event.getObject();
         if (list != null && list.getTreatments() != null) {
-            for (Treatment treatment : list.getTreatments()) {
+            List<Treatment> treatments = new ArrayList<>(list.getTreatments());
+            // sort treatments to process removals first, as a workaround for OVPMS-2028
+            Collections.sort(treatments, (o1, o2) -> {
+                Comparator<Object> comparator = ComparatorUtils.nullLowComparator(null);
+                int result = comparator.compare(o1.getTreatmentGuid(), o2.getTreatmentGuid());
+                if (result == 0) {
+                    Status status1 = Status.fromString(o1.getStatus());
+                    Status status2 = Status.fromString(o2.getStatus());
+                    result = status1.compareTo(status2);
+                }
+                return result;
+            });
+            for (Treatment treatment : treatments) {
                 treated(treatment);
             }
         }
@@ -122,39 +138,70 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
 
     /**
      * Invoked when a patient is treated.
-     * <p/>
+     * <p>
      * If a treatment is billed, a customer order/return will be created.
      *
      * @param treatment the treatment
      */
     protected void treated(Treatment treatment) {
         if (log.isDebugEnabled()) {
-            log.debug("Treatment=" + treatment.getTreatmentGuid() + ", product=[id="
-                      + treatment.getInventoryId() + ", name=" + treatment.getName() + "], "
-                      + "quantity=" + treatment.getQty() + " status=" + treatment.getStatus() + ", billed="
-                      + treatment.getBilled());
+            log.debug("treatment=" + treatment.getTreatmentGuid() + ", inventoryId=" + treatment.getInventoryId()
+                      + ", name=" + treatment.getName() + ", quantity=" + treatment.getQty()
+                      + ", status=" + treatment.getStatus() + ", billed=" + treatment.getBilled());
         }
-        if (treatment.getBilled()) {
-            Act visit = getVisit(treatment.getHospitalizationId());
-            Party patient = null;
-            Party customer = null;
-            if (visit != null) {
-                patient = getPatient(visit);
-                if (patient != null) {
-                    customer = rules.getOwner(patient);
-                }
+        Act visit = getVisit(treatment.getHospitalizationId());
+        Party patient = null;
+        Party customer = null;
+        if (visit != null) {
+            patient = getPatient(visit);
+            if (patient != null) {
+                customer = rules.getOwner(patient);
             }
-            Product product = getProduct(treatment);
-            IMObjectReference clinician = getClinician(treatment);
+        }
+        Product product = getProduct(treatment);
+        IMObjectReference clinician = getClinician(treatment);
 
-            if (Treatment.ADDED_STATUS.equals(treatment.getStatus())) {
+        if (Treatment.ADDED_STATUS.equals(treatment.getStatus())) {
+            if (treatment.getBilled()) {
                 treatmentAdded(treatment, visit, patient, customer, product, null, clinician);
-            } else if (Treatment.CHANGED_STATUS.equals(treatment.getStatus())) {
-                treatmentChanged(treatment, visit, patient, customer, product, clinician);
-            } else if (Treatment.REMOVED_STATUS.equals(treatment.getStatus())) {
-                treatmentRemoved(treatment, visit, patient, customer, product, clinician);
             }
+        } else if (Treatment.CHANGED_STATUS.equals(treatment.getStatus())) {
+            treatmentChanged(treatment, visit, patient, customer, product, clinician);
+        } else if (Treatment.REMOVED_STATUS.equals(treatment.getStatus())) {
+            treatmentRemoved(treatment, visit, patient, customer, product, clinician);
         }
+    }
+
+    /**
+     * Returns the orders associated with a treatment.
+     *
+     * @param treatment the treatment
+     * @return the orders
+     */
+    protected List<CustomerPharmacyOrder> getOrders(Treatment treatment) {
+        return getOrders(treatment.getTreatmentGuid(), getService());
+    }
+
+    /**
+     * Returns the orders associated with a treatment
+     *
+     * @param treatmentGuid the treatment identifier
+     * @param service       the archetype service
+     * @return the orders, ordered on increasing time
+     */
+    protected static List<CustomerPharmacyOrder> getOrders(String treatmentGuid, IArchetypeService service) {
+        List<CustomerPharmacyOrder> result = new ArrayList<>();
+        String[] archetypes = {OrderArchetypes.PHARMACY_ORDER, OrderArchetypes.PHARMACY_RETURN};
+        ArchetypeQuery query = new ArchetypeQuery(archetypes, false, false);
+        query.add(join("identities", shortName(SFS_IDENTITY)).add(eq("identity", treatmentGuid)));
+        query.add(Constraints.sort("startTime"));
+        query.add(Constraints.sort("id"));
+        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
+        IMObjectQueryIterator<Act> iterator = new IMObjectQueryIterator<>(service, query);
+        while (iterator.hasNext()) {
+            result.add(new CustomerPharmacyOrder(iterator.next(), service));
+        }
+        return result;
     }
 
     /**
@@ -191,12 +238,42 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
                                   IMObjectReference clinician) {
         List<CustomerPharmacyOrder> orders = getOrders(treatment);
         if (orders.isEmpty()) {
-            treatmentAdded(treatment, visit, patient, customer, product,
-                           "WARNING: Treatment changed, but original order not found", clinician);
+            if (treatment.getBilled()) {
+                treatmentAdded(treatment, visit, patient, customer, product,
+                               "NOTE: Treatment changed, but original order not found.", clinician);
+            }
         } else {
-            BigDecimal quantity = getQuantity(treatment);
-            update(orders, treatment, visit, patient, customer, product, quantity, clinician);
+            if (treatment.getBilled()) {
+                BigDecimal quantity = getQuantity(treatment);
+                update(orders, treatment, visit, patient, customer, product, quantity, clinician);
+            } else {
+                update(orders, treatment, visit, patient, customer, product, BigDecimal.ZERO, clinician);
+            }
         }
+    }
+
+    /**
+     * Returns the product from a set of order/order returns.
+     * <p>
+     * The most recent order/order return is used.
+     *
+     * @param orders the order/order returns
+     * @return the product, or {@code null} if none is found
+     */
+    private Product getProduct(List<CustomerPharmacyOrder> orders) {
+        Product result = null;
+        CustomerPharmacyOrder order = orders.get(orders.size() - 1);
+        for (Act act : order.getActs()) {
+            IMObjectBean bean = getService().getBean(act);
+            if (bean.hasNode("product")) {
+                Product product = bean.getTarget("product", Product.class);
+                if (product != null) {
+                    result = product;
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     /**
@@ -211,14 +288,12 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
      */
     private void treatmentRemoved(Treatment treatment, Act visit, Party patient, Party customer, Product product,
                                   IMObjectReference clinician) {
-        if (log.isDebugEnabled()) {
-            log.debug("Treatment=" + treatment.getTreatmentGuid() + ", for product=[id="
-                      + treatment.getInventoryId() + ", name=" + treatment.getName() + "], "
-                      + "quantity=" + treatment.getQty() + " removed");
-        }
         List<CustomerPharmacyOrder> orders = getOrders(treatment);
         if (orders.isEmpty()) {
-            log.error("Treatment=" + treatment.getTreatmentGuid() + " removed, but no order found");
+            if (treatment.getBilled()) {
+                // the treatment was billed, but no existing order could be found. May have been deleted by a user
+                log.warn("Treatment=" + treatment.getTreatmentGuid() + " removed, but no order found");
+            }
         } else {
             update(orders, treatment, visit, patient, customer, product, BigDecimal.ZERO, clinician);
         }
@@ -247,6 +322,11 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
      */
     private void update(List<CustomerPharmacyOrder> orders, Treatment treatment, Act visit, Party patient,
                         Party customer, Product product, BigDecimal newQuantity, IMObjectReference clinician) {
+        if (product == null) {
+            // get the product from the last order/order return
+            product = getProduct(orders);
+        }
+
         ChargedState state = new ChargedState(orders, product);
         BigDecimal postedQuantity = state.getPostedQuantity();
         CustomerPharmacyOrder inProgress = state.getInProgress();
@@ -387,7 +467,7 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
             item.setNodeParticipant("product", product);
 
             String units = treatment.getUnits();
-            IMObjectBean productBean = new IMObjectBean(product, getService());
+            IMObjectBean productBean = getService().getBean(product);
             String sellingUnits = productBean.getString("sellingUnits");
             if (!StringUtils.isEmpty(units) && !StringUtils.isEmpty(sellingUnits)) {
                 boolean match = true;
@@ -430,38 +510,6 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
             query.add(eq("id", id));
             IMObjectQueryIterator<Product> iterator = new IMObjectQueryIterator<>(getService(), query);
             result = (iterator.hasNext()) ? iterator.next() : null;
-        }
-        return result;
-    }
-
-    /**
-     * Returns the orders associated with a treatment.
-     *
-     * @param treatment the treatment
-     * @return the orders
-     */
-    protected List<CustomerPharmacyOrder> getOrders(Treatment treatment) {
-        return getOrders(treatment.getTreatmentGuid(), getService());
-    }
-
-    /**
-     * Returns the orders associated with a treatment
-     *
-     * @param treatmentGuid the treatment identifier
-     * @param service       the archetype service
-     * @return the orders, ordered on increasing time
-     */
-    protected static List<CustomerPharmacyOrder> getOrders(String treatmentGuid, IArchetypeService service) {
-        List<CustomerPharmacyOrder> result = new ArrayList<>();
-        String[] archetypes = {OrderArchetypes.PHARMACY_ORDER, OrderArchetypes.PHARMACY_RETURN};
-        ArchetypeQuery query = new ArchetypeQuery(archetypes, false, false);
-        query.add(join("identities", shortName(SFS_IDENTITY)).add(eq("identity", treatmentGuid)));
-        query.add(Constraints.sort("startTime"));
-        query.add(Constraints.sort("id"));
-        query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        IMObjectQueryIterator<Act> iterator = new IMObjectQueryIterator<>(service, query);
-        while (iterator.hasNext()) {
-            result.add(new CustomerPharmacyOrder(iterator.next(), service));
         }
         return result;
     }
@@ -570,6 +618,32 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
          */
         public CustomerPharmacyOrder getInProgress() {
             return inProgress;
+        }
+    }
+
+    /**
+     * Treatment statuses, ordered such that removals are processed first.
+     */
+    private enum Status {
+        removed, added, changed, not_changed, unknown;
+
+        /**
+         * Returns the status for a status name.
+         * @param status the status name
+         * @return the corresponding status code, or {@code unknown} if it is {@code null} or invalid
+         */
+        public static Status fromString(String status) {
+            Status result;
+            if (status != null) {
+                try {
+                    result = Status.valueOf(status);
+                } catch (IllegalArgumentException ignore) {
+                    result = Status.unknown;
+                }
+            } else {
+                result = Status.unknown;
+            }
+            return result;
         }
     }
 

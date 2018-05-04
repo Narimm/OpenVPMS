@@ -39,7 +39,7 @@
     <!--                                                                                                            -->
     <!-- JasperReports are scaled from A4 to A5 and US-Letter versions using via an Ant script, build-reports.xml   -->
     <!-- This must be invoked manually using:                                                                       -->
-    <!-- > maven antrun:run                                                                                         -->
+    <!-- > mvn antrun:run                                                                                         -->
     <!-- ========================================================================================================== -->
 
     <dependencies>

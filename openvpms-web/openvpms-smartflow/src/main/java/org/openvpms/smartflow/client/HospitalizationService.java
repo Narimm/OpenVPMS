@@ -45,6 +45,7 @@ import org.openvpms.smartflow.i18n.FlowSheetMessages;
 import org.openvpms.smartflow.model.Anesthetic;
 import org.openvpms.smartflow.model.Anesthetics;
 import org.openvpms.smartflow.model.Client;
+import org.openvpms.smartflow.model.Form;
 import org.openvpms.smartflow.model.Hospitalization;
 import org.openvpms.smartflow.model.Medic;
 import org.openvpms.smartflow.model.Patient;
@@ -165,7 +166,7 @@ public class HospitalizationService extends FlowSheetService {
             }
 
             @Override
-            public Message failed(Exception exception) {
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToGetHospitalization(context.getPatient());
             }
         };
@@ -224,7 +225,7 @@ public class HospitalizationService extends FlowSheetService {
             }
 
             @Override
-            public Message failed(Exception exception) {
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToCreateFlowSheet(context.getPatient(), exception.getMessage());
             }
         };
@@ -248,8 +249,33 @@ public class HospitalizationService extends FlowSheetService {
             }
 
             @Override
-            public Message failed(Exception exception) {
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToGetAnaesthetics(patient);
+            }
+        };
+        return call(Hospitalizations.class, call);
+    }
+
+    /**
+     * Returns the forms for a patient.
+     *
+     * @param patient the patient
+     * @param visit   the patient visit
+     * @return the forms
+     * @throws FlowSheetException if the forms cannot be retrieved
+     */
+    public List<Form> getForms(Party patient, Act visit) {
+        final String hospitalizationId = Long.toString(visit.getId());
+
+        Call<List<Form>, Hospitalizations> call = new Call<List<Form>, Hospitalizations>() {
+            @Override
+            public List<Form> call(Hospitalizations resource) throws Exception {
+                return resource.getForms(hospitalizationId);
+            }
+
+            @Override
+            public Message getMessage(Exception exception) {
+                return FlowSheetMessages.failedToGetForms(patient);
             }
         };
         return call(Hospitalizations.class, call);
@@ -272,7 +298,7 @@ public class HospitalizationService extends FlowSheetService {
             }
 
             @Override
-            public Message failed(Exception exception) {
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToDischargePatient(patient, exception.getMessage());
             }
         };
@@ -299,12 +325,7 @@ public class HospitalizationService extends FlowSheetService {
      */
     public void saveFlowSheetReport(Party patient, Act visit, User clinician) {
         String name = FlowSheetMessages.reportFileName(FlowSheetMessages.flowSheetReportName());
-        saveReport(name, patient, visit, clinician, new ReportRetriever() {
-            @Override
-            public Response getResponse(Hospitalizations service, String id) {
-                return service.getFlowSheetReport(id);
-            }
-        });
+        saveReport(name, patient, visit, clinician, Hospitalizations::getFlowSheetReport);
     }
 
     /**
@@ -327,12 +348,7 @@ public class HospitalizationService extends FlowSheetService {
      */
     public void saveMedicalRecordsReport(Party patient, Act visit, User clinician) {
         String name = FlowSheetMessages.reportFileName(FlowSheetMessages.medicalRecordsReportName());
-        saveReport(name, patient, visit, clinician, new ReportRetriever() {
-            @Override
-            public Response getResponse(Hospitalizations service, String id) {
-                return service.getMedicalRecordsReport(id);
-            }
-        });
+        saveReport(name, patient, visit, clinician, Hospitalizations::getMedicalRecordsReport);
     }
 
     /**
@@ -355,12 +371,7 @@ public class HospitalizationService extends FlowSheetService {
      */
     public void saveBillingReport(Party patient, Act visit, User clinician) {
         String name = FlowSheetMessages.reportFileName(FlowSheetMessages.billingReportName());
-        saveReport(name, patient, visit, clinician, new ReportRetriever() {
-            @Override
-            public Response getResponse(Hospitalizations service, String id) {
-                return service.getBillingReport(id);
-            }
-        });
+        saveReport(name, patient, visit, clinician, Hospitalizations::getBillingReport);
     }
 
     /**
@@ -383,12 +394,27 @@ public class HospitalizationService extends FlowSheetService {
      */
     public void saveNotesReport(Party patient, Act visit, User clinician) {
         String name = FlowSheetMessages.reportFileName(FlowSheetMessages.notesReportName());
-        saveReport(name, patient, visit, clinician, new ReportRetriever() {
-            @Override
-            public Response getResponse(Hospitalizations service, String id) {
-                return service.getNotesReport(id);
+        saveReport(name, patient, visit, clinician, Hospitalizations::getNotesReport);
+    }
+
+    /**
+     * Saves all anaesthetic sheet report and associated anaesthetic records report for a patient.
+     * <p>
+     * If there are existing reports with the same surgery identifier associated with the patient visit, they will
+     * be versioned.
+     *
+     * @param patient the patient
+     * @param visit   the visit
+     * @throws FlowSheetException for any error
+     */
+    public void saveAnestheticsReports(Party patient, Act visit) {
+        Anesthetics anesthetics = getAnesthetics(patient, visit);
+        List<Anesthetic> list = anesthetics.getAnesthetics();
+        if (list != null) {
+            for (Anesthetic anesthetic : list) {
+                saveAnestheticReports(patient, visit, anesthetic);
             }
-        });
+        }
     }
 
     /**
@@ -443,6 +469,47 @@ public class HospitalizationService extends FlowSheetService {
     }
 
     /**
+     * Saves each of the finalised forms reports for a patient.
+     *
+     * @param patient   the patient
+     * @param visit     the patient visit
+     * @param clinician the clinician. May be {@code null}
+     * @throws FlowSheetException for any error
+     */
+    public void saveFormsReports(Party patient, Act visit, User clinician) {
+        for (Form form : getForms(patient, visit)) {
+            if (!form.isDeleted() && form.isFinalized()) {
+                saveFormReport(patient, visit, clinician, form);
+            }
+        }
+    }
+
+    /**
+     * Saves a form report for patient.
+     *
+     * @param context the patient context
+     * @param form    the form
+     * @throws FlowSheetException for any error
+     */
+    public void saveFormReport(PatientContext context, Form form) {
+        saveFormReport(context.getPatient(), context.getVisit(), context.getClinician(), form);
+    }
+
+    /**
+     * Saves a form report for patient.
+     *
+     * @param patient   the patient
+     * @param visit     the patient visit
+     * @param clinician the clinician. May be {@code null}
+     * @param form      the form
+     * @throws FlowSheetException for any error
+     */
+    public void saveFormReport(Party patient, Act visit, User clinician, Form form) {
+        ReportRetriever reportRetriever = (service, id) -> service.getFormReport(id, form.getFormGuid());
+        saveReport(form.getTitle(), patient, visit, clinician, reportRetriever);
+    }
+
+    /**
      * Saves an anaesthetic report.
      *
      * @param name      the report name
@@ -467,8 +534,8 @@ public class HospitalizationService extends FlowSheetService {
         } catch (Exception exception) {
             checkSSL(exception);
             if (isAccessToDocumentDenied(exception)) {
-                throw new FlowSheetException(FlowSheetMessages.accessToDocumentDenied(name, exception.getMessage()),
-                                             exception);
+                throw new AccessToDocumentDeniedException(
+                        FlowSheetMessages.accessToDocumentDenied(name, exception.getMessage()));
             }
             throw new FlowSheetException(FlowSheetMessages.failedToDownloadPDF(patient, name), exception);
         }
@@ -497,11 +564,26 @@ public class HospitalizationService extends FlowSheetService {
                 return null;
             }
 
+            /**
+             * Wraps an exception in a {@link FlowSheetException}, with an appropriate message.
+             *
+             * @param exception the exception
+             * @return a new {@link FlowSheetException}
+             */
             @Override
-            public Message failed(Exception exception) {
+            public FlowSheetException failed(Exception exception) {
+                FlowSheetException result;
                 if (isAccessToDocumentDenied(exception)) {
-                    return FlowSheetMessages.accessToDocumentDenied(name, exception.getMessage());
+                    result = new AccessToDocumentDeniedException(
+                            FlowSheetMessages.accessToDocumentDenied(name, exception.getMessage()));
+                } else {
+                    result = super.failed(exception);
                 }
+                return result;
+            }
+
+            @Override
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToDownloadPDF(patient, name);
             }
         };
@@ -523,8 +605,9 @@ public class HospitalizationService extends FlowSheetService {
      */
     private void saveReport(Response response, String identity, String name, Party patient, Act visit, User clinician)
             throws IOException {
-        if (response.hasEntity() && MediaTypeHelper.isA(response.getMediaType(), APPLICATION_PDF_TYPE,
-                                                        APPLICATION_OCTET_STREAM_TYPE)) {
+        if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL
+            && response.hasEntity() && MediaTypeHelper.isA(response.getMediaType(), APPLICATION_PDF_TYPE,
+                                                           APPLICATION_OCTET_STREAM_TYPE)) {
             // some SFS pdfs are incorrectly classified as application/octet-stream
             try (InputStream stream = (InputStream) response.getEntity()) {
                 String fileName = name + ".pdf";
@@ -555,7 +638,8 @@ public class HospitalizationService extends FlowSheetService {
      * @param identity  the act identity
      * @param patient   the patient
      * @param visit     the visit
-     * @param clinician the clinician. May be {@code null}    @return an attachment
+     * @param clinician the clinician. May be {@code null}
+     * @return an attachment
      */
     private DocumentAct getAttachment(String name, String identity, Party patient, Act visit, User clinician) {
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-07-26T01:54:16 -->
+<!-- Created with Jaspersoft Studio version 6.1.0.final using JasperReports Library version 5.5.2  -->
+<!-- 2018-05-04T10:12:59 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice Reminders" pageWidth="595" pageHeight="842" columnWidth="539" leftMargin="0" rightMargin="56" topMargin="0" bottomMargin="0" isFloatColumnFooter="true" uuid="73d919ae-324c-40b9-9464-15331ebe71c4">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -16,11 +16,11 @@
 	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
 	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<import value="org.openvpms.component.business.domain.im.party.Party"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
-	<import value="org.openvpms.component.business.domain.im.party.Party"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
-	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
+	<style name="Base" isDefault="true" hAlign="Left" vAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
 	<parameter name="MaxLines" class="java.lang.Integer" isForPrompting="false">
 		<parameterDescription><![CDATA[Max number of reminders to show]]></parameterDescription>
 		<defaultValueExpression><![CDATA[100]]></defaultValueExpression>
@@ -65,31 +65,10 @@
 	<group name="prodType-group" keepTogether="true">
 		<groupExpression><![CDATA[$V{typeSort}]]></groupExpression>
 		<groupFooter>
-			<band height="13" splitType="Prevent">
+			<band height="14" splitType="Prevent">
 				<printWhenExpression><![CDATA[$V{CountLines}<5]]></printWhenExpression>
-				<textField evaluationTime="Group" evaluationGroup="prodType-group" pattern="">
-					<reportElement x="0" y="0" width="65" height="13" uuid="9ae392ee-aab1-4733-b0b4-d3521b0917bc">
-						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					</reportElement>
-					<textElement textAlignment="Right">
-						<paragraph lineSpacing="Single"/>
-					</textElement>
-					<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{endTime})]]></textFieldExpression>
-				</textField>
-				<textField evaluationTime="Band">
-					<reportElement x="220" y="0" width="120" height="13" isPrintWhenDetailOverflows="true" uuid="da7cefb1-b245-4523-83b5-070d71e57f18">
-						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
-						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
-					</reportElement>
-					<textElement>
-						<paragraph lineSpacing="Single"/>
-					</textElement>
-					<textFieldExpression><![CDATA[$F{patient.entity.name}+(($V{CountPatients}>1)?(" + "+($V{CountPatients}-1)+" other(s)"):"")]]></textFieldExpression>
-				</textField>
 				<textField isStretchWithOverflow="true" evaluationTime="Group" evaluationGroup="prodType-group">
-					<reportElement x="350" y="0" width="189" height="13" uuid="dfc41c55-e5bb-4696-a1f8-edc994276ab1">
+					<reportElement x="210" y="0" width="329" height="13" uuid="dfc41c55-e5bb-4696-a1f8-edc994276ab1">
 						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 					</reportElement>
@@ -100,8 +79,30 @@
 	($V{CountTypes}>1?($F{product.entity.type.target.name}+" [various]"):
 		($F{reminderType.entity.name}.equals( $F{product.entity.type.target.name})?
 			$F{reminderType.entity.name} :
-			  		($F{product.entity.type.target.name})+" ["+$F{reminderType.entity.name}+"]")))
-]]></textFieldExpression>
+			  		($F{product.entity.type.target.name})+" ["+$F{reminderType.entity.name}+"]")))]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Band">
+					<reportElement x="81" y="0" width="120" height="13" isPrintWhenDetailOverflows="true" uuid="da7cefb1-b245-4523-83b5-070d71e57f18">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{patient.entity.name}+(($V{CountPatients}>1)?(" + "+($V{CountPatients}-1)+" other(s)"):"")]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="prodType-group" pattern="">
+					<reportElement x="6" y="0" width="65" height="13" uuid="9ae392ee-aab1-4733-b0b4-d3521b0917bc">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Left">
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{endTime})]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupFooter>
@@ -125,13 +126,12 @@
 		<band height="25">
 			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 			<line>
-				<reportElement key="line-2" x="0" y="24" width="539" height="1" uuid="d0e57f51-ff3e-48a7-b3e9-e4a0429112b9">
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-				</reportElement>
+				<reportElement key="line-2" x="0" y="5" width="539" height="1" uuid="d0e57f51-ff3e-48a7-b3e9-e4a0429112b9"/>
 			</line>
 			<textField evaluationTime="Report">
-				<reportElement key="staticText-7" x="60" y="8" width="86" height="14" uuid="84ccc822-9252-422d-8021-4df37089d98c">
+				<reportElement key="staticText-7" x="66" y="7" width="86" height="16" uuid="84ccc822-9252-422d-8021-4df37089d98c">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -146,13 +146,17 @@
 				<textFieldExpression><![CDATA[$V{CountLines}>4?"(next 4 only)":""]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement key="line-2" x="0" y="7" width="539" height="1" uuid="30cb42ba-d8c4-40fc-9258-3f73f2f6a6d0">
+				<reportElement key="line-2" x="0" y="24" width="539" height="1" uuid="30cb42ba-d8c4-40fc-9258-3f73f2f6a6d0">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 			</line>
 			<staticText>
-				<reportElement key="staticText-7" x="0" y="8" width="60" height="13" uuid="f24e733f-b9cf-45e5-9862-22ce02140675"/>
+				<reportElement key="staticText-7" x="6" y="7" width="60" height="16" uuid="f24e733f-b9cf-45e5-9862-22ce02140675">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -168,57 +172,8 @@
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="11" splitType="Prevent">
-			<printWhenExpression><![CDATA[Boolean.FALSE]]></printWhenExpression>
-			<textField isStretchWithOverflow="true">
-				<reportElement x="300" y="0" width="110" height="11" uuid="e0a91641-92ee-44be-8869-01dfb171c61a">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement>
-					<font  size="8"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{product.entity.type.target.name}]]></textFieldExpression>
-			</textField>
-			<textField pattern="">
-				<reportElement x="7" y="0" width="76" height="11" uuid="c6cd75b1-c110-4dfd-a019-ab8f0f41a0e3"/>
-				<textElement textAlignment="Right">
-					<font  size="8"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{endTime})]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="88" y="0" width="82" height="11" isPrintWhenDetailOverflows="true" uuid="b007ebbd-7dfb-472d-b98a-4661ac0446bc">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-				</reportElement>
-				<textElement>
-					<font  size="8"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{patient.entity.name}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement x="410" y="0" width="129" height="11" uuid="63338b14-bc9d-4884-a4e6-eee1333ce9e8">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement>
-					<font  size="8"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{reminderType.entity.name}]]></textFieldExpression>
-			</textField>
-			<textField isStretchWithOverflow="true">
-				<reportElement x="170" y="0" width="130" height="11" uuid="5c9240bd-f7d3-4a2e-948e-b3afd6cd1485">
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
-				</reportElement>
-				<textElement>
-					<font  size="8"/>
-					<paragraph lineSpacing="Single"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{typeSort}]]></textFieldExpression>
-			</textField>
+		<band height="15" splitType="Prevent">
+			<printWhenExpression><![CDATA[false]]></printWhenExpression>
 		</band>
 	</detail>
 	<pageFooter>

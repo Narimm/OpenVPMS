@@ -26,6 +26,7 @@ import org.openvpms.smartflow.client.HospitalizationService;
 import org.openvpms.smartflow.i18n.FlowSheetMessages;
 import org.openvpms.smartflow.model.Anesthetic;
 import org.openvpms.smartflow.model.Anesthetics;
+import org.openvpms.smartflow.model.Form;
 import org.openvpms.web.echo.button.CheckBox;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.error.ErrorHandler;
@@ -37,6 +38,7 @@ import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -53,6 +55,11 @@ public class FlowSheetReportsDialog extends PopupDialog {
      * The patient context.
      */
     private final PatientContext context;
+
+    /**
+     * The forms.
+     */
+    private final List<Form> forms;
 
     /**
      * The anesthetics.
@@ -78,6 +85,11 @@ public class FlowSheetReportsDialog extends PopupDialog {
      * Determines if the flow sheet report is imported.
      */
     private final CheckBox flowSheetCheckBox;
+
+    /**
+     * Determines if the forms reports are imported.
+     */
+    private final CheckBox formsCheckBox;
 
     /**
      * Determines if the anesthetics report is imported.
@@ -110,13 +122,14 @@ public class FlowSheetReportsDialog extends PopupDialog {
         this.context = context;
         FlowSheetServiceFactory factory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
         service = factory.getHospitalizationService(context.getLocation());
+        forms = getForms(context);
         anesthetics = getAnesthetics(context);
         ActionListener listener = new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
                 boolean enable = medicalRecordsCheckBox.isSelected() || billingCheckBox.isSelected()
                                  || notesCheckBox.isSelected() || flowSheetCheckBox.isSelected()
-                                 || anestheticsCheckBox.isSelected();
+                                 || formsCheckBox.isSelected() || anestheticsCheckBox.isSelected();
                 getButtons().setEnabled(OK_ID, enable);
             }
         };
@@ -124,6 +137,11 @@ public class FlowSheetReportsDialog extends PopupDialog {
         billingCheckBox = createCheckBox(FlowSheetMessages.billingReportName(), listener);
         notesCheckBox = createCheckBox(FlowSheetMessages.notesReportName(), listener);
         flowSheetCheckBox = createCheckBox(FlowSheetMessages.flowSheetReportName(), listener);
+        formsCheckBox = createCheckBox(Messages.get("patient.record.flowsheet.import.forms"), listener);
+        if (forms.isEmpty()) {
+            formsCheckBox.setSelected(false);
+            formsCheckBox.setEnabled(false);
+        }
         anestheticsCheckBox = createCheckBox(FlowSheetMessages.anaestheticReportName(), listener);
         if (anesthetics.isEmpty()) {
             anestheticsCheckBox.setSelected(false);
@@ -150,6 +168,11 @@ public class FlowSheetReportsDialog extends PopupDialog {
             if (flowSheetCheckBox.isSelected()) {
                 service.saveFlowSheetReport(context);
             }
+            if (formsCheckBox.isSelected()) {
+                for (Form form : forms) {
+                    service.saveFormReport(context, form);
+                }
+            }
             if (anestheticsCheckBox.isSelected()) {
                 for (Anesthetic anesthetic : anesthetics) {
                     service.saveAnestheticReports(context, anesthetic);
@@ -168,8 +191,8 @@ public class FlowSheetReportsDialog extends PopupDialog {
     @Override
     protected void doLayout() {
         Label label = LabelFactory.create("patient.record.flowsheet.import.message", Styles.BOLD);
-        Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, label, medicalRecordsCheckBox, billingCheckBox, notesCheckBox,
-                                             flowSheetCheckBox, anestheticsCheckBox);
+        Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, label, medicalRecordsCheckBox, billingCheckBox,
+                                             notesCheckBox, flowSheetCheckBox, formsCheckBox, anestheticsCheckBox);
         getLayout().add(ColumnFactory.create(Styles.LARGE_INSET, column));
     }
 
@@ -185,6 +208,23 @@ public class FlowSheetReportsDialog extends PopupDialog {
         Anesthetics anesthetics = service.getAnesthetics(context.getPatient(), context.getVisit());
         if (anesthetics.getAnesthetics() != null) {
             result = anesthetics.getAnesthetics();
+        }
+        return result;
+    }
+
+    /**
+     * Returns the forms for a patient that have PDF content.
+     *
+     * @param context the patient context
+     * @return the forms
+     */
+    private List<Form> getForms(PatientContext context) {
+        List<Form> result = new ArrayList<>();
+        List<Form> forms = service.getForms(context.getPatient(), context.getVisit());
+        for (Form form : forms) {
+            if (!form.isDeleted() && form.isFinalized()) {
+                result.add(form);
+            }
         }
         return result;
     }

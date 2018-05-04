@@ -93,7 +93,7 @@ public class ReferenceDataService extends FlowSheetService {
             }
 
             @Override
-            public Message failed(Exception exception) {
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToGetDepartments();
             }
         };
@@ -117,7 +117,7 @@ public class ReferenceDataService extends FlowSheetService {
             }
 
             @Override
-            public Message failed(Exception exception) {
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToGetMedics();
             }
         };
@@ -136,7 +136,7 @@ public class ReferenceDataService extends FlowSheetService {
             }
 
             @Override
-            public Message failed(Exception exception) {
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToUpdateMedics();
             }
         };
@@ -157,7 +157,7 @@ public class ReferenceDataService extends FlowSheetService {
             }
 
             @Override
-            public Message failed(Exception exception) {
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToRemoveMedic(medic.getMedicId(), medic.getName());
             }
         };
@@ -217,7 +217,7 @@ public class ReferenceDataService extends FlowSheetService {
             }
 
             @Override
-            public Message failed(Exception exception) {
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToGetTemplates();
             }
         };
@@ -237,7 +237,7 @@ public class ReferenceDataService extends FlowSheetService {
             }
 
             @Override
-            public Message failed(Exception exception) {
+            public Message getMessage(Exception exception) {
                 return FlowSheetMessages.failedToGetServiceBusConfig();
             }
         };
