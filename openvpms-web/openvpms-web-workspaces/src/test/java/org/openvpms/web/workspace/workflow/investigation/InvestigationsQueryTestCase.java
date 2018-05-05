@@ -11,12 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.investigation;
 
 import org.junit.Test;
+import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.patient.InvestigationActStatus;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
@@ -245,6 +247,71 @@ public class InvestigationsQueryTestCase extends AbstractAppTest {
         QueryTestHelper.checkNotExists(query, investigation3);
     }
 
+    /**
+     * Tests querying by status and result status.
+     */
+    @Test
+    public void testQueryByStatus() {
+        Party patient = TestHelper.createPatient();
+        Entity type = ProductTestHelper.createInvestigationType();
+        Act inProgress1 = createInvestigation(patient, type, ActStatus.IN_PROGRESS, InvestigationActStatus.PENDING);
+        Act inProgress2 = createInvestigation(patient, type, ActStatus.IN_PROGRESS, InvestigationActStatus.SENT);
+        Act inProgress3 = createInvestigation(patient, type, ActStatus.IN_PROGRESS, InvestigationActStatus.RECEIVED);
+        Act inProgress4 = createInvestigation(patient, type, ActStatus.IN_PROGRESS, InvestigationActStatus.REVIEWED);
+        Act posted1 = createInvestigation(patient, type, ActStatus.POSTED, InvestigationActStatus.PENDING);
+        Act posted2 = createInvestigation(patient, type, ActStatus.POSTED, InvestigationActStatus.SENT);
+        Act posted3 = createInvestigation(patient, type, ActStatus.POSTED, InvestigationActStatus.RECEIVED);
+        Act posted4 = createInvestigation(patient, type, ActStatus.POSTED, InvestigationActStatus.REVIEWED);
+        Act cancelled1 = createInvestigation(patient, type, ActStatus.CANCELLED, InvestigationActStatus.PENDING);
+        Act cancelled2 = createInvestigation(patient, type, ActStatus.CANCELLED, InvestigationActStatus.SENT);
+        Act cancelled3 = createInvestigation(patient, type, ActStatus.CANCELLED, InvestigationActStatus.RECEIVED);
+        Act cancelled4 = createInvestigation(patient, type, ActStatus.CANCELLED, InvestigationActStatus.REVIEWED);
+        InvestigationsQuery query = createQuery(new LocalContext());
+
+        // verify that all acts are returned when both the status and result status are set to 'All'.
+        query.setStatus(null); // all
+        query.setResultStatus(null); //all
+        QueryTestHelper.checkExists(query, inProgress1, inProgress2, inProgress3, inProgress4,
+                                    posted1, posted2, posted3, posted4,
+                                    cancelled1, cancelled2, cancelled3, cancelled4);
+
+        // verify that IN_PROGRESS and POSTED acts with result status <> REVIEWED are selected when the result status is
+        // set to 'Incomplete'
+        query.setResultStatus(InvestigationsQuery.INCOMPLETE);
+        QueryTestHelper.checkExists(query, inProgress1, inProgress2, inProgress3, posted1, posted2, posted3);
+        QueryTestHelper.checkNotExists(query, inProgress4, posted4, cancelled1, cancelled2, cancelled3, cancelled4);
+
+        // verify that IN_PROGRESS, POSTED and CANCELLED acts with result status = REVIEWED are selected when the
+        // result status is set to 'Reviewed'
+        query.setResultStatus(InvestigationActStatus.REVIEWED);
+        QueryTestHelper.checkExists(query, inProgress4, posted4, cancelled4);
+        QueryTestHelper.checkNotExists(query, inProgress1, inProgress2, inProgress3, posted1, posted2, posted3,
+                                       cancelled1, cancelled2, cancelled3);
+    }
+
+    /**
+     * Creates a new investigation.
+     *
+     * @param patient      the patient
+     * @param type         the investigation type
+     * @param status       the status
+     * @param resultStatus the result status
+     * @return a new investigation
+     */
+    private Act createInvestigation(Party patient, Entity type, String status, String resultStatus) {
+        Act act = PatientTestHelper.createInvestigation(patient, type);
+        act.setStatus(status);
+        act.setStatus2(resultStatus);
+        save(act);
+        return act;
+    }
+
+    /**
+     * Creates a new investigations query.
+     *
+     * @param context the context
+     * @return a new query
+     */
     private InvestigationsQuery createQuery(LocalContext context) {
         DefaultLayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         return new InvestigationsQuery(layout);

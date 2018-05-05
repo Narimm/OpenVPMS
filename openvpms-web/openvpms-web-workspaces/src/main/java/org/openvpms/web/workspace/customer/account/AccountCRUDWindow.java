@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.account;
 
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.ArrayUtils;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRuleException;
@@ -27,15 +28,19 @@ import org.openvpms.archetype.tools.account.AccountBalanceTool;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.component.im.edit.FinancialActions;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
@@ -112,6 +117,32 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     }
 
     /**
+     * Invoked when the 'print' button is pressed.
+     */
+    @Override
+    protected void onPrint() {
+        final FinancialAct object = IMObjectHelper.reload(getObject());
+        if (object == null) {
+            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
+        } else {
+            IMObjectBean bean = new IMObjectBean(object);
+            if (bean.hasNode("hide") && bean.getBoolean("hide")) {
+                String displayName = DescriptorHelper.getDisplayName(object);
+                String title = Messages.format("customer.account.printhidden.title", displayName);
+                String message = Messages.format("customer.account.printhidden.message", displayName, object.getId());
+                ConfirmationDialog.show(title, message, ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                    @Override
+                    public void onYes() {
+                        print(object);
+                    }
+                });
+            } else {
+                print(object);
+            }
+        }
+    }
+
+    /**
      * Lays out the buttons.
      *
      * @param buttons the button row
@@ -170,7 +201,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         buttons.setEnabled(REVERSE_ID, enable);
-        buttons.setEnabled(PRINT_ID, enable);
+        enablePrintPreview(buttons, enable);
         buttons.setEnabled(CHECK_ID, enable);
         buttons.setEnabled(HIDE_ID, enable && getActions().canHide(getObject()));
         buttons.setEnabled(UNHIDE_ID, enable && getActions().canUnhide(getObject()));
@@ -180,19 +211,22 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      * Invoked when the 'reverse' button is pressed.
      */
     protected void onReverse() {
-        final FinancialAct act = getObject();
-        String status = act.getStatus();
-        if (TypeHelper.isA(act, CustomerAccountArchetypes.OPENING_BALANCE, CustomerAccountArchetypes.CLOSING_BALANCE)
-            || !FinancialActStatus.POSTED.equals(status)) {
-            showStatusError(act, "customer.account.noreverse.title", "customer.account.noreverse.message");
-        } else {
-            Reverser reverser = new Reverser(getContext().getPractice(), getHelpContext().subtopic("reverse"));
-            reverser.reverse(act, new Reverser.Listener() {
-                @Override
-                public void completed() {
-                    onRefresh(act);
-                }
-            });
+        final FinancialAct act = IMObjectHelper.reload(getObject());
+        if (act != null) {
+            String status = act.getStatus();
+            if (TypeHelper.isA(act, CustomerAccountArchetypes.OPENING_BALANCE,
+                               CustomerAccountArchetypes.CLOSING_BALANCE)
+                || !FinancialActStatus.POSTED.equals(status)) {
+                showStatusError(act, "customer.account.noreverse.title", "customer.account.noreverse.message");
+            } else {
+                Reverser reverser = new Reverser(getContext().getPractice(), getHelpContext().subtopic("reverse"));
+                reverser.reverse(act, new Reverser.Listener() {
+                    @Override
+                    public void completed() {
+                        onRefresh(act);
+                    }
+                });
+            }
         }
     }
 
@@ -200,14 +234,20 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      * Invoked when the 'adjust' button is pressed.
      */
     protected void onAdjust() {
-        String[] shortNames = {"act.customerAccountDebitAdjust",
-                               "act.customerAccountCreditAdjust",
-                               "act.customerAccountInitialBalance",
-                               "act.customerAccountBadDebt"};
-        Archetypes<FinancialAct> archetypes = Archetypes.create(
-                shortNames, FinancialAct.class,
-                Messages.get("customer.account.createtype"));
-        onCreate(archetypes);
+        Party customer = getContext().getCustomer();
+        CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
+        if (customer != null) {
+            String[] shortNames = {CustomerAccountArchetypes.DEBIT_ADJUST,
+                                   CustomerAccountArchetypes.CREDIT_ADJUST,
+                                   CustomerAccountArchetypes.BAD_DEBT};
+            if (!rules.hasAccountActs(customer)) {
+                // only allow Initial Balance acts if there are no other customer account acts
+                shortNames = (String[]) ArrayUtils.add(shortNames, 0, CustomerAccountArchetypes.INITIAL_BALANCE);
+            }
+            Archetypes<FinancialAct> archetypes = Archetypes.create(shortNames, FinancialAct.class,
+                                                                    Messages.get("customer.account.createtype"));
+            onCreate(archetypes);
+        }
     }
 
     /**
@@ -320,7 +360,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     }
 
 
-    private class AccountActActions extends ActActions<FinancialAct> {
+    private class AccountActActions extends FinancialActions<FinancialAct> {
 
         /**
          * Determines if an act can be unhidden.

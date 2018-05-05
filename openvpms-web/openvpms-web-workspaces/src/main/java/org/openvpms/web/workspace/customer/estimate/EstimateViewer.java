@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 /*
@@ -106,15 +106,15 @@ public class EstimateViewer extends PopupDialog {
      * @return the component
      */
     private Component getComponent() {
-        ResultSet<Act> set = new ListResultSet<Act>(estimates, 20);
-        IMTableModel<Act> model = new DefaultDescriptorTableModel<Act>(
+        ResultSet<Act> set = new ListResultSet<>(estimates, 20);
+        IMTableModel<Act> model = new DefaultDescriptorTableModel<>(
                 EstimateArchetypes.ESTIMATE, createLayoutContext(context, getHelpContext()));
-        table = new PagedIMTable<Act>(model, set);
+        table = new PagedIMTable<>(model, set);
 
         table.getTable().setStyleName("EstimatesTableViewer");
         // this style disables the selection blur style used in other tables, as it hides white text
 
-        column = ColumnFactory.create(Styles.CELL_SPACING, ColumnFactory.create(Styles.INSET, table));
+        column = ColumnFactory.create(Styles.CELL_SPACING, ColumnFactory.create(Styles.INSET, table.getComponent()));
 
         if (estimates.size() == 1) {
             show(estimates.get(0));

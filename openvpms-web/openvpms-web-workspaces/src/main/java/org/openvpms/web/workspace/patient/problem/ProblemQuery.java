@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.problem;
@@ -20,10 +20,10 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.collections.ComparatorUtils;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -31,19 +31,13 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
-import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.query.PageLocator;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
 import org.openvpms.web.component.im.relationship.RelationshipHelper;
-import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.echo.focus.FocusHelper;
-import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryQuery;
 
 
 /**
@@ -55,37 +49,7 @@ import org.openvpms.web.resource.i18n.Messages;
  *
  * @author Tim Anderson
  */
-public class ProblemQuery extends DateRangeActQuery<Act> {
-
-    /**
-     * The set of possible act item short names.
-     */
-    private String[] shortNames;
-
-    /**
-     * The act items to display.
-     */
-    private String[] selectedShortNames;
-
-    /**
-     * Determines if the visit items are being sorted ascending or descending.
-     */
-    private boolean sortAscending = true;
-
-    /**
-     * Button to change the problem items sort order.
-     */
-    private Button sort;
-
-    /**
-     * The short name model.
-     */
-    private ShortNameListModel model;
-
-    /**
-     * The short name selector.
-     */
-    private SelectField shortNameSelector;
+public class ProblemQuery extends AbstractPatientHistoryQuery {
 
     /**
      * The short names to query.
@@ -104,55 +68,16 @@ public class ProblemQuery extends DateRangeActQuery<Act> {
     /**
      * Constructs a {@link ProblemQuery}.
      *
-     * @param patient the patient to query
+     * @param patient     the patient to query
+     * @param preferences user preferences
      */
-    public ProblemQuery(Party patient) {
-        super(patient, "patient", PatientArchetypes.PATIENT_PARTICIPATION, SHORT_NAMES, Act.class);
-        shortNames = RelationshipHelper.getTargetShortNames(PatientArchetypes.CLINICAL_PROBLEM_ITEM);
-        selectedShortNames = shortNames;
-        model = new ShortNameListModel(shortNames, true, false);
-        shortNameSelector = SelectFieldFactory.create(model);
+    public ProblemQuery(Party patient, Preferences preferences) {
+        super(patient, SHORT_NAMES, preferences);
+        setItemShortNames(RelationshipHelper.getTargetShortNames(PatientArchetypes.CLINICAL_PROBLEM_ITEM));
+        setSelectedItemShortNames(getItemShortNames());
 
-        ActionListener listener = new ActionListener() {
-            public void onAction(ActionEvent event) {
-                updateSelectedShortNames();
-                onQuery();
-            }
-        };
-        shortNameSelector.addActionListener(listener);
-        shortNameSelector.setCellRenderer(new ShortNameListCellRenderer());
         setAuto(true);
         setDefaultSortConstraint(SORT);
-    }
-
-    /**
-     * Returns the short names of the selected act items.
-     *
-     * @return the act item short names
-     */
-    public String[] getActItemShortNames() {
-        return selectedShortNames;
-    }
-
-    /**
-     * Determines if the problem items are being sorted ascending or descending.
-     *
-     * @param ascending if {@code true} problem items are to be sorted ascending; {@code false} if descending
-     */
-    public void setSortAscending(boolean ascending) {
-        sortAscending = ascending;
-        if (sort != null) {
-            setSortIcon();
-        }
-    }
-
-    /**
-     * Determines if the problem items are being sorted ascending or descending.
-     *
-     * @return {@code true} if problem items are being sorted ascending; {@code false} if descending
-     */
-    public boolean isSortAscending() {
-        return sortAscending;
     }
 
     /**
@@ -185,20 +110,11 @@ public class ProblemQuery extends DateRangeActQuery<Act> {
     protected void doLayout(Component container) {
         Label typeLabel = LabelFactory.create("query.type");
         container.add(typeLabel);
+        SelectField shortNameSelector = getShortNameSelector();
         container.add(shortNameSelector);
-
-        sort = ButtonFactory.create(new ActionListener() {
-            @Override
-            public void onAction(ActionEvent event) {
-                sortAscending = !sortAscending;
-                setSortIcon();
-                onQuery();
-                FocusHelper.setFocus(sort);
-            }
-        });
-        setSortIcon();
-
+        Button sort = getSort();
         container.add(sort);
+        addSearchField(container);
         FocusGroup focusGroup = getFocusGroup();
         focusGroup.add(shortNameSelector);
         focusGroup.add(sort);
@@ -207,14 +123,17 @@ public class ProblemQuery extends DateRangeActQuery<Act> {
 
     /**
      * Updates the short names to query.
+     *
+     * @param model    the model
+     * @param selected the selected index
      */
-    private void updateSelectedShortNames() {
-        int index = shortNameSelector.getSelectedIndex();
-        if (model.isAll(index)) {
-            selectedShortNames = shortNames;
+    @Override
+    protected void updateSelectedShortNames(ShortNameListModel model, int selected) {
+        if (model.isAll(selected)) {
+            setSelectedItemShortNames(getItemShortNames());
         } else {
-            String shortName = model.getShortName(index);
-            selectedShortNames = getSelectedShortNames(shortName);
+            String shortName = model.getShortName(selected);
+            setSelectedItemShortNames(getSelectedShortNames(shortName));
         }
     }
 
@@ -237,20 +156,4 @@ public class ProblemQuery extends DateRangeActQuery<Act> {
         return new String[]{shortName};
     }
 
-    /**
-     * Sets the sort button icon.
-     */
-    private void setSortIcon() {
-        String style;
-        String toolTip;
-        if (sortAscending) {
-            style = "sort.ascending";
-            toolTip = Messages.get("patient.record.query.sortAscending");
-        } else {
-            style = "sort.descending";
-            toolTip = Messages.get("patient.record.query.sortDescending");
-        }
-        sort.setStyleName(style);
-        sort.setToolTipText(toolTip);
-    }
 }

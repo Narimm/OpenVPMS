@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.email;
@@ -26,6 +26,8 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.im.contact.ContactHelper;
+import org.openvpms.web.component.mail.EmailAddress;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.reporting.ReportingException;
 
@@ -42,7 +44,7 @@ public class PracticeEmailAddresses {
     /**
      * EmailAddress addresses keyed on practice/practice location reference.
      */
-    private final Map<IMObjectReference, EmailAddress> addresses = new HashMap<IMObjectReference, EmailAddress>();
+    private final Map<IMObjectReference, EmailAddress> addresses = new HashMap<>();
 
     /**
      * The default email address.
@@ -74,9 +76,10 @@ public class PracticeEmailAddresses {
      */
     public PracticeEmailAddresses(Party practice, String purpose, PracticeRules rules, IArchetypeService service) {
         this.service = service;
-        this.defaultAddress = getPracticeEmail(practice, purpose);
+        String defaultEmailName = ContactHelper.getDefaultEmailName();
+        this.defaultAddress = getPracticeEmail(practice, purpose, defaultEmailName);
         for (Party location : rules.getLocations(practice)) {
-            EmailAddress address = getLocationEmail(location, purpose);
+            EmailAddress address = getLocationEmail(location, purpose, defaultEmailName);
             if (address != null) {
                 addresses.put(location.getObjectReference(), address);
             }
@@ -104,17 +107,18 @@ public class PracticeEmailAddresses {
     /**
      * Returns the practice email address, preferably with the specified purpose.
      *
-     * @param practice the practice
-     * @param purpose  the email contact purpose
+     * @param practice         the practice
+     * @param purpose          the email contact purpose
+     * @param defaultEmailName the default email name
      * @return the practice email address
      */
-    private EmailAddress getPracticeEmail(Party practice, String purpose) {
+    private EmailAddress getPracticeEmail(Party practice, String purpose, String defaultEmailName) {
         PurposeMatcher matcher = new PurposeMatcher(ContactArchetypes.EMAIL, purpose, false, service);
         Contact contact = Contacts.find(practice.getContacts(), matcher);
         if (contact == null) {
             throw new ReportingException(ReportingException.ErrorCode.NoEmailContact, practice.getName());
         }
-        EmailAddress result = getEmailAddress(contact, practice);
+        EmailAddress result = getEmailAddress(contact, practice, defaultEmailName);
         if (result == null) {
             throw new ReportingException(ReportingException.ErrorCode.InvalidEmailAddress, practice.getName());
         }
@@ -124,16 +128,17 @@ public class PracticeEmailAddresses {
     /**
      * Returns the email address for a practice location.
      *
-     * @param practice the practice/practice location
-     * @param purpose  the email contact purpose
+     * @param practice         the practice/practice location
+     * @param purpose          the email contact purpose
+     * @param defaultEmailName the default email name
      * @return the address, or {@code null} if a valid address is not found and {@code fail} is {@code false}
      */
-    private EmailAddress getLocationEmail(Party practice, String purpose) {
+    private EmailAddress getLocationEmail(Party practice, String purpose, String defaultEmailName) {
         EmailAddress result = null;
         PurposeMatcher matcher = new PurposeMatcher(ContactArchetypes.EMAIL, purpose, true, service);
         Contact contact = Contacts.find(practice.getContacts(), matcher);
         if (contact != null) {
-            result = getEmailAddress(contact, practice);
+            result = getEmailAddress(contact, practice, defaultEmailName);
         }
         return result;
     }
@@ -141,15 +146,23 @@ public class PracticeEmailAddresses {
     /**
      * Returns an email address for an email contact.
      *
-     * @param contact  the contact
-     * @param practice the practice/practice location
+     * @param contact          the contact
+     * @param practice         the practice/practice location
+     * @param defaultEmailName the default email name. If the contact doesn't have this as its name, the contact name
+     *                         will be used, else the practice name will be used
      * @return the email address, or {@code null} if the contact is invalid
      */
-    private EmailAddress getEmailAddress(Contact contact, Party practice) {
+    private EmailAddress getEmailAddress(Contact contact, Party practice, String defaultEmailName) {
         IMObjectBean bean = new IMObjectBean(contact);
         String address = bean.getString("emailAddress");
         if (!StringUtils.isEmpty(address)) {
-            return new EmailAddress(address, practice.getName());
+            String name;
+            if (!StringUtils.isEmpty(contact.getName()) && !StringUtils.equals(defaultEmailName, contact.getName())) {
+                name = contact.getName();
+            } else {
+                name = practice.getName();
+            }
+            return new EmailAddress(address, name);
         }
         return null;
     }

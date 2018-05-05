@@ -11,26 +11,24 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.summary;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.query.ResultSetIterator;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.alert.Alert;
 import org.openvpms.web.workspace.alert.AlertSummary;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -53,14 +51,21 @@ public abstract class PartySummary {
     private final HelpContext help;
 
     /**
+     * The user preferences.
+     */
+    private final Preferences preferences;
+
+    /**
      * Constructs a {@code PartySummary}.
      *
-     * @param context the context
-     * @param help    the help context
+     * @param context     the context
+     * @param help        the help context
+     * @param preferences user preferences
      */
-    public PartySummary(Context context, HelpContext help) {
+    public PartySummary(Context context, HelpContext help, Preferences preferences) {
         this.context = context;
         this.help = help;
+        this.preferences = preferences;
     }
 
     /**
@@ -98,6 +103,15 @@ public abstract class PartySummary {
     }
 
     /**
+     * Returns the user preferences.
+     *
+     * @return the preferences
+     */
+    protected Preferences getPreferences() {
+        return preferences;
+    }
+
+    /**
      * Returns summary information for a party.
      * <p/>
      * The summary includes any alerts.
@@ -130,26 +144,6 @@ public abstract class PartySummary {
      * @return the party's alerts
      */
     protected abstract List<Alert> getAlerts(Party party);
-
-    /**
-     * Returns the alerts for a party.
-     *
-     * @param party the party
-     * @return the party's alerts
-     */
-    protected List<Alert> queryAlerts(Party party) {
-        List<Alert> result = new ArrayList<Alert>();
-        ResultSet<Act> set = createAlertsResultSet(party, 20);
-        ResultSetIterator<Act> iterator = new ResultSetIterator<Act>(set);
-        while (iterator.hasNext()) {
-            Act act = iterator.next();
-            Lookup lookup = ServiceHelper.getLookupService().getLookup(act, "alertType");
-            if (lookup != null) {
-                result.add(new Alert(lookup, act));
-            }
-        }
-        return result;
-    }
 
     /**
      * Returns outstanding alerts for a party.

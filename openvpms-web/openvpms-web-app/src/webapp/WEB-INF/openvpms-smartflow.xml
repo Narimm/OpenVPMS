@@ -13,20 +13,29 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd">
 
-    <bean class="org.openvpms.smartflow.client.FlowSheetServiceFactory">
-        <!--constructor-arg name="emrApiKey" value="873af17b2163255a3eb70a7d7413be152657bfab"/>
-        <constructor-arg name="url" value="https://sfs-public.azurewebsites.net/api/v3"/-->
-        <constructor-arg name="emrApiKey" value="534bf0dae63b8755b2206daf33955c79c1362ef2"/>
-        <constructor-arg name="url" value="https://www.smartflowsheet.com/api/v3"/>
+    <bean name="flowSheetServiceFactory" class="org.openvpms.smartflow.client.FlowSheetServiceFactory">
+        <constructor-arg name="emrApiKey" value="${smartflow.emrApiKey}"/>
+        <constructor-arg name="url" value="${smartflow.url}"/>
         <constructor-arg name="service" ref="archetypeRuleService"/>
         <constructor-arg name="lookups" ref="lookupService"/>
         <constructor-arg name="handlers" ref="documentHandlers"/>
+        <constructor-arg name="rules" ref="medicalRecordRules"/>
     </bean>
+
+    <bean class="org.openvpms.smartflow.event.impl.SmartFlowSheetEventServiceImpl">
+        <constructor-arg ref="flowSheetServiceFactory"/>
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="practiceService"/>
+        <constructor-arg ref="txnManager"/>
+        <constructor-arg ref="patientRules"/>
+    </bean>
+
 </beans>

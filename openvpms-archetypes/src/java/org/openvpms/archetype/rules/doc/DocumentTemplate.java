@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.doc;
@@ -21,7 +21,6 @@ import org.apache.commons.collections.functors.AndPredicate;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -29,6 +28,7 @@ import org.openvpms.component.business.service.archetype.functor.IsActiveRelatio
 import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.object.IMObject;
 
 import javax.print.attribute.Size2DSyntax;
 import javax.print.attribute.standard.MediaSize;
@@ -106,6 +106,15 @@ public class DocumentTemplate {
      */
     private final IArchetypeService service;
 
+    /**
+     * Cached email template.
+     */
+    private Entity email;
+
+    /**
+     * Cached SMS template.
+     */
+    private Entity sms;
 
     /**
      * Constructs a {@link DocumentTemplate}.
@@ -386,57 +395,27 @@ public class DocumentTemplate {
     }
 
     /**
-     * Returns the email subject to use when documents generated from the template are emailed.
+     * Returns the email template.
      *
-     * @return the email subject. May be {@code null}
+     * @return the email template. May be {@code null}
      */
-    public String getEmailSubject() {
-        return bean.getString("emailSubject");
+    public Entity getEmailTemplate() {
+        if (email == null) {
+            email = bean.getNodeTargetEntity("email");
+        }
+        return email;
     }
 
     /**
-     * Sets the email subject to use when documents generated from the template are emailed.
+     * Returns the SMS template.
      *
-     * @param subject the email subject
+     * @return the SMS template. May be {@code null}
      */
-    public void setEmailSubject(String subject) {
-        bean.setValue("emailSubject", subject);
-    }
-
-    /**
-     * Returns the email text to use when documents generated from the template are emailed.
-     *
-     * @return the email text. May be {@code null}
-     */
-    public String getEmailText() {
-        return bean.getString("emailText");
-    }
-
-    /**
-     * Sets the email text to use when documents generated from the template are emailed.
-     *
-     * @param text the text
-     */
-    public void setEmailText(String text) {
-        bean.setValue("emailText", text);
-    }
-
-    /**
-     * Returns the text to use when the template is sent via SMS.
-     *
-     * @return the SMS text. May be {@code null}
-     */
-    public String getSMS() {
-        return bean.getString("sms");
-    }
-
-    /**
-     * Sets the text to use when the the template is sent via SMS.
-     *
-     * @param text the text. May be {@code null}
-     */
-    public void setSMS(String text) {
-        bean.setValue("sms", text);
+    public Entity getSMSTemplate() {
+        if (sms == null) {
+            sms = bean.getNodeTargetEntity("sms");
+        }
+        return sms;
     }
 
     /**
@@ -476,7 +455,7 @@ public class DocumentTemplate {
      * @return the printers
      */
     public List<DocumentTemplatePrinter> getPrinters() {
-        List<DocumentTemplatePrinter> result = new ArrayList<DocumentTemplatePrinter>();
+        List<DocumentTemplatePrinter> result = new ArrayList<>();
         List<EntityRelationship> printers = bean.getNodeRelationships("printers");
         for (EntityRelationship printer : printers) {
             result.add(new DocumentTemplatePrinter(printer, service));
@@ -544,6 +523,15 @@ public class DocumentTemplate {
     }
 
     /**
+     * Returns the document act associated the template
+     *
+     * @return the document act, or {@code null} if none exists
+     */
+    public DocumentAct getDocumentAct() {
+        return new TemplateHelper(service).getDocumentAct(bean.getEntity());
+    }
+
+    /**
      * Saves the template.
      *
      * @throws ArchetypeServiceException for any archetype service error
@@ -594,15 +582,14 @@ public class DocumentTemplate {
 
     /**
      * Provides a mapping between supported orientations and values defined in
-     *
-     * @{link OrientationRequested}.
+     * {@link OrientationRequested}.
      */
     private enum Orientation {
 
         PORTRAIT(OrientationRequested.PORTRAIT),
         LANDSCAPE(OrientationRequested.LANDSCAPE);
 
-        private Orientation(OrientationRequested orientation) {
+        Orientation(OrientationRequested orientation) {
             this.orientation = orientation;
         }
 
@@ -633,7 +620,7 @@ public class DocumentTemplate {
         LETTER(MediaSizeName.NA_LETTER),
         CUSTOM(null);
 
-        private PaperSize(MediaSizeName name) {
+        PaperSize(MediaSizeName name) {
             mediaName = name;
         }
 
@@ -662,7 +649,7 @@ public class DocumentTemplate {
         MM(Size2DSyntax.MM),
         INCH(Size2DSyntax.INCH);
 
-        private Units(int units) {
+        Units(int units) {
             this.units = units;
         }
 

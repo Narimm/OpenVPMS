@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.select;
@@ -23,9 +23,10 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.IPage;
+import org.openvpms.web.component.error.DialogErrorHandler;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
@@ -35,6 +36,8 @@ import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.dialog.DialogManager;
+import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.DocumentListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
@@ -242,7 +245,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
      * Determines if a selection dialog has been popped up.
      *
      * @return {@code true} if a selection dialog has been popped up
-     *         otherwise {@code false}
+     * otherwise {@code false}
      */
     public boolean inSelect() {
         return inSelect;
@@ -276,12 +279,38 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     }
 
     /**
+     * Returns the archetype short names to query on.
+     *
+     * @return the archetype short names to query on
+     */
+    public String[] getShortNames() {
+        return shortNames;
+    }
+
+    /**
      * Pops up a dialog to select an object.
      * <p/>
-     * Only pops up a dialog if one isn't already visible.
+     * Only pops up a dialog if one isn't already visible, no error dialog is being displayed, and there are
+     * no modal dialogs displayed above the button.
+     * <p/>
+     * The error dialog requirement avoids the following event sequence:
+     * <ol>
+     * <li>text is entered in the field, and enter pressed</li>
+     * <li>echo invokes document listener (i.e. {@link #onTextChanged()})</li>
+     * <li>the selector listener is triggered, but clears the text and displays an error message. This can
+     * occur if a product template fails to expand</li>
+     * <li>echo invokes the action listener (i.e. {@link #onSelect()})</li>
+     * </ol>
+     * The modal dialog requirement avoids the following event sequence:
+     * <ol>
+     * <li>text is entered into the field that resolves to a single object, but <em>enter is not pressed</em></li>
+     * <li>the button is pressed</li>
+     * <li>echo invokes {@link #onTextChanged()}, which locates the object, and triggers the selector listener</li>
+     * <li>echo invokes the action listener (i.e. {@link #onSelect()})</li>
+     * </ol>
      */
     protected void onSelect() {
-        if (!inSelect) {
+        if (canSelect()) {
             onSelect(createQuery(), false);
         }
     }
@@ -392,10 +421,11 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Creates the select button.
      *
-     * @param buttonId the button identifier. Ignored for this implementation
+     * @param buttonId        the button identifier. Ignored for this implementation
+     * @param enableShortcuts if {@code true}, enable shortcuts
      * @return the select button
      */
-    protected Button createSelectButton(String buttonId) {
+    protected Button createSelectButton(String buttonId, boolean enableShortcuts) {
         return ButtonFactory.create(null, "select");
     }
 
@@ -432,7 +462,7 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
                             T object = rows.get(0);
                             setObject(object);
                             notifySelected();
-                        } else {
+                        } else if (canSelect()) {
                             onSelect(query, true);
                         }
                     }
@@ -464,6 +494,28 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
         if (listener != null) {
             listener.selected(getObject());
         }
+    }
+
+    /**
+     * Determines if a browser can be shown.
+     * <p/>
+     * A browser can be shown if no browser is already visible, no error dialog is being displayed, and there are
+     * no modal dialogs displayed above the button.
+     *
+     * @return {@code true} if a browser can be shown
+     */
+    private boolean canSelect() {
+        return !inSelect && !inError() && !DialogManager.isHidden(getComponent());
+    }
+
+    /**
+     * Determines if an error dialog is being displayed.
+     *
+     * @return {@code true} if an error dialog is being displayed
+     */
+    private boolean inError() {
+        ErrorHandler handler = ErrorHandler.getInstance();
+        return handler instanceof DialogErrorHandler && ((DialogErrorHandler) handler).inError();
     }
 
 }

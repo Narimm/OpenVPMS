@@ -11,20 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
-import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
+import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
-import org.openvpms.archetype.rules.workflow.ScheduleEvent;
-import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
+import org.openvpms.web.workspace.workflow.scheduling.ScheduleColours;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
 
 import java.util.List;
@@ -43,23 +42,14 @@ class MultiScheduleTableModel extends AppointmentTableModel {
     private int rightStartTimeIndex;
 
     /**
-     * Constructs a {@code MultiScheduleTableModel}.
+     * Constructs a {@link MultiScheduleTableModel}.
      *
-     * @param grid the appointment grid
+     * @param grid    the appointment grid
+     * @param context the context
+     * @param colours the colour cache
      */
-    public MultiScheduleTableModel(AppointmentGrid grid, Context context) {
-        super(grid, context);
-    }
-
-    /**
-     * Determines if the specified column is a 'start time' column.
-     *
-     * @param column the column
-     * @return {@code true} if the column is a 'start time' column
-     */
-    @Override
-    public boolean isStartTimeColumn(int column) {
-        return super.isStartTimeColumn(column) || column == rightStartTimeIndex;
+    public MultiScheduleTableModel(AppointmentGrid grid, Context context, ScheduleColours colours) {
+        super(grid, context, colours);
     }
 
     /**
@@ -71,57 +61,15 @@ class MultiScheduleTableModel extends AppointmentTableModel {
      */
     @Override
     public Object getValueAt(int column, int row) {
-        Object result = null;
+        Object result;
         Column c = getColumn(column);
         int index = c.getModelIndex();
         if (index == START_TIME_INDEX || index == rightStartTimeIndex) {
             result = getGrid().getStartTime(row);
         } else {
-            PropertySet set = getEvent(column, row);
-            AppointmentGrid grid = getGrid();
-            int rowSpan = 1;
-            if (set != null) {
-                result = getEvent(set);
-                rowSpan = grid.getSlots(set, row);
-            }
-            if (rowSpan > 1) {
-                setRowSpan((Component) result, rowSpan);
-            }
+            result = getEvent(column, row);
         }
         return result;
-    }
-
-    /**
-     * Returns a component representing an event.
-     *
-     * @param event the event
-     * @return a new component
-     */
-    private Component getEvent(PropertySet event) {
-        String text = evaluate(event);
-        if (text == null) {
-            String customer = event.getString(ScheduleEvent.CUSTOMER_NAME);
-            String patient = event.getString(ScheduleEvent.PATIENT_NAME);
-            String status = getStatus(event);
-            String reason = event.getString(ScheduleEvent.ACT_REASON_NAME);
-            if (reason == null) {
-                // fall back to the code
-                reason = event.getString(ScheduleEvent.ACT_REASON);
-            }
-
-            if (patient == null) {
-                text = Messages.format(
-                        "workflow.scheduling.appointment.table.customer",
-                        customer, reason, status);
-            } else {
-                text = Messages.format(
-                        "workflow.scheduling.appointment.table.customerpatient",
-                        customer, patient, reason, status);
-            }
-        }
-
-        String notes = event.getString(ScheduleEvent.ACT_DESCRIPTION);
-        return createLabelWithNotes(text, notes);
     }
 
     /**
@@ -136,22 +84,47 @@ class MultiScheduleTableModel extends AppointmentTableModel {
         List<Schedule> schedules = grid.getSchedules();
         int index = START_TIME_INDEX;
         String startTime = Messages.get("workflow.scheduling.table.time");
-        ScheduleColumn leftStartCol = new ScheduleColumn(index, startTime);
-        leftStartCol.setWidth(new Extent(100));
+        TimeColumnCellRenderer timeRenderer = new TimeColumnCellRenderer();
+
+        // first column is the start time slots
+        TableColumn leftStartCol = createTimeColumn(index, startTime, timeRenderer);
         result.addColumn(leftStartCol);
+
         ++index;
         int percent = (!schedules.isEmpty()) ? 100 / schedules.size() : 0;
+
+        // add a column for each schedule
+        MultiScheduleTableCellRenderer renderer = new MultiScheduleTableCellRenderer(this);
         for (Schedule schedule : schedules) {
             ScheduleColumn column = new ScheduleColumn(index++, schedule);
+            column.setCellRenderer(renderer);
+            column.setHeaderRenderer(AppointmentTableHeaderRenderer.INSTANCE);
             if (percent != 0) {
                 column.setWidth(new Extent(percent, Extent.PERCENT));
             }
             result.addColumn(column);
         }
+
+        // add a time column on the far right
         rightStartTimeIndex = index;
-        ScheduleColumn rightStartCol = new ScheduleColumn(rightStartTimeIndex, startTime);
-        rightStartCol.setWidth(new Extent(100));
+        TableColumn rightStartCol = createTimeColumn(rightStartTimeIndex, startTime, timeRenderer);
         result.addColumn(rightStartCol);
         return result;
+    }
+
+    /**
+     * Creates a new column to display the appointment time slots.
+     *
+     * @param modelIndex the column model index
+     * @param header     the header name
+     * @param renderer   the column renderer
+     * @return a new column
+     */
+    private TableColumn createTimeColumn(int modelIndex, String header, TimeColumnCellRenderer renderer) {
+        ScheduleColumn column = new ScheduleColumn(modelIndex, header);
+        column.setHeaderRenderer(AppointmentTableHeaderRenderer.INSTANCE);
+        column.setCellRenderer(renderer);
+        column.setWidth(new Extent(100));
+        return column;
     }
 }

@@ -11,32 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
 
-import nextapp.echo2.app.Component;
-import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.bound.SpinBox;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.sms.BoundCountedTextArea;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.factory.RowFactory;
-import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.echo.text.TextArea;
-import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 
@@ -46,35 +33,28 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class DocumentTemplateLayoutStrategy extends AbstractLayoutStrategy {
-
-    /**
-     * The component representing the 'content' node.
-     */
-    private ComponentState content;
+public class DocumentTemplateLayoutStrategy extends AbstractDocumentTemplateLayoutStrategy {
 
     /**
      * Constructs a {@link DocumentTemplateLayoutStrategy}.
      */
     public DocumentTemplateLayoutStrategy() {
+        super();
     }
 
     /**
      * Constructs a {@link DocumentTemplateLayoutStrategy}.
      *
-     * @param content    the component representing the 'content' node
-     * @param focusGroup the component's focus group. May be {@code null}
+     * @param content the component representing the 'content' node
      */
-    public DocumentTemplateLayoutStrategy(Component content,
-                                          FocusGroup focusGroup) {
-        this.content = new ComponentState(content, focusGroup);
+    public DocumentTemplateLayoutStrategy(ComponentState content) {
+        super(content);
     }
 
     /**
      * Apply the layout strategy.
      * <p/>
-     * This renders an object in a {@code Component}, using a factory to
-     * create the child components.
+     * This renders an object in a {@code Component}, using a factory to create the child components.
      *
      * @param object     the object to apply
      * @param properties the object's properties
@@ -83,30 +63,14 @@ public class DocumentTemplateLayoutStrategy extends AbstractLayoutStrategy {
      * @return the component containing the rendered {@code object}
      */
     @Override
-    public ComponentState apply(IMObject object, PropertySet properties,
-                                IMObject parent, LayoutContext context) {
-        Property sms = properties.get("sms");
-        TextArea textArea;
+    public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         if (context.isEdit()) {
-            textArea = new BoundCountedTextArea(sms, 40, 8);
-            textArea.setStyleName(Styles.DEFAULT);
-        } else {
-            textArea = BoundTextComponentFactory.createTextArea(sms, 40, 8);
-            textArea.setEnabled(false);
+            Property copies = properties.get("copies");
+            SpinBox spinBox = new SpinBox(copies, 1, 99);
+            addComponent(new ComponentState(spinBox, copies, spinBox.getFocusGroup()));
         }
-        addComponent(new ComponentState(RowFactory.create(textArea), sms));
-
-        if (content == null) {
-            TemplateHelper helper = new TemplateHelper(ServiceHelper.getArchetypeService());
-            Participation participation = helper.getDocumentParticipation((Entity) object);
-            if (participation != null) {
-                content = context.getComponentFactory().create(participation, object);
-            } else {
-                content = new ComponentState(LabelFactory.create());
-            }
-        }
-        if (!content.hasLabel()) {
-            content.setDisplayName(Messages.get("document.template.content"));
+        if (getContent() == null) {
+            initContent((Entity) object, properties, context);
         }
         return super.apply(object, properties, parent, context);
     }
@@ -121,24 +85,8 @@ public class DocumentTemplateLayoutStrategy extends AbstractLayoutStrategy {
     @Override
     protected ComponentGrid createGrid(IMObject object, List<Property> properties, LayoutContext context) {
         ComponentGrid grid = super.createGrid(object, properties, context);
-        grid.add(content);
+        grid.add(getContent());
         return grid;
     }
 
-    /**
-     * Creates a component for a property.
-     *
-     * @param property the property
-     * @param parent   the parent object
-     * @param context  the layout context
-     * @return a component to display {@code property}
-     */
-    @Override
-    protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
-        if (context.isEdit() && property.getName().equals("copies")) {
-            SpinBox copies = new SpinBox(property, 1, 99);
-            return new ComponentState(copies, property, copies.getFocusGroup());
-        }
-        return super.createComponent(property, parent, context);
-    }
 }

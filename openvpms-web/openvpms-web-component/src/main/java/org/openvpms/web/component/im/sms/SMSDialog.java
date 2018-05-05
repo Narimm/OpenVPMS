@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.sms;
@@ -32,10 +32,11 @@ import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -52,18 +53,18 @@ public class SMSDialog extends PopupDialog {
 
 
     /**
-     * Constructs an {@code SMSDialog}.
+     * Constructs an {@link SMSDialog}.
      *
-     * @param phone   the phone contact to send to
+     * @param phone   the phone contact to send to. May be {@code null}
      * @param context the context
      * @param help    the help context
      */
     public SMSDialog(Contact phone, Context context, HelpContext help) {
-        this(Arrays.asList(phone), context, help);
+        this(phone != null ? Collections.singletonList(phone) : null, context, help);
     }
 
     /**
-     * Constructs an {@code SMSDialog}.
+     * Constructs an {@link SMSDialog}.
      *
      * @param phones  the phone numbers to select from. May be {@code null}
      * @param context the context
@@ -76,9 +77,9 @@ public class SMSDialog extends PopupDialog {
         MacroVariables variables = new MacroVariables(new ReloadingContext(context),
                                                       ServiceHelper.getArchetypeService(),
                                                       ServiceHelper.getLookupService());
-        editor = new SMSEditor(phones, variables);
+        editor = new SMSEditor(phones, variables, context);
 
-        Column column = ColumnFactory.create("Inset", editor.getComponent());
+        Column column = ColumnFactory.create(Styles.INSET, editor.getComponent());
         getLayout().add(column);
         getFocusGroup().add(0, editor.getFocusGroup());
 
@@ -87,6 +88,16 @@ public class SMSDialog extends PopupDialog {
                 onMacro(context);
             }
         });
+        editor.getFocusGroup().setFocus();
+    }
+
+    /**
+     * Sets the message to send.
+     *
+     * @param message the message
+     */
+    public void setMessage(String message) {
+        editor.setMessage(message);
     }
 
     /**

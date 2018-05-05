@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -22,12 +22,13 @@ import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.entity.EntityRelationship;
 
 import java.util.Date;
 import java.util.List;
@@ -43,8 +44,7 @@ import static org.openvpms.archetype.rules.supplier.SupplierArchetypes.SUPPLIER_
 /**
  * Tests the {@link SupplierRules} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class SupplierRulesTestCase extends AbstractSupplierTest {
 
@@ -118,20 +118,18 @@ public class SupplierRulesTestCase extends AbstractSupplierTest {
         Product product1 = TestHelper.createProduct();
         Product product2 = TestHelper.createProduct();
 
-        ProductSupplier rel1
-                = productRules.createProductSupplier(product1, supplier);
-        ProductSupplier rel2
-                = productRules.createProductSupplier(product2, supplier);
+        ProductSupplier rel1 = productRules.createProductSupplier(product1, supplier);
+        ProductSupplier rel2 = productRules.createProductSupplier(product2, supplier);
+        save(supplier, product1, product2);
 
-        List<ProductSupplier> relationships
-                = rules.getProductSuppliers(supplier);
+        List<ProductSupplier> relationships = rules.getProductSuppliers(supplier);
         assertEquals(2, relationships.size());
         assertTrue(relationships.contains(rel1));
         assertTrue(relationships.contains(rel2));
 
-        // deactivate one of the relationships, and verify it is no longer
-        // returned
+        // deactivate one of the relationships, and verify it is no longer returned
         deactivateRelationship(rel1);
+        save(product1, supplier);
 
         relationships = rules.getProductSuppliers(supplier);
         assertEquals(1, relationships.size());
@@ -174,13 +172,37 @@ public class SupplierRulesTestCase extends AbstractSupplierTest {
     }
 
     /**
+     * Tests the {@link SupplierRules#getAccountId(long, Party)} and {@link SupplierRules#getAccountId(Party, Party)}
+     * methods.
+     */
+    @Test
+    public void testGetAccountId() {
+        Party supplier = getSupplier();
+        Party location = getPracticeLocation();
+
+        assertNull(rules.getAccountId(supplier.getId(), location));
+        assertNull(rules.getAccountId(supplier, location));
+        assertNull(rules.getAccountId(-1, location));  // non existent supplier
+
+        IMObjectBean supplierBean = new IMObjectBean(supplier);
+        IMObjectRelationship relationship = supplierBean.addNodeTarget("locations", location);
+        IMObjectBean bean = new IMObjectBean(relationship);
+        String expected = "1234567";
+        bean.setValue("accountId", expected);
+        supplierBean.save();
+
+        assertEquals(expected, rules.getAccountId(supplier.getId(), location));
+        assertEquals(expected, rules.getAccountId(supplier, location));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
         super.setUp();
         rules = new SupplierRules(getArchetypeService());
-        productRules = new ProductRules(getArchetypeService());
+        productRules = new ProductRules(getArchetypeService(), getLookupService());
     }
 
     /**

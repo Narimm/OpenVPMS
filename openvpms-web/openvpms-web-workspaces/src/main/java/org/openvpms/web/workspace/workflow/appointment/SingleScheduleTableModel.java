@@ -11,26 +11,32 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.factory.TableFactory;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.workspace.workflow.scheduling.Cell;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
+import org.openvpms.web.workspace.workflow.scheduling.ScheduleColours;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
 
 import java.util.Date;
@@ -88,18 +94,19 @@ class SingleScheduleTableModel extends AppointmentTableModel {
 
 
     /**
-     * Constructs a {@code SingleScheduleTableModel}.
+     * Constructs a {@link SingleScheduleTableModel}.
      *
      * @param grid    the appointment grid
      * @param context the context
+     * @param colours the colour cache
      */
-    public SingleScheduleTableModel(AppointmentGrid grid, Context context) {
-        super(grid, context);
+    public SingleScheduleTableModel(AppointmentGrid grid, Context context, ScheduleColours colours) {
+        super(grid, context, colours);
     }
 
     /**
      * Determines if a cell is cut.
-     * <p/>
+     * <p>
      * This implementation returns true if the row matches the cut row, and the column is any
      * other than the start time column.
      *
@@ -136,11 +143,15 @@ class SingleScheduleTableModel extends AppointmentTableModel {
         } else {
             PropertySet set = getEvent(column, row);
             int rowSpan = 1;
+            Schedule schedule = getSchedule(column, row);
             if (set != null) {
-                result = getValue(set, c);
-                rowSpan = grid.getSlots(set, row);
+                if (Schedule.isBlockingEvent(set)) {
+                    result = getBlock(set, c);
+                } else {
+                    result = getAppointment(set, c);
+                }
+                rowSpan = grid.getSlots(set, schedule, row);
             } else {
-                Schedule schedule = getSchedule(column, row);
                 if (schedule != null) {
                     if (grid.getAvailability(schedule, row) == UNAVAILABLE) {
                         rowSpan = grid.getUnavailableSlots(schedule, row);
@@ -155,31 +166,23 @@ class SingleScheduleTableModel extends AppointmentTableModel {
                     }
                     result = label;
                 }
-                setRowSpan((Component) result, rowSpan);
+                ((Component) result).setLayoutData(TableFactory.rowSpan(rowSpan));
             }
         }
         return result;
     }
 
     /**
-     * Returns the value found at the given coordinate within the table.
+     * Returns the value found at the given coordinate within the table, for an appointment.
      *
      * @param set    the object
      * @param column the column
      * @return the value at the given coordinate.
      */
-    protected Object getValue(PropertySet set, TableColumn column) {
+    protected Object getAppointment(PropertySet set, TableColumn column) {
         Object result = null;
         int index = column.getModelIndex();
         switch (index) {
-            case START_TIME_INDEX:
-                Date date = set.getDate(ScheduleEvent.ACT_START_TIME);
-                Label label = LabelFactory.create();
-                if (date != null) {
-                    label.setText(DateFormatter.formatTime(date, false));
-                }
-                result = label;
-                break;
             case STATUS_INDEX:
                 result = getStatus(set);
                 break;
@@ -197,7 +200,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
                 result = getViewer(set, ScheduleEvent.SCHEDULE_TYPE_REFERENCE, ScheduleEvent.SCHEDULE_TYPE_NAME, false);
                 break;
             case CUSTOMER_INDEX:
-                result = getViewer(set, ScheduleEvent.CUSTOMER_REFERENCE, ScheduleEvent.CUSTOMER_NAME, true);
+                result = getCustomer(set);
                 break;
             case PATIENT_INDEX:
                 result = getViewer(set, ScheduleEvent.PATIENT_REFERENCE, ScheduleEvent.PATIENT_NAME, true);
@@ -207,7 +210,28 @@ class SingleScheduleTableModel extends AppointmentTableModel {
     }
 
     /**
-     * Creates a column model to display a list of schedules.
+     * Returns the value found at the given coordinate within the table, for a calendar block.
+     *
+     * @param set    the object
+     * @param column the column
+     * @return the value at the given coordinate.
+     */
+    protected Object getBlock(PropertySet set, TableColumn column) {
+        Object result = null;
+        int index = column.getModelIndex();
+        switch (index) {
+            case DESCRIPTION_INDEX:
+                result = set.getString(ScheduleEvent.ACT_DESCRIPTION);
+                break;
+            case APPOINTMENT_INDEX:
+                result = getViewer(set, ScheduleEvent.SCHEDULE_TYPE_REFERENCE, ScheduleEvent.SCHEDULE_TYPE_NAME, false);
+                break;
+        }
+        return result;
+    }
+
+    /**
+     * Creates a column model to display a single schedule.
      *
      * @param grid the appointment grid
      * @return a new column model
@@ -217,9 +241,51 @@ class SingleScheduleTableModel extends AppointmentTableModel {
         List<Schedule> schedules = grid.getSchedules();
         Schedule schedule = schedules.get(0);
         String[] names = getColumnNames();
-        for (int i = 0; i < names.length; ++i) {
+
+        // the first column is the start time
+        ScheduleColumn startTime = new ScheduleColumn(0, schedule, names[0]);
+        startTime.setHeaderRenderer(AppointmentTableHeaderRenderer.INSTANCE);
+        startTime.setCellRenderer(new TimeColumnCellRenderer());
+        result.addColumn(startTime);
+
+        // add the node columns
+        SingleScheduleTableCellRenderer renderer = new SingleScheduleTableCellRenderer(this);
+        for (int i = 1; i < names.length; ++i) {
             ScheduleColumn column = new ScheduleColumn(i, schedule, names[i]);
+            column.setHeaderRenderer(AppointmentTableHeaderRenderer.INSTANCE);
+            column.setCellRenderer(renderer);
             result.addColumn(column);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the display name of the specified node.
+     *
+     * @param archetype the archetype descriptor
+     * @param name      the node name
+     * @return the display name, or {@code null} if the node doesn't exist
+     */
+    protected String getDisplayName(ArchetypeDescriptor archetype, String name) {
+        NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
+        return (descriptor != null) ? descriptor.getDisplayName() : null;
+    }
+
+    /**
+     * Returns a component representing the customer.
+     *
+     * @param event the appointment event
+     * @return a new component
+     */
+    private Component getCustomer(PropertySet event) {
+        Component result = getViewer(event, ScheduleEvent.CUSTOMER_REFERENCE, ScheduleEvent.CUSTOMER_NAME, true);
+        boolean sendReminder = event.getBoolean(ScheduleEvent.SEND_REMINDER);
+        Date reminderSent = event.getDate(ScheduleEvent.REMINDER_SENT);
+        String reminderError = event.getString(ScheduleEvent.REMINDER_ERROR);
+        if (sendReminder || reminderSent != null || reminderError != null) {
+            Label reminder = AbstractAppointmentTableCellRender.createReminderIcon(reminderSent, reminderError);
+            reminder.setLayoutData(RowFactory.layout(new Alignment(Alignment.RIGHT, Alignment.TOP), Styles.FULL_WIDTH));
+            result = RowFactory.create(Styles.CELL_SPACING, result, reminder);
         }
         return result;
     }
@@ -233,7 +299,7 @@ class SingleScheduleTableModel extends AppointmentTableModel {
         if (columnNames == null) {
             columnNames = new String[NODE_NAMES.length];
             columnNames[0] = Messages.get("workflow.scheduling.table.time");
-            ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor("act.customerAppointment");
+            ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(ScheduleArchetypes.APPOINTMENT);
             if (archetype != null) {
                 for (int i = 1; i < NODE_NAMES.length; ++i) {
                     columnNames[i] = getDisplayName(archetype, NODE_NAMES[i]);

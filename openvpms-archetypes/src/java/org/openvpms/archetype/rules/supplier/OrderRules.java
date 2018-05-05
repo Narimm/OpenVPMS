@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -19,12 +19,14 @@ package org.openvpms.archetype.rules.supplier;
 import org.openvpms.archetype.rules.act.ActCopyHandler;
 import org.openvpms.archetype.rules.act.DefaultActCopyHandler;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
+import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -73,15 +75,21 @@ public class OrderRules {
      */
     private final IArchetypeService service;
 
+    /**
+     * Product rules.
+     */
+    private final ProductRules productRules;
 
     /**
-     * Creates a new <tt>OrderRules</tt>.
+     * Constructs a {@link OrderRules}.
      *
-     * @param service the archetype service
+     * @param service      the archetype service
+     * @param productRules the product rules
      */
-    public OrderRules(TaxRules taxRules, IArchetypeService service) {
+    public OrderRules(TaxRules taxRules, IArchetypeService service, ProductRules productRules) {
         this.taxRules = taxRules;
         this.service = service;
+        this.productRules = productRules;
     }
 
     /**
@@ -279,6 +287,26 @@ public class OrderRules {
     public List<FinancialAct> createOrder(Party supplier, Party stockLocation, boolean belowIdealQuantity) {
         OrderGenerator generator = new OrderGenerator(taxRules, service);
         return generator.createOrder(supplier, stockLocation, belowIdealQuantity);
+    }
+
+    /**
+     * Determines if an order has restricted products.
+     *
+     * @param order the order
+     * @return {@code true} if the
+     */
+    public boolean hasRestrictedProducts(Act order) {
+        boolean result = false;
+        List<Act> items = new ActBean(order, service).getNodeActs("items");
+        for (Act item : items) {
+            ActBean bean = new ActBean(item, service);
+            Product product = (Product) bean.getNodeParticipant("product");
+            if (product != null && productRules.isRestricted(product)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     /**

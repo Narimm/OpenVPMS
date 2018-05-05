@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -461,6 +461,12 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
                     return Messages.get(value.toString());
                 }
             });
+            activeSelector.addActionListener(new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    onQuery();
+                }
+            });
         }
         return activeSelector;
     }
@@ -488,11 +494,10 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
     }
 
     /**
-     * Invoked when the short name is selected.
-     * <p/>
-     * This implementation is a no-op.
+     * Invoked when the short name is selected. Invokes {@link #onQuery}
      */
     protected void onShortNameChanged() {
+        onQuery();
     }
 
     /**
@@ -515,12 +520,14 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
      * Helper to return the text of the supplied field with a wildcard
      * (<em>*</em>) appended, if it is not empty and doesn't already contain
      * one.
+     * <p/>
+     * If {@link #isContains()} is {@code true}, surrounds the text with wildcards.
      *
      * @param field the text field
      * @return the wildcarded field text, or {@code null} if the field is empty
      */
     protected String getWildcardedText(TextComponent field) {
-        return getWildcardedText(field, false);
+        return getWildcardedText(field, isContains());
     }
 
     /**

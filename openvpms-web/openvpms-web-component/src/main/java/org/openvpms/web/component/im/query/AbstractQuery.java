@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
 
+import nextapp.echo2.app.Extent;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -25,6 +26,7 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.util.StyleSheetHelper;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -54,6 +56,11 @@ public abstract class AbstractQuery<T> implements Query<T> {
     private String name;
 
     /**
+     * Determines if substring searches should be performed by default.
+     */
+    private boolean contains;
+
+    /**
      * Determines if the query should be run automatically.
      */
     private boolean auto;
@@ -69,7 +76,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     private boolean distinct;
 
     /**
-     * The maxmimum no. of results to return per page.
+     * The maximum no. of results to return per page.
      */
     private int maxResults = 20;
 
@@ -81,7 +88,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * The event listener list.
      */
-    private List<QueryListener> listeners = new ArrayList<QueryListener>();
+    private List<QueryListener> listeners = new ArrayList<>();
 
     /**
      * Additional constraints to associate with the query. May be {@code null}.
@@ -174,7 +181,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
     /**
      * Sets the default sort constraint.
      *
-     * @param sort the default sort cosntraint. May be {@code null}
+     * @param sort the default sort constraint. May be {@code null}
      */
     public void setDefaultSortConstraint(SortConstraint[] sort) {
         this.sort = sort;
@@ -209,9 +216,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
      */
     public boolean selects(T object) {
         long start = System.currentTimeMillis();
-        Iterator<T> iterator = iterator();
-        while (iterator.hasNext()) {
-            T next = iterator.next();
+        for (T next : this) {
             if (next.equals(object)) {
                 return true;
             }
@@ -236,9 +241,9 @@ public abstract class AbstractQuery<T> implements Query<T> {
     public Iterator<T> iterator(SortConstraint[] sort) {
         ResultSet<T> set = query(sort);
         if (set == null) {
-            set = new EmptyResultSet<T>(10);
+            set = new EmptyResultSet<>(10);
         }
-        return new ResultSetIterator<T>(set);
+        return new ResultSetIterator<>(set);
     }
 
     /**
@@ -281,6 +286,26 @@ public abstract class AbstractQuery<T> implements Query<T> {
     }
 
     /**
+     * Determines if substring searches should be performed by default.
+     *
+     * @param contains if {@code true}, perform substring searches, otherwise only perform them if wildcards are present
+     */
+    @Override
+    public void setContains(boolean contains) {
+        this.contains = contains;
+    }
+
+    /**
+     * Determines if substring searches should be performed by default.
+     *
+     * @return {@code true} to perform substring searches, {@code false} to only perform them if wildcards are present
+     */
+    @Override
+    public boolean isContains() {
+        return contains;
+    }
+
+    /**
      * Sets the minimum length of a value before queries can be performed.
      *
      * @param length the minimum length
@@ -311,7 +336,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
      * Determines if the query should be run automatically.
      *
      * @return {@code true} if the query should be run automatically;
-     *         otherwise {@code false}
+     * otherwise {@code false}
      */
     public boolean isAuto() {
         return auto;
@@ -330,7 +355,7 @@ public abstract class AbstractQuery<T> implements Query<T> {
      * Determines if duplicate rows should be filtered.
      *
      * @return {@code true} if duplicate rows should be removed;
-     *         otherwise {@code false}
+     * otherwise {@code false}
      */
     public boolean isDistinct() {
         return distinct;
@@ -393,6 +418,16 @@ public abstract class AbstractQuery<T> implements Query<T> {
     }
 
     /**
+     * Returns the preferred height of the query when rendered.
+     *
+     * @return the preferred height, or {@code null} if it has no preferred height
+     */
+    @Override
+    public Extent getHeight() {
+        return getHeight(1);
+    }
+
+    /**
      * Notify listeners to perform a query.
      */
     protected void onQuery() {
@@ -401,4 +436,16 @@ public abstract class AbstractQuery<T> implements Query<T> {
             listener.query();
         }
     }
+
+    /**
+     * Helper to return the query height in pixels, based on a factor of the query.height property.
+     *
+     * @param factor the factor
+     * @return {@code $query.height * factor}, or {@code -1} if the property is not defined
+     */
+    protected Extent getHeight(int factor) {
+        int height = StyleSheetHelper.getProperty("query.height", -1);
+        return height > 0 ? new Extent(height * factor) : null;
+    }
+
 }

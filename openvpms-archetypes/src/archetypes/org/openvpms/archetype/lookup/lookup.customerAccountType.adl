@@ -11,18 +11,17 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
     <archetype name="lookup.customerAccountType.1.0"
                latest="true"
                type="org.openvpms.component.business.domain.im.lookup.Lookup" displayName="Customer Account Type">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
-        <node name="code" path="/code" type="java.lang.String" hidden="true"
-              minCardinality="1">
+        <node name="code" path="/code" type="java.lang.String" hidden="true" minCardinality="1" maxLength="100">
             <assertion name="regularExpression">
                 <property name="expression" value="[A-Z0-9_]*"/>
-                <errorMessage>errorMessage</errorMessage>
+                <errorMessage>Invalid Code</errorMessage>
             </assertion>
         </node>
         <node name="name" path="/name" type="java.lang.String" minCardinality="1"/>
@@ -91,8 +90,6 @@
               minCardinality="0" maxLength="300"/>
         <node name="overdueMessage" displayName="Overdue Message" path="/details/overdueMessage" type="java.lang.String"
               minCardinality="0" maxLength="300"/>
-        <node name="showAlert" path="/details/showAlert" type="java.lang.Boolean" minCardinality="0"
-              defaultValue="'false'"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node displayName="Default" name="defaultLookup" path="/defaultLookup" type="java.lang.Boolean"
               defaultValue="'false'"/>

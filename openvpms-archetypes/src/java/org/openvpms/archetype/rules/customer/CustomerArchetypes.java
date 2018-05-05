@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.customer;
@@ -29,14 +29,6 @@ public class CustomerArchetypes {
      * Customer short name.
      */
     public static final String PERSON = "party.customerperson";
-
-    /**
-     * Organisation customer short name.
-     *
-     * @deprecated use {@link #PERSON} instead.
-     */
-    @Deprecated
-    public static final String ORGANISATION = PERSON;
 
     /**
      * 'Over the counter' short name.

@@ -1,0 +1,556 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Stock Movement Report" pageWidth="612" pageHeight="792" whenNoDataType="AllSectionsNoDetail" columnWidth="550" leftMargin="31" rightMargin="31" topMargin="19" bottomMargin="19" uuid="54b921c5-96c2-4c01-8feb-4b1b6eecbe92">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="net.sf.jasperreports.print.create.bookmarks" value="true"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
+	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<parameter name="stockLocation" class="java.lang.String">
+		<parameterDescription><![CDATA[Stock Location]]></parameterDescription>
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="productType" class="java.lang.String">
+		<parameterDescription><![CDATA[Product Type selection]]></parameterDescription>
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="IncMedication" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Include Medication]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new Boolean("true")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="IncMerchandise" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Include Merchandise]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new Boolean("true")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="productName" class="java.lang.String">
+		<parameterDescription><![CDATA[Product Name selection]]></parameterDescription>
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Explain" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Display explanation ?]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<parameter name="fromDate" class="java.util.Date">
+		<parameterDescription><![CDATA[Date from]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="fromTime" class="java.lang.Integer">
+		<parameterDescription><![CDATA[Time from (hhmm)]]></parameterDescription>
+		<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
+	</parameter>
+	<parameter name="toDate" class="java.util.Date">
+		<parameterDescription><![CDATA[Date to]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="toTime" class="java.lang.Integer">
+		<parameterDescription><![CDATA[Time to (hhmm)]]></parameterDescription>
+		<defaultValueExpression><![CDATA[0]]></defaultValueExpression>
+	</parameter>
+	<parameter name="fromDateTime" class="java.sql.Timestamp" isForPrompting="false">
+		<parameterDescription><![CDATA[]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new java.sql.Timestamp($P{fromDate}.getYear(),$P{fromDate}.getMonth(),$P{fromDate}.getDate(),$P{fromTime}/100,$P{fromTime}%100,0,0)]]></defaultValueExpression>
+	</parameter>
+	<parameter name="toDateTime" class="java.sql.Timestamp" isForPrompting="false">
+		<defaultValueExpression><![CDATA[new java.sql.Timestamp($P{toDate}.getYear(),$P{toDate}.getMonth(),$P{toDate}.getDate(),$P{toTime}/100,$P{toTime}%100,0,0)]]></defaultValueExpression>
+	</parameter>
+	<queryString language="SQL">
+		<![CDATA[select e.entity_id as pid, e.name as product, l.name as uom, sl.name as stockLocation,
+if(d2.value,d2.value,"0") as currentStock,
+p.activity_start_time as startTime, a.arch_short_name as archetype,
+ifnull(fa.quantity, cast(adq.value as decimal(18,3))) as qty,
+ifnull(cast(adp.value as unsigned integer), 1) as packageSize
+
+from participations p
+join entities e on e.entity_id = p.entity_id
+join products prod on prod.product_id = p.entity_id
+join acts a on a.act_id = p.act_id
+left join financial_acts fa on fa.financial_act_id = p.act_id
+left join act_details adq on adq.act_id = a.act_id and adq.name = 'quantity'
+left join act_details adp on adp.act_id = a.act_id and adp.name = 'packageSize'
+join act_relationships ar on ar.target_id = a.act_id
+join acts ap on ap.act_id = ar.source_id
+
+left join entity_links r on e.entity_id = r.source_id and r.arch_short_name = "entityLink.productType"
+left join entities pt on r.target_id = pt.entity_id
+left join entity_details d on d.entity_id = e.entity_id and d.name = "sellingUnits"
+left join lookups l on l.code = d.value and l.arch_short_name = "lookup.uom"
+left join entity_links s on s.source_id = e.entity_id and s.arch_short_name = "entityLink.productStockLocation"
+left join entity_link_details d2 on s.id = d2.id and d2.name = "quantity"
+left join entities sl on sl.entity_id = s.target_id
+
+where ar.parent_child_relationship = 1
+and ap.status = 'POSTED'
+and e.name like concat(ifnull($P{productName},""),"%")
+and e.active = 1
+and (p.activity_start_time >= date_add($P{fromDate}, INTERVAL ((60*FLOOR($P{fromTime}/100 ))+MOD( $P{fromTime} ,100)) MINUTE)
+     and p.activity_start_time <= date_add($P{toDate}, INTERVAL ((60*FLOOR($P{toTime}/100 ))+MOD( $P{toTime} ,100)) MINUTE))
+and ifnull(pt.name,'-') like concat(ifnull($P{productType},""),"%")
+and sl.name like concat(ifnull($P{stockLocation},""),"%")
+and ((e.arch_short_name = "product.medication" and $P{IncMedication}) or
+	(e.arch_short_name = "product.merchandise" and $P{IncMerchandise}))
+and a.arch_short_name not like "act.supplierOrd%"
+order by sl.name, e.name, p.activity_start_time;]]>
+	</queryString>
+	<field name="pid" class="java.lang.Long"/>
+	<field name="product" class="java.lang.String"/>
+	<field name="uom" class="java.lang.String"/>
+	<field name="stockLocation" class="java.lang.String"/>
+	<field name="currentStock" class="java.lang.String"/>
+	<field name="startTime" class="java.sql.Timestamp"/>
+	<field name="archetype" class="java.lang.String"/>
+	<field name="qty" class="java.math.BigDecimal"/>
+	<field name="packageSize" class="java.math.BigDecimal"/>
+	<group name="StockLocation" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{stockLocation}]]></groupExpression>
+		<groupHeader>
+			<band height="14" splitType="Stretch">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement key="textField" x="0" y="0" width="166" height="13" uuid="5e68764f-4e8e-41ed-843b-0ae365617f95"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{stockLocation}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band splitType="Stretch"/>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="106">
+			<staticText>
+				<reportElement key="staticText-1" x="123" y="0" width="299" height="23" uuid="2c0322ad-5dc3-45ec-8ddd-14945490fe63"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="16" isBold="true" isUnderline="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Stock Movement Report]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy h.mm a">
+				<reportElement x="447" y="0" width="103" height="10" uuid="5fb72ed7-d95e-4777-b6b4-58215fa1540e"/>
+				<textElement textAlignment="Right">
+					<font size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-1" x="440" y="34" width="60" height="16" uuid="ec38c5bf-583e-4843-8614-9243761b481e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField-2" x="504" y="34" width="43" height="16" uuid="acb67cfa-8401-4983-a942-77412799798a"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-35" x="0" y="50" width="110" height="16" uuid="9985117c-e66a-4513-aa0f-83ebdc72561e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Product Name:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-36" x="0" y="67" width="110" height="16" uuid="e194cb09-675f-42f9-ae77-82308bdac94c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Product Type:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="112" y="50" width="103" height="16" uuid="b29f0533-5045-4757-8da4-f48db5124c4c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($P{productName}==null)?"%":$P{productName}+"%"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-9" x="112" y="67" width="103" height="16" uuid="066b516e-8ee6-4cc8-8f82-8c261fe9b99a"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($P{productType}==null)?"%":$P{productType}+"%"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-41" x="0" y="34" width="110" height="16" uuid="eb87a11f-d936-4e9f-befd-6bd0afd25ded"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Stock Location:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-10" x="112" y="34" width="103" height="16" uuid="ee914511-dfba-488f-90a3-56c1fc77d20e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($P{stockLocation}==null)?"%":$P{stockLocation}+"%"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-10" x="218" y="67" width="69" height="16" uuid="9c1d5e07-26ca-4af5-ad1f-0c3613614a1a"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Includes:]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField" x="287" y="67" width="216" height="16" uuid="79a6c831-b3a2-414e-ba8d-1e378eda5209"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" "+($P{IncMerchandise}.booleanValue()?" Merchandise":"")+($P{IncMedication}.booleanValue()?" Medication":"")]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy HH:mm:ss" isBlankWhenNull="false">
+				<reportElement key="textField-9" x="112" y="84" width="103" height="16" uuid="e4279d5f-e273-4e0d-942b-cb5463155347"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{fromDate})
++ " "+($P{fromTime}/100) +":" + ($P{fromTime}%100)]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-36" x="0" y="84" width="110" height="16" uuid="a4e32803-b129-4bb1-a679-c66bee93ddd7"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Movements From:]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy HH:mm:ss" isBlankWhenNull="false">
+				<reportElement key="textField-9" x="245" y="84" width="126" height="16" uuid="af720f0c-0c82-4004-ad4d-32eeeb6a8ba4"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{toDate})
++ " "+($P{toTime}/100) +":" + ($P{toTime}%100)]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-36" x="219" y="84" width="24" height="16" uuid="a48f40b3-b5b7-439a-9137-90af154786c8"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[To:]]></text>
+			</staticText>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="20" splitType="Stretch">
+			<staticText>
+				<reportElement key="staticText-11" x="115" y="0" width="44" height="16" uuid="ac50c16b-908f-43d4-a8cd-bc7ae9ac9ed8"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Prod ID]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-14" x="432" y="0" width="57" height="16" uuid="ef9a9752-16bb-4e71-9466-8b094b83af3e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Quantity]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-27" x="381" y="0" width="51" height="16" uuid="b6376d07-d4b6-48b8-bed4-813988ff4638"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Units]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-31" x="166" y="0" width="215" height="16" uuid="ef86afc4-c91c-41d0-9d28-292ca18a1576"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Name]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-34" x="494" y="0" width="53" height="16" uuid="5ce904d3-a524-4484-bcb2-0fe2b8272808"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Action]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-11" x="0" y="0" width="69" height="16" uuid="65cc2f56-9fe7-4ecf-b88e-a24d87c9f095"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[StockLocn]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-1" x="0" y="16" width="550" height="1" uuid="1319ed07-3192-4559-a0f6-7c7c3314a817"/>
+			</line>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15" splitType="Stretch">
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField" x="381" y="0" width="61" height="13" uuid="77e5b9e1-9b9f-49db-8d5a-bce0a55e2e9e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{uom}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0.##;-###0.##" isBlankWhenNull="true">
+				<reportElement key="textField-8" x="442" y="0" width="47" height="13" uuid="4c9a7cfc-00f5-4bc3-bbe1-a134e5149401"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qty}.multiply($F{packageSize})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField" x="115" y="0" width="43" height="13" uuid="08ab17db-463d-4942-b899-d05690c061db"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{pid}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField" x="166" y="0" width="215" height="13" uuid="d811523c-1e83-47f6-86e9-a7077f0f51c3"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{product}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/YY HH:mm" isBlankWhenNull="false">
+				<reportElement key="textField" x="6" y="0" width="97" height="13" uuid="387b0ef2-a6dd-4bbf-be1d-50ab2b01c602"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{startTime})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField" x="494" y="0" width="56" height="13" uuid="33e57395-120b-41aa-a1a1-81ace2ea66c8"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{archetype}.indexOf("customer")>0?"Sale":$F{archetype}.indexOf("supplier")>0?"Delivery":$F{archetype}.indexOf("stockAdjust")>0?"Stk Adjust":$F{archetype}.indexOf("stockTrans")>0?"Stk Trans":$F{archetype}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="161" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="25" width="550" height="136" isRemoveLineWhenBlank="true" uuid="d7c117e9-5f96-45ec-bdf3-86a7fd12a719">
+					<printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[This report is used to to display stock movements during a specified period.  It is primarily designed to reveal any movements between the time the Export Stocktake Report is generated and when the stock is counted. However, it can be used to examine stock movements at any time.
+All the selection fields entered have % added so that leaving them blank will find all, and entering say product %vacc will find all products contain 'vacc' in their product name, and product type e will include all types starting E.  The selection is case insensitive.
+For Product Type selection, omitting the selection will include products with no product type and using the selection '-' will find only those with no product type.
+The Action column will be 'Sale' if the stock movement occurred as a result of a customer sale (if it was a credit then the quantity will be negative), 'Stock Adj' for a stock adjustment, 'Stock Trans' for a stock transfer, and 'Deliver' for a delivery.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="76" y="4" width="398" height="19" isRemoveLineWhenBlank="true" uuid="51e65e0c-1b87-4a9d-b65b-1afd8c1ea675">
+					<printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font size="13" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[No stock movements found with specified parameters]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

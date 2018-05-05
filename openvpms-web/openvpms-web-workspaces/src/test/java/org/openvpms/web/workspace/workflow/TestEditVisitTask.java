@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow;
@@ -21,11 +21,13 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextSwitchListener;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.workspace.customer.charge.ChargeEditorQueue;
+import org.openvpms.web.workspace.customer.charge.DefaultEditorQueue;
+import org.openvpms.web.workspace.customer.charge.EditorQueue;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
 import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
@@ -45,14 +47,14 @@ public class TestEditVisitTask extends EditVisitTask implements EditorQueueHandl
     /**
      * The popup dialog manager.
      */
-    private ChargeEditorQueue queue = new ChargeEditorQueue();
+    private EditorQueue queue = new DefaultEditorQueue(new LocalContext());
 
     /**
      * Returns the popup dialog manager.
      *
      * @return the popup dialog manager
      */
-    public ChargeEditorQueue getEditorQueue() {
+    public EditorQueue getQueue() {
         return queue;
     }
 
@@ -82,7 +84,7 @@ public class TestEditVisitTask extends EditVisitTask implements EditorQueueHandl
                     @Override
                     protected VisitChargeEditor createVisitChargeEditor(FinancialAct charge, Act event,
                                                                         LayoutContext context) {
-                        return new TestVisitChargeEditor(TestEditVisitTask.this, charge, event, context);
+                        return new TestVisitChargeEditor(TestEditVisitTask.this.queue, charge, event, context);
                     }
                 };
             }

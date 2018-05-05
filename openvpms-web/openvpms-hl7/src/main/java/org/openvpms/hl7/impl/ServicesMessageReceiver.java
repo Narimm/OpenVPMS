@@ -101,7 +101,7 @@ public abstract class ServicesMessageReceiver implements DisposableBean {
         listener = new Services.Listener() {
             @Override
             public void added(Entity service) {
-                listen(service);
+                listen(service, true);
             }
 
             @Override
@@ -149,10 +149,11 @@ public abstract class ServicesMessageReceiver implements DisposableBean {
     protected void listen() {
         // NOTE: methods may be called before construction is complete
         for (Entity service : services.getServices()) {
-            listen(service);
+            listen(service, false);
         }
 
         services.addListener(listener);
+        dispatcher.start();
     }
 
     /**
@@ -215,8 +216,9 @@ public abstract class ServicesMessageReceiver implements DisposableBean {
      * If the service is already being listened via a different connector, the existing connection will be terminated.
      *
      * @param service the service
+     * @param start   if {@code true}, start the dispatcher
      */
-    private void listen(Entity service) {
+    private void listen(Entity service, boolean start) {
         Connector current = listening.get(service.getId());
         EntityBean bean = new EntityBean(service, this.service);
         Connector connector = getConnector(bean);
@@ -234,6 +236,9 @@ public abstract class ServicesMessageReceiver implements DisposableBean {
             if (listen) {
                 try {
                     dispatcher.listen(connector, new Receiver(service), user);
+                    if (start) {
+                        dispatcher.start();
+                    }
                     listening.put(service.getId(), connector);
                 } catch (Throwable exception) {
                     log.warn("Failed to start listening to connections from service, name="

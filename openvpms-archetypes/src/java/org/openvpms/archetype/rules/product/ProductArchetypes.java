@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -55,6 +55,11 @@ public class ProductArchetypes {
     public static final String PRODUCT_PARTICIPATION = "participation.product";
 
     /**
+     * Medication participation short name.
+     */
+    public static final String MEDICATION_PARTICIPATION = "participation.medication";
+
+    /**
      * Product unit price short name.
      */
     public static final String UNIT_PRICE = "productPrice.unitPrice";
@@ -70,10 +75,9 @@ public class ProductArchetypes {
     public static final String PRICING_GROUP = "lookup.pricingGroup";
 
     /**
-     * Product-supplier entity relationship short name.
+     * Product-supplier relationship short name.
      */
-    public static final String PRODUCT_SUPPLIER_RELATIONSHIP
-            = "entityRelationship.productSupplier";
+    public static final String PRODUCT_SUPPLIER_RELATIONSHIP = "entityLink.productSupplier";
 
     /**
      * Product link entity relationship short name.
@@ -100,4 +104,9 @@ public class ProductArchetypes {
      * Product dose short name.
      */
     public static final String DOSE = "entity.productDose";
+
+    /**
+     * The drug schedule.
+     */
+    public static final String DRUG_SCHEDULE = "lookup.productDrugSchedule";
 }

@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -55,6 +56,10 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
      */
     private IMObjectCreationListener creationListener;
 
+    /**
+     * The handler to confirm removal of objects.
+     */
+    private RemoveConfirmationHandler removeConfirmationHandler;
 
     /**
      * Constructs an {@link AbstractEditableIMObjectCollectionEditor}.
@@ -137,6 +142,26 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
     }
 
     /**
+     * Registers a handler to confirm removal of objects.
+     *
+     * @param handler the handler
+     */
+    @Override
+    public void setRemoveConfirmationHandler(RemoveConfirmationHandler handler) {
+        this.removeConfirmationHandler = handler;
+    }
+
+    /**
+     * Returns the handler to confirm removal of objects.
+     *
+     * @return the handler. May be {@code null}
+     */
+    @Override
+    public RemoveConfirmationHandler getRemoveConfirmationHandler() {
+        return removeConfirmationHandler;
+    }
+
+    /**
      * Determines if the object has been modified.
      *
      * @return {@code true} if the object has been modified
@@ -215,7 +240,7 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
 
     /**
      * Returns all current editors.
-     * <p/>
+     * <p>
      * These include any editors that have been created for objects in the
      * collection, and the {@link #getCurrentEditor() current editor}, which
      * may be for an uncommitted object.
@@ -224,7 +249,7 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
      */
     @Override
     public Collection<IMObjectEditor> getEditors() {
-        Set<IMObjectEditor> editors = new HashSet<IMObjectEditor>();
+        Set<IMObjectEditor> editors = new HashSet<>();
         editors.addAll(getCollectionPropertyEditor().getEditors());
         if (getCurrentEditor() != null) {
             editors.add(getCurrentEditor());
@@ -234,14 +259,14 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
 
     /**
      * Returns the objects in the collection.
-     * <p/>
+     * <p>
      * This includes the object of the current editor, which may be uncommitted.
      *
      * @return the objects
      */
     @Override
     public Collection<IMObject> getCurrentObjects() {
-        Set<IMObject> result = new LinkedHashSet<IMObject>(getCollectionPropertyEditor().getObjects());
+        Set<IMObject> result = new LinkedHashSet<>(getCollectionPropertyEditor().getObjects());
         if (editor != null) {
             result.add(editor.getObject());
         }
@@ -249,8 +274,35 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
     }
 
     /**
+     * Returns an editor for the first object in the collection.
+     *
+     * @param create@return the first object editor, or {@code null} if one wasn't found or {@code create} was {@code false} or an
+     *                      editor could not be created
+     */
+    @Override
+    public IMObjectEditor getFirstEditor(boolean create) {
+        IMObject object = null;
+        IMObjectEditor editor = getCurrentEditor();
+        if (editor == null) {
+            Collection<IMObject> objects = getCurrentObjects();
+            if (!objects.isEmpty()) {
+                object = objects.iterator().next();
+            } else if (create) {
+                object = create();
+                if (object != null) {
+                    add(object);
+                }
+            }
+            if (object != null) {
+                editor = getEditor(object);
+            }
+        }
+        return editor;
+    }
+
+    /**
      * Validates the object.
-     * <p/>
+     * <p>
      * This validates the current object being edited, and if valid, the collection.
      *
      * @param validator the validator
@@ -279,7 +331,7 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
 
     /**
      * Removes the current editor.
-     * <p/>
+     * <p>
      * This implementation simply invokes {@code setCurrentEditor(null)}.
      */
     protected void removeCurrentEditor() {
@@ -334,7 +386,7 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
      */
     protected boolean addEdited(IMObjectEditor editor) {
         IMObject object = editor.getObject();
-        boolean added = getCollectionPropertyEditor().add(object);
+        boolean added = add(object);
         addEditor(object, editor);
         return added;
     }
@@ -342,14 +394,14 @@ public abstract class AbstractEditableIMObjectCollectionEditor extends AbstractI
     /**
      * Saves any current edits.
      *
-     * @return {@code true} if edits were saved successfully, otherwise {@code false}
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
+    protected void doSave() {
         if (editor != null) {
             addEdited(editor);
         }
-        return super.doSave();
+        super.doSave();
     }
 
 }

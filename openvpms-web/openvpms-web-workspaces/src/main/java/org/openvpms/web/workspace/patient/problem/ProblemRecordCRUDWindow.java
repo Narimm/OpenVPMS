@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.problem;
@@ -23,21 +23,25 @@ import nextapp.echo2.app.button.ButtonGroup;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.object.Relationship;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.retry.Retryer;
@@ -51,11 +55,15 @@ import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.servlet.DownloadServlet;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.PatientMedicalRecordLinker;
 import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryCRUDWindow;
+import org.openvpms.web.workspace.patient.history.PatientHistoryActions;
+import org.openvpms.web.workspace.patient.history.TextSearch;
 
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.join;
@@ -88,7 +96,8 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      */
     public ProblemRecordCRUDWindow(Context context, HelpContext help) {
         super(Archetypes.create(PatientArchetypes.CLINICAL_PROBLEM, Act.class,
-                                Messages.get("patient.record.createtype")), ProblemActions.INSTANCE, context, help);
+                                Messages.get("patient.record.createtype")),
+              ProblemActions.INSTANCE, context, help);
     }
 
     /**
@@ -138,6 +147,16 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     }
 
     /**
+     * Determines the actions that may be performed on the selected object.
+     *
+     * @return the actions
+     */
+    @Override
+    protected ProblemActions getActions() {
+        return (ProblemActions) super.getActions();
+    }
+
+    /**
      * Invoked when the 'print' button is pressed.
      * This implementation prints the current summary list, rather than
      * the selected item.
@@ -147,16 +166,29 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         if (query != null) {
             try {
                 Context context = getContext();
-                ProblemFilter filter = new ProblemFilter(query.getActItemShortNames(), query.isSortAscending());
-                Iterable<Act> summary = new ProblemHierarchyIterator(query, filter);
-                DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_PROBLEM,
-                                                                                     context);
-                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(summary, locator, context);
+                IMObjectReportPrinter<Act> printer = createPrinter(context);
                 String title = Messages.get("patient.record.problem.print");
                 HelpContext help = getHelpContext().topic(PatientArchetypes.CLINICAL_PROBLEM + "/print");
-                InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, context, help);
+                InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<>(title, printer, context, help);
                 iPrinter.setMailContext(getMailContext());
                 iPrinter.print();
+            } catch (OpenVPMSException exception) {
+                ErrorHelper.show(exception);
+            }
+        }
+    }
+
+    /**
+     * Invoked to preview the problem history.
+     */
+    @Override
+    protected void onPreview() {
+        if (query != null) {
+            try {
+                Context context = getContext();
+                IMObjectReportPrinter<Act> printer = createPrinter(context);
+                Document document = printer.getDocument();
+                DownloadServlet.startDownload(document);
             } catch (OpenVPMSException exception) {
                 ErrorHelper.show(exception);
             }
@@ -172,6 +204,7 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
         buttons.add(createPrintButton());
+        buttons.add(createExternalEditButton());
     }
 
     /**
@@ -183,7 +216,7 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
-        buttons.setEnabled(PRINT_ID, enable);
+        enablePrintPreview(buttons, enable);
     }
 
     /**
@@ -194,11 +227,20 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     @Override
     protected void onCreate(Archetypes<Act> archetypes) {
         if (problem != null) {
+            boolean includeAddendum = false;
+            String defaultShortName = PatientArchetypes.CLINICAL_NOTE;
+            Act selected = getObject();
+            if (TypeHelper.isA(selected, PatientArchetypes.CLINICAL_NOTE, PatientArchetypes.PATIENT_MEDICATION)) {
+                includeAddendum = true;
+                if (getActions().isLocked(selected)) {
+                    defaultShortName = PatientArchetypes.CLINICAL_ADDENDUM;
+                }
+            }
             // problem is selected, so display all of the possible event item archetypes
             String[] shortNames = getShortNames(PatientArchetypes.CLINICAL_PROBLEM_ITEM,
-                                                PatientArchetypes.CLINICAL_PROBLEM);
-            archetypes = new Archetypes<Act>(shortNames, archetypes.getType(), PatientArchetypes.CLINICAL_NOTE,
-                                             archetypes.getDisplayName());
+                                                includeAddendum, PatientArchetypes.CLINICAL_PROBLEM);
+            archetypes = new Archetypes<>(shortNames, archetypes.getType(), defaultShortName,
+                                          archetypes.getDisplayName());
         }
         super.onCreate(archetypes);
     }
@@ -266,7 +308,17 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
                 act = null;
             }
             Act event = getEvent();
-            PatientMedicalRecordLinker linker = createMedicalRecordLinker(event, problem, act);
+            PatientMedicalRecordLinker linker;
+            Act selected = getObject();
+            if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_ADDENDUM)) {
+                if (!TypeHelper.isA(selected, PatientArchetypes.CLINICAL_ADDENDUM)) {
+                    linker = createMedicalRecordLinker(event, problem, selected, act);
+                } else {
+                    linker = createMedicalRecordLinker(event, problem, null, act);
+                }
+            } else {
+                linker = createMedicalRecordLinker(event, problem, act, null);
+            }
             Retryer.run(linker);
         }
         super.onSaved(act, isNew);
@@ -286,6 +338,29 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     }
 
     /**
+     * Creates a printer to print/preview problems.
+     *
+     * @param context the context
+     * @return a new printer
+     */
+    private IMObjectReportPrinter<Act> createPrinter(Context context) {
+        TextSearch search = null;
+        String value = query.getValue();
+        if (!StringUtils.isEmpty(value)) {
+            Preferences preferences = ServiceHelper.getPreferences();
+            boolean showClinician = preferences.getBoolean(PreferenceArchetypes.HISTORY, "showClinician", false);
+            boolean showBatches = preferences.getBoolean(PreferenceArchetypes.HISTORY, "showBatches", false);
+            search = new TextSearch(value, showClinician, showBatches, ServiceHelper.getArchetypeService());
+        }
+        ProblemFilter filter = new ProblemFilter(query.getSelectedItemShortNames(), search, query.isSortAscending());
+        Iterable<Act> summary = new ProblemHierarchyIterator(query, filter);
+        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_PROBLEM,
+                                                                             context);
+        ReporterFactory factory = ServiceHelper.getBean(ReporterFactory.class);
+        return new IMObjectReportPrinter<>(summary, locator, context, factory);
+    }
+
+    /**
      * Returns the latest event for a patient.
      *
      * @param patient the patient
@@ -296,7 +371,7 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         query.add(join("patient").add(eq("entity", patient)));
         query.add(Constraints.sort("startTime", false));
         query.setMaxResults(1);
-        IMObjectQueryIterator<Act> iterator = new IMObjectQueryIterator<Act>(query);
+        IMObjectQueryIterator<Act> iterator = new IMObjectQueryIterator<>(query);
         return (iterator.hasNext()) ? iterator.next() : null;
     }
 
@@ -322,15 +397,16 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      * @return the source, or {@code null} if none exists
      */
     private Act getSource(Act act, String shortName) {
-        for (ActRelationship relationship : act.getTargetActRelationships()) {
-            if (TypeHelper.isA(relationship.getSource(), shortName)) {
-                return (Act) IMObjectHelper.getObject(relationship.getSource(), getContext());
+        for (Relationship relationship : act.getTargetActRelationships()) {
+            Reference source = relationship.getSource();
+            if (source.isA(shortName)) {
+                return (Act) IMObjectHelper.getObject(source, getContext());
             }
         }
         return null;
     }
 
-    private static class ProblemActions extends ActActions<Act> {
+    private static class ProblemActions extends PatientHistoryActions {
 
         public static final ProblemActions INSTANCE = new ProblemActions();
 
@@ -342,8 +418,7 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
          */
         @Override
         public boolean canDelete(Act act) {
-            return !TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT) && super.canDelete(act)
-                   && act.getSourceActRelationships().isEmpty();
+            return !TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT) && super.canDelete(act);
         }
     }
 

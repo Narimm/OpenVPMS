@@ -11,15 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.service.archetype.functor.ActComparator;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Filters the children of an act.
@@ -35,7 +39,7 @@ public abstract class ActFilter<T extends Act> {
      * @return the immediate children of the root, or an empty list if they have been filtered
      */
     public List<T> filter(T root) {
-        return filter(root, root);
+        return filter(root, root, new HashMap<IMObjectReference, T>());
     }
 
     /**
@@ -43,9 +47,10 @@ public abstract class ActFilter<T extends Act> {
      *
      * @param act  the act
      * @param root the root of the tree
+     * @param acts the set of visited acts, keyed on reference
      * @return the immediate children of the act, or an empty list if they have been filtered
      */
-    public abstract List<T> filter(T act, T root);
+    public abstract List<T> filter(T act, T root, Map<IMObjectReference, T> acts);
 
     /**
      * Returns a comparator to sort the children of an act.
@@ -62,7 +67,7 @@ public abstract class ActFilter<T extends Act> {
      * @return the comparator
      */
     protected Comparator<T> getComparator(boolean ascending) {
-        return ascending ? ActHelper.<T>ascending() : ActHelper.<T>descending();
+        return ascending ? ActComparator.<T>ascending() : ActComparator.<T>descending();
     }
 
 }

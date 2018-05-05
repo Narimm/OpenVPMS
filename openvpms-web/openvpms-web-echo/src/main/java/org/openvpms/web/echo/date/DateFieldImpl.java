@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.date;
@@ -22,6 +22,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.webrender.Connection;
 import nextapp.echo2.webrender.WebRenderServlet;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.function.date.RelativeDateParser;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 

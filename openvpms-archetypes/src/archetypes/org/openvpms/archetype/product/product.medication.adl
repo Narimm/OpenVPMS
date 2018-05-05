@@ -11,31 +11,22 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
     <archetype name="product.medication.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.product.Product" displayName="Medication">
         <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
-        <node name="name" path="/name" type="java.lang.String" minCardinality="1">
+        <node name="name" path="/name" type="java.lang.String" minCardinality="1" maxLength="100">
             <assertion name="propercase"/>
         </node>
-        <node name="description" type="java.lang.String" path="/description" hidden="true" derived="true"
-              derivedValue="/name"/>
+        <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
         <node name="printedName" path="/details/printedName" type="java.lang.String" minCardinality="0"/>
         <node name="drugSchedule" path="/details/drugSchedule" type="java.lang.String" minCardinality="0">
-            <assertion name="lookup.local">
-                <propertyList name="entries">
-                    <property name="S1" value="S1"/>
-                    <property name="S2" value="S2"/>
-                    <property name="S3" value="S3"/>
-                    <property name="S4" value="S4"/>
-                    <property name="S5" value="S5"/>
-                    <property name="S6" value="S6"/>
-                    <property name="S7" value="S7"/>
-                    <property name="S8" value="S8"/>
-                </propertyList>
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.productDrugSchedule"/>
             </assertion>
         </node>
         <node name="activeIngredients" path="/details/activeIngredients" type="java.lang.String"
@@ -43,6 +34,13 @@
         <node name="concentration" path="/details/concentration" type="java.math.BigDecimal" minCardinality="0">
             <assertion name="positive">
                 <errorMessage>Value must be > 0.0</errorMessage>
+            </assertion>
+        </node>
+        <node name="concentrationUnits" path="/details/concentrationUnits"
+              type="java.lang.String" minCardinality="0">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.uom"/>
             </assertion>
         </node>
         <node name="sellingUnits" displayName="Selling Units" path="/details/sellingUnits" type="java.lang.String"
@@ -74,11 +72,23 @@
               defaultValue="true()"/>
         <node name="dispInstructions" displayName="Label Instructions" type="java.lang.String"
               path="/details/dispInstructions" minCardinality="0" maxLength="300"/>
-        <node name="type" path="/targetEntityRelationships" type="java.util.HashSet" baseName="EntityRelationship"
-              minCardinality="0" maxCardinality="1" filter="entityRelationship.productTypeProduct"/>
+        <node name="type" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="0" maxCardinality="1" filter="entityLink.productType"/>
         <node name="pharmacy" displayName="Pharmacy" path="/entityLinks"
               type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="1"
               filter="entityLink.productPharmacy"/>
+        <node name="templateOnly" displayName="Use only in Templates" path="/details/templateOnly"
+              type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="patientIdentity" type="java.lang.String" path="/details/patientIdentity" minCardinality="0"
+              maxCardinality="1">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="entityIdentity.microchip" value="Microchip"/>
+                    <property name="entityIdentity.petTag" value="Pet Tag"/>
+                    <property name="entityIdentity.rabiesTag" value="Rabies Tag"/>
+                </propertyList>
+            </assertion>
+        </node>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="usageNotes" displayName="Dispensing Notes" type="java.lang.String" path="/details/usageNotes"
               minCardinality="0" maxLength="3000"/>
@@ -110,12 +120,16 @@
                 <errorMessage>Duplicate active product investigation type relationship</errorMessage>
             </assertion>
         </node>
-        <node name="suppliers" path="/entityRelationships"
-              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.productSupplier"/>
-        <node name="stockLocations" path="/sourceEntityRelationships"
-              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.productStockLocation">
+        <node name="suppliers" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="*"
+              filter="entityLink.productSupplier"/>
+        <node name="locations" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink" minCardinality="0"
+              maxCardinality="0" filter="entityLink.productLocation" hidden="true">
+            <!-- dummy node for querying purposes -->
+        </node>
+        <node name="stockLocations" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="*"
+              filter="entityLink.productStockLocation">
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active stock location relationship</errorMessage>
             </assertion>
@@ -127,6 +141,12 @@
                 <errorMessage>Duplicate active product reminder relationship</errorMessage>
             </assertion>
         </node>
+        <node name="alerts" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink" minCardinality="0"
+              maxCardinality="*" filter="entityLink.productAlert">
+            <assertion name="uniqueEntityRelationship">
+                <errorMessage>Duplicate active product alert relationship</errorMessage>
+            </assertion>
+        </node>
         <node name="documents" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.productDocument">
@@ -134,9 +154,8 @@
                 <errorMessage>Duplicate active product document relationship</errorMessage>
             </assertion>
         </node>
-        <node name="discounts" path="/entityRelationships"
-              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.discountProduct">
+        <node name="discounts" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="0" maxCardinality="*" filter="entityLink.productDiscount">
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active product discount relationship</errorMessage>
             </assertion>

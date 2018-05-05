@@ -1,34 +1,31 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.archetype.rules.patient.reminder.Reminders;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.processor.ProgressBarProcessor;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -36,8 +33,18 @@ import java.util.Map;
  *
  * @author Tim Anderson
  */
-abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<ReminderEvent>>
+abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminders>
         implements ReminderBatchProcessor {
+
+    /**
+     * The reminder item source.
+     */
+    private final ReminderItemSource items;
+
+    /**
+     * The processor to use.
+     */
+    private final PatientReminderProcessor processor;
 
     /**
      * The reminder rules.
@@ -45,130 +52,231 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
     private final ReminderRules rules;
 
     /**
-     * Determines if reminders should be updated on completion.
+     * Determines if the iterator has been initialised.
      */
-    private boolean update = true;
+    private boolean initialised = false;
+
+    /**
+     * Determines if reminders are being reprocessed.
+     */
+    private boolean resend = false;
 
     /**
      * The statistics.
      */
-    private final Statistics statistics;
+    private Statistics statistics;
 
     /**
-     * The set of completed reminder ids, used to avoid updating reminders that are being reprocessed.
+     * The current reminders being processed.
      */
-    private Map<Act, State> states = new HashMap<Act, State>();
+    private Reminders currentReminders;
+
+    /**
+     * Determines if the current reminders are in error.
+     */
+    private boolean currentError = false;
+
+    /**
+     * The current reminder state.
+     */
+    private PatientReminders currentState;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(ReminderProgressBarProcessor.class);
 
 
     /**
      * Constructs a {@link ReminderProgressBarProcessor}.
      *
-     * @param items      the reminder items
-     * @param statistics the statistics
-     * @param title      the progress bar title for display purposes
+     * @param items     the reminder item source
+     * @param processor the processor
+     * @param title     the progress bar title for display purposes
      */
-    public ReminderProgressBarProcessor(List<List<ReminderEvent>> items, Statistics statistics, String title) {
-        super(items, count(items), title);
-        this.statistics = statistics;
+    public ReminderProgressBarProcessor(ReminderItemSource items, PatientReminderProcessor processor, String title) {
+        super(title);
+        String[] shortNames = items.getArchetypes();
+        if (shortNames.length != 1 || !TypeHelper.matches(shortNames[0], processor.getArchetype())) {
+            throw new IllegalStateException("This may only query " + processor.getArchetype());
+        }
+
+        this.items = items;
+        this.processor = processor;
         rules = ServiceHelper.getBean(ReminderRules.class);
     }
 
     /**
-     * Determines if reminders should be updated on completion.
-     * <p/>
-     * If set, the {@code reminderCount} is incremented the {@code lastSent} timestamp set on completed reminders.
+     * Returns the reminder item archetype that this processes.
      *
-     * @param update if {@code true} update reminders on completion
+     * @return the reminder item archetype
      */
-    public void setUpdateOnCompletion(boolean update) {
-        this.update = update;
+    @Override
+    public String getArchetype() {
+        return processor.getArchetype();
     }
 
     /**
-     * Processes a set of reminder events.
+     * Indicates if reminders are being resent.
+     * <p>
+     * If set:
+     * <ul>
+     * <li>due dates are ignored</li>
+     * <li>the reminder last sent date is not updated</li>
+     * </ul>
+     * <p>
+     * Defaults to {@code false}.
      *
-     * @param events the events to process
+     * @param resend if {@code true} reminders are being resent
+     */
+    public void setResend(boolean resend) {
+        this.resend = resend;
+    }
+
+    /**
+     * Registers the statistics.
+     *
+     * @param statistics the statistics
+     */
+    @Override
+    public void setStatistics(Statistics statistics) {
+        this.statistics = statistics;
+    }
+
+    /**
+     * Determines if there are more reminders available on completion of processing.
+     *
+     * @return {@code true} if there are more reminders available
+     */
+    @Override
+    public boolean hasMoreReminders() {
+        return getIterator().hasNext();
+    }
+
+    /**
+     * Processes the batch.
+     */
+    @Override
+    public void process() {
+        if (!initialised) {
+            int count = items.count();
+            setItems(items.query(), count);
+            initialised = true;
+        }
+        super.process();
+    }
+
+    /**
+     * Processes a set of reminders.
+     *
+     * @param reminders the reminders to process
      * @throws OpenVPMSException if the events cannot be processed
      */
-    protected void process(List<ReminderEvent> events) {
-        if (update) {
-            // need to cache the reminderCount and lastSent nodes to allow reprocessing with the original values
-            for (ReminderEvent event : events) {
-                Act reminder = event.getReminder();
-                State state = states.get(reminder);
-                if (state != null) {
-                    // reprocessing a reminder - reset the reminderCount and lastSent nodes
-                    if (state.isComplete()) {
-                        state.reset(reminder);
-                    }
+    @Override
+    protected void process(Reminders reminders) {
+        currentReminders = reminders;
+        currentState = null;
+        currentError = false;
+        try {
+            currentState = processor.prepare(reminders.getReminders(), reminders.getGroupBy(), new Date(), resend);
+            if (!currentState.getReminders().isEmpty()) {
+                process(currentState);
+                if (processor.isAsynchronous()) {
+                    // need to process these reminders asynchronously, so suspend
+                    setSuspend(true);
                 } else {
-                    state = new State(reminder);
-                    states.put(reminder, state);
+                    processCompleted();
+                }
+            } else {
+                processCompleted();
+            }
+        } catch (Throwable exception) {
+            processError(exception);
+        }
+    }
+
+    /**
+     * Processes reminders.
+     *
+     * @param reminders the reminders
+     */
+    protected void process(PatientReminders reminders) {
+        processor.process(reminders);
+    }
+
+    /**
+     * Returns the reminder processor.
+     *
+     * @return the reminder processor
+     */
+    protected PatientReminderProcessor getProcessor() {
+        return processor;
+    }
+
+    /**
+     * Invoked when processing a batch of reminders is completed.
+     */
+    protected void processCompleted() {
+        if (currentState != null) {
+            if (!currentError) {
+                // only complete the reminders if processError() hasn't been invoked on them
+                processor.complete(currentState);
+                if (statistics != null) {
+                    processor.addStatistics(currentState, statistics);
                 }
             }
+            super.processCompleted(currentReminders);
+        } else {
+            log.error("ReminderProgressBarProcess.processCompleted() invoked with no current reminders");
+        }
+    }
+
+    /**
+     * Invoked if an error occurs processing the batch.
+     * <p>
+     * This:
+     * <ul>
+     * <li>updates the error node of each reminder if they aren't being resent</li>
+     * <li>updates statistics</li>
+     * <li>notifies any listeners of the error</li>
+     * <li>delegates to the parent {@link #processCompleted(Object)} to continue processing if this is asynchronous</li>
+     * </ul>
+     *
+     * @param exception the cause
+     */
+    protected void processError(Throwable exception) {
+        if (currentState != null) {
+            currentError = true;
+            processor.failed(currentState, exception);
+            statistics.addErrors(currentState.getReminders().size());
+            statistics.addErrors(currentState.getErrors().size());
+            notifyError(exception);
+        } else {
+            log.error("ReminderProgressBarProcess.processError() invoked with no current reminders", exception);
         }
     }
 
     /**
      * Increments the count of processed reminders.
      *
-     * @param events the reminder events
+     * @param reminders the reminders
      */
     @Override
-    protected void incProcessed(List<ReminderEvent> events) {
-        super.incProcessed(events.size());
-    }
-
-    /**
-     * Invoked when processing of reminder events is complete.
-     * <p/>
-     * This updates the reminders and statistics.
-     *
-     * @param events the reminder events
-     */
-    @Override
-    protected void processCompleted(List<ReminderEvent> events) {
-        if (update) {
-            updateReminders(events);
-        }
-        updateStatistics(events);
-        super.processCompleted(events);
-    }
-
-    /**
-     * Invoked if an error occurs processing the batch.
-     * <p/>
-     * This:
-     * <ul>
-     * <li>updates the error node of each reminder if {@link #setUpdateOnCompletion(boolean)} is {@code true}</li>
-     * <li>updates statistics</li>
-     * <li>notifies any listeners of the error</li>
-     * <li>delegates to the parent {@link #processCompleted(Object)} to continue processing</li>
-     * </ul>
-     *
-     * @param exception the cause
-     * @param events    the events being processed
-     */
-    protected void processError(Throwable exception, List<ReminderEvent> events) {
-        for (ReminderEvent event : events) {
-            if (update) {
-                ReminderHelper.setError(event.getReminder(), exception);
-            }
-            statistics.incErrors();
-        }
-        notifyError(exception);
-        super.processCompleted(events);
+    protected void incProcessed(Reminders reminders) {
+        super.incProcessed(reminders.getReminders().size());
     }
 
     /**
      * Skips a set of reminders.
-     * <p/>
+     * <p>
      * This doesn't update the reminders and their statistics.
-     *
-     * @param events the reminder events
      */
-    protected void skip(List<ReminderEvent> events) {
-        super.processCompleted(events);
+    protected void skip() {
+        if (currentReminders != null) {
+            processCompleted(currentReminders);
+        } else {
+            log.error("ReminderProgressBarProcess.skip() invoked with no current reminders");
+        }
     }
 
     /**
@@ -180,83 +288,4 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<List<Re
         return rules;
     }
 
-    /**
-     * Updates each reminder that isn't cancelled.
-     * <p/>
-     * This sets the <em>lastSent</em> node to the current time, and increments the <em>reminderCount</em>.
-     *
-     * @param events the reminder event
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    private void updateReminders(List<ReminderEvent> events) {
-        Date date = new Date();
-        for (ReminderEvent event : events) {
-            Act reminder = event.getReminder();
-            if (!ActStatus.CANCELLED.equals(reminder.getStatus())) {
-                State state = states.get(reminder);
-                if (state != null && !state.isComplete()) {
-                    if (ReminderHelper.update(reminder, date)) {
-                        state.setCompleted(true);
-                    } else {
-                        statistics.incErrors();
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Updates statistics for a set of reminders.
-     *
-     * @param events the reminder events
-     */
-    private void updateStatistics(List<ReminderEvent> events) {
-        for (ReminderEvent event : events) {
-            statistics.increment(event);
-        }
-    }
-
-    /**
-     * Counts reminders.
-     *
-     * @param events the reminder events
-     * @return the reminder count
-     */
-    private static int count(List<List<ReminderEvent>> events) {
-        int result = 0;
-        for (List<ReminderEvent> list : events) {
-            result += list.size();
-        }
-        return result;
-    }
-
-    private static class State {
-
-        private boolean completed;
-
-        private int reminderCount;
-
-        private Date lastSent;
-
-        public State(Act reminder) {
-            IMObjectBean bean = new IMObjectBean(reminder);
-            reminderCount = bean.getInt("reminderCount");
-            lastSent = bean.getDate("lastSent");
-        }
-
-        public void setCompleted(boolean completed) {
-            this.completed = completed;
-        }
-
-        public boolean isComplete() {
-            return completed;
-        }
-
-        public void reset(Act reminder) {
-            IMObjectBean bean = new IMObjectBean(reminder);
-            bean.setValue("reminderCount", reminderCount);
-            bean.setValue("lastSent", lastSent);
-        }
-
-    }
 }

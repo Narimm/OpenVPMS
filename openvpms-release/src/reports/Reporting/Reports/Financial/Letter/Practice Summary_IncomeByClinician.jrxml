@@ -1,0 +1,952 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Practice Summary_IncomeByClinician" pageWidth="612" pageHeight="792" whenNoDataType="AllSectionsNoDetail" columnWidth="554" leftMargin="0" rightMargin="58" topMargin="0" bottomMargin="0" uuid="20115224-1f46-4eb2-b204-51977b35672c">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS.xml"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
+	<parameter name="DateFrom" class="java.util.Date"/>
+	<parameter name="DateTo" class="java.util.Date"/>
+	<parameter name="ShowTax" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Show Tax]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<parameter name="AmtsIncTax" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Show Amounts inc-tax]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<queryString language="SQL">
+		<![CDATA[select
+(
+select count(*) as customerCount
+from entities ep
+left join entity_details ed1 on ed1.entity_id = ep.entity_id and ed1.name = 'createdDate'
+where ep.arch_short_name = 'party.customerperson'
+and ep.active = 1
+and date(ed1.value) < $P{DateFrom}
+) as activeCustomersStart,
+(
+select count(*) as customersCount
+from entities ep
+left join entity_details ed1 on ed1.entity_id = ep.entity_id and ed1.name = 'createdDate'
+where ep.arch_short_name = 'party.customerperson'
+and ep.active = 1
+and date(ed1.value) < DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
+) as activeCustomersEnd,
+(
+select count(distinct(c.entity_id)) as count from entities c
+where c.active = 0
+and c.arch_short_name = 'party.customerPerson'
+) as inActiveCustomers,
+(
+select count(distinct pc.entity_id) as customerCount
+from acts a
+left join participations pc on pc.act_id = a.act_id and pc.arch_short_name = 'participation.customer'
+left join entities ec on ec.entity_id = pc.entity_id
+left join participations pl on pl.act_id = a.act_id and pl.arch_short_name = 'participation.location'
+left join entities el on el.entity_id = pl.entity_id
+where a.arch_short_name like 'act.customerAccountCharges%'
+and a.activity_start_time between $P{DateFrom} and DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
+and a.status = 'POSTED'
+) as totalCustomerCount,
+(
+select count(distinct pc.entity_id) as customerCount
+from acts a
+left join participations pc on pc.act_id = a.act_id and pc.arch_short_name = 'participation.customer'
+left join entities ec on ec.entity_id = pc.entity_id
+left join participations pp on pp.entity_id = ec.entity_id
+    and pp.arch_short_name = 'participation.customer'
+    and pp.act_arch_short_name = 'act.customerAccountChargesInvoice'
+    and pp.activity_start_time < $P{DateFrom}
+where a.arch_short_name like 'act.customerAccountCharges%'
+and a.activity_start_time between $P{DateFrom} and DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
+and pp.entity_id is null
+and a.status = 'POSTED'
+) as totalNewCustomerCount,
+
+count(distinct pc.entity_id) as customerCount, count(*) as lineItemCount,
+sum(if(f.credit,-(f.total - f.tax_amount),(f.total - f.tax_amount)))as lineItemTotalEx,
+sum(if(f.credit,-(f.total),(f.total)))as lineItemTotalInc,
+sum(if(f.credit,-(f.tax_amount),(f.tax_amount)))as lineItemTotalTax,
+cast(sum(if(ai.arch_short_name = 'act.customerAccountCreditItem',1,0)) as signed) as creditItemCount,
+sum(if(ai.arch_short_name = 'act.customerAccountCreditItem',if(f.credit,-(f.total - f.tax_amount),(f.total - f.tax_amount)),0))as creditItemTotalEx,
+sum(if(ai.arch_short_name = 'act.customerAccountCreditItem',if(f.credit,-(f.total),(f.total)),0))as creditItemTotalInc,
+sum(if(ai.arch_short_name = 'act.customerAccountCreditItem',if(f.credit,-(f.tax_amount),(f.tax_amount)),0))as creditItemTotalTax,
+cast(sum(if((ai.arch_short_name = 'act.customerAccountCounterItem')
+	and (ec.arch_short_name = 'party.organisationOTC'),1,0)) as signed) as counterItemCount,
+sum(if((ai.arch_short_name = 'act.customerAccountCounterItem')
+	and (ec.arch_short_name = 'party.organisationOTC'),
+	if(f.credit,-(f.total - f.tax_amount),(f.total - f.tax_amount)),0))as counterItemTotalEx,
+sum(if((ai.arch_short_name = 'act.customerAccountCounterItem')
+	and (ec.arch_short_name = 'party.organisationOTC'),
+	if(f.credit,-(f.total),(f.total)),0))as counterItemTotalInc,
+sum(if((ai.arch_short_name = 'act.customerAccountCounterItem')
+	and (ec.arch_short_name = 'party.organisationOTC'),
+	if(f.credit,-(f.tax_amount),(f.tax_amount)),0))as counterItemTotalTax,
+cast(sum(if((ai.arch_short_name = 'act.customerAccountInvoiceItem') or
+	((ai.arch_short_name = 'act.customerAccountCounterItem') and (ec.name not like '%Counter Sales'))
+	,1,0)) as signed) as invoiceItemCount,
+sum(if((ai.arch_short_name = 'act.customerAccountInvoiceItem') or
+	((ai.arch_short_name = 'act.customerAccountCounterItem') and (ec.name not like '%Counter Sales'))
+	,if(f.credit,-(f.total - f.tax_amount),(f.total - f.tax_amount)),0))as invoiceItemTotalEx,
+sum(if((ai.arch_short_name = 'act.customerAccountInvoiceItem') or
+	((ai.arch_short_name = 'act.customerAccountCounterItem') and (ec.name not like '%Counter Sales'))
+	,if(f.credit,-(f.total),(f.total)),0))as invoiceItemTotalInc,
+sum(if((ai.arch_short_name = 'act.customerAccountInvoiceItem') or
+	((ai.arch_short_name = 'act.customerAccountCounterItem') and (ec.name not like '%Counter Sales'))
+	,if(f.credit,-(f.tax_amount),(f.tax_amount)),0))as invoiceItemTotalTax,
+       ev.entity_id as clinician_id
+from acts a
+left join participations pc on pc.act_id = a.act_id and pc.arch_short_name = 'participation.customer'
+left join entities ec on ec.entity_id = pc.entity_id
+left join participations pl on pl.act_id = a.act_id and pl.arch_short_name = 'participation.location'
+left join entities el on el.entity_id = pl.entity_id
+left join act_relationships ar on ar.source_id = a.act_id
+left join acts ai on ai.act_id = ar.target_id
+left join financial_acts f on ai.act_id = f.financial_act_id
+left join participations pv on pv.act_id = ai.act_id and pv.arch_short_name = 'participation.clinician'
+left join entities ev on ev.entity_id = pv.entity_id
+where a.arch_short_name like 'act.customerAccountCharges%'
+and ai.arch_short_name like 'act.customerAccount%Item'
+and f.total != 0
+and a.activity_start_time between $P{DateFrom} and DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
+and a.status = 'POSTED'
+group by pv.entity_id order by ev.name
+;]]>
+	</queryString>
+	<field name="activeCustomersStart" class="java.lang.Long"/>
+	<field name="activeCustomersEnd" class="java.lang.Long"/>
+	<field name="inActiveCustomers" class="java.lang.Long"/>
+	<field name="totalCustomerCount" class="java.lang.Long"/>
+	<field name="totalNewCustomerCount" class="java.lang.Long"/>
+	<field name="customerCount" class="java.lang.Long"/>
+	<field name="lineItemCount" class="java.lang.Long"/>
+	<field name="lineItemTotalEx" class="java.math.BigDecimal"/>
+	<field name="lineItemTotalInc" class="java.math.BigDecimal"/>
+	<field name="lineItemTotalTax" class="java.math.BigDecimal"/>
+	<field name="creditItemCount" class="java.lang.Long"/>
+	<field name="creditItemTotalEx" class="java.math.BigDecimal"/>
+	<field name="creditItemTotalInc" class="java.math.BigDecimal"/>
+	<field name="creditItemTotalTax" class="java.math.BigDecimal"/>
+	<field name="counterItemCount" class="java.lang.Long"/>
+	<field name="counterItemTotalEx" class="java.math.BigDecimal"/>
+	<field name="counterItemTotalInc" class="java.math.BigDecimal"/>
+	<field name="counterItemTotalTax" class="java.math.BigDecimal"/>
+	<field name="invoiceItemCount" class="java.lang.Long"/>
+	<field name="invoiceItemTotalEx" class="java.math.BigDecimal"/>
+	<field name="invoiceItemTotalInc" class="java.math.BigDecimal"/>
+	<field name="invoiceItemTotalTax" class="java.math.BigDecimal"/>
+	<field name="clinician_id" class="java.lang.Long"/>
+	<variable name="SumCustomerCount" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{customerCount}]]></variableExpression>
+	</variable>
+	<variable name="SumAmount" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$P{AmtsIncTax}.booleanValue()?$F{lineItemTotalInc}:$F{lineItemTotalEx}]]></variableExpression>
+	</variable>
+	<variable name="SumInvoiceCount" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{invoiceItemCount}]]></variableExpression>
+	</variable>
+	<variable name="SumInvoiceAmount" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$P{AmtsIncTax}.booleanValue()?$F{invoiceItemTotalInc}:$F{invoiceItemTotalEx}]]></variableExpression>
+	</variable>
+	<variable name="SumTransactionCount" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{lineItemCount}]]></variableExpression>
+	</variable>
+	<variable name="SumCounterAmount" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$P{AmtsIncTax}.booleanValue()?$F{counterItemTotalInc}:$F{counterItemTotalEx}]]></variableExpression>
+	</variable>
+	<variable name="SumCounterCount" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{counterItemCount}]]></variableExpression>
+	</variable>
+	<variable name="SumCreditCount" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{creditItemCount}]]></variableExpression>
+	</variable>
+	<variable name="SumCreditAmount" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$P{AmtsIncTax}.booleanValue()?$F{creditItemTotalInc}:$F{creditItemTotalEx}]]></variableExpression>
+	</variable>
+	<variable name="SumTax" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{lineItemTotalTax}]]></variableExpression>
+	</variable>
+	<variable name="SumInvoiceTax" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{invoiceItemTotalTax}]]></variableExpression>
+	</variable>
+	<variable name="SumCounterTax" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{counterItemTotalTax}]]></variableExpression>
+	</variable>
+	<variable name="SumCreditTax" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{creditItemTotalTax}]]></variableExpression>
+	</variable>
+	<variable name="clinician" class="java.lang.String">
+		<variableExpression><![CDATA[EVALUATE("user:format($F.clinician_id, 'short')")]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="4"/>
+	</title>
+	<columnHeader>
+		<band height="33">
+			<staticText>
+				<reportElement x="0" y="19" width="120" height="13" uuid="189add61-2b93-431b-901b-373d0a98c8e6">
+					<property name="local_mesure_unitx" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="local_mesure_unitheight" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				</reportElement>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Clinician]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="120" y="19" width="65" height="13" uuid="3c0f5e4b-ad4c-448a-b6b1-7bc137658956"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Customers]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="185" y="19" width="64" height="13" uuid="10fc30bc-acf3-40bb-90d7-670c11e7f9af"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="283" y="19" width="77" height="13" uuid="a6941a24-639e-4597-a728-47333e2f2416"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Invoices]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="390" y="19" width="47" height="13" uuid="df4f862d-ed7b-44ce-9914-e477371ed361"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[OTC]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="467" y="19" width="52" height="13" uuid="e412a6f2-06ef-48af-8da6-b35e1a470824"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Credits]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="0" width="494" height="18" uuid="cf65e485-a826-4219-bed1-7f079090f539"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Income by Clinician (counting by line items)]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="71" splitType="Stretch">
+			<textField>
+				<reportElement x="135" y="55" width="37" height="13" uuid="76eda573-9a10-42e3-8827-c0f4ed15de7b"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{customerCount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="0" width="309" height="13" uuid="c8b096a9-e397-4961-916e-c45e80cb5294"/>
+				<textElement>
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{clinician}==null?"--No Clinician--":$V{clinician}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0">
+				<reportElement x="172" y="14" width="77" height="13" isRemoveLineWhenBlank="true" uuid="f919477d-fc8b-47a8-8c52-55933fb85b31">
+					<printWhenExpression><![CDATA[!$P{AmtsIncTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{lineItemTotalEx}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="172" y="55" width="77" height="13" uuid="6912f812-99c4-4d9f-8299-8e597df9d720"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{lineItemCount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="283" y="55" width="77" height="13" uuid="41592902-d42f-4283-b605-d94753a2ab6d"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{invoiceItemCount}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0">
+				<reportElement x="283" y="14" width="77" height="13" isRemoveLineWhenBlank="true" uuid="c5590114-af1b-4952-85c3-ee56509f1875">
+					<printWhenExpression><![CDATA[!$P{AmtsIncTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{invoiceItemTotalEx}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="390" y="55" width="47" height="13" uuid="dec56730-a631-4414-b485-cff5618213f1"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{counterItemCount}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0">
+				<reportElement x="390" y="14" width="47" height="13" isRemoveLineWhenBlank="true" uuid="8a6eacc1-70ee-4e11-97f9-a5725440c629">
+					<printWhenExpression><![CDATA[!$P{AmtsIncTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{counterItemTotalEx}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0">
+				<reportElement x="467" y="14" width="52" height="13" isRemoveLineWhenBlank="true" uuid="0ba3c5cb-de45-48ff-a5c1-ffe1ad67de31">
+					<printWhenExpression><![CDATA[!$P{AmtsIncTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{creditItemTotalEx}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="467" y="55" width="52" height="13" uuid="46c41ad1-e2ce-4745-9d54-e67484eb54da"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{creditItemCount}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="249" y="14" width="31" height="13" isRemoveLineWhenBlank="true" uuid="5344b4d0-39d8-46a9-aa9b-0ae2acb9a800">
+					<printWhenExpression><![CDATA[!$P{AmtsIncTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{lineItemTotalEx}.doubleValue()/$V{SumAmount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="360" y="14" width="31" height="13" isRemoveLineWhenBlank="true" uuid="58ac1f14-d80b-464c-9a18-2089b4c23f0e">
+					<printWhenExpression><![CDATA[!$P{AmtsIncTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{invoiceItemTotalEx}.doubleValue()/$V{SumInvoiceAmount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="437" y="14" width="31" height="13" isRemoveLineWhenBlank="true" uuid="b5b0dda6-0011-4be7-a776-285d87892536">
+					<printWhenExpression><![CDATA[!$P{AmtsIncTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{counterItemTotalEx}.doubleValue()/$V{SumCounterAmount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="519" y="14" width="31" height="13" isRemoveLineWhenBlank="true" uuid="44f6f3bc-3751-4e9d-b5a3-9756e4b4882a">
+					<printWhenExpression><![CDATA[!$P{AmtsIncTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{creditItemTotalEx}.doubleValue()/$V{SumCreditAmount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="2" y="14" width="132" height="13" isRemoveLineWhenBlank="true" uuid="a4e72d86-5c57-4a05-bd82-7b3c346745e8">
+					<printWhenExpression><![CDATA[!$P{AmtsIncTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Amounts (ex-tax)   ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2" y="55" width="132" height="13" uuid="14f8111b-9ea6-4da2-8ec0-ef0cea0bea53"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Counts   ]]></text>
+			</staticText>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="519" y="28" width="31" height="13" isRemoveLineWhenBlank="true" uuid="6995c712-88e2-467c-94a8-4d9f172e927d">
+					<printWhenExpression><![CDATA[$P{AmtsIncTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{creditItemTotalInc}.doubleValue()/$V{SumCreditAmount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="249" y="28" width="31" height="13" isRemoveLineWhenBlank="true" uuid="59228b96-8bb7-40fa-9d6f-beff72f78cb1">
+					<printWhenExpression><![CDATA[$P{AmtsIncTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{lineItemTotalInc}.doubleValue()/$V{SumAmount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0">
+				<reportElement x="172" y="28" width="77" height="13" isRemoveLineWhenBlank="true" uuid="152af9ec-040e-48a5-a9d0-445204a36793">
+					<printWhenExpression><![CDATA[$P{AmtsIncTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{lineItemTotalInc}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0">
+				<reportElement x="467" y="28" width="52" height="13" isRemoveLineWhenBlank="true" uuid="cc29748f-7f2e-4fa4-9617-550d58ef75e6">
+					<printWhenExpression><![CDATA[$P{AmtsIncTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{creditItemTotalInc}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0">
+				<reportElement x="390" y="28" width="47" height="13" isRemoveLineWhenBlank="true" uuid="ad391c87-2163-4cf5-84cd-1e7cccb2d5a8">
+					<printWhenExpression><![CDATA[$P{AmtsIncTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{counterItemTotalInc}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="437" y="28" width="31" height="13" isRemoveLineWhenBlank="true" uuid="bc3cfd11-73ca-4ed6-9f02-865416f8415c">
+					<printWhenExpression><![CDATA[$P{AmtsIncTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{counterItemTotalInc}.doubleValue()/$V{SumCounterAmount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0">
+				<reportElement x="283" y="28" width="77" height="13" isRemoveLineWhenBlank="true" uuid="a0af42bf-d0d6-415d-bfb2-f02002d4b199">
+					<printWhenExpression><![CDATA[$P{AmtsIncTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{invoiceItemTotalInc}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="360" y="28" width="31" height="13" isRemoveLineWhenBlank="true" uuid="344f01e9-39e2-4d81-8229-0a9d1caaa32e">
+					<printWhenExpression><![CDATA[$P{AmtsIncTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{invoiceItemTotalInc}.doubleValue()/$V{SumInvoiceAmount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="2" y="28" width="132" height="13" isRemoveLineWhenBlank="true" uuid="f90a64ac-e6e3-4305-82f7-a8920ad6141a">
+					<printWhenExpression><![CDATA[$P{AmtsIncTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Amounts (inc-tax)   ]]></text>
+			</staticText>
+			<textField pattern="¤#,##0">
+				<reportElement x="172" y="41" width="77" height="14" isRemoveLineWhenBlank="true" uuid="a711049d-aa15-4598-a63c-13e7b2c6f229">
+					<printWhenExpression><![CDATA[$P{ShowTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{lineItemTotalTax}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0">
+				<reportElement x="467" y="41" width="52" height="14" isRemoveLineWhenBlank="true" uuid="12981f05-76cf-41f3-8c34-0c0eb3273fc6">
+					<printWhenExpression><![CDATA[$P{ShowTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{creditItemTotalTax}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0">
+				<reportElement x="390" y="41" width="47" height="14" isRemoveLineWhenBlank="true" uuid="8f473b2b-f5f4-4d4f-ba5f-a9089e511d28">
+					<printWhenExpression><![CDATA[$P{ShowTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{counterItemTotalTax}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0">
+				<reportElement x="283" y="41" width="77" height="14" isRemoveLineWhenBlank="true" uuid="b21e4b2e-e2ce-4947-9f7a-ee940d6941f3">
+					<printWhenExpression><![CDATA[$P{ShowTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{invoiceItemTotalTax}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="2" y="41" width="132" height="14" isRemoveLineWhenBlank="true" uuid="a39a8f9d-d75a-4996-872c-707825e1d244">
+					<printWhenExpression><![CDATA[$P{ShowTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Tax   ]]></text>
+			</staticText>
+		</band>
+	</detail>
+	<summary>
+		<band height="301" splitType="Prevent">
+			<textField isStretchWithOverflow="true" pattern="¤#,##0">
+				<reportElement x="172" y="19" width="77" height="13" uuid="842c48d7-c679-4efa-abb1-05524d1ec28c"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumAmount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="135" y="45" width="37" height="14" uuid="7fefe09e-7c12-47df-bb05-e7595bebc8d4"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumCustomerCount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="135" y="71" width="37" height="14" uuid="feab7390-d898-4427-b7fb-a0767e92637c"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalNewCustomerCount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="172" y="45" width="77" height="13" uuid="98c9bf5e-ecd9-4698-90d7-b19874ffb7e7"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumTransactionCount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="283" y="45" width="77" height="13" uuid="a5b8275c-1f06-4d6f-bcdd-c73f87093907"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumInvoiceCount}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0">
+				<reportElement x="283" y="19" width="77" height="13" uuid="498ea9c2-ec3b-4156-aea2-d25fa5d8616e"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumInvoiceAmount}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.0" isBlankWhenNull="true">
+				<reportElement x="172" y="111" width="77" height="13" uuid="2c8e38af-220a-4d61-81f3-9d4dc033ce65"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumTransactionCount}.floatValue()/$F{totalCustomerCount}.floatValue()]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0" isBlankWhenNull="true">
+				<reportElement x="172" y="58" width="77" height="13" uuid="2c4493f9-0220-46c6-b593-74b68da3a978"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumAmount}.doubleValue()/$V{SumTransactionCount}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0">
+				<reportElement x="390" y="19" width="47" height="13" uuid="31f4c466-3b94-4967-bc75-dca85f539ee2"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumCounterAmount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="390" y="45" width="47" height="13" uuid="3720f331-ac5b-4a44-adc2-f380b65124af"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumCounterCount}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0" isBlankWhenNull="true">
+				<reportElement x="283" y="58" width="77" height="13" uuid="82588d49-2e73-450e-ba12-6603aed3a883"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumInvoiceAmount}.doubleValue()/$V{SumInvoiceCount}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.0" isBlankWhenNull="true">
+				<reportElement x="283" y="111" width="77" height="13" uuid="3a91e237-37dc-4861-8a49-6fea98d23f89"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumInvoiceCount}.floatValue()/$F{totalCustomerCount}.floatValue()]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0">
+				<reportElement x="467" y="19" width="52" height="13" uuid="155119e8-4955-4413-aa4d-dc14f9976804"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumCreditAmount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="467" y="45" width="52" height="13" uuid="21be10d7-9fa4-4f37-8439-7c7bdc425feb"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumCreditCount}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="5" width="93" height="13" uuid="f4bc8394-2ce1-4f7e-9471-095aa293eb07"/>
+				<textElement>
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Overall]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2" y="45" width="132" height="13" uuid="7c897ef7-ff90-4d31-b2c7-dc515e7555c2"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Counts   ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2" y="111" width="132" height="13" uuid="a14078de-f933-46e7-876c-859ff412fa0b"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Line Items/Customer   ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2" y="71" width="132" height="14" uuid="2103a981-66a5-4363-8b46-b8903e45666b"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[New Customers seen   ]]></text>
+			</staticText>
+			<textField pattern="###0.0">
+				<reportElement x="467" y="110" width="52" height="13" uuid="fa563f9d-70b3-47fc-b47f-fe7ddcadc4e7"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumCreditCount}.floatValue()/$F{totalCustomerCount}.floatValue()]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.0">
+				<reportElement x="390" y="110" width="47" height="13" uuid="de4b7e7e-2065-4d0a-806c-928c0f7bbd6c"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumCounterCount}.floatValue()/$F{totalCustomerCount}.floatValue()]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0">
+				<reportElement x="467" y="59" width="52" height="13" uuid="68645552-bf2a-457d-b0bb-93919d45c29d"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumCreditAmount}.doubleValue()/$V{SumCreditCount}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0">
+				<reportElement x="390" y="59" width="47" height="13" uuid="0d7b96b7-dc04-4621-bbec-14d30ab26973"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumCounterAmount}.doubleValue()/$V{SumCounterCount}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="249" y="19" width="31" height="13" uuid="e289f40a-12c5-459c-a7d5-5ef7f17bdded"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumAmount}.doubleValue()/$V{SumAmount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="519" y="19" width="31" height="13" uuid="20d2fe53-864e-463c-9b55-b300b89a0588"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumCreditAmount}.doubleValue()/$V{SumAmount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="360" y="19" width="31" height="13" uuid="cae9be82-c47f-4a1f-bb4e-88b1f178463a"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumInvoiceAmount}.doubleValue()/$V{SumAmount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="437" y="19" width="31" height="13" uuid="bb398471-513b-4d81-a898-aeb9674a531e"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumCounterAmount}.doubleValue()/$V{SumAmount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="185" width="550" height="116" uuid="576b1775-f10c-49af-af6e-b5f60bf6f6e6"/>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[The Invoices column includes Counter Sales to known customers, the OTC column shows those to anonymous customers.
+$0 line items are ignored and not counted. Only Finalised transactions are included.
+All the customer counts are of distinct customers, ie these are the numbers of different customers.
+In the clinician Amounts lines the percentages show the ratio of the column's transaction type to its overall total.
+In the Overall Amounts line they show the ratio of the column's transaction type to the Overall Total Amount.
+The Total Customers seen Percentage is the ratio of the seen count to the active count at the end of the period.]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="135" y="152" width="37" height="14" uuid="42cc87f0-f8a2-444c-aa8a-909c94232492"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{activeCustomersEnd}-$F{activeCustomersStart}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="2" y="126" width="133" height="13" uuid="6f3ebf7b-cf6d-4ed5-852f-6d39d4f1342d"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Active Cust's at start   ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2" y="152" width="133" height="14" uuid="66d81844-275f-464f-a99a-ebbd108d4387"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Increase/Decrease   ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2" y="139" width="133" height="13" uuid="95a29962-b052-44ee-92b3-01a41230e170"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Active Cust's at end   ]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="135" y="139" width="37" height="13" uuid="ab2a007c-5469-465e-a834-a2f3cf68b822"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{activeCustomersEnd}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="135" y="126" width="37" height="13" uuid="9603e95b-4dc3-4c60-b64d-578976b690f3"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{activeCustomersStart}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="172" y="71" width="31" height="14" uuid="85e51df9-7de6-4477-af68-3b6159075026"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalNewCustomerCount}.doubleValue()/$F{totalCustomerCount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="172" y="152" width="31" height="14" uuid="12699bf5-e178-4209-b944-aff9b40d4b49"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{activeCustomersEnd}.doubleValue()-$F{activeCustomersStart}.doubleValue())/$F{activeCustomersStart}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="292" y="135" width="258" height="18" uuid="f4add718-5b40-443e-88d1-48ac664156fc">
+					<printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font size="11" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[No Data Found - Check Parameters]]></text>
+			</staticText>
+			<line>
+				<reportElement positionType="Float" x="0" y="300" width="550" height="1" uuid="3231e404-cf5d-4dad-8e9d-7d46cb4348f2"/>
+				<graphicElement>
+					<pen lineStyle="Double"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement x="135" y="85" width="37" height="13" uuid="0edd370f-310d-4864-ab95-e7422d92b0f0"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalCustomerCount}-$F{totalNewCustomerCount}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="2" y="85" width="132" height="13" uuid="8b8036c4-7601-4f32-847d-b29e1bbb9d3a"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Prior Customers seen   ]]></text>
+			</staticText>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="172" y="85" width="31" height="13" uuid="2fa6ea65-b525-4a76-88be-55bbbce9becb"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{totalCustomerCount}.doubleValue()-$F{totalNewCustomerCount}.doubleValue())/$F{totalCustomerCount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="172" y="98" width="31" height="13" uuid="6fcf7241-9123-40fb-97ac-97a03e9291be"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalCustomerCount}.doubleValue()/$F{activeCustomersEnd}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="135" y="98" width="37" height="13" uuid="a5c18223-a411-4bc2-9cc8-a407e27351f4"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalCustomerCount}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="2" y="98" width="132" height="13" uuid="3fe638fa-2de6-4d6f-ae79-047f89fc41c6"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Total Customers seen   ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="203" y="71" width="157" height="14" uuid="c32555cc-9848-4dcd-9b4e-0d691eb7a515"/>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[  of total seen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="203" y="85" width="157" height="13" uuid="bc687abc-f8cc-4aa8-b8f3-506fef8ab9ae"/>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[  of total seen]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="203" y="98" width="157" height="13" uuid="914f94d9-5bd4-4fbc-88b2-77444cdaae01"/>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[  of total active at end]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2" y="166" width="133" height="13" uuid="368dbfcc-68f4-4e68-9bf4-0339e54c0971"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Inactive Customers   ]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="135" y="166" width="37" height="13" uuid="9acb3f55-f9a4-4fdd-adec-eeab0399aeef"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{inActiveCustomers}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="2" y="19" width="132" height="13" uuid="c17edd92-d599-4d00-9b78-5e7289bf1636"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new String("Amounts ("+($P{AmtsIncTax}.booleanValue()?"inc":"ex") + "-tax)  ")]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="2" y="58" width="132" height="13" uuid="968a61b9-44e6-4790-965f-7d0420ea921c"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[new String("Average Amount ("+($P{AmtsIncTax}.booleanValue()?"inc":"ex") + "-tax)  ")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="2" y="32" width="132" height="13" isRemoveLineWhenBlank="true" uuid="dfd59e30-0499-494c-9361-4e7e8a177be7">
+					<printWhenExpression><![CDATA[$P{ShowTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Tax   ]]></text>
+			</staticText>
+			<textField pattern="¤#,##0">
+				<reportElement x="172" y="32" width="77" height="13" isRemoveLineWhenBlank="true" uuid="4156bec9-58f9-4155-bf27-93dfcdfaa86d">
+					<printWhenExpression><![CDATA[$P{ShowTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumTax}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0">
+				<reportElement x="283" y="32" width="77" height="13" isRemoveLineWhenBlank="true" uuid="6ee8ef20-35df-4bd6-89c4-81abce589843">
+					<printWhenExpression><![CDATA[$P{ShowTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumInvoiceTax}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0">
+				<reportElement x="390" y="32" width="47" height="13" isRemoveLineWhenBlank="true" uuid="289004a2-8f0d-43a4-9705-22cb839e1ad7">
+					<printWhenExpression><![CDATA[$P{ShowTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumCounterTax}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤#,##0">
+				<reportElement x="467" y="32" width="52" height="13" isRemoveLineWhenBlank="true" uuid="408c291c-9bab-4873-b2fa-677af48440b8">
+					<printWhenExpression><![CDATA[$P{ShowTax}.booleanValue()]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumCreditTax}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="120" y="5" width="65" height="13" uuid="3369299d-f2c5-42e6-8f54-7d1604ecbdd4"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Customers]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="185" y="5" width="64" height="13" uuid="dbd76662-d987-44ea-b6ed-3eca84b92ec7"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="283" y="5" width="77" height="13" uuid="52b8f22e-edc2-485f-a755-6efc8d7ef680"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Invoices]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="390" y="5" width="47" height="13" uuid="90fda69c-beb4-4468-830e-d7aca3fa29c6"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[OTC]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="467" y="5" width="52" height="13" uuid="fb8f1d0f-2ed6-4f9e-9077-f1c793a0ded1"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Credits]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

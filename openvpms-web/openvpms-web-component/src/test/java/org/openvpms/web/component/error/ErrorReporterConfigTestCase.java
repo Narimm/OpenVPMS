@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.error;
 
@@ -19,9 +19,9 @@ import net.sf.jasperreports.engine.JRException;
 import org.junit.Test;
 import org.openvpms.archetype.rules.finance.statement.StatementProcessorException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ValidationError;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.security.OpenVPMSAccessDeniedException;
+import org.openvpms.component.service.archetype.ValidationError;
 import org.openvpms.report.ReportException;
 import org.openvpms.web.component.im.query.QueryException;
 
@@ -77,11 +77,10 @@ public class ErrorReporterConfigTestCase {
 
         ExceptionConfig exception3Cfg = new ExceptionConfig(ReportException.class.getName());
         ExceptionConfig cause = new ExceptionConfig(PrinterException.class.getName());
-        exception3Cfg.setCauses(Arrays.asList(cause));
+        exception3Cfg.setCauses(Collections.singletonList(cause));
 
         ExceptionConfig exception2Cfg = new ExceptionConfig(ValidationException.class.getName());
         config.setExcludes(Arrays.asList(exception1Cfg, exception2Cfg));
-
 
         // verify the correct exceptions are excluded
         assertFalse(config.isExcluded(a));
@@ -110,9 +109,9 @@ public class ErrorReporterConfigTestCase {
         // now exclude the "Printer is not accepting job." exception
         ExceptionConfig exception = new ExceptionConfig(PrinterException.class.getName());
 
-        exception.setMessages(Arrays.asList("Printer is not accepting job."));
+        exception.setMessages(Collections.singletonList("Printer is not accepting job."));
 
-        config.setExcludes(Arrays.asList(exception));
+        config.setExcludes(Collections.singletonList(exception));
 
         // verify the correct exceptions are excluded
         assertTrue(config.isExcluded(a));
@@ -139,9 +138,9 @@ public class ErrorReporterConfigTestCase {
         // now exclude the "Printer is not accepting job." exception when it is a root cause for ReportException
         ExceptionConfig cause = new ExceptionConfig(PrinterException.class.getName());
         ExceptionConfig exception = new ExceptionConfig(ReportException.class.getName());
-        exception.setCauses(Arrays.asList(cause));
+        exception.setCauses(Collections.singletonList(cause));
 
-        config.setExcludes(Arrays.asList(exception));
+        config.setExcludes(Collections.singletonList(exception));
 
         // verify the correct exceptions are excluded
         assertFalse(config.isExcluded(a));
@@ -171,12 +170,12 @@ public class ErrorReporterConfigTestCase {
 
         // now exclude the "Printer is not accepting job." exception when it is a root cause for ReportException
         ExceptionConfig cause = new ExceptionConfig(PrinterException.class.getName());
-        cause.setMessages(Arrays.asList("Printer is not accepting job."));
+        cause.setMessages(Collections.singletonList("Printer is not accepting job."));
 
         ExceptionConfig exception = new ExceptionConfig(ReportException.class.getName());
-        exception.setCauses(Arrays.asList(cause));
+        exception.setCauses(Collections.singletonList(cause));
 
-        config.setExcludes(Arrays.asList(exception));
+        config.setExcludes(Collections.singletonList(exception));
 
         // verify the correct exceptions are excluded
         assertFalse(config.isExcluded(a));
@@ -223,12 +222,16 @@ public class ErrorReporterConfigTestCase {
 
         Throwable ex6 = new ReportException(new JRException(new PrinterException("No printer found.")),
                                             ReportException.ErrorCode.FailedToGenerateReport);
+        Throwable ex7 = new ReportException(new JRException("No suitable print service found."),
+                                            ReportException.ErrorCode.FailedToGenerateReport);
+
         assertTrue(config.isExcluded(ex1));
         assertTrue(config.isExcluded(ex2));
         assertTrue(config.isExcluded(ex3));
         assertTrue(config.isExcluded(ex4));
         assertTrue(config.isExcluded(ex5));
         assertTrue(config.isExcluded(ex6));
+        assertTrue(config.isExcluded(ex7));
 
         Throwable inc1 = new NullPointerException();
         Throwable inc2 = new ReportException(ReportException.ErrorCode.FailedToCreateReport);
@@ -251,7 +254,7 @@ public class ErrorReporterConfigTestCase {
         // exclude NullPointerException
         ExceptionConfig npe = createConfig(NullPointerException.class);
         ErrorReporterConfig config = new ErrorReporterConfig();
-        config.setExcludes(Arrays.asList(npe));
+        config.setExcludes(Collections.singletonList(npe));
 
         Throwable notExcluded = new ArchetypeServiceException(ArchetypeServiceException.ErrorCode.FailedToCreateObject);
         Throwable excluded = new ArchetypeServiceException(ArchetypeServiceException.ErrorCode.FailedToCreateObject,
@@ -277,11 +280,11 @@ public class ErrorReporterConfigTestCase {
      *
      * @param exception the exception class name
      * @param excludes  the list of error codes to exclude
-     * @return a new <tt>ExceptionConfig</tt>
+     * @return a new {@code ExceptionConfig}
      */
     private ExceptionConfig createConfig(Class exception, Enum... excludes) {
         ExceptionConfig config = new ExceptionConfig(exception.getName());
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         for (Enum exclude : excludes) {
             list.add(exclude.toString());
         }

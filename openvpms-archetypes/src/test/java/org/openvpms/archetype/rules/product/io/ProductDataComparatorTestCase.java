@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -75,7 +75,7 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
      */
     @Before
     public void setUp() {
-        ProductPriceRules rules = new ProductPriceRules(getArchetypeService(), getLookupService());
+        ProductPriceRules rules = new ProductPriceRules(getArchetypeService());
         comparator = new ProductDataComparator(rules, getArchetypeService());
 
         product = createProduct("Product 1", "P1");

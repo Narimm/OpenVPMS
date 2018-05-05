@@ -11,27 +11,24 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
-import nextapp.echo2.app.Column;
-import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActEditDialog;
+import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.order.OrderCharger;
-
-import java.util.List;
 
 
 /**
@@ -42,12 +39,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class CustomerChargeActEditDialog extends ActEditDialog {
-
-    /**
-     * The message and editor container.
-     */
-    private Column container;
+public abstract class CustomerChargeActEditDialog extends ActEditDialog {
 
     /**
      * Manages charging orders and returns.
@@ -93,8 +85,8 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      * @param context          the context
      * @param autoChargeOrders if {@code true}, automatically charge customer orders if they are complete
      */
-    public CustomerChargeActEditDialog(CustomerChargeActEditor editor, OrderCharger charger, Context context,
-                                       boolean autoChargeOrders) {
+    public CustomerChargeActEditDialog(CustomerChargeActEditor editor, OrderCharger charger,
+                                       Context context, boolean autoChargeOrders) {
         super(editor, context);
         addButton(COMPLETED_ID);
         addButton(IN_PROGRESS_ID);
@@ -106,7 +98,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
             charger = new OrderCharger(getContext().getCustomer(), rules, context, help);
         }
         this.autoChargeOrders = autoChargeOrders;
-        manager = new OrderChargeManager(charger, getEditorContainer());
+        manager = new OrderChargeManager(charger, getAlertListener());
     }
 
     /**
@@ -151,7 +143,6 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
         prepare(true);
     }
 
-
     /**
      * Saves the current object.
      * <p/>
@@ -165,26 +156,69 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
     /**
      * Saves the current object.
      *
-     * @return {@code true} if the object was saved
+     * @param editor the editor
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
-        boolean result = super.doSave();
-        if (result) {
-            manager.clear();
-        }
-        return result;
+    protected void doSave(IMObjectEditor editor) {
+        super.doSave(editor);
+        manager.save();
+        manager.clear();
     }
 
     /**
-     * Invoked when the editor is saved, to allow subclasses to participate in the save transaction.
+     * Sets the editor.
+     * <p/>
+     * If there is an existing editor, its selection path will be set on the editor.
      *
-     * @param editor the editor
-     * @return {@code true} if the save was successful
+     * @param editor the editor. May be {@code null}
      */
     @Override
-    protected boolean saved(IMObjectEditor editor) {
-        return manager.save();
+    protected void setEditor(IMObjectEditor editor) {
+        CustomerChargeActEditor existing = getEditor();
+        if (existing != null) {
+            existing.setAddItemListener(null);
+            existing.setAlertListener(null);
+        }
+        super.setEditor(editor);
+        if (editor != null) {
+            // register a listener to auto-save charges
+            CustomerChargeActEditor chargeActEditor = (CustomerChargeActEditor) editor;
+            chargeActEditor.setAddItemListener(new Runnable() {
+                @Override
+                public void run() {
+                    autoSave();
+                }
+            });
+        }
+    }
+
+    /**
+     * Invoked to reload the object being edited when save fails.
+     * <p/>
+     * This implementation reloads the editor, but returns {@code false} if the act has been POSTED.
+     *
+     * @param editor the editor
+     * @return a {@code true} if the editor was reloaded and the act is not now POSTED.
+     */
+    @Override
+    protected boolean reload(IMObjectEditor editor) {
+        manager.clear(); // discard any charged orders
+        return super.reload(editor);
+    }
+
+    /**
+     * Invoked to display a message that saving failed, and the editor has been reverted.
+     * <p/>
+     * This implementation adds the dialog to the editor queue, so popups can be handled in an orderly manner.
+     *
+     * @param title   the message title
+     * @param message the message
+     */
+    @Override
+    protected void reloaded(String title, String message) {
+        CustomerChargeActEditor editor = getEditor();
+        editor.getEditorQueue().queue(new ErrorDialog(title, message));
     }
 
     /**
@@ -205,33 +239,6 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
         } else {
             super.onButton(button);
         }
-    }
-
-    /**
-     * Sets the component.
-     *
-     * @param component the component
-     * @param group     the focus group
-     * @param context   the help context
-     */
-    @Override
-    protected void setComponent(Component component, FocusGroup group, HelpContext context) {
-        Column container = getEditorContainer();
-        container.add(component);
-        super.setComponent(container, group, context);
-    }
-
-    /**
-     * Removes the component.
-     *
-     * @param component the component
-     * @param group     the focus group
-     */
-    @Override
-    protected void removeComponent(Component component, FocusGroup group) {
-        Column container = getEditorContainer();
-        container.removeAll();
-        super.removeComponent(container, group);
     }
 
     /**
@@ -260,9 +267,6 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
      * Any documents added as part of the save that have a template with an IMMEDIATE print mode will be printed.
      */
     private void saveCharge(boolean close) {
-        CustomerChargeActEditor editor = getEditor();
-        CustomerChargeDocuments docs = new CustomerChargeDocuments(editor, getHelpContext());
-        List<Act> existing = docs.getUnprinted();
         if (save()) {
             ActionListener printListener = null;
             if (close) {
@@ -273,7 +277,7 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
                     }
                 };
             }
-            if (!docs.printNew(existing, printListener)) {
+            if (!getEditor().getUnprintedDocuments().printNew(printListener)) {
                 if (close) {
                     // nothing to print, so close now
                     close(OK_ID);
@@ -322,15 +326,16 @@ public class CustomerChargeActEditDialog extends ActEditDialog {
     }
 
     /**
-     * Returns the message and editor container.
-     *
-     * @return the message and editor container
+     * Auto save the invoice if it is valid, isn't new and isn't POSTED.
      */
-    private Column getEditorContainer() {
-        if (container == null) {
-            container = new Column();
+    private void autoSave() {
+        CustomerChargeActEditor editor = getEditor();
+        FinancialAct object = editor.getObject();
+        if (!object.isNew() && !ActStatus.POSTED.equals(editor.getStatus())) {
+            if (editor.isValid()) {
+                save();
+            }
         }
-        return container;
     }
 
 }

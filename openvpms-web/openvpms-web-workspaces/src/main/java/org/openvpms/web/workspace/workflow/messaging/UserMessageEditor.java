@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.messaging;
@@ -21,7 +21,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.im.customer.CustomerParticipationEditor;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
@@ -41,10 +41,10 @@ import java.util.Set;
 
 /**
  * Editor for <em>act.userMessage</em> acts.
- * <p/>
+ * <p>
  * Note that acts may not be saved using this editor; it is intended to be used to generate a template message
  * which is then copied and sent to the selected users.
- * <p/>
+ * <p>
  * This is required as <em>act.userMessage</em> may only have a single 'to' participation and status,
  * but there is a requirement to be able to send messages to multiple users, each of which may independently update the
  * act status.
@@ -168,14 +168,12 @@ public class UserMessageEditor extends ActEditor {
 
     /**
      * Save any edits.
-     * <p/>
-     * This implementation always returns {@code false}
-     *
-     * @return {@code false}
+     * <p>
+     * This implementation always throws an exception this should not be used to save messages.
      */
     @Override
-    protected boolean doSave() {
-        return false;
+    protected void doSave() {
+        throw new IllegalStateException();
     }
 
     /**

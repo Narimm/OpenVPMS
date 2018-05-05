@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
 import net.sf.jasperreports.engine.util.ObjectUtils;
-import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -37,7 +38,6 @@ import org.openvpms.web.workspace.workflow.scheduling.SchedulingWorkspace;
 
 import java.util.Date;
 
-
 /**
  * Appointment workspace.
  *
@@ -46,13 +46,14 @@ import java.util.Date;
 public class AppointmentWorkspace extends SchedulingWorkspace {
 
     /**
-     * Constructs an {@code AppointmentWorkspace}.
+     * Constructs an {@link AppointmentWorkspace}.
      *
-     * @param context the context
+     * @param context     the context
+     * @param preferences user preferences
      */
-    public AppointmentWorkspace(Context context) {
-        super("workflow", "scheduling", Archetypes.create("entity.organisationScheduleView", Entity.class),
-              context);
+    public AppointmentWorkspace(Context context, Preferences preferences) {
+        super("workflow.scheduling", Archetypes.create("entity.organisationScheduleView", Entity.class), context,
+              preferences, PreferenceArchetypes.SCHEDULING);
     }
 
     /**
@@ -96,8 +97,10 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
      */
     @Override
     public void update(IMObject object) {
-        if (TypeHelper.isA(object, "entity.organisationScheduleView")) {
-            setObject((Entity) object);
+        if (TypeHelper.isA(object, ScheduleArchetypes.SCHEDULE_VIEW)) {
+            if (!ObjectUtils.equals(getObject(), object)) {
+                setObject((Entity) object);
+            }
         } else if (TypeHelper.isA(object, ScheduleArchetypes.APPOINTMENT)) {
             Act act = (Act) object;
             if (!ObjectUtils.equals(getCRUDWindow().getObject(), act)) {
@@ -204,11 +207,11 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
      * Returns the default schedule view for the specified practice location.
      *
      * @param location the practice location
+     * @param prefs    user preferences
      * @return the default schedule view, or {@code null} if there is no default
      */
-    protected Entity getDefaultView(Party location) {
-        LocationRules locationRules = ServiceHelper.getBean(LocationRules.class);
-        return locationRules.getDefaultScheduleView(location);
+    protected Entity getDefaultView(Party location, Preferences prefs) {
+        return new AppointmentSchedules(location, prefs).getDefaultScheduleView();
     }
 
     /**

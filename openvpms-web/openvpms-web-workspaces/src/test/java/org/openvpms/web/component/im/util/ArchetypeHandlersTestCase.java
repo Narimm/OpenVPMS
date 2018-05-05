@@ -1,44 +1,45 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
 
 import org.junit.Test;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.archetype.ArchetypeHandler;
 import org.openvpms.web.component.im.archetype.ArchetypeHandlers;
 import org.openvpms.web.component.im.query.AutoQuery;
+import org.openvpms.web.component.im.query.DefaultQuery;
 import org.openvpms.web.component.im.query.EntityQuery;
 import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.test.AbstractAppTest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
  * {@link ArchetypeHandlers} test case.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ArchetypeHandlersTestCase extends AbstractAppTest {
 
@@ -55,15 +56,12 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
     /**
      * Test properties.
      */
-    private static final String PROPERTIES
-        = "org/openvpms/web/component/im/util/"
-          + "ArchetypeHandlersTestCase.properties";
+    private static final String PROPERTIES = "org/openvpms/web/component/im/util/ArchetypeHandlersTestCase.properties";
 
     /**
      * Test xml.
      */
-    private static final String XML = "org/openvpms/web/component/im/util/"
-                                      + "ArchetypeHandlersTestCase.xml";
+    private static final String XML = "org/openvpms/web/component/im/util/ArchetypeHandlersTestCase.xml";
 
     /**
      * Verifies that {@link AutoQuery} can be created for a <em>lookup.*</em>
@@ -120,13 +118,34 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
     }
 
     /**
+     * Verifies that anonymous handlers (i.e. those not associated with an archetype) can be registered.
+     */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void checkAnonymous() throws Exception {
+        // check the defaults for DefaultQuery
+        DefaultQuery query1 = new DefaultQuery(new String[]{"lookup.species"}, Lookup.class);
+        assertFalse(query1.isAuto());
+        assertFalse(query1.isContains());
+
+        // now verify DefaultQuery can be registered with different properties
+        ArchetypeHandler<Query> handler = propertiesHandlers.getHandler(DefaultQuery.class);
+        assertNotNull(handler);
+        assertEquals(DefaultQuery.class, handler.getType());
+
+        Query query = handler.create(new Object[]{new String[]{"lookup.species"}, Lookup.class});
+        assertTrue(query.isAuto());
+        assertTrue(query.isContains());
+    }
+
+    /**
      * Sets up the test case.
      */
     @Override
     public void setUp() {
         super.setUp();
-        propertiesHandlers = new ArchetypeHandlers<Query>(PROPERTIES, Query.class);
-        xmlHandlers = new ArchetypeHandlers<Query>(XML, Query.class);
+        propertiesHandlers = new ArchetypeHandlers<>(PROPERTIES, null, Query.class, "query.", getArchetypeService());
+        xmlHandlers = new ArchetypeHandlers<>(XML, Query.class, getArchetypeService());
     }
 
     /**
@@ -136,7 +155,7 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
      * @throws Exception for any errror
      */
     private void checkCreateAutoQuery(ArchetypeHandlers handlers)
-        throws Exception {
+            throws Exception {
         String[] shortNames = DescriptorHelper.getShortNames("lookup.*");
         ArchetypeHandler lookup = handlers.getHandler("lookup.*");
         assertNotNull(lookup);
@@ -153,13 +172,13 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
      * @throws Exception for any error
      */
     private void checkCreatePatientQuery(ArchetypeHandlers handlers)
-        throws Exception {
+            throws Exception {
         String[] shortNames = DescriptorHelper.getShortNames("party.patient*");
         ArchetypeHandler patient = handlers.getHandler("party.patient*");
         assertNotNull(patient);
         assertEquals(patient.getType(), PatientQuery.class);
         Query query = (Query) patient.create(
-            new Object[]{shortNames, new LocalContext()});
+                new Object[]{shortNames, new LocalContext()});
         assertNotNull(query);
         assertEquals(25, query.getMaxResults());
     }
@@ -175,7 +194,7 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
         assertNull(handler1);
 
         ArchetypeHandler handler2 = handlers.getHandler(
-            new String[]{"act.*", "actRelationship.*"});
+                new String[]{"act.*", "actRelationship.*"});
         assertNull(handler2);
     }
 
@@ -190,7 +209,7 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
         assertNull(handler1);
 
         ArchetypeHandler handler2 = handlers.getHandler(
-            new String[]{"party.patient*", "lookup.*"});
+                new String[]{"party.patient*", "lookup.*"});
         assertNull(handler2);
     }
 
@@ -201,24 +220,24 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
      * @param handlers the handlers
      */
     private void checkSameHandlerImplementationType(
-        ArchetypeHandlers handlers) {
+            ArchetypeHandlers handlers) {
         // make sure the AutoQuery class is returned for lookup.*,
         // security.*
         ArchetypeHandler handler = handlers.getHandler(
-            new String[]{"lookup.*", "security.*"});
+                new String[]{"lookup.*", "security.*"});
         assertNotNull(handler);
         assertEquals(handler.getType(), AutoQuery.class);
 
         // make sure the AutoQuery class is returned for party.organisation*
         ArchetypeHandler org = handlers.getHandler(
-            new String[]{"party.organisation*"});
+                new String[]{"party.organisation*"});
         assertNotNull(org);
         assertEquals(org.getType(), AutoQuery.class);
 
         // make sure the EntityQuery class is returned for party.customer*,
         // party.organisationOTC
         ArchetypeHandler entity = handlers.getHandler(
-            new String[]{"party.organisationOTC", "party.customer*"});
+                new String[]{"party.organisationOTC", "party.customer*"});
         assertNotNull(entity);
         assertEquals(entity.getType(), EntityQuery.class);
 
@@ -226,8 +245,8 @@ public class ArchetypeHandlersTestCase extends AbstractAppTest {
         // party.organisation* as the party.organisation* line has a different
         // configuration
         handler = handlers.getHandler(
-            new String[]{"lookup.*", "security.*",
-                "party.organisation*"});
+                new String[]{"lookup.*", "security.*",
+                             "party.organisation*"});
         assertNull(handler);
     }
 

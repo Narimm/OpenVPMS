@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -29,7 +29,6 @@ public class ScheduleArchetypes {
      */
     public static String ORGANISATION_SCHEDULE = "party.organisationSchedule";
 
-
     /**
      * Organisation work list archetype short name.
      */
@@ -41,9 +40,9 @@ public class ScheduleArchetypes {
     public static String APPOINTMENT = "act.customerAppointment";
 
     /**
-     * The appointment series archetype short name.
+     * The calendar event series archetype short name.
      */
-    public static String APPOINTMENT_SERIES = "act.customerAppointmentSeries";
+    public static String CALENDAR_EVENT_SERIES = "act.calendarEventSeries";
 
     /**
      * The task archetype short name.
@@ -104,5 +103,21 @@ public class ScheduleArchetypes {
      * Visit reason archetype short name.
      */
     public static String VISIT_REASON = "lookup.visitReason";
+
+    /**
+     * Cage type short name.
+     */
+    public static final String CAGE_TYPE = "entity.cageType";
+
+    /**
+     * Calendar block archetype short name.
+     */
+    public static final String CALENDAR_BLOCK = "act.calendarBlock";
+
+    /**
+     * Calendar block type archetype short name.
+     */
+    public static final String CALENDAR_BLOCK_TYPE = "entity.calendarBlockType";
 }
+
 

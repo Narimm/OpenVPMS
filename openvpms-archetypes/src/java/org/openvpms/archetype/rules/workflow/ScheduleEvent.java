@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -60,6 +60,11 @@ public class ScheduleEvent {
      * The act reason name.
      */
     public static final String ACT_REASON_NAME = "act.reasonName";
+
+    /**
+     * The act name.
+     */
+    public static final String ACT_NAME = "act.name";
 
     /**
      * The act description.
@@ -124,9 +129,34 @@ public class ScheduleEvent {
     public static final String ARRIVAL_TIME = "arrivalTime";
 
     /**
+     * The send reminder flag.
+     */
+    public static final String SEND_REMINDER = "sendReminder";
+
+    /**
+     * The reminder sent time.
+     */
+    public static final String REMINDER_SENT = "reminderSent";
+
+    /**
+     * The reminder error.
+     */
+    public static final String REMINDER_ERROR = "reminderError";
+
+    /**
      * The consult start time.
      */
     public static final String CONSULT_START_TIME = "consultStartTime";
+
+    /**
+     * The online booking flag.
+     */
+    public static final String ONLINE_BOOKING = "onlineBooking";
+
+    /**
+     * The booking notes.
+     */
+    public static final String BOOKING_NOTES = "bookingNotes";
 
     public static final String ACT_VERSION = "act.version";
     public static final String CUSTOMER_PARTICIPATION_VERSION = "customerParticipation.version";

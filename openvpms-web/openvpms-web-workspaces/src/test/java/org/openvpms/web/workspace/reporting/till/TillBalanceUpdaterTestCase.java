@@ -33,7 +33,7 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.Assert.assertNull;
@@ -88,11 +88,11 @@ public class TillBalanceUpdaterTestCase extends ArchetypeServiceTest {
         bean.addNodeParticipation("till", till);
         bean.setValue("amount", BigDecimal.TEN);
 
-        checkUpdate(Arrays.asList(act), balance, BigDecimal.TEN);
+        checkUpdate(Collections.singletonList(act), balance, BigDecimal.TEN);
 
         // verify the adjustment can be edited
         bean.setValue("amount", BigDecimal.ONE);
-        checkUpdate(Arrays.asList(act), balance, BigDecimal.ONE);
+        checkUpdate(Collections.singletonList(act), balance, BigDecimal.ONE);
 
         // verifies no other till balance has been created.
         TillBalanceRules rules = new TillBalanceRules(getArchetypeService());
@@ -113,7 +113,7 @@ public class TillBalanceUpdaterTestCase extends ArchetypeServiceTest {
             public Object doInTransaction(TransactionStatus status) {
                 TillBalanceUpdater updater = new TillBalanceUpdater(acts.get(0), balance);
                 assertTrue(updater.validate());
-                assertTrue(updater.prepare());
+                updater.prepare();
                 save(acts);
                 updater.commit();
                 return null;

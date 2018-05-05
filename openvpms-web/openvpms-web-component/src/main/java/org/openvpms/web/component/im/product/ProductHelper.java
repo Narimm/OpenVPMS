@@ -11,18 +11,26 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
 
-import org.openvpms.archetype.rules.math.Currency;
-import org.openvpms.archetype.rules.math.MathRules;
+import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.product.PricingGroup;
+import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.system.ServiceHelper;
 
-import java.math.BigDecimal;
-
-import static java.math.BigDecimal.ONE;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Product helper methods.
@@ -32,21 +40,93 @@ import static java.math.BigDecimal.ONE;
 public class ProductHelper {
 
     /**
-     * Returns the price for a product price, multiplied by the service ratio if there is one.
+     * Determines if a products are being filtered by practice location.
      *
-     * @param price    the price
-     * @param currency the currency, used to round prices
-     * @return the price
+     * @param practice the practice
+     * @return {@code true} if products are being filtered by practice location
      */
-    public static BigDecimal getPrice(ProductPrice price, BigDecimal serviceRatio, Currency currency) {
-        BigDecimal result = price.getPrice();
-        if (result == null) {
-            result = BigDecimal.ZERO;
+    public static boolean useLocationProducts(Party practice) {
+        PracticeRules rules = ServiceHelper.getBean(PracticeRules.class);
+        return rules.useLocationProducts(practice);
+    }
+
+    /**
+     * Determines if a products are being filtered by practice location.
+     *
+     * @param context the context
+     * @return {@code true} if products are being filtered by practice location
+     */
+    public static boolean useLocationProducts(Context context) {
+        Party practice = context.getPractice();
+        return (practice != null) && useLocationProducts(practice);
+    }
+
+    /**
+     * Returns the pricing group for the context practice location.
+     *
+     * @param context the context
+     * @return the pricing group, or {@link PricingGroup#NONE} if the location has no pricing group
+     */
+    public static PricingGroup getPricingGroup(Context context) {
+        Lookup result = null;
+        Party location = context.getLocation();
+        if (location != null) {
+            LocationRules rules = ServiceHelper.getBean(LocationRules.class);
+            result = rules.getPricingGroup(location);
         }
-        if (!MathRules.equals(serviceRatio, ONE)) {
-            result = currency.roundPrice(result.multiply(serviceRatio));
+        return (result != null) ? new PricingGroup(result) : PricingGroup.NONE;
+    }
+
+    /**
+     * Filters prices on pricing group.
+     *
+     * @param prices       the prices to filter
+     * @param pricingGroup the pricing group to filter on. May be {@code null}, to indicate prices with no pricing
+     *                     groups
+     * @return the filtered prices
+     */
+    public static List<IMObject> filterPrices(List<IMObject> prices, PricingGroup pricingGroup) {
+        List<IMObject> result = new ArrayList<IMObject>();
+        for (IMObject object : prices) {
+            IMObjectBean bean = new IMObjectBean(object);
+            List<Lookup> groups = bean.getValues("pricingGroups", Lookup.class);
+            if (pricingGroup == null) {
+                if (groups.isEmpty()) {
+                    result.add(object);
+                }
+            } else if (pricingGroup.matches(groups)) {
+                result.add(object);
+            }
         }
         return result;
     }
 
+    /**
+     * Determines if pricing groups have been configured.
+     *
+     * @return {@code true} if pricing groups have been configured
+     */
+    public static boolean pricingGroupsConfigured() {
+        return !getPricingGroups().isEmpty();
+    }
+
+    /**
+     * Returns the pricing groups.
+     *
+     * @return the pricing groups
+     */
+    public static Collection<Lookup> getPricingGroups() {
+        return ServiceHelper.getLookupService().getLookups("lookup.pricingGroup");
+    }
+
+    /**
+     * Determines if a price has pricing groups.
+     *
+     * @param price the price
+     * @return {@code true} if the price has pricing groups
+     */
+    public static boolean hasPricingGroups(ProductPrice price) {
+        ProductPriceRules rules = ServiceHelper.getBean(ProductPriceRules.class);
+        return !rules.getPricingGroups(price).isEmpty();
+    }
 }

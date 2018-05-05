@@ -1,0 +1,1490 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Till Balance" pageWidth="421" pageHeight="595" columnWidth="381" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" isSummaryNewPage="true" isSummaryWithPageHeaderAndFooter="true" uuid="34660985-7e9f-49f4-a3a0-deea9c9066e1">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="7"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="7"/>
+	<parameter name="dataSource" class="org.openvpms.report.jasper.ObjectSetDataSource" isForPrompting="false"/>
+	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="amount" class="java.math.BigDecimal"/>
+	<field name="tillBalance.cashFloat" class="java.math.BigDecimal"/>
+	<field name="tillBalance.till.entity.name" class="java.lang.String"/>
+	<field name="tillBalance.till.entity.description" class="java.lang.String"/>
+	<field name="tillBalance.status" class="java.lang.String"/>
+	<field name="tillBalance.endTime" class="java.util.Date"/>
+	<field name="tillBalance.startTime" class="java.util.Date"/>
+	<field name="act.author.entity.username" class="java.lang.String"/>
+	<field name="act.credit" class="java.lang.Boolean"/>
+	<field name="act.customer.entity.name" class="java.lang.String"/>
+	<field name="act.customer.entity.id" class="java.lang.Long"/>
+	<field name="act.description" class="java.lang.String"/>
+	<field name="act.displayName" class="java.lang.String"/>
+	<field name="act.id" class="java.lang.Long"/>
+	<field name="act.notes" class="java.lang.String"/>
+	<field name="act.reverses.source.id" class="java.lang.Long"/>
+	<field name="act.reversal.target.id" class="java.lang.Long"/>
+	<field name="act.shortName" class="java.lang.String"/>
+	<field name="act.startTime" class="java.util.Date"/>
+	<field name="item.bank" class="java.lang.String"/>
+	<field name="item.bsb" class="java.lang.String"/>
+	<field name="item.creditCard" class="java.lang.String"/>
+	<field name="item.description" class="java.lang.String"/>
+	<field name="item.displayName" class="java.lang.String"/>
+	<field name="item.drawer" class="java.lang.String"/>
+	<field name="item.roundedAmount" class="java.math.BigDecimal"/>
+	<field name="item.shortName" class="java.lang.String"/>
+	<sortField name="dType" type="Variable"/>
+	<sortField name="DescrSort" type="Variable"/>
+	<sortField name="act.startTime"/>
+	<variable name="isAdjustment" class="java.lang.Boolean" resetType="Group" resetGroup="ActItem">
+		<variableExpression><![CDATA[new Boolean($F{act.shortName}.equals("act.tillBalanceAdjustment"))]]></variableExpression>
+		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
+	</variable>
+	<variable name="isCash" class="java.lang.Boolean" resetType="None">
+		<variableExpression><![CDATA[$F{item.shortName}==null?Boolean.FALSE:$F{item.shortName}.equals("act.customerAccountPaymentCash")||$F{item.shortName}.equals("act.customerAccountRefundCash")]]></variableExpression>
+		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
+	</variable>
+	<variable name="isPayment" class="java.lang.Boolean" resetType="None">
+		<variableExpression><![CDATA[$F{act.shortName}.contains("Payment")]]></variableExpression>
+		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
+	</variable>
+	<variable name="isRefund" class="java.lang.Boolean" resetType="None">
+		<variableExpression><![CDATA[$F{act.shortName}.contains("Refund")]]></variableExpression>
+		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
+	</variable>
+	<variable name="isCheque" class="java.lang.Boolean" resetType="None">
+		<variableExpression><![CDATA[$F{item.shortName}==null?Boolean.FALSE:$F{item.shortName}.equals("act.customerAccountPaymentCheque")||$F{item.shortName}.equals("act.customerAccountRefundCheque")]]></variableExpression>
+		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
+	</variable>
+	<variable name="isEFT" class="java.lang.Boolean" resetType="None">
+		<variableExpression><![CDATA[$F{item.shortName}==null?Boolean.FALSE:$F{item.shortName}.equals("act.customerAccountPaymentEFT")||$F{item.shortName}.equals("act.customerAccountRefundEFT")]]></variableExpression>
+		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
+	</variable>
+	<variable name="isCreditCard" class="java.lang.Boolean" resetType="None">
+		<variableExpression><![CDATA[$F{item.shortName}==null?Boolean.FALSE:$F{item.shortName}.equals("act.customerAccountPaymentCredit")||$F{item.shortName}.equals("act.customerAccountRefundCredit")]]></variableExpression>
+		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
+	</variable>
+	<variable name="isDiscount" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$F{item.shortName}==null?Boolean.FALSE:$F{item.shortName}.equals("act.customerAccountPaymentDiscount")||$F{item.shortName}.equals("act.customerAccountRefundDiscount")]]></variableExpression>
+	</variable>
+	<variable name="isOther" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$F{item.shortName}==null?Boolean.FALSE:$F{item.shortName}.equals("act.customerAccountPaymentOther")||$F{item.shortName}.equals("act.customerAccountRefundOther")]]></variableExpression>
+	</variable>
+	<variable name="TILL_TOTAL" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{amount}]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_PAYMENT_CASH" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isCash}.booleanValue() && $V{isPayment}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_REFUND_CASH" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isCash}.booleanValue() && $V{isRefund}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_PAYMENT_CHEQUE" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isCheque}.booleanValue() && $V{isPayment}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_REFUND_CHEQUE" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isCheque}.booleanValue() && $V{isRefund}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_PAYMENT_CREDITCARD" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isCreditCard}.booleanValue() && $V{isPayment}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_REFUND_CREDITCARD" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isCreditCard}.booleanValue() && $V{isRefund}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_PAYMENT_EFT" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isEFT}.booleanValue() && $V{isPayment}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_REFUND_EFT" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isEFT}.booleanValue() && $V{isRefund}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_ADJUSTMENT_CASH" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isAdjustment}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_CASH_ROUNDING" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isCash}.booleanValue())? (($F{item.roundedAmount}.compareTo(new BigDecimal("0.00")) == 0) ? new BigDecimal("0.00") : ($F{item.roundedAmount}.abs()).subtract($F{amount}.abs())):new BigDecimal("0.00")]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_DISCOUNT" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isDiscount}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+	</variable>
+	<variable name="dCustomer" class="java.lang.String">
+		<variableExpression><![CDATA[$V{isAdjustment}?"--":$F{act.customer.entity.name}]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_ItemType" class="java.math.BigDecimal" resetType="Group" resetGroup="ItemTypeGroup" calculation="Sum">
+		<variableExpression><![CDATA[$F{amount}]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_PAYMENT_OTHER" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isOther}.booleanValue() && $V{isPayment}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_REFUND_OTHER" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isOther}.booleanValue() && $V{isRefund}.booleanValue())? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+	</variable>
+	<variable name="COUNT_PAYMENT_CHEQUE" class="java.lang.Integer" resetType="Group" resetGroup="ActItem" calculation="Sum">
+		<variableExpression><![CDATA[($V{isCheque}.booleanValue() && $V{isPayment}.booleanValue())? 1: 0]]></variableExpression>
+	</variable>
+	<variable name="COUNT_REFUND_CHEQUE" class="java.lang.Integer" resetType="Group" resetGroup="ActItem" calculation="Sum">
+		<variableExpression><![CDATA[($V{isCheque}.booleanValue() && $V{isRefund}.booleanValue())? 1 : 0]]></variableExpression>
+	</variable>
+	<variable name="COUNT_PAYMENT_OTHER" class="java.lang.Integer" resetType="Group" resetGroup="ActItem" calculation="Sum">
+		<variableExpression><![CDATA[($V{isOther}.booleanValue() && $V{isPayment}.booleanValue())? 1:0]]></variableExpression>
+	</variable>
+	<variable name="COUNT_REFUND_OTHER" class="java.lang.Integer" resetType="Group" resetGroup="ActItem" calculation="Sum">
+		<variableExpression><![CDATA[($V{isOther}.booleanValue() && $V{isRefund}.booleanValue())? 1 : 0]]></variableExpression>
+	</variable>
+	<variable name="COUNT_PAYMENT_CREDITCARD" class="java.lang.Integer" resetType="Group" resetGroup="ActItem" calculation="Sum">
+		<variableExpression><![CDATA[($V{isCreditCard}.booleanValue() && $V{isPayment}.booleanValue())? 1:0]]></variableExpression>
+	</variable>
+	<variable name="COUNT_REFUND_CREDITCARD" class="java.lang.Integer" resetType="Group" resetGroup="ActItem" calculation="Sum">
+		<variableExpression><![CDATA[($V{isCreditCard}.booleanValue() && $V{isRefund}.booleanValue())? 1:0]]></variableExpression>
+	</variable>
+	<variable name="COUNT_PAYMENT_EFT" class="java.lang.Integer" resetType="Group" resetGroup="ActItem" calculation="Sum">
+		<variableExpression><![CDATA[($V{isEFT}.booleanValue() && $V{isPayment}.booleanValue())? 1:0]]></variableExpression>
+	</variable>
+	<variable name="COUNT_REFUND_EFT" class="java.lang.Integer" resetType="Group" resetGroup="ActItem" calculation="Sum">
+		<variableExpression><![CDATA[($V{isEFT}.booleanValue() && $V{isRefund}.booleanValue())? 1:0]]></variableExpression>
+	</variable>
+	<variable name="dType" class="java.lang.String">
+		<variableExpression><![CDATA[$V{isAdjustment}? "Adjustment" :$V{isCash}?"Cash":$V{isCheque}?"Cheque":$V{isEFT}?"EFT":$V{isCreditCard}?"Credit Card":$V{isDiscount}?"Discount":$V{isOther}?"Other":"????"]]></variableExpression>
+	</variable>
+	<variable name="TOTAL_DescrGroup" class="java.math.BigDecimal" resetType="Group" resetGroup="DescrGroup" calculation="Sum">
+		<variableExpression><![CDATA[$F{amount}]]></variableExpression>
+	</variable>
+	<variable name="CCprev" class="java.lang.String">
+		<variableExpression><![CDATA[($V{CCcurr}==null)?"init":$V{CCcurr}]]></variableExpression>
+		<initialValueExpression><![CDATA[new String("init")]]></initialValueExpression>
+	</variable>
+	<variable name="CCcurr" class="java.lang.String">
+		<variableExpression><![CDATA[$V{isCreditCard}?(($F{item.creditCard}== null)? "(card?)":$F{item.creditCard}):"NCC"]]></variableExpression>
+		<initialValueExpression><![CDATA["NCC"]]></initialValueExpression>
+	</variable>
+	<variable name="CClist" class="java.lang.String">
+		<variableExpression><![CDATA[($V{CCprev}.compareTo($V{CCcurr})==0)?$V{CClist}:$V{CClist}.concat($V{CCcurr}).concat("#")]]></variableExpression>
+		<initialValueExpression><![CDATA[new String("#")]]></initialValueExpression>
+	</variable>
+	<variable name="CCarray" class="java.lang.String[]">
+		<variableExpression><![CDATA[$V{CClist}.concat("NCC#NCC#NCC#NCC#NCC#NCC#NCC#NCC").split("#")]]></variableExpression>
+		<initialValueExpression><![CDATA[java.util.Arrays.asList("1","2","3","4","5","6")]]></initialValueExpression>
+	</variable>
+	<variable name="CCtotal-1" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isCreditCard}.booleanValue()&&($V{CCcurr}.compareTo($V{CCarray}[1])==0))? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal("0.0")]]></initialValueExpression>
+	</variable>
+	<variable name="CCtotal-2" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isCreditCard}.booleanValue()&&($V{CCcurr}.compareTo($V{CCarray}[2])==0))? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal("0.0")]]></initialValueExpression>
+	</variable>
+	<variable name="CCtotal-3" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isCreditCard}.booleanValue()&&($V{CCcurr}.compareTo($V{CCarray}[3])==0))? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal("0.0")]]></initialValueExpression>
+	</variable>
+	<variable name="CCtotal-4" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isCreditCard}.booleanValue()&&($V{CCcurr}.compareTo($V{CCarray}[4])==0))? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal("0.0")]]></initialValueExpression>
+	</variable>
+	<variable name="CCtotal-5" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isCreditCard}.booleanValue()&&($V{CCcurr}.compareTo($V{CCarray}[5])==0))? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal("0.0")]]></initialValueExpression>
+	</variable>
+	<variable name="CCtotal-6" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isCreditCard}.booleanValue()&&($V{CCcurr}.compareTo($V{CCarray}[6])==0))? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal("0.0")]]></initialValueExpression>
+	</variable>
+	<variable name="CCtotal-7" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isCreditCard}.booleanValue()&&($V{CCcurr}.compareTo($V{CCarray}[7])==0))? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal("0.0")]]></initialValueExpression>
+	</variable>
+	<variable name="CCtotal-8" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[($V{isCreditCard}.booleanValue()&&($V{CCcurr}.compareTo($V{CCarray}[8])==0))? $F{amount} : new BigDecimal("0.00")]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal("0.0")]]></initialValueExpression>
+	</variable>
+	<variable name="DescrSort" class="java.lang.String">
+		<variableExpression><![CDATA[($V{isAdjustment}.booleanValue())? "-" : $V{isCheque}?(($F{item.bank}== null)? "(bank?)":$F{item.bank}):$V{isEFT}?"-":$V{isCreditCard}?(($F{item.creditCard}== null)? "(card?)":$F{item.description}):(!$V{isCash})?"-":"-"]]></variableExpression>
+	</variable>
+	<variable name="Reverses" class="java.lang.String">
+		<variableExpression><![CDATA[$V{isAdjustment}?"":($F{act.reverses.source.id}==null)?"":("\n"+"Reverses ID "+$F{act.reverses.source.id}.toString())]]></variableExpression>
+	</variable>
+	<variable name="ReversedBy" class="java.lang.String">
+		<variableExpression><![CDATA[$V{isAdjustment}?"":($F{act.reversal.target.id}==null)?"":("\n"+"Reversed by ID "+$F{act.reversal.target.id}.toString())]]></variableExpression>
+	</variable>
+	<variable name="description" class="java.lang.String">
+		<variableExpression><![CDATA[$V{isCheque}?((($F{item.bank}== null)? "(bank?)":$F{item.bank}) + ":" + (($F{item.bsb}== null)? "(branch?)":$F{item.bsb}) + "~" + (($F{item.drawer}== null)? "(drawer?)":$F{item.drawer})):
+  $V{isEFT}?"":
+  $V{isCreditCard}?(($F{item.creditCard}== null)? "(card?)":$F{item.description}):
+  $V{isCash}?"":
+  $V{isRefund}?("xx "+$F{item.description}):
+  $F{item.description}]]></variableExpression>
+	</variable>
+	<variable name="description1" class="java.lang.String">
+		<variableExpression><![CDATA[$V{description}+$V{Reverses}+$V{ReversedBy}]]></variableExpression>
+	</variable>
+	<variable name="description2" class="java.lang.String">
+		<variableExpression><![CDATA[$V{description1}.startsWith("\n")?$V{description1}.substring(1):$V{description1}]]></variableExpression>
+	</variable>
+	<group name="ActItem" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[null]]></groupExpression>
+		<groupHeader>
+			<band splitType="Stretch"/>
+		</groupHeader>
+		<groupFooter>
+			<band height="27" splitType="Stretch">
+				<line direction="BottomUp">
+					<reportElement key="line-3" x="0" y="6" width="379" height="1" uuid="9716f950-1b1b-42fc-b807-b319f42c6c8a"/>
+				</line>
+				<textField pattern="#,##0.00" isBlankWhenNull="false">
+					<reportElement key="textField" x="189" y="8" width="59" height="12" uuid="3b98560b-1a02-4784-b48a-9a2ccb57cc90"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right"/>
+					<textFieldExpression><![CDATA[$V{TILL_TOTAL}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement key="staticText-17" x="160" y="8" width="27" height="11" uuid="8795cc8f-e668-4104-8c94-207e2103110a"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right"/>
+					<text><![CDATA[Total]]></text>
+				</staticText>
+				<line direction="BottomUp">
+					<reportElement key="line-3" x="1" y="20" width="378" height="1" uuid="f2881c62-f412-461a-95ab-28cb22a5d229"/>
+				</line>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="ItemTypeGroup">
+		<groupExpression><![CDATA[$V{dType}]]></groupExpression>
+		<groupHeader>
+			<band/>
+		</groupHeader>
+		<groupFooter>
+			<band height="13">
+				<textField pattern="#,##0.00" isBlankWhenNull="false">
+					<reportElement key="textField" x="4" y="0" width="28" height="9" uuid="03af1ac9-0652-4f6e-ae81-29399b446b4b"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="5"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{TOTAL_ItemType}]]></textFieldExpression>
+				</textField>
+				<line direction="BottomUp">
+					<reportElement key="line-3" x="0" y="10" width="379" height="1" uuid="7729312b-e3ba-4656-a212-853d522719fd"/>
+				</line>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="DescrGroup">
+		<groupExpression><![CDATA[$V{DescrSort}]]></groupExpression>
+		<groupFooter>
+			<band height="10">
+				<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				<printWhenExpression><![CDATA[$V{isCreditCard}]]></printWhenExpression>
+				<textField pattern="#,##0.00" isBlankWhenNull="false">
+					<reportElement key="textField" x="208" y="0" width="38" height="9" uuid="b2228f25-f122-4c3b-86ae-a40e3dbc9a18">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="5"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{TOTAL_DescrGroup}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement key="staticText-11" x="161" y="0" width="46" height="9" uuid="06a7d58a-5008-4180-8751-3ae99366c47e">
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right"/>
+					<text><![CDATA[Card Total: ]]></text>
+				</staticText>
+			</band>
+		</groupFooter>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<pageHeader>
+		<band height="58" splitType="Stretch">
+			<staticText>
+				<reportElement key="staticText-9" x="1" y="9" width="128" height="21" uuid="48e4dca2-09d0-4074-a709-58616420bf06"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Till Balance]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-1" x="179" y="9" width="154" height="21" uuid="c7d6311a-6829-41dc-b4c2-684fa1ccd10d"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="12"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{tillBalance.till.entity.name}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="338" y="30" width="12" height="9" uuid="6a05b1f9-0d7f-4ec4-983e-731c53a16075"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="7"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="349" y="30" width="28" height="9" uuid="ea0591fd-2b68-4b67-a692-0029a2b7c9eb"/>
+				<textFieldExpression><![CDATA[" of " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-5" x="316" y="30" width="23" height="9" uuid="7edc4897-0997-49c7-928a-e09fabf99fbd"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="7"/>
+				</textElement>
+				<text><![CDATA[Page]]></text>
+			</staticText>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField-8" isPrintRepeatedValues="false" x="200" y="30" width="79" height="9" uuid="13da26cb-d28d-465f-b26d-a154fbe47fc6"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Status: "+$F{tillBalance.status}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-3" x="51" y="41" width="299" height="11" uuid="3e59e5a3-4185-4c6d-9699-de302b13014f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.LONG,DateFormat.SHORT,  $P{REPORT_LOCALE}).format($F{tillBalance.startTime})
++" to "+($F{tillBalance.endTime}==null?"---NOW---":(DateFormat.getDateTimeInstance(DateFormat.LONG,DateFormat.SHORT,  $P{REPORT_LOCALE}).format($F{tillBalance.endTime})))]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-5" x="15" y="41" width="32" height="11" uuid="a44fcbf9-b543-4e22-85ff-d3709b9136d3"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Period: ]]></text>
+			</staticText>
+			<textField pattern="">
+				<reportElement x="309" y="0" width="73" height="8" uuid="e4db33a6-f642-4476-83c7-3778f08a92a7"/>
+				<textElement textAlignment="Right">
+					<font size="5"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="26" splitType="Stretch">
+			<staticText>
+				<reportElement key="staticText-11" x="85" y="8" width="93" height="11" uuid="5eccb0a6-5477-4d61-9772-7337735808d6"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<text><![CDATA[Customer]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-12" x="0" y="8" width="83" height="11" uuid="17652079-0324-431b-95ec-309b2e630668"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<text><![CDATA[Type/Total   Date/Time]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-13" x="213" y="8" width="33" height="11" uuid="ad33a6f7-ce97-41e4-8e44-bed3e1fb4fe1"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Amount]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-14" x="249" y="8" width="56" height="11" uuid="08e9d43c-6e4c-4968-b4d4-ca9cb2243aa0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<text><![CDATA[Description]]></text>
+			</staticText>
+			<line direction="BottomUp">
+				<reportElement key="line-1" x="0" y="3" width="379" height="1" uuid="69d4e980-043f-48c6-97c8-9afca302fee7"/>
+			</line>
+			<line direction="BottomUp">
+				<reportElement key="line-2" x="0" y="21" width="379" height="1" uuid="ecdf06f9-de5b-4af0-9129-de4821699a76"/>
+			</line>
+			<staticText>
+				<reportElement key="staticText-14" x="357" y="8" width="22" height="11" uuid="a88f3e55-9306-4001-bb51-0b04841c9c55"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[User]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-12" x="181" y="8" width="27" height="11" uuid="556267c5-b3cc-4ee7-bd89-c90c6398466f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<text><![CDATA[Txn Id]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="11" splitType="Stretch">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-6" x="86" y="0" width="92" height="9" uuid="53b4659b-857d-4c93-9951-b496e9e4074d"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($V{isAdjustment}.booleanValue())? "--" : ($F{act.customer.entity.name}+" ("+$F{act.customer.entity.id}+")")]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-8" isPrintRepeatedValues="false" x="0" y="0" width="47" height="9" uuid="bb6bfe05-1c17-49fe-b364-9e76387b0e37"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{dType}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-9" x="208" y="0" width="38" height="9" uuid="08229a5c-58db-4353-aec1-a95c8c8751bc"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{amount}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="dd/MM HH:mm" isBlankWhenNull="false">
+				<reportElement key="textField" x="46" y="0" width="35" height="9" uuid="ccf295c3-6637-46e6-b4e0-f43cffbb23f1">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{act.startTime}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField" x="249" y="0" width="108" height="9" uuid="49c67f17-7ebc-4158-808b-dec8ffec4bb8"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{isAdjustment}.booleanValue()?$F{act.description}:
+($V{description2}.length()>0?$V{description2}:$F{act.notes})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="357" y="0" width="22" height="9" uuid="5a26a2e9-96b1-4e9a-8b03-e55a402e3f13"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{act.author.entity.username}]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0">
+				<reportElement x="181" y="0" width="27" height="9" uuid="e433400c-804d-4909-b434-e603cb113c4f"/>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="5"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{act.id}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="296" splitType="Stretch">
+			<staticText>
+				<reportElement key="staticText-20" x="105" y="10" width="167" height="20" uuid="408a8c58-bc76-4097-b10e-57adb3f4beda"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Till Summary]]></text>
+			</staticText>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="83" y="142" width="59" height="11" uuid="333b9b7d-2c75-48e3-a31e-162a11bb2823"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{TOTAL_PAYMENT_CASH}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-21" x="4" y="142" width="79" height="11" uuid="78ed1709-c30f-4281-bccf-e3dd26011f3b">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<text><![CDATA[Cash Payments:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-22" x="4" y="153" width="79" height="12" uuid="5f8b728f-f860-4015-becc-acfd75cc5c29"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<text><![CDATA[Cash Refunds:]]></text>
+			</staticText>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="83" y="153" width="59" height="12" uuid="eabaa80a-e65b-4894-8459-10deab6009fe"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{TOTAL_REFUND_CASH}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-23" x="4" y="165" width="79" height="11" uuid="e0a13cf9-a7d3-42e8-8fd9-70d39e7cddb8"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<text><![CDATA[Cash Adjustments:]]></text>
+			</staticText>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="83" y="165" width="59" height="11" uuid="b2528462-f259-423e-a636-3c6079358008"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{TOTAL_ADJUSTMENT_CASH}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-24" x="4" y="199" width="79" height="11" uuid="d5b4ef47-4809-4923-b28f-1fd0d8da4116"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Cash in Till:]]></text>
+			</staticText>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="83" y="199" width="59" height="11" uuid="100d37ab-4ba2-4042-9d29-2c6f79897244"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{TOTAL_PAYMENT_CASH}.add($V{TOTAL_REFUND_CASH}).add($V{TOTAL_CASH_ROUNDING}).add($V{TOTAL_ADJUSTMENT_CASH}).add($F{tillBalance.cashFloat})]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="237" y="72" width="71" height="11" uuid="0d255a4a-5601-4207-b8cf-41d417b25b06"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{TOTAL_PAYMENT_CHEQUE}.add($V{TOTAL_REFUND_CHEQUE})]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="83" y="83" width="46" height="12" uuid="11924c53-5f8f-4bf0-85e6-f24eb2ae6ebb"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$V{TOTAL_PAYMENT_CREDITCARD}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="191" y="83" width="46" height="12" uuid="b85283fe-61d3-4b74-8f64-8991d36f55a4"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$V{TOTAL_REFUND_CREDITCARD}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="237" y="83" width="71" height="12" uuid="ea6df3ce-0157-45fd-b36c-5475b8d42a15"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{TOTAL_PAYMENT_CREDITCARD}.add($V{TOTAL_REFUND_CREDITCARD})]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="83" y="95" width="46" height="11" uuid="6ae8280a-046c-499e-926d-f01a02c686d3"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$V{TOTAL_PAYMENT_EFT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="191" y="95" width="46" height="11" uuid="b900495a-0d9b-4d70-b89f-acb29cb7cead"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$V{TOTAL_REFUND_EFT}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="237" y="95" width="71" height="11" uuid="de5bf99f-fd6b-4aec-b28e-3ab55f476ef0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{TOTAL_PAYMENT_EFT}.add($V{TOTAL_REFUND_EFT})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-32" x="85" y="275" width="71" height="12" uuid="0660e1c2-7306-477d-8972-4e4278649fff">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Discount:]]></text>
+			</staticText>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="161" y="275" width="71" height="12" uuid="2b512423-ded2-4287-a6c6-9e7dd71deb4a"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{TOTAL_DISCOUNT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-33" x="85" y="241" width="71" height="12" uuid="7508a7a5-d2e4-4101-a382-e72ce4416d65">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Till Total:]]></text>
+			</staticText>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="161" y="241" width="71" height="12" uuid="a8dd7bf3-f54f-42da-a7a9-6773a31a6b7c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{TILL_TOTAL}.add($F{tillBalance.cashFloat}).add($V{TOTAL_CASH_ROUNDING}).subtract($V{TOTAL_DISCOUNT})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-35" x="4" y="176" width="79" height="11" uuid="d5beb735-cb64-473c-a668-6c1efbdba095"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<text><![CDATA[Cash Rounding:]]></text>
+			</staticText>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="83" y="176" width="59" height="11" uuid="a4b1467c-9fd8-404a-96e4-0d7d9fbc96ba"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{TOTAL_CASH_ROUNDING}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-36" x="4" y="187" width="79" height="12" uuid="f89c66f9-5cc5-43f7-97bd-9d63e40b3800"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<text><![CDATA[Cash Float:]]></text>
+			</staticText>
+			<textField pattern="#,##0.00" isBlankWhenNull="true">
+				<reportElement key="textField-10" x="83" y="187" width="59" height="12" uuid="b994f506-7f01-4abd-90a5-07f565421588"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{tillBalance.cashFloat}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-28" x="4" y="61" width="47" height="11" uuid="1400ae57-455e-4813-931c-27d477b00551"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Type]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-28" x="51" y="61" width="32" height="11" uuid="7a910753-397e-4ddb-af7a-b4ddfe101ee0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Count]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-28" x="171" y="49" width="66" height="12" uuid="2c157913-a1d2-4db5-867c-b786ab3ccad2"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[----Refunds----
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-28" x="237" y="61" width="71" height="11" uuid="0f45f338-794a-4d2e-ad37-7a0deb09d818"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-28" x="4" y="72" width="47" height="11" uuid="38938496-8806-4f3d-ab73-45f8ccee9361"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Cheque]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-28" x="4" y="95" width="47" height="11" uuid="f1890be4-214f-4802-9db8-da9b78dc1f0a"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[EFT]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-28" x="4" y="83" width="47" height="12" uuid="62edc21a-aa22-46d8-bdfd-3ddae8a11a40"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Credit Card]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-28" x="4" y="106" width="47" height="11" uuid="9c4968b3-5041-428b-b18c-8190b88a297b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Other]]></text>
+			</staticText>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="191" y="72" width="46" height="11" uuid="04912193-57b9-425c-a83b-f7012a87f11c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$V{TOTAL_REFUND_CHEQUE}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="83" y="72" width="46" height="11" uuid="3542bc4c-9383-4d94-9844-32b959b39d1e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$V{TOTAL_PAYMENT_CHEQUE}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="191" y="106" width="46" height="11" uuid="ff3d45d6-2e8f-4c45-8acb-9e2622da4b77"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$V{TOTAL_REFUND_OTHER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="83" y="106" width="46" height="11" uuid="16e330d5-c71f-475c-b4b9-2ab20179eb5d"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle"/>
+				<textFieldExpression><![CDATA[$V{TOTAL_PAYMENT_OTHER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="237" y="106" width="71" height="11" uuid="5c35b232-15dd-40b9-bac1-bb39125569af"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{TOTAL_PAYMENT_OTHER}.add($V{TOTAL_REFUND_OTHER})]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="51" y="72" width="32" height="11" uuid="bf0f5e7d-ceec-4062-9e2a-6c1fb4c4e752"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{COUNT_PAYMENT_CHEQUE}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-28" x="66" y="49" width="66" height="12" uuid="19ae0269-190a-4139-8b31-4351bb79bb7b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[----Payments----
+]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-28" x="83" y="61" width="46" height="11" uuid="dc7f6a59-03e1-4b1b-a1b9-00e196de172f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Amount]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-28" x="191" y="61" width="46" height="11" uuid="a75c3700-3f07-4fc3-82df-5dd0a951ebe6"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Amount]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-28" x="158" y="61" width="33" height="11" uuid="0223e6f0-543f-4f46-8965-83a6eac0a78d"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Count]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="158" y="72" width="33" height="11" uuid="e2c1853f-42f9-4f45-b90d-149b9bce10f5"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{COUNT_REFUND_CHEQUE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="158" y="83" width="33" height="12" uuid="f1a8a7dd-1eef-43c5-bc38-edfcbccaa90f"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{COUNT_REFUND_CREDITCARD}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="51" y="83" width="32" height="12" uuid="871f7dc7-7a50-4c4e-b137-4332a3cc6c3b"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{COUNT_PAYMENT_CREDITCARD}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="158" y="95" width="33" height="11" uuid="9ca7154a-5e47-450f-a762-bd6c5f8994d2"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{COUNT_REFUND_EFT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="51" y="95" width="32" height="11" uuid="ed6e1a4b-f819-464a-ad7a-9fd6e730cd02"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{COUNT_PAYMENT_EFT}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="158" y="106" width="33" height="11" uuid="41686323-8897-42bf-9d9d-00d8f94692d2"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{COUNT_REFUND_OTHER}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="51" y="106" width="32" height="11" uuid="c8d4d4a8-719d-4a5d-9e63-1032d114b69d"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{COUNT_PAYMENT_OTHER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="237" y="143" width="58" height="11" isRemoveLineWhenBlank="true" uuid="2b0723c6-b319-459d-951f-ef9f70ed31c0">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[$V{CCarray}[1].compareTo("NCC")!=0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{CCtotal-1}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="237" y="154" width="58" height="11" isRemoveLineWhenBlank="true" uuid="533447e4-ea7d-4453-9215-0bf588358b34">
+					<printWhenExpression><![CDATA[$V{CCarray}[2].compareTo("NCC")!=0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{CCtotal-2}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="237" y="165" width="58" height="12" isRemoveLineWhenBlank="true" uuid="a9a8d20b-26cc-43f1-88f5-a5455304485d">
+					<printWhenExpression><![CDATA[$V{CCarray}[3].compareTo("NCC")!=0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{CCtotal-3}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="237" y="177" width="58" height="11" isRemoveLineWhenBlank="true" uuid="9b2984fb-cfcd-4a01-90a7-a826f2af9ee3">
+					<printWhenExpression><![CDATA[$V{CCarray}[4].compareTo("NCC")!=0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{CCtotal-4}]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+				<reportElement key="textField-10" x="237" y="188" width="58" height="11" isRemoveLineWhenBlank="true" uuid="d09df6bf-d9fd-4ddf-934c-270f60b29c69">
+					<printWhenExpression><![CDATA[$V{CCarray}[5].compareTo("NCC")!=0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{CCtotal-5}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField" x="169" y="142" width="62" height="11" isRemoveLineWhenBlank="true" uuid="d3a53a83-8fba-4614-9e6a-8b9a3942e3c7">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[$V{CCarray}[1].compareTo("NCC")!=0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{CCarray}[1]]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField" x="169" y="153" width="62" height="12" isRemoveLineWhenBlank="true" uuid="d6563f3f-b910-442f-a4ad-eeec883a4a00">
+					<printWhenExpression><![CDATA[$V{CCarray}[2].compareTo("NCC")!=0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{CCarray}[2]]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField" x="169" y="165" width="62" height="11" isRemoveLineWhenBlank="true" uuid="b70ac51c-a07d-44cd-b472-8ffc512dbad5">
+					<printWhenExpression><![CDATA[$V{CCarray}[3].compareTo("NCC")!=0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{CCarray}[3]]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField" x="169" y="176" width="62" height="11" isRemoveLineWhenBlank="true" uuid="357bba4d-3696-4674-8ec8-b09d6db365bf">
+					<printWhenExpression><![CDATA[$V{CCarray}[4].compareTo("NCC")!=0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{CCarray}[4]]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-10" x="169" y="187" width="62" height="12" isRemoveLineWhenBlank="true" uuid="11dd85e8-3a26-4a90-bdce-c214a3fac7cd">
+					<printWhenExpression><![CDATA[$V{CCarray}[5].compareTo("NCC")!=0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{CCarray}[5]]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-28" x="169" y="130" width="126" height="11" uuid="76de90bc-e7f4-46e4-94bb-106bb460d001">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Credit Card Summary]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField" x="169" y="199" width="62" height="11" isRemoveLineWhenBlank="true" uuid="a725ebb0-0405-48b8-abe8-437a55e2d2a3">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<printWhenExpression><![CDATA[$V{CCarray}[6].compareTo("NCC")!=0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{CCarray}[6]]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="237" y="199" width="58" height="12" isRemoveLineWhenBlank="true" uuid="2e559b0d-03c0-4f04-af5d-5a8dce6f3343">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<printWhenExpression><![CDATA[$V{CCarray}[6].compareTo("NCC")!=0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{CCtotal-6}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField" x="169" y="210" width="62" height="11" isRemoveLineWhenBlank="true" uuid="52600bac-a185-40b1-a052-a695cf242ed0">
+					<printWhenExpression><![CDATA[$V{CCarray}[7].compareTo("NCC")!=0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{CCarray}[7]]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="237" y="211" width="58" height="11" isRemoveLineWhenBlank="true" uuid="33e2aabd-5255-44b1-a48e-80b0f17d2021">
+					<printWhenExpression><![CDATA[$V{CCarray}[7].compareTo("NCC")!=0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{CCtotal-7}]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-10" x="169" y="221" width="62" height="11" isRemoveLineWhenBlank="true" uuid="88222832-7f03-4ef4-bc9f-4e976af2ab77">
+					<printWhenExpression><![CDATA[$V{CCarray}[8].compareTo("NCC")!=0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{CCarray}[8]]]></textFieldExpression>
+			</textField>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="true">
+				<reportElement key="textField-10" x="237" y="222" width="58" height="11" isRemoveLineWhenBlank="true" uuid="d8458c7f-f020-49d6-b075-b049b8456eee">
+					<printWhenExpression><![CDATA[$V{CCarray}[8].compareTo("NCC")!=0]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$V{CCtotal-8}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-28" x="4" y="130" width="134" height="11" uuid="b74fb95d-8335-40d6-b826-723110c301ce">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Cash Summary]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-24" x="4" y="214" width="79" height="11" uuid="efa8d519-abb4-41da-a46e-0ada1eae67e6"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Total Cash to Bank:]]></text>
+			</staticText>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="83" y="214" width="59" height="11" uuid="d3bdbd25-8373-4e8b-88ea-f91dfc7c9c8e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{TOTAL_PAYMENT_CASH}.add($V{TOTAL_REFUND_CASH}).add($V{TOTAL_CASH_ROUNDING}).add($V{TOTAL_ADJUSTMENT_CASH})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-33" x="233" y="241" width="149" height="12" uuid="2c804c88-bf68-46ba-94b0-b3af13a50a7b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[(including Float, omitting Discounts)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-33" x="85" y="252" width="71" height="12" uuid="55390210-ad7f-4fa2-b652-21c9f8710b45">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Less Float:]]></text>
+			</staticText>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="161" y="252" width="71" height="12" uuid="7fe0730b-02b3-4455-b9de-c82a90b00735"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{tillBalance.cashFloat}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-33" x="85" y="264" width="71" height="12" uuid="397badde-7736-4419-82b1-cca637ef896d">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[To Deposit:]]></text>
+			</staticText>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="161" y="264" width="71" height="12" uuid="492eed95-59c1-44d3-a094-4f8a26b3031f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{TILL_TOTAL}.add($V{TOTAL_CASH_ROUNDING}).subtract($V{TOTAL_DISCOUNT})]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

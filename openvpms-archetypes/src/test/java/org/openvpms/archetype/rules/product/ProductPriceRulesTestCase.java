@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -34,7 +34,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -77,6 +76,19 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
      */
     private ProductPriceRules rules;
 
+    /**
+     * Sets up the test case.
+     * <p/>
+     * This sets up the practice to have a 10% tax on all products.
+     */
+    @Before
+    public void setUp() {
+        practice = TestHelper.getPractice(BigDecimal.TEN);
+        rules = new ProductPriceRules(getArchetypeService());
+        IMObjectBean bean = new IMObjectBean(practice);
+        Currencies currencies = new Currencies(getArchetypeService(), getLookupService());
+        currency = currencies.getCurrency(bean.getString("currency"));
+    }
 
     /**
      * Tests the {@link ProductPriceRules#getProductPrice(Product, String, Date, Lookup)} method.
@@ -218,22 +230,71 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
     }
 
     /**
-     * Tests the {@link ProductPriceRules#getPrice} method.
+     * Verifies that the default price is returned if no price has a matching pricing group.
      */
     @Test
-    public void testGetPrice() {
-        checkGetPrice(createMedication());
-        checkGetPrice(createMerchandise());
-        checkGetPrice(createService());
-        checkGetPrice(createPriceTemplate());
-        checkGetPrice(createTemplate());
+    public void testDefaultProductPriceForPriceGroup() {
+        Lookup groupA = TestHelper.getLookup(PRICING_GROUP, "A");
+
+        Date today = getToday();
+        ProductPrice price1 = createFixedPrice("0.0", "0.0", "0.0", "0.0", today, null, true);
+        ProductPrice price2 = createFixedPrice("1.0", "0.0", "0.0", "0.0", today, null, false);
+        Product product = TestHelper.createProduct();
+        product.addProductPrice(price1);
+        product.addProductPrice(price2);
+        save(product);
+
+        // for no pricing group, the default should be returned
+        ProductPrice price = rules.getProductPrice(product, ProductArchetypes.FIXED_PRICE, today, null);
+        assertEquals(price, price1);
+
+        // verify that when no price has a pricing group, and a group is specified, the default is returned
+        price = rules.getProductPrice(product, ProductArchetypes.FIXED_PRICE, today, groupA);
+        assertEquals(price, price1);
+
+        // verify that the default is not returned when another price has a matching group
+        price2.addClassification(groupA);
+        price = rules.getProductPrice(product, ProductArchetypes.FIXED_PRICE, today, groupA);
+        assertEquals(price, price2);
+
+        // no pricing group, the default should still be returned
+        price = rules.getProductPrice(product, ProductArchetypes.FIXED_PRICE, today, null);
+        assertEquals(price, price1);
+
+        // now make price2 a default. This should be returned over price1 when groupA is specified. Without the group
+        // which one is returned is non-deterministic
+        IMObjectBean bean = new IMObjectBean(price2);
+        bean.setValue("default", true);
+        price = rules.getProductPrice(product, ProductArchetypes.FIXED_PRICE, today, groupA);
+        assertEquals(price, price2);
     }
 
     /**
-     * Tests the {@link ProductPriceRules#getPrice} method, when the currency has a non-zero {@code minPrice}.
+     * Tests the {@link ProductPriceRules#getTaxIncPrice(BigDecimal, Product, Party, Currency)} and
+     * {@link ProductPriceRules#getTaxIncPrice(BigDecimal, BigDecimal, Currency)} methods.
+     * <p/>
+     * This verifies that tax rates can be expressed to 2 decimal places.
      */
     @Test
-    public void testGetPriceWithPriceRounding() {
+    public void testGetTaxIncPrice() {
+        BigDecimal taxRate = new BigDecimal("8.25");
+        practice = TestHelper.getPractice(taxRate);
+        ProductPrice unitPrice = createUnitPrice("16.665", "8.33", "100.10", "50.00", getToday(), null);     // active
+        Product product = TestHelper.createProduct();
+        product.addProductPrice(unitPrice);
+        BigDecimal price1 = rules.getTaxIncPrice(unitPrice.getPrice(), product, practice, currency);
+        checkEquals(new BigDecimal("18.04"), price1);
+
+        BigDecimal price2 = rules.getTaxIncPrice(unitPrice.getPrice(), taxRate, currency);
+        checkEquals(new BigDecimal("18.04"), price2);
+    }
+
+    /**
+     * Tests the {@link ProductPriceRules#getTaxIncPrice(BigDecimal, Product, Party, Currency)} method,
+     * when the currency has a non-zero {@code minPrice}.
+     */
+    @Test
+    public void testGetTaxIncPriceWithPriceRounding() {
         java.util.Currency AUD = java.util.Currency.getInstance("AUD");
 
         // remove tax as it complicates rounding tests
@@ -244,34 +305,33 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         Product product = TestHelper.createProduct();
         BigDecimal minDenomination = new BigDecimal("0.05");
         BigDecimal minPrice = new BigDecimal("0.20"); // round all prices to 0.20 increments
-        BigDecimal markup = BigDecimal.valueOf(100);  // 100% markup
 
         // test HALF_UP rounding
         Currency currency1 = new Currency(AUD, RoundingMode.HALF_UP, minDenomination, minPrice);
-        checkGetPrice(product, currency1, "0.09", markup, "0.20");
-        checkGetPrice(product, currency1, "0.15", markup, "0.40");
-        checkGetPrice(product, currency1, "0.22", markup, "0.40");
-        checkGetPrice(product, currency1, "0.25", markup, "0.60");
-        checkGetPrice(product, currency1, "0.75", markup, "1.60");
-        checkGetPrice(product, currency1, "1.25", markup, "2.60");
+        checkGetTaxIncPrice("0.18", "0.20", product, currency1);
+        checkGetTaxIncPrice("0.30", "0.40", product, currency1);
+        checkGetTaxIncPrice("0.44", "0.40", product, currency1);
+        checkGetTaxIncPrice("0.50", "0.60", product, currency1);
+        checkGetTaxIncPrice("1.50", "1.60", product, currency1);
+        checkGetTaxIncPrice("2.50", "2.60", product, currency1);
 
         // test HALF_DOWN rounding
         Currency currency2 = new Currency(AUD, RoundingMode.HALF_DOWN, minDenomination, minPrice);
-        checkGetPrice(product, currency2, "0.09", markup, "0.20");
-        checkGetPrice(product, currency2, "0.15", markup, "0.20");
-        checkGetPrice(product, currency2, "0.22", markup, "0.40");
-        checkGetPrice(product, currency2, "0.25", markup, "0.40");
-        checkGetPrice(product, currency2, "0.75", markup, "1.40");
-        checkGetPrice(product, currency2, "1.25", markup, "2.40");
+        checkGetTaxIncPrice("0.18", "0.20", product, currency2);
+        checkGetTaxIncPrice("0.30", "0.20", product, currency2);
+        checkGetTaxIncPrice("0.44", "0.40", product, currency2);
+        checkGetTaxIncPrice("0.50", "0.40", product, currency2);
+        checkGetTaxIncPrice("1.50", "1.40", product, currency2);
+        checkGetTaxIncPrice("2.50", "2.40", product, currency2);
 
         // test HALF_EVEN rounding
         Currency currency3 = new Currency(AUD, RoundingMode.HALF_EVEN, minDenomination, minPrice);
-        checkGetPrice(product, currency3, "0.09", markup, "0.20");
-        checkGetPrice(product, currency3, "0.15", markup, "0.40");
-        checkGetPrice(product, currency3, "0.22", markup, "0.40");
-        checkGetPrice(product, currency3, "0.25", markup, "0.40"); // round down as 0 is even
-        checkGetPrice(product, currency3, "0.75", markup, "1.60"); // round up as 1 is odd
-        checkGetPrice(product, currency3, "1.25", markup, "2.40"); // round down as 2 is even
+        checkGetTaxIncPrice("0.18", "0.20", product, currency3);
+        checkGetTaxIncPrice("0.30", "0.40", product, currency3);
+        checkGetTaxIncPrice("0.44", "0.40", product, currency3);
+        checkGetTaxIncPrice("0.50", "0.40", product, currency3); // round down as 0 is even
+        checkGetTaxIncPrice("1.50", "1.60", product, currency3); // round up as 1 is odd
+        checkGetTaxIncPrice("2.50", "2.40", product, currency3); // round down as 2 is even
     }
 
     /**
@@ -279,11 +339,10 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
      */
     @Test
     public void testGetMarkup() {
-        checkGetMarkup(createMedication());
-        checkGetMarkup(createMerchandise());
-        checkGetMarkup(createService());
-        checkGetMarkup(createPriceTemplate());
-        checkGetMarkup(createTemplate());
+        BigDecimal cost = BigDecimal.ONE;
+        BigDecimal price = new BigDecimal("2");
+        BigDecimal markup = rules.getMarkup(cost, price);
+        checkEquals(BigDecimal.valueOf(100), markup);
     }
 
     /**
@@ -300,7 +359,7 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
     }
 
     /**
-     * Tests the {@link ProductPriceRules#updateUnitPrices(Product, BigDecimal, Party, Currency)} method.
+     * Tests the {@link ProductPriceRules#updateUnitPrices(Product, BigDecimal, Currency)} method.
      */
     @Test
     public void testUpdatePrices() {
@@ -323,14 +382,14 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         save(product);
 
         BigDecimal newCost = BigDecimal.valueOf(2);
-        List<ProductPrice> updated = rules.updateUnitPrices(product, newCost, practice, currency);
+        List<ProductPrice> updated = rules.updateUnitPrices(product, newCost, currency);
         assertEquals(2, updated.size());
         assertFalse(updated.contains(unit1));
         assertTrue(updated.contains(unit2));
         assertTrue(updated.contains(unit3));
         assertFalse(updated.contains(unit4));
 
-        BigDecimal newPrice = new BigDecimal("4.40");
+        BigDecimal newPrice = BigDecimal.valueOf(4);
         checkPrice(unit1, cost, price);
         checkPrice(unit2, newCost, newPrice);
         checkPrice(unit3, newCost, newPrice);
@@ -338,14 +397,14 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
     }
 
     /**
-     * Tests the {@link ProductPriceRules#calcMaxDiscount(BigDecimal)} method.
+     * Tests the {@link ProductPriceRules#getMaxDiscount(BigDecimal)} method.
      */
     @Test
     public void testCalcMaxDiscount() {
-        checkEquals(ProductPriceRules.DEFAULT_MAX_DISCOUNT, rules.calcMaxDiscount(BigDecimal.ZERO));
-        checkEquals(new BigDecimal("33.3"), rules.calcMaxDiscount(BigDecimal.valueOf(50)));
-        checkEquals(new BigDecimal(50), rules.calcMaxDiscount(BigDecimal.valueOf(100)));
-        checkEquals(new BigDecimal("66.7"), rules.calcMaxDiscount(BigDecimal.valueOf(200)));
+        checkEquals(ProductPriceRules.DEFAULT_MAX_DISCOUNT, rules.getMaxDiscount(BigDecimal.ZERO));
+        checkEquals(new BigDecimal("33.3"), rules.getMaxDiscount(BigDecimal.valueOf(50)));
+        checkEquals(new BigDecimal(50), rules.getMaxDiscount(BigDecimal.valueOf(100)));
+        checkEquals(new BigDecimal("66.7"), rules.getMaxDiscount(BigDecimal.valueOf(200)));
     }
 
     /**
@@ -366,31 +425,17 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
     }
 
     /**
-     * Sets up the test case.
-     * <p/>
-     * This sets up the practice to have a 10% tax on all products.
-     */
-    @Before
-    public void setUp() {
-        practice = createPractice();
-        rules = new ProductPriceRules(getArchetypeService(), getLookupService());
-        IMObjectBean bean = new IMObjectBean(practice);
-        Currencies currencies = new Currencies(getArchetypeService(), getLookupService());
-        currency = currencies.getCurrency(bean.getString("currency"));
-    }
-
-    /**
      * Tests the {@link ProductPriceRules#getProductPrice(Product, BigDecimal, String, Date, Lookup)} method.
      *
      * @param product          the product to use
      * @param usePriceTemplate if {@code true} attach an <em>product.priceTemplate</em> to the product
      */
     private void checkProductPrice(Product product, boolean usePriceTemplate) {
-        ProductPrice fixed1 = createFixedPrice("2008-01-01", "2008-01-31", false);
-        ProductPrice fixed2 = createFixedPrice("2008-02-01", "2008-12-31", false);
+        ProductPrice fixed1 = createFixedPrice("2008-01-01", "2008-02-01", false);
+        ProductPrice fixed2 = createFixedPrice("2008-02-01", "2009-01-01", false);
         ProductPrice fixed3 = createFixedPrice("2008-03-01", null, true);
 
-        ProductPrice unit1 = createUnitPrice("2008-01-01", "2008-01-10");
+        ProductPrice unit1 = createUnitPrice("2008-01-01", "2008-01-11");
         ProductPrice unit2 = createUnitPrice("2008-02-01", null);
 
         assertNull(rules.getProductPrice(product, FIXED_PRICE, new Date(), null));
@@ -440,21 +485,21 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         Lookup groupA = TestHelper.getLookup(PRICING_GROUP, "A");
         Lookup groupB = TestHelper.getLookup(PRICING_GROUP, "B");
 
-        ProductPrice fixed1A = createFixedPrice("2008-01-01", "2008-01-31", false, groupA);
-        ProductPrice fixed1B = createFixedPrice("2008-01-01", "2008-01-31", false, groupB);
-        ProductPrice fixed1C = createFixedPrice("2008-01-01", "2008-01-31", false);
+        ProductPrice fixed1A = createFixedPrice("2008-01-01", "2008-02-01", false, groupA);
+        ProductPrice fixed1B = createFixedPrice("2008-01-01", "2008-02-01", false, groupB);
+        ProductPrice fixed1C = createFixedPrice("2008-01-01", "2008-02-01", false);
 
-        ProductPrice fixed2A = createFixedPrice("2008-02-01", "2008-12-31", false, groupA);
-        ProductPrice fixed2B = createFixedPrice("2008-02-01", "2008-12-31", false, groupB);
-        ProductPrice fixed2C = createFixedPrice("2008-02-01", "2008-12-31", false);
+        ProductPrice fixed2A = createFixedPrice("2008-02-01", "2009-01-01", false, groupA);
+        ProductPrice fixed2B = createFixedPrice("2008-02-01", "2009-01-01", false, groupB);
+        ProductPrice fixed2C = createFixedPrice("2008-02-01", "2009-01-01", false);
 
         ProductPrice fixed3A = createFixedPrice("2008-03-01", null, true, groupA);
         ProductPrice fixed3B = createFixedPrice("2008-03-01", null, true, groupB);
         ProductPrice fixed3C = createFixedPrice("2008-03-01", null, true);
 
-        ProductPrice unit1A = createUnitPrice("2008-01-01", "2008-01-10", groupA);
-        ProductPrice unit1B = createUnitPrice("2008-01-01", "2008-01-10", groupB);
-        ProductPrice unit1C = createUnitPrice("2008-01-01", "2008-01-10");
+        ProductPrice unit1A = createUnitPrice("2008-01-01", "2008-01-11", groupA);
+        ProductPrice unit1B = createUnitPrice("2008-01-01", "2008-01-11", groupB);
+        ProductPrice unit1C = createUnitPrice("2008-01-01", "2008-01-11");
 
         ProductPrice unit2A = createUnitPrice("2008-02-01", null, groupA);
         ProductPrice unit2B = createUnitPrice("2008-02-01", null, groupB);
@@ -530,14 +575,14 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         BigDecimal three = new BigDecimal("3.0");
 
         ProductPrice fixed1 = createFixedPrice(getDate("2008-01-01"), getDatetime("2008-01-31 10:00:00"), false);
-        ProductPrice fixed2 = createFixedPrice("2008-02-01", "2008-12-31", false);
+        ProductPrice fixed2 = createFixedPrice("2008-02-01", "2009-01-01", false);
         ProductPrice fixed3 = createFixedPrice("2008-03-01", null, true);
 
         fixed1.setPrice(one);
         fixed2.setPrice(two);
         fixed3.setPrice(three);
 
-        ProductPrice unit1 = createUnitPrice("2008-01-01", "2008-01-10");
+        ProductPrice unit1 = createUnitPrice("2008-01-01", "2008-01-11");
         ProductPrice unit2 = createUnitPrice("2008-02-01", null);
 
         unit1.setPrice(one);
@@ -614,9 +659,9 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         ProductPrice fixed1B = createFixedPrice(getDate("2008-01-01"), getDatetime("2008-01-31 10:00:00"), false,
                                                 groupB);
         ProductPrice fixed1C = createFixedPrice(getDate("2008-01-01"), getDatetime("2008-01-31 10:00:00"), false);
-        ProductPrice fixed2A = createFixedPrice("2008-02-01", "2008-12-31", false, groupA);
-        ProductPrice fixed2B = createFixedPrice("2008-02-01", "2008-12-31", false, groupB);
-        ProductPrice fixed2C = createFixedPrice("2008-02-01", "2008-12-31", false);
+        ProductPrice fixed2A = createFixedPrice("2008-02-01", "2009-01-01", false, groupA);
+        ProductPrice fixed2B = createFixedPrice("2008-02-01", "2009-01-01", false, groupB);
+        ProductPrice fixed2C = createFixedPrice("2008-02-01", "2009-01-01", false);
         ProductPrice fixed3A = createFixedPrice("2008-03-01", null, true, groupA);
         ProductPrice fixed3B = createFixedPrice("2008-03-01", null, true, groupB);
         ProductPrice fixed3C = createFixedPrice("2008-03-01", null, true);
@@ -631,9 +676,9 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         fixed3B.setPrice(three);
         fixed3C.setPrice(three);
 
-        ProductPrice unit1A = createUnitPrice("2008-01-01", "2008-01-10", groupA);
-        ProductPrice unit1B = createUnitPrice("2008-01-01", "2008-01-10", groupB);
-        ProductPrice unit1C = createUnitPrice("2008-01-01", "2008-01-10");
+        ProductPrice unit1A = createUnitPrice("2008-01-01", "2008-01-11", groupA);
+        ProductPrice unit1B = createUnitPrice("2008-01-01", "2008-01-11", groupB);
+        ProductPrice unit1C = createUnitPrice("2008-01-01", "2008-01-11");
         ProductPrice unit2A = createUnitPrice("2008-02-01", null, groupA);
         ProductPrice unit2B = createUnitPrice("2008-02-01", null, groupB);
         ProductPrice unit2C = createUnitPrice("2008-02-01", null);
@@ -959,40 +1004,16 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
     }
 
     /**
-     * Tests the {@link ProductPriceRules#getPrice(Product, BigDecimal, BigDecimal, Party, Currency)} method.
+     * Tests the {@link ProductPriceRules#getTaxIncPrice(BigDecimal, Product, Party, Currency)} method.
      *
-     * @param product the product to test
+     * @param taxExPrice  the tax-exclusive price
+     * @param taxIncPrice the expected tax-inclusive price
+     * @param product     the product, to determine tax rates
+     * @param currency    the currency, for rounding
      */
-    private void checkGetPrice(Product product) {
-        BigDecimal markup = BigDecimal.valueOf(100); // 100% markup
-        checkGetPrice(product, currency, "1.00", markup, "2.20");
-    }
-
-    /**
-     * Tests the {@link ProductPriceRules#getPrice(Product, BigDecimal, BigDecimal, Party, Currency)} method.
-     *
-     * @param product       the product
-     * @param currency      the currency
-     * @param cost          the cost
-     * @param markup        the markup
-     * @param expectedPrice the epxected price
-     */
-    private void checkGetPrice(Product product, Currency currency, String cost, BigDecimal markup,
-                               String expectedPrice) {
-        BigDecimal price = rules.getPrice(product, new BigDecimal(cost), markup, practice, currency);
-        checkEquals(new BigDecimal(expectedPrice), price);
-    }
-
-    /**
-     * Tests the {@link ProductPriceRules#getMarkup} method.
-     *
-     * @param product the product to test
-     */
-    private void checkGetMarkup(Product product) {
-        BigDecimal cost = BigDecimal.ONE;
-        BigDecimal price = new BigDecimal("2.20");
-        BigDecimal markup = rules.getMarkup(product, cost, price, practice);
-        checkEquals(BigDecimal.valueOf(100), markup);
+    private void checkGetTaxIncPrice(String taxExPrice, String taxIncPrice, Product product, Currency currency) {
+        BigDecimal price = rules.getTaxIncPrice(new BigDecimal(taxExPrice), product, practice, currency);
+        checkEquals(new BigDecimal(taxIncPrice), price);
     }
 
     /**
@@ -1113,23 +1134,4 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         assertEquals(expected, rules.getProductPrice(product, price, shortName, date, pricingGroup));
     }
 
-    /**
-     * Helper to create an <em>party.organisationPractice</em> with a 10% tax rate.
-     *
-     * @return the practice
-     */
-    private Party createPractice() {
-        Party practice = TestHelper.getPractice();
-
-        // add a 10% tax rate
-        Lookup tax = (Lookup) create("lookup.taxType");
-        IMObjectBean taxBean = new IMObjectBean(tax);
-        taxBean.setValue("code", "XTAXTYPE" + Math.abs(new Random().nextInt()));
-        taxBean.setValue("rate", new BigDecimal(10));
-        taxBean.save();
-        practice.addClassification(tax);
-        save(practice);
-
-        return practice;
-    }
 }

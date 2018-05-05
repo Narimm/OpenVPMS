@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -31,16 +31,11 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.system.ServiceHelper;
 
 /**
- * A test {@link CustomerChargeActEditor}.
+ * A test {@link DefaultCustomerChargeActEditor}.
  *
  * @author Tim Anderson
  */
-public class TestChargeEditor extends CustomerChargeActEditor {
-
-    /**
-     * The editor queue.
-     */
-    private ChargeEditorQueue queue;
+public class TestChargeEditor extends DefaultCustomerChargeActEditor {
 
     /**
      * The pharmacy order service.
@@ -88,7 +83,7 @@ public class TestChargeEditor extends CustomerChargeActEditor {
      * @return the corresponding editor
      */
     public CustomerChargeActItemEditor getEditor(Act object) {
-        return (CustomerChargeActItemEditor) getItems().getEditor(object);
+        return getItems().getEditor(object);
     }
 
     /**
@@ -96,11 +91,8 @@ public class TestChargeEditor extends CustomerChargeActEditor {
      *
      * @return the editor queue
      */
-    public ChargeEditorQueue getQueue() {
-        if (queue == null) {
-            queue = new ChargeEditorQueue();
-        }
-        return queue;
+    public EditorQueue getQueue() {
+        return getItems().getEditorQueue();
     }
 
     /**
@@ -122,6 +114,16 @@ public class TestChargeEditor extends CustomerChargeActEditor {
     }
 
     /**
+     * Returns the items collection editor.
+     *
+     * @return the items collection editor. May be {@code null}
+     */
+    @Override
+    public TestChargeItemRelationshipCollectionEditor getItems() {
+        return (TestChargeItemRelationshipCollectionEditor) super.getItems();
+    }
+
+    /**
      * Creates a collection editor for the items collection.
      *
      * @param act   the act
@@ -130,12 +132,7 @@ public class TestChargeEditor extends CustomerChargeActEditor {
      */
     @Override
     protected ActRelationshipCollectionEditor createItemsEditor(Act act, CollectionProperty items) {
-        ActRelationshipCollectionEditor editor = super.createItemsEditor(act, items);
-        if (editor instanceof ChargeItemRelationshipCollectionEditor) {
-            // register a handler for act popups
-            ((ChargeItemRelationshipCollectionEditor) editor).setEditorQueue(getQueue());
-        }
-        return editor;
+        return new TestChargeItemRelationshipCollectionEditor(items, act, getLayoutContext());
     }
 
     /**

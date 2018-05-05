@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -75,7 +75,7 @@ class PharmacyProducts {
             pharmacy = (Entity) cache.get(bean.getNodeTargetObjectRef("pharmacy"));
             if (pharmacy == null) {
                 // use the pharmacy linked to the product type, if present
-                Entity type = (Entity) cache.get(bean.getNodeSourceObjectRef("type"));
+                Entity type = (Entity) cache.get(bean.getNodeTargetObjectRef("type"));
                 if (type != null) {
                     IMObjectBean typeBean = new IMObjectBean(type);
                     pharmacy = (Entity) cache.get(typeBean.getNodeTargetObjectRef("pharmacy"));

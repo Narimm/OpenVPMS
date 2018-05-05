@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -45,7 +46,7 @@ import java.util.Date;
  *
  * @author Tim Anderson
  */
-public class AbstractActEditor extends AbstractIMObjectEditor {
+public abstract class AbstractActEditor extends AbstractIMObjectEditor {
 
     /**
      * Listener for <em>startTime</em> changes.
@@ -86,7 +87,19 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
                 onEndTimeChanged();
             }
         };
-        initParticipant("author", context.getContext().getUser());
+        if (act.isNew()) {
+            initParticipant("author", context.getContext().getUser());
+        }
+    }
+
+    /**
+     * Returns the object being edited.
+     *
+     * @return the object being edited
+     */
+    @Override
+    public Act getObject() {
+        return (Act) super.getObject();
     }
 
     /**
@@ -113,7 +126,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * @return the act start time. May be {@code null}
      */
     public Date getStartTime() {
-        return ((Act) getObject()).getActivityStartTime();
+        return getObject().getActivityStartTime();
     }
 
     /**
@@ -131,7 +144,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * @return the end time. May be {@code null}
      */
     public Date getEndTime() {
-        return ((Act) getObject()).getActivityEndTime();
+        return getObject().getActivityEndTime();
     }
 
     /**
@@ -158,12 +171,12 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * @return the status. May be {@code null}
      */
     public String getStatus() {
-        return ((Act) getObject()).getStatus();
+        return getObject().getStatus();
     }
 
     /**
      * Validates the object.
-     * <p/>
+     * <p>
      * This extends validation by ensuring that the start time is less than the end time, if non-null.
      *
      * @param validator the validator
@@ -180,19 +193,18 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
 
     /**
      * Deletes the object.
-     * <p/>
-     * This uses {@link #deleteChildren()} to delete the children prior to
-     * invoking {@link #deleteObject()}.
+     * <p>
+     * This uses {@link #deleteChildren()} to delete the children prior to invoking {@link #deleteObject()}.
      *
-     * @return {@code true} if the delete was successful
+     * @throws OpenVPMSException     if the delete fails
      * @throws IllegalStateException if the act is POSTED
      */
     @Override
-    protected boolean doDelete() {
+    protected void doDelete() {
         if (ActStatus.POSTED.equals(getStatus())) {
             throw new IllegalStateException("Cannot delete " + ActStatus.POSTED + " act");
         }
-        return super.doDelete();
+        super.doDelete();
     }
 
     /**
@@ -202,8 +214,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * @param entity the participation entity. May be {@code null}
      */
     protected void initParticipant(String name, IMObject entity) {
-        IMObjectReference ref
-                = (entity != null) ? entity.getObjectReference() : null;
+        IMObjectReference ref = (entity != null) ? entity.getObjectReference() : null;
         initParticipant(name, ref);
     }
 
@@ -304,7 +315,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
         if (editor != null) {
             result = editor.getEntityRef();
         } else {
-            ActBean bean = new ActBean((Act) getObject());
+            ActBean bean = new ActBean(getObject());
             if (bean.hasNode(name)) {
                 result = bean.getNodeParticipantRef(name);
             } else {
@@ -342,7 +353,7 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
      * @param create if {@code true} force creation of the edit components if
      *               it hasn't already been done
      * @return the editor corresponding to {@code name} or }null} if
-     *         none exists or hasn't been created
+     * none exists or hasn't been created
      */
     @SuppressWarnings("unchecked")
     protected <T extends Entity> ParticipationEditor<T> getParticipationEditor(String name, boolean create) {
@@ -359,6 +370,11 @@ public class AbstractActEditor extends AbstractIMObjectEditor {
                 if (current instanceof ParticipationEditor) {
                     result = (ParticipationEditor<T>) current;
                 }
+            }
+        } else if (editor instanceof SingleParticipationCollectionEditor) {
+            IMObjectEditor current = ((SingleParticipationCollectionEditor) editor).getCurrentEditor();
+            if (current instanceof ParticipationEditor) {
+                result = (ParticipationEditor<T>) current;
             }
         }
         return result;

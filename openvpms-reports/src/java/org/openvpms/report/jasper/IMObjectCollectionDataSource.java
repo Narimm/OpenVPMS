@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -30,6 +30,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.util.PropertySet;
+import org.openvpms.report.Parameters;
 import org.openvpms.report.ReportException;
 
 import java.util.Collections;
@@ -43,7 +44,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource implements JRRewindableDataSource {
+public class IMObjectCollectionDataSource extends AbstractDataSource implements JRRewindableDataSource {
 
     /**
      * The collection.
@@ -54,11 +55,6 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource imp
      * The collection iterator.
      */
     private Iterator<IMObject> iterator;
-
-    /**
-     * Additional fields. May be {@code null}
-     */
-    private final PropertySet fields;
 
     /**
      * The current object.
@@ -72,9 +68,29 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource imp
 
 
     /**
+     * Constructs a {@link IMObjectCollectionDataSource} for a collection of objects.
+     *
+     * @param objects    the objects
+     * @param parameters the report parameters. May be {@code null}
+     * @param fields     additional report fields. These override any in the report. May be {@code null}
+     * @param service    the archetype service
+     * @param lookups    the lookup service
+     * @param handlers   the document handlers
+     * @param functions  the JXPath extension functions
+     */
+    public IMObjectCollectionDataSource(Iterable<IMObject> objects, Parameters parameters, PropertySet fields,
+                                        IArchetypeService service, ILookupService lookups, DocumentHandlers handlers,
+                                        Functions functions) {
+        super(parameters, fields, service, lookups, handlers, functions);
+        collection = objects;
+        iterator = collection.iterator();
+    }
+
+    /**
      * Constructs a {@link IMObjectCollectionDataSource} for a collection node.
      *
      * @param parent     the parent object
+     * @param parameters the report parameters. May be {@code null}
      * @param fields     additional report fields. These override any in the report. May be {@code null}
      * @param descriptor the collection descriptor
      * @param service    the archetype service
@@ -83,36 +99,17 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource imp
      * @param functions  the JXPath extension functions
      * @param sortNodes  the sort nodes
      */
-    public IMObjectCollectionDataSource(IMObject parent, PropertySet fields, NodeDescriptor descriptor,
-                                        IArchetypeService service, ILookupService lookups, DocumentHandlers handlers,
-                                        Functions functions, String... sortNodes) {
-        super(service, lookups, handlers, functions);
+    protected IMObjectCollectionDataSource(IMObject parent, Parameters parameters, PropertySet fields,
+                                           NodeDescriptor descriptor, IArchetypeService service, ILookupService lookups,
+                                           DocumentHandlers handlers, Functions functions, String... sortNodes) {
+        super(parameters, fields, service, lookups, handlers, functions);
         List<IMObject> values = descriptor.getChildren(parent);
         for (String sortNode : sortNodes) {
             sort(values, sortNode);
         }
         collection = values;
         iterator = collection.iterator();
-        this.fields = fields;
         displayName = descriptor.getDisplayName();
-    }
-
-    /**
-     * Constructs a {@link IMObjectCollectionDataSource} for a collection of objects.
-     *
-     * @param objects   the objects
-     * @param fields    additional report fields. These override any in the report. May be {@code null}
-     * @param service   the archetype service
-     * @param lookups   the lookup service
-     * @param handlers  the document handlers
-     * @param functions the JXPath extension functions
-     */
-    public IMObjectCollectionDataSource(Iterable<IMObject> objects, PropertySet fields, IArchetypeService service,
-                                        ILookupService lookups, DocumentHandlers handlers, Functions functions) {
-        super(service, lookups, handlers, functions);
-        collection = objects;
-        iterator = collection.iterator();
-        this.fields = fields;
     }
 
     /**
@@ -123,8 +120,8 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource imp
     public boolean next() {
         boolean result = iterator.hasNext();
         if (result) {
-            current = new IMObjectDataSource(iterator.next(), fields, getArchetypeService(), getLookupService(),
-                                             getDocumentHandlers(), getFunctions());
+            current = new IMObjectDataSource(iterator.next(), getParameters(), getFields(), getArchetypeService(),
+                                             getLookupService(), getDocumentHandlers(), getFunctions());
         }
         return result;
     }
@@ -153,22 +150,53 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource imp
     }
 
     /**
-     * Gets the field value for the current position.
+     * Returns the field value.
      *
-     * @return an object containing the field value. The object type must be the
-     *         field object type.
-     * @throws JRException for any error
+     * @param name the field name
+     * @return the field value. May be {@code null}
      */
-    public Object getFieldValue(JRField field) throws JRException {
+    @Override
+    public Object getFieldValue(String name) {
         Object result = null;
         if (current != null) {
-            if (field.getName().equals("collectionDisplayName")) {
+            if ("collectionDisplayName".equals(name)) {
                 result = displayName;
             } else {
-                result = current.getFieldValue(field);
+                result = current.getFieldValue(name);
             }
         }
         return result;
+    }
+
+    /**
+     * Gets the field value for the current position.
+     *
+     * @return an object containing the field value. The object type must be the field object type.
+     */
+    public Object getFieldValue(JRField field) {
+        return getFieldValue(field.getName());
+    }
+
+    /**
+     * Evaluates an xpath expression.
+     *
+     * @param expression the expression
+     * @return the result of the expression. May be {@code null}
+     */
+    public Object evaluate(String expression) {
+        return current != null ? current.evaluate(expression) : null;
+    }
+
+    /**
+     * Evaluates an xpath expression against an object.
+     *
+     * @param object     the object
+     * @param expression the expression
+     * @return the result of the expression. May be {@code null}
+     */
+    @Override
+    public Object evaluate(Object object, String expression) {
+        return current != null ? current.evaluate(object, expression) : null;
     }
 
     /**
@@ -190,7 +218,7 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource imp
         Comparator comparator = ComparatorUtils.naturalComparator();
         comparator = ComparatorUtils.nullLowComparator(comparator);
 
-        Transformer transformer = new NodeTransformer(sortNode, getArchetypeService());
+        Transformer transformer = new NodeTransformer(sortNode, getArchetypeService(), getLookupService());
         TransformingComparator transComparator = new TransformingComparator(transformer, comparator);
         Collections.sort(objects, transComparator);
     }
@@ -207,16 +235,22 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource imp
          */
         private final IArchetypeService service;
 
+        /**
+         * The lookup service.
+         */
+        private final ILookupService lookups;
 
         /**
          * Constructs a {@code NodeTransformer}.
          *
          * @param name    the field name
          * @param service the archetype service
+         * @param lookups the lookup service
          */
-        public NodeTransformer(String name, IArchetypeService service) {
+        public NodeTransformer(String name, IArchetypeService service, ILookupService lookups) {
             this.name = name;
             this.service = service;
+            this.lookups = lookups;
         }
 
         /**
@@ -228,7 +262,7 @@ public class IMObjectCollectionDataSource extends AbstractIMObjectDataSource imp
         public Object transform(Object input) {
             Object result;
             IMObject object = (IMObject) input;
-            NodeResolver resolver = new NodeResolver(object, service);
+            NodeResolver resolver = new NodeResolver(object, service, lookups);
             try {
                 result = resolver.getObject(name);
                 if (!(result instanceof Comparable)) {

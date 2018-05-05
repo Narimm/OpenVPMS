@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -19,22 +19,24 @@ package org.openvpms.web.component.im.edit;
 import echopointng.KeyStrokes;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.macro.MacroDialog;
-import org.openvpms.web.component.property.DefaultValidator;
-import org.openvpms.web.component.property.ValidationHelper;
-import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.VetoListener;
 import org.openvpms.web.echo.event.Vetoable;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -54,6 +56,11 @@ public abstract class AbstractEditDialog extends PopupDialog {
     private IMObjectEditor editor;
 
     /**
+     * The alert manager.
+     */
+    private final AlertManager alerts;
+
+    /**
      * Determines if the dialog should save when apply and OK are pressed.
      */
     private final boolean save;
@@ -69,6 +76,16 @@ public abstract class AbstractEditDialog extends PopupDialog {
     private final Context context;
 
     /**
+     * The current component.
+     */
+    private Component current;
+
+    /**
+     * The current component focus group.
+     */
+    private FocusGroup currentGroup;
+
+    /**
      * The current help context.
      */
     private HelpContext helpContext;
@@ -78,9 +95,13 @@ public abstract class AbstractEditDialog extends PopupDialog {
      */
     protected static final String STYLE = "EditDialog";
 
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(AbstractEditDialog.class);
 
     /**
-     * Constructs an {@code AbstractEditDialog}.
+     * Constructs an {@link AbstractEditDialog}.
      *
      * @param title   the dialog title
      * @param buttons the buttons to display
@@ -93,7 +114,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
     }
 
     /**
-     * Constructs an {@code AbstractEditDialog}.
+     * Constructs an {@link AbstractEditDialog}.
      *
      * @param editor  the editor
      * @param buttons the buttons to display
@@ -105,19 +126,20 @@ public abstract class AbstractEditDialog extends PopupDialog {
     }
 
     /**
-     * Constructs an {@code AbstractEditDialog}.
+     * Constructs an {@link AbstractEditDialog}.
      *
      * @param editor  the editor. May be {@code null}
-     * @param title   the dialog title
+     * @param title   the dialog title. May be {@code null}
      * @param buttons the buttons to display
      * @param save    if {@code true}, saves the editor when the 'OK' or 'Apply' buttons are pressed.
      * @param context the context
-     * @param help    the help context
+     * @param help    the help context. May be {@code null}
      */
     protected AbstractEditDialog(IMObjectEditor editor, String title, String[] buttons, boolean save,
                                  Context context, HelpContext help) {
         super(title, STYLE, buttons, help);
         this.context = context;
+        alerts = new AlertManager(getContentPane(), 2);
         setModal(true);
         setEditor(editor);
         this.save = save;
@@ -140,6 +162,44 @@ public abstract class AbstractEditDialog extends PopupDialog {
      */
     public IMObjectEditor getEditor() {
         return editor;
+    }
+
+    /**
+     * Saves the current object, if saving is enabled.
+     * <p/>
+     * If it is, and the object is valid, then {@link #doSave(IMObjectEditor)} is called.
+     * If {@link #doSave(IMObjectEditor)} fails (i.e returns {@code false}), then {@link #saveFailed()} is called.
+     *
+     * @return {@code true} if the object was saved
+     */
+    public boolean save() {
+        boolean result = false;
+        if (canSave()) {
+            IMObjectEditorSaver saver = new IMObjectEditorSaver() {
+                @Override
+                protected void save(IMObjectEditor editor, TransactionStatus status) {
+                    AbstractEditDialog.this.doSave(editor);
+                }
+
+                @Override
+                protected boolean reload(IMObjectEditor editor) {
+                    return AbstractEditDialog.this.reload(editor);
+                }
+
+                @Override
+                protected void failed(IMObjectEditor editor, Throwable exception) {
+                    super.failed(editor, exception);
+                    saveFailed();
+                }
+
+                @Override
+                protected void reloaded(String title, String message) {
+                    AbstractEditDialog.this.reloaded(title, message);
+                }
+            };
+            result = saver.save(editor);
+        }
+        return result;
     }
 
     /**
@@ -177,6 +237,16 @@ public abstract class AbstractEditDialog extends PopupDialog {
     }
 
     /**
+     * Returns the help context.
+     *
+     * @return the help context
+     */
+    @Override
+    public HelpContext getHelpContext() {
+        return (helpContext != null) ? helpContext : super.getHelpContext();
+    }
+
+    /**
      * Lays out the component prior to display.
      */
     @Override
@@ -188,6 +258,15 @@ public abstract class AbstractEditDialog extends PopupDialog {
                 group.setFocus();
             }
         }
+    }
+
+    /**
+     * Determines if the current object can be saved.
+     *
+     * @return {@code true} if the current object can be saved
+     */
+    protected boolean canSave() {
+        return !savedDisabled && save && editor != null;
     }
 
     /**
@@ -247,10 +326,9 @@ public abstract class AbstractEditDialog extends PopupDialog {
         if (editor != null) {
             setTitle(editor.getTitle());
             editor.addPropertyChangeListener(
-                    IMObjectEditor.COMPONENT_CHANGED_PROPERTY,
-                    new PropertyChangeListener() {
+                    IMObjectEditor.COMPONENT_CHANGED_PROPERTY, new PropertyChangeListener() {
                         public void propertyChange(PropertyChangeEvent event) {
-                            onComponentChange(event);
+                            onComponentChange();
                         }
                     });
         }
@@ -269,62 +347,42 @@ public abstract class AbstractEditDialog extends PopupDialog {
     }
 
     /**
-     * Saves the current object, if saving is enabled.
-     * <p/>
-     * If it is, and the object is valid, then {@link #doSave()} is called. If {@link #doSave()} fails
-     * (i.e returns {@code false}), then {@link #saveFailed()} is called.
-     *
-     * @return {@code true} if the object was saved
-     */
-    protected boolean save() {
-        boolean result = false;
-        if (!savedDisabled) {
-            if (save && editor != null) {
-                Validator validator = new DefaultValidator();
-                if (editor.validate(validator)) {
-                    result = doSave();
-                    if (!result) {
-                        saveFailed();
-                    }
-                } else {
-                    ValidationHelper.showError(validator);
-                }
-            }
-        }
-        return result;
-    }
-
-    /**
      * Saves the current object.
-     * <p/>
-     * This saves the editor and invokes {@link #saved(IMObjectEditor)} in a single transaction, to allow subclasses
-     * to participate in the save transaction.
-     *
-     * @return {@code true} if the object was saved
-     */
-    protected boolean doSave() {
-        boolean result = (editor != null);
-        if (result) {
-            result = SaveHelper.save(editor, new TransactionCallback<Boolean>() {
-                @Override
-                public Boolean doInTransaction(TransactionStatus transactionStatus) {
-                    return saved(editor);
-                }
-            });
-        }
-        return result;
-    }
-
-    /**
-     * Invoked when the editor is saved, to allow subclasses to participate in the save transaction.
-     * <p/>
-     * This implementation always returns {@code true}.
      *
      * @param editor the editor
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
-    protected boolean saved(IMObjectEditor editor) {
-        return true;
+    protected void doSave(IMObjectEditor editor) {
+        editor.save();
+    }
+
+    /**
+     * Invoked to reload the object being edited when save fails.
+     *
+     * @param editor the editor
+     * @return a {@code true} if the editor was reloaded
+     */
+    protected boolean reload(IMObjectEditor editor) {
+        IMObjectEditor newEditor = null;
+        try {
+            newEditor = editor.newInstance();
+            if (newEditor != null) {
+                setEditor(newEditor);
+            }
+        } catch (Throwable exception) {
+            log.error("Failed to reload editor", exception);
+        }
+        return newEditor != null;
+    }
+
+    /**
+     * Invoked to display a message that saving failed, and the editor has been reverted.
+     *
+     * @param title   the message title
+     * @param message the message
+     */
+    protected void reloaded(String title, String message) {
+        ErrorHandler.getInstance().error(title, message, null, null);
     }
 
     /**
@@ -353,6 +411,9 @@ public abstract class AbstractEditDialog extends PopupDialog {
      */
     protected void addEditor(IMObjectEditor editor) {
         setComponent(editor.getComponent(), editor.getFocusGroup(), editor.getHelpContext());
+
+        // register a listener to handle alerts
+        editor.setAlertListener(getAlertListener());
     }
 
     /**
@@ -361,7 +422,8 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @param editor the editor to remove
      */
     protected void removeEditor(IMObjectEditor editor) {
-        removeComponent(editor.getComponent(), editor.getFocusGroup());
+        editor.setAlertListener(null);
+        removeComponent();
     }
 
     /**
@@ -372,36 +434,59 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * @param context   the help context
      */
     protected void setComponent(Component component, FocusGroup group, HelpContext context) {
-        getContainer().add(component);
+        setComponent(component, group, context, true);
+    }
+
+    /**
+     * Sets the component.
+     *
+     * @param component the component
+     * @param group     the focus group
+     * @param context   the help context
+     * @param focus     if {@code true}, move the focus
+     */
+    protected void setComponent(Component component, FocusGroup group, HelpContext context, boolean focus) {
+        SplitPane layout = getLayout();
+        if (current != null) {
+            layout.remove(current);
+        }
+        if (currentGroup != null) {
+            getFocusGroup().remove(currentGroup);
+        }
+        layout.add(component);
         getFocusGroup().add(0, group);
-        if (getParent() != null) {
+        if (focus && getParent() != null) {
             // focus in the component
             group.setFocus();
         }
+        current = component;
+        currentGroup = group;
         helpContext = context;
     }
 
     /**
-     * Removes the component.
-     *
-     * @param component the component
-     * @param group     the focus group
+     * Removes the existing component and any alerts.
      */
-    protected void removeComponent(Component component, FocusGroup group) {
-        getContainer().remove(component);
-        getFocusGroup().remove(group);
+    protected void removeComponent() {
+        if (current != null) {
+            getLayout().remove(current);
+            current = null;
+        }
+        alerts.clear();
+        if (currentGroup != null) {
+            getFocusGroup().remove(currentGroup);
+            currentGroup = null;
+        }
         helpContext = null;
     }
 
     /**
-     * Returns the component containing the editor.
-     * <p/>
-     * This implementation returns {@link #getLayout()}.
+     * Returns the alert listener.
      *
-     * @return the editor container
+     * @return the alert listener
      */
-    protected Component getContainer() {
-        return getLayout();
+    protected AlertListener getAlertListener() {
+        return alerts.getListener();
     }
 
     /**
@@ -411,17 +496,6 @@ public abstract class AbstractEditDialog extends PopupDialog {
      */
     protected Context getContext() {
         return context;
-    }
-
-    /**
-     * Invoked when the component changes.
-     *
-     * @param event the component change event
-     */
-    protected void onComponentChange(PropertyChangeEvent event) {
-        Component container = getContainer();
-        container.remove((Component) event.getOldValue());
-        container.add((Component) event.getNewValue());
     }
 
     /**
@@ -439,16 +513,6 @@ public abstract class AbstractEditDialog extends PopupDialog {
      */
     protected boolean isSaveDisabled() {
         return savedDisabled;
-    }
-
-    /**
-     * Returns the help context.
-     *
-     * @return the help context
-     */
-    @Override
-    public HelpContext getHelpContext() {
-        return (helpContext != null) ? helpContext : super.getHelpContext();
     }
 
     /**
@@ -477,6 +541,13 @@ public abstract class AbstractEditDialog extends PopupDialog {
         } else {
             return OK;
         }
+    }
+
+    /**
+     * Invoked when the editor component changes.
+     */
+    private void onComponentChange() {
+        setComponent(editor.getComponent(), editor.getFocusGroup(), editor.getHelpContext(), false);
     }
 
     /**

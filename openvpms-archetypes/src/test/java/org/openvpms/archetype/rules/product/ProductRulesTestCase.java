@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -20,17 +20,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.product.ProductPrice;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -81,11 +81,10 @@ public class ProductRulesTestCase extends AbstractProductTest {
 
         // add a dose. This should be copied.
         Lookup species = TestHelper.getLookup(PatientArchetypes.SPECIES, "CANINE");
-        Entity dose = createDose(species, ZERO, TEN, ONE);
+        Entity dose = createDose(species, ZERO, TEN, ONE, ONE);
         ProductTestHelper.addDose(product, dose);
 
-        Party stockLocation = (Party) create(StockArchetypes.STOCK_LOCATION);
-        stockLocation.setName("STOCK-LOCATION-" + stockLocation.hashCode());
+        Party stockLocation = ProductTestHelper.createStockLocation();
         stockRules.updateStock(product, stockLocation, TEN);
 
         // add a linked product. This should *not* be copied
@@ -142,25 +141,52 @@ public class ProductRulesTestCase extends AbstractProductTest {
     }
 
     /**
+     * Copies a service product with a linked location.
+     */
+    @Test
+    public void testCopyProductWithLocation() {
+        Product product = ProductTestHelper.createService();
+
+        // add a location exclusion. This should not be copied.
+        IMObjectBean bean = new IMObjectBean(product);
+        Party location = TestHelper.createLocation();
+        bean.addNodeTarget("locations", location);
+        bean.save();
+
+        // now perform the copy
+        String name = "Copy";
+        Product copy = rules.copy(product, name);
+
+        // verify it is a copy
+        assertTrue(product.getId() != copy.getId());
+        assertEquals(product.getArchetypeId(), copy.getArchetypeId());
+        assertEquals(name, copy.getName());
+
+        // verify the copy refers to the same location
+        EntityBean copyBean = new EntityBean(copy);
+        assertEquals(copyBean.getNodeTargetEntity("locations"), location);
+    }
+
+    /**
      * Tests the {@link ProductRules#getDose(Product, Weight, String)} method.
      */
     @Test
     public void testGetDose() {
-        Product product = ProductTestHelper.createProduct(BigDecimal.valueOf(2));
+        Product product = ProductTestHelper.createProductWithConcentration(BigDecimal.valueOf(2));
 
         Lookup canine = TestHelper.getLookup(PatientArchetypes.SPECIES, "CANINE");
         Lookup feline = TestHelper.getLookup(PatientArchetypes.SPECIES, "FELINE");
 
-        Entity dose1 = createDose(canine, ZERO, TEN, ONE);                                   // canine 0-10kg
-        Entity dose2 = createDose(feline, ZERO, TEN, BigDecimal.valueOf(2));                 // feline 0-10kg
-        Entity dose3 = createDose(null, TEN, BigDecimal.valueOf(20), BigDecimal.valueOf(4)); // all species 10-20kg
+        Entity dose1 = createDose(canine, ZERO, TEN, ONE, ONE);                                      // canine 0-10kg
+        Entity dose2 = createDose(feline, ZERO, TEN, BigDecimal.valueOf(2), BigDecimal.valueOf(2));  // feline 0-10kg
+        Entity dose3 = createDose(null, TEN, BigDecimal.valueOf(20), BigDecimal.valueOf(4), ONE); // all species 10-20kg
 
         ProductTestHelper.addDose(product, dose1);
         ProductTestHelper.addDose(product, dose2);
         ProductTestHelper.addDose(product, dose3);
 
         checkEquals(new BigDecimal("0.5"), rules.getDose(product, new Weight(1), "CANINE"));
-        checkEquals(1, rules.getDose(product, new Weight(1), "FELINE"));
+        checkEquals(2, rules.getDose(product, new Weight(1), "FELINE"));
 
         checkEquals(new BigDecimal(20), rules.getDose(product, new Weight(10), "CANINE")); // picks up all species dose
         checkEquals(ZERO, rules.getDose(product, new Weight(20), "FELINE"));               // no dose for any species
@@ -177,16 +203,16 @@ public class ProductRulesTestCase extends AbstractProductTest {
     @Test
     public void testGetDoseRounding() {
         BigDecimal concentration = BigDecimal.valueOf(50);
-        Product product1 = ProductTestHelper.createProduct(concentration);
-        Product product2 = ProductTestHelper.createProduct(concentration);
-        Product product3 = ProductTestHelper.createProduct(concentration);
+        Product product1 = ProductTestHelper.createProductWithConcentration(concentration);
+        Product product2 = ProductTestHelper.createProductWithConcentration(concentration);
+        Product product3 = ProductTestHelper.createProductWithConcentration(concentration);
 
         BigDecimal rate = BigDecimal.valueOf(4);
 
         // use the same concentration and date, but round to different no. of places for each weight range
-        ProductTestHelper.addDose(product1, createDose(null, ZERO, ONE_HUNDRED, rate, 0));
-        ProductTestHelper.addDose(product2, createDose(null, ZERO, ONE_HUNDRED, rate, 1));
-        ProductTestHelper.addDose(product3, createDose(null, ZERO, ONE_HUNDRED, rate, 2));
+        ProductTestHelper.addDose(product1, createDose(null, ZERO, ONE_HUNDRED, rate, ONE, 0));
+        ProductTestHelper.addDose(product2, createDose(null, ZERO, ONE_HUNDRED, rate, ONE, 1));
+        ProductTestHelper.addDose(product3, createDose(null, ZERO, ONE_HUNDRED, rate, ONE, 2));
 
         Weight weight = new Weight(new BigDecimal("15.5"));
         checkEquals(1, rules.getDose(product1, weight, "CANINE"));
@@ -362,11 +388,55 @@ public class ProductRulesTestCase extends AbstractProductTest {
     }
 
     /**
+     * Tests the {@link ProductRules#canUseProductAtLocation(Product, Party)} method.
+     */
+    @Test
+    public void testCanUseProductAtLocation() {
+        Product medication = ProductTestHelper.createMedication();
+        Product merchandise = ProductTestHelper.createMerchandise();
+        Product service = ProductTestHelper.createService();
+        Product template = ProductTestHelper.createTemplate();
+        Party location = TestHelper.createLocation();
+
+        // will always return true for medication and merchandise products
+        assertTrue(rules.canUseProductAtLocation(medication, location));
+        assertTrue(rules.canUseProductAtLocation(merchandise, location));
+        assertTrue(rules.canUseProductAtLocation(service, location));
+        assertTrue(rules.canUseProductAtLocation(template, location));
+
+        // exclude the location for the service and template and verify they can no longer by used
+        ProductTestHelper.addLocationExclusion(service, location);
+        ProductTestHelper.addLocationExclusion(template, location);
+
+        assertFalse(rules.canUseProductAtLocation(service, location));
+        assertFalse(rules.canUseProductAtLocation(template, location));
+    }
+
+    /**
+     * Tests the {@link ProductRules#isRestricted(Product)} method.
+     */
+    @Test
+    public void testIsRestricted() {
+        Product medication1 = ProductTestHelper.createMedication(false);
+        Product medication2 = ProductTestHelper.createMedication(true);
+        Product medication3 = ProductTestHelper.createMedication(); // no schedule
+        Product merchandise = ProductTestHelper.createMerchandise();
+        Product service = ProductTestHelper.createService();
+        Product template = ProductTestHelper.createTemplate();
+        assertFalse(rules.isRestricted(medication1));
+        assertTrue(rules.isRestricted(medication2));
+        assertFalse(rules.isRestricted(medication3));
+        assertFalse(rules.isRestricted(merchandise));
+        assertFalse(rules.isRestricted(service));
+        assertFalse(rules.isRestricted(template));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
-        rules = new ProductRules(getArchetypeService());
+        rules = new ProductRules(getArchetypeService(), getLookupService());
     }
 
     /**

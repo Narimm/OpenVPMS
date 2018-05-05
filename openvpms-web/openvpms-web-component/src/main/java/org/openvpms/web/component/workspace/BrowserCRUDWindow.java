@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.im.query.AbstractBrowserListener;
 import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.BrowserListener;
 import org.openvpms.web.echo.util.DoubleClickMonitor;
 
 /**
@@ -99,7 +99,12 @@ public class BrowserCRUDWindow<T extends IMObject> {
      */
     protected void setBrowser(Browser<T> browser) {
         this.browser = browser;
-        browser.addBrowserListener(new AbstractBrowserListener<T>() {
+        browser.addBrowserListener(new BrowserListener<T>() {
+            @Override
+            public void query() {
+                onQuery();
+            }
+
             public void selected(T object) {
                 onSelected(object);
             }
@@ -108,6 +113,7 @@ public class BrowserCRUDWindow<T extends IMObject> {
             public void browsed(T object) {
                 onBrowsed(object);
             }
+
         });
         if (window != null) {
             select(browser.getSelected());
@@ -123,20 +129,15 @@ public class BrowserCRUDWindow<T extends IMObject> {
         this.window = window;
         window.setListener(new CRUDWindowListener<T>() {
             public void saved(T object, boolean isNew) {
-                refreshBrowser(object);
+                onSaved(object, isNew);
             }
 
             public void deleted(T object) {
-                refreshBrowser(null);
+                onDeleted(object);
             }
 
             public void refresh(T object) {
-                if (object.isNew()) {
-                    // object not persistent, so don't attempt to reselect after refresh
-                    refreshBrowser(null);
-                } else {
-                    refreshBrowser(object);
-                }
+                onRefresh(object);
             }
         });
         if (browser != null) {
@@ -145,14 +146,23 @@ public class BrowserCRUDWindow<T extends IMObject> {
     }
 
     /**
-     * Selects the current object. If the object is "double clicked", edits it.
+     * Invoked when a query is performed.
+     * <p/>
+     * This implementation is a no-op.
+     */
+    protected void onQuery() {
+
+    }
+
+    /**
+     * Selects the current object. If the object is double clicked, invokes {@link #onDoubleClick()}.
      *
      * @param object the selected object
      */
     protected void onSelected(T object) {
         select(object);
         if (click.isDoubleClick(object.getId())) {
-            window.edit();
+            onDoubleClick();
         }
     }
 
@@ -162,7 +172,18 @@ public class BrowserCRUDWindow<T extends IMObject> {
      * @param object the selected object
      */
     protected void select(T object) {
-        window.setObject(object);
+        if (window.getObject() != object) {
+            window.setObject(object);
+        }
+    }
+
+    /**
+     * Invoked when an object is double clicked.
+     * <p/>
+     * This implementation edits the object
+     */
+    protected void onDoubleClick() {
+        window.edit();
     }
 
     /**
@@ -177,13 +198,52 @@ public class BrowserCRUDWindow<T extends IMObject> {
     }
 
     /**
+     * Invoked when an object is saved.
+     *
+     * @param object the saved object
+     * @param isNew  determines if the object is a new instance
+     */
+    protected void onSaved(T object, boolean isNew) {
+        refreshBrowser(object);
+    }
+
+    /**
+     * Invoked when an object is deleted.
+     *
+     * @param object the deleted object
+     */
+    protected void onDeleted(T object) {
+        refreshBrowser(null);
+    }
+
+    /**
+     * Invoked when the parent needs to refresh an object.
+     *
+     * @param object the object to refresh
+     */
+    protected void onRefresh(T object) {
+        if (object.isNew()) {
+            // object not persistent, so don't attempt to reselect after refresh
+            refreshBrowser(null);
+        } else {
+            refreshBrowser(object);
+        }
+    }
+
+    /**
      * Refresh the browser.
      *
      * @param object the object to select. May be {@code null}
      */
     private void refreshBrowser(T object) {
         browser.query();
-        browser.setSelected(object);
+        if (browser.setSelected(object)) {
+            if (window.getObject() != object) {
+                window.setObject(object);
+            }
+        } else {
+            window.setObject(null);
+        }
     }
 
 }

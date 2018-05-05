@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetype>
@@ -46,8 +46,8 @@
     <data archetype="lookup.visitReason" code="OTHER"/>
     <data archetype="lookup.messageReason" code="PHONE" name="Phone Call" defaultLookup="true"/>
     <data archetype="lookup.messageReason" code="OTHER" name="Other"/>
-    <data id="Kilogram" archetype="lookup.uom" code="KILOGRAM"/>
-    <data id="Pounds" archetype="lookup.uom" code="POUNDS"/>
+    <data id="Kilogram" archetype="lookup.uom" code="KILOGRAM" printedName="kg"/>
+    <data id="Pounds" archetype="lookup.uom" code="POUNDS" printedName="lb"/>
     <data id="Weight" archetype="lookup.uomGroup" code="WEIGHT"/>
     <data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Kilogram"/>
     <data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Pounds"/>
@@ -60,10 +60,14 @@
     <data archetype="lookup.contactPurpose" code="MOBILE"/>
     <data archetype="lookup.contactPurpose" code="FAX"/>
     <data id="GST" archetype="lookup.taxType" code="GST" rate="10.0" taxScheme="GST" taxCategory="S"/>
-    <data archetype="lookup.patientAlertType" code="ALLLERGY" priority="HIGH" colour="0xFF0000"/>
-    <data archetype="lookup.patientAlertType" code="AGGRESSION" priority="HIGH" colour="0xFF0000"/>
-    <data archetype="lookup.patientAlertType" code="OTHER" priority="HIGH" colour="0xFF0000" defaultLookup="true"/>
+    <data archetype="lookup.patientAlertType" code="ALLERGY"/>
+    <data archetype="lookup.patientAlertType" code="AGGRESSION"/>
     <data archetype="lookup.customerAlertType" code="BAD_DEBT" priority="HIGH" colour="0xFF0000"/>
+    <data archetype="lookup.customerCommunicationReason" code="AD_HOC_EMAIL" name="Ad hoc Email"/>
+    <data archetype="lookup.customerCommunicationReason" code="AD_HOC_SMS" name="Ad hoc SMS"/>
+    <data archetype="lookup.customerCommunicationReason" code="APPOINTMENT_REMINDER" name="Appointment Reminder"/>
+    <data archetype="lookup.customerCommunicationReason" code="FORWARDED_DOCUMENT" name="Forwarded Documents"/>
+    <data archetype="lookup.customerCommunicationReason" code="PATIENT_REMINDER" name="Patient Reminder"/>
     <data archetype="lookup.reportType" code="CUSTOMER"/>
     <data archetype="lookup.reportType" code="PATIENT"/>
     <data archetype="lookup.reportType" code="SUPPLIER"/>
@@ -126,5 +130,36 @@
           expression="party:setPatientDeceased(.)" nodeName="patient.entity"/>
     <data archetype="lookup.demographicUpdate" code="PATIENT_INACTIVE" name="Patient Inactive"
           expression="party:setPatientInactive(.)" nodeName="patient.entity"/>
+    <data archetype="lookup.userNameFormat" code="NAME"
+          name="Name"
+          description="User name format including the name only"
+          expression="expr:ifempty(expr:concatIf($firstName, ' ', $lastName), $name)"/>
+    <data archetype="lookup.userNameFormat" code="TITLE_NAME" name="Title and Name"
+          description="User name format including the title and name"
+          expression="concat(expr:concatIf($title,' '),
+                             expr:ifempty(expr:concatIf($firstName, ' ', $lastName), $name))"/>
+    <data archetype="lookup.userNameFormat" code="TITLE_NAME_QUALIFICATIONS"
+          name="Title, Name and Qualifications"
+          description="User name format including the title, name, and qualifications"
+          expression="concat(expr:concatIf($title,' '),
+                             expr:ifempty(expr:concatIf($firstName, ' ', $lastName), $name),
+                             expr:concatIf(', ', $qualifications))"/>
+    <data archetype="lookup.userNameFormat" code="LOGIN_NAME"
+          name="Login name"
+          description="User name format including the login name"
+          expression="$username"/>
+    <data archetype="lookup.userNameFormat" code="DESCRIPTION"
+          name="Description"
+          description="User name format including the description"
+          expression="expr:ifempty($description, $name)"/>
+
+    <data archetype="lookup.productDrugSchedule" code="S1" name="S1"/>
+    <data archetype="lookup.productDrugSchedule" code="S2" name="S2"/>
+    <data archetype="lookup.productDrugSchedule" code="S3" name="S3"/>
+    <data archetype="lookup.productDrugSchedule" code="S4" name="S4" restricted="true"/>
+    <data archetype="lookup.productDrugSchedule" code="S5" name="S5"/>
+    <data archetype="lookup.productDrugSchedule" code="S6" name="S6"/>
+    <data archetype="lookup.productDrugSchedule" code="S7" name="S7"/>
+    <data archetype="lookup.productDrugSchedule" code="S8" name="S8"/>
 
 </archetype>

@@ -1,0 +1,719 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Export Customer Addresses for Sales" pageWidth="792" pageHeight="612" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="792" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="b7a73773-6547-48a8-bf68-62960b22c5f5">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="0.75"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
+	<parameter name="Species" class="java.lang.String">
+		<parameterDescription><![CDATA[Species selection]]></parameterDescription>
+	</parameter>
+	<parameter name="Breed" class="java.lang.String">
+		<parameterDescription><![CDATA[Breed selection]]></parameterDescription>
+	</parameter>
+	<parameter name="DOB Start" class="java.util.Date">
+		<parameterDescription><![CDATA[Date of Birth from]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new Date("01/01/1980")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="DOB End" class="java.util.Date">
+		<parameterDescription><![CDATA[Date of Birth to]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Sale Start" class="java.util.Date">
+		<parameterDescription><![CDATA[Sales from]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Sale End" class="java.util.Date">
+		<parameterDescription><![CDATA[Sales to]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Product Type" class="java.lang.String">
+		<parameterDescription><![CDATA[Product Type selection]]></parameterDescription>
+	</parameter>
+	<parameter name="Product" class="java.lang.String">
+		<parameterDescription><![CDATA[Product Name selection]]></parameterDescription>
+	</parameter>
+	<parameter name="Classification" class="java.lang.String">
+		<parameterDescription><![CDATA[Acct Type or Category]]></parameterDescription>
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="PracticeLocation" class="java.lang.String">
+		<parameterDescription><![CDATA[Practice Location]]></parameterDescription>
+		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Explain" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Display explanation ?]]></parameterDescription>
+		<defaultValueExpression><![CDATA[false]]></defaultValueExpression>
+	</parameter>
+	<queryString language="SQL">
+		<![CDATA[select
+  c.entity_id as id,
+  c1.value as lastname,
+  c2.value as firstname,
+  l3.name as title,
+  cd1.value as address,
+  l2.name as suburb,
+  cd3.value as postcode,
+  cd4.value as state,
+  max(pa.activity_start_time) as lastsale,
+  if((cd5.value = 'true'), if((lcl.code = 'CORRESPONDENCE'), 30, 10), if((lcl.code = 'CORRESPONDENCE'), 20, 0)) as rank
+from
+  acts pa
+  join act_relationships ar on pa.act_id = ar.source_id
+  join acts ca on ar.target_id = ca.act_id and ca.arch_short_name like 'act.customerAccount%Item'
+  join participations pp on ca.act_id = pp.act_id and pp.arch_short_name = 'participation.product'
+  join entities pr on pr.entity_id = pp.entity_id and pr.arch_short_name like 'product.%'
+  left join entity_links rp on rp.source_id = pr.entity_id and rp.arch_short_name = 'entityLink.productType'
+  left join entities pt on pt.entity_id = rp.target_id
+  join participations pap on ca.act_id = pap.act_id and pap.arch_short_name = 'participation.patient'
+  join entities p on p.entity_id = pap.entity_id
+  join participations cp on pa.act_id = cp.act_id and cp.arch_short_name = 'participation.customer'
+  join entities c on c.entity_id = cp.entity_id
+  left join entity_details c1 on c1.entity_id = c.entity_id and c1.name = 'lastName'
+  left join entity_details c2 on c2.entity_id = c.entity_id and c2.name = 'firstName'
+  left join entity_details c3 on c3.entity_id = c.entity_id and c3.name = 'title'
+  left join lookups l3 on l3.code = c3.value and l3.arch_short_name = 'lookup.personTitle'
+  
+  left join contacts cc on cc.party_id = c.entity_id and cc.arch_short_name = 'contact.location'
+  left join contact_details cd1 on cd1.contact_id = cc.contact_id and cd1.name = 'address'
+  left join contact_details cd2 on cd2.contact_id = cc.contact_id and cd2.name = 'suburb'
+  left join lookups l2 on cd2.value = l2.code and l2.arch_short_name = 'lookup.suburb'
+  left join contact_details cd3 on cd3.contact_id = cc.contact_id and cd3.name = 'postcode'
+  left join contact_details cd4 on cd4.contact_id = cc.contact_id and cd4.name = 'state'
+  left join contact_details cd5 ON cd5.contact_id = cc.contact_id and cd5.name = 'preferred'
+  left join contact_classifications ccl ON ccl.contact_id = cc.contact_id
+  left join lookups lcl ON lcl.lookup_id = ccl.lookup_id
+ 
+  left join entity_classifications ec on ec.entity_id = c.entity_id
+  left join lookups l on l.lookup_id = ec.lookup_id and ((l.arch_short_name = 'lookup.customerAccountType') or (l.arch_short_name = 'lookup.customerType'))
+  left join entity_details d1 on d1.entity_id = p.entity_id and d1.name = 'dateOfBirth'
+  left join entity_details d2 on d2.entity_id = p.entity_id and d2.name = 'desexed'
+  left join entity_details d3 on d3.entity_id = p.entity_id and d3.name = 'deceased'
+  left join entity_details d4 on d4.entity_id = p.entity_id and d4.name = 'species'
+  left join lookups l4 on l4.code = d4.value and l4.arch_short_name = 'lookup.species'
+  left join entity_details d5 on d5.entity_id = p.entity_id and d5.name = 'breed'
+  left join lookups l5 on l5.code = d5.value and l5.arch_short_name = 'lookup.breed'
+  left join entity_links el on el.source_id = c.entity_id and el.arch_short_name = 'entityLink.customerLocation'
+  left join entities loc on loc.entity_id = el.target_id
+where
+  pa.arch_short_name like 'act.customerAccountCharges%' and
+  pa.activity_start_time between $P{Sale Start} and date_add($P{Sale End}, INTERVAL '23:59:59' HOUR_SECOND) and
+  pr.name like concat(ifnull($P{Product},""),"%") and
+  ifnull(pt.name,"-") like concat(ifnull($P{Product Type},""),"%") and
+  p.active = 1 and
+  c.active = 1 and
+  ifnull(l.name,"-") like concat(ifnull($P{Classification},""),"%") and
+  ifnull(loc.name,"-") like concat(ifnull($P{PracticeLocation},""),"%") and
+  l4.name like concat(ifnull($P{Species},""),"%") and
+  d5.value like concat(ifnull($P{Breed},""),"%") and
+  (d1.value between $P{DOB Start} and date_add($P{DOB End}, INTERVAL '23:59:59' HOUR_SECOND) or d1.value is null)
+group by c.entity_id, rank
+order by c.name, c.entity_id,rank desc, cc.contact_id desc]]>
+	</queryString>
+	<field name="id" class="java.lang.Long"/>
+	<field name="lastname" class="java.lang.String"/>
+	<field name="firstname" class="java.lang.String"/>
+	<field name="title" class="java.lang.String"/>
+	<field name="address" class="java.lang.String"/>
+	<field name="suburb" class="java.lang.String"/>
+	<field name="postcode" class="java.lang.String"/>
+	<field name="state" class="java.lang.String"/>
+	<field name="lastsale" class="java.sql.Timestamp"/>
+	<field name="rank" class="java.lang.Integer"/>
+	<group name="id-group" minHeightToStartNewPage="18">
+		<groupExpression><![CDATA[$F{id}]]></groupExpression>
+		<groupHeader>
+			<band height="19">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement key="textField" x="0" y="0" width="75" height="13" uuid="6112a9af-964f-4910-abd1-ac1bfeb1ef03"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{id}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement key="textField" x="75" y="0" width="75" height="13" uuid="f6768be3-c167-4a78-9336-af730c268454"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{title}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement key="textField" x="150" y="0" width="76" height="13" uuid="8d3011cf-92e2-42a6-baa0-d0675f093bfe"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{lastname}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement key="textField" x="226" y="0" width="75" height="13" uuid="b9dd2104-d0df-4e02-97a5-95ab1220a8aa"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{firstname}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement key="textField" x="301" y="0" width="75" height="13" uuid="26146af9-650d-436b-b74a-86e5e326eb66"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{address}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement key="textField" x="376" y="0" width="75" height="13" uuid="1135e15e-e5df-4e02-81c3-9d0c08f4c917"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{suburb}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement key="textField" x="451" y="0" width="76" height="13" uuid="a2484a0c-5e6c-4598-a464-59e85eef1404"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{postcode}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement key="textField" x="527" y="0" width="75" height="13" uuid="170e1971-e475-4aa0-b118-35fb459c9a03"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{state}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="MM/dd/yyyy" isBlankWhenNull="true">
+					<reportElement key="textField-2" x="602" y="0" width="75" height="13" uuid="88df95a2-8277-4574-a00c-269ce221f346"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{lastsale})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+					<reportElement key="textField-2" x="677" y="0" width="75" height="13" uuid="013dd3ab-5faf-4df2-9f15-fd05d3600edb">
+						<property name="local_mesure_unity" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="8"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{rank}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="21" splitType="Stretch">
+			<staticText>
+				<reportElement key="staticText-1" x="0" y="4" width="75" height="11" uuid="b722fa15-641d-4bbb-94af-c5ada4b1849e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[CLIENTID]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-2" x="75" y="4" width="75" height="11" uuid="22abe4d2-c534-4d8f-972e-37a9ffbda7a3"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[TITLE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-3" x="150" y="4" width="76" height="11" uuid="9783d49b-5896-4b04-9ae1-8853d36cc94e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[LASTNAME]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-4" x="226" y="4" width="75" height="11" uuid="1a08fba1-c128-4680-8ed5-20fd150fefa9"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[FIRSTNAME]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-5" x="301" y="4" width="75" height="11" uuid="45bba900-e93b-4098-8105-033c94034e14"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[ADDRESS]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-6" x="376" y="4" width="75" height="11" uuid="0d1ba18a-e4ad-4a07-b44a-72a8dffc69ba"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[SUBURB]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-7" x="451" y="4" width="76" height="11" uuid="9e7946d7-2bb5-46ad-8658-a0c38058c81e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[POSTCODE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-8" x="527" y="4" width="75" height="11" uuid="92c7f4e9-f6c2-4876-a835-548d0a13a095"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[STATE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-10" x="602" y="4" width="75" height="11" uuid="cb933471-fda1-4ff9-910e-47c509ef3c1e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[LASTSALE]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-10" x="677" y="4" width="75" height="11" uuid="3ceba6d9-286e-4cbc-b200-7c4b97f2f324">
+					<property name="local_mesure_unity" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[RANK]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="381" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="10" width="308" height="21" isRemoveLineWhenBlank="true" uuid="90e89fbb-ddcc-46a8-9b93-19786c26bed8">
+					<printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[No Data Found - Check Parameters]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="134" width="640" height="247" uuid="b0cc9e30-f9d2-4330-8ed2-449675ccb36f">
+					<printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[This report is designed for exporting customer contact data for use with mail merge facilities.
+It finds the customers to whom the specified products were sold in the specified period.
+The period is inclusive - ie sales from 00:00 on the start date through 23:59:59 on the end date.
+All the text selection fields entered have % added so that leaving them blank will find all, and entering say breed %terrier will find all species containing 'terrier' in their species name, and account type 'c' will include all types starting C. The selection is case-insensitive.
+The Patient DOB selection is inclusive (ie from <= DOB<= to), but where Patients have no DOB they will be included.
+If there is no Practice Location selection then customers with no Practice Location set will be included. Using the selection '-' will select just those with no Practice Location set.
+The same applies for the Account Type/Category selection.
+Only active customers with active patients are included.
+Where the customer has multiple contacts, these are ranked as follows:
+  If preferred and purpose Correspondence - score 30
+  If purpose Correspondence - score 20
+  If preferred - score 10
+  else score 0
+The highest rank contact is used, and if more than one has the highest rank, then the newest is used.
+
+Note that prior to using in mail-merge or other programs, you must remove the information and explanation lines following the data lines.]]></text>
+			</staticText>
+			<frame>
+				<reportElement x="0" y="41" width="640" height="93" uuid="4259498f-3139-4eca-9e3a-a71964952609"/>
+				<textField>
+					<reportElement x="75" y="14" width="75" height="15" uuid="de4dad53-345b-4452-8cd3-ecfdbb8658a9">
+						<property name="local_mesure_unitheight" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						<property name="local_mesure_unity" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($P{Species}==null)?"%":$P{Species}+"%"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="226" y="14" width="75" height="15" uuid="23463fa9-b5ef-416b-ab0b-5480f0427f85">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($P{Breed}==null)?"%":$P{Breed}+"%"]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM/dd/yyyy">
+					<reportElement x="75" y="29" width="75" height="14" uuid="814219d6-59a4-4b59-a7f4-e0d9debb7706">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						<property name="local_mesure_unity" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{DOB Start})]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM/dd/yyyy">
+					<reportElement x="226" y="29" width="75" height="14" uuid="a05768d4-c5a9-4532-b775-d9814e59ae7a">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{DOB End})]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM/dd/yyyy">
+					<reportElement x="75" y="43" width="75" height="15" uuid="d95c51b0-5130-4893-ab53-a5342aa96d2c">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						<property name="local_mesure_unity" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{Sale Start})]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM/dd/yyyy">
+					<reportElement x="226" y="43" width="75" height="15" uuid="727ef83c-f384-4e94-85e8-636b976b9b79">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{Sale End})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="75" y="58" width="75" height="14" uuid="b60ccabe-f11d-4429-a31b-3f38496ccb00">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						<property name="local_mesure_unity" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($P{Product Type}==null)?"%":$P{Product Type}+"%"]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="226" y="58" width="75" height="14" uuid="b8fa2e85-5b8e-4681-bd03-784390e0a1c3">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($P{Product}==null)?"%":$P{Product}+"%"]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="0" width="74" height="14" uuid="401a9fe5-6f41-4869-9649-6d871254095a">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Parameters]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="14" width="74" height="15" uuid="a1486e75-0635-4c7a-ab87-5d9dd31a128e">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Species]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="29" width="74" height="14" uuid="f834eeee-bbd7-4394-95cf-d2a9a91e93de">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[DOB From]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="43" width="74" height="15" uuid="68542e6f-8a31-4ade-80d8-ac18a9ea53a0">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Sales From]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="0" y="58" width="74" height="14" uuid="27219a9a-d713-4b7a-9145-15ae3667651a">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Product Type]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="151" y="14" width="75" height="15" uuid="17de586f-13d3-46b1-8e74-2a501d06b6d8">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Breed]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="151" y="29" width="75" height="14" uuid="a0f5f409-cffe-4f8e-b287-347003a27b7d">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[DOB To]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="151" y="43" width="75" height="15" uuid="aa029ca8-8b99-479b-a72d-595de06776dc">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Sales To]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="151" y="58" width="75" height="14" uuid="839e01a1-5f76-4fb2-a866-7bc252e27638">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Product]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="452" y="14" width="75" height="15" uuid="69b96b89-da69-4e27-9b6c-eeaf837d012b">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Generated]]></text>
+				</staticText>
+				<textField pattern="dd/MM/yyyy h.mm a">
+					<reportElement x="527" y="14" width="94" height="15" uuid="ebacedb5-b619-497e-868e-6af3bd346c47">
+						<property name="local_mesure_unity" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="0" y="72" width="74" height="15" uuid="f2f2663e-1c29-4a12-8e13-efdffbefbfa1">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Acct.Type/Cat]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="75" y="72" width="75" height="15" uuid="e005294a-a87c-4ee9-b60c-8f2e85a91403">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						<property name="local_mesure_unity" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($P{Classification}==null)?"%":$P{Classification}+"%"]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="151" y="72" width="75" height="15" uuid="2cf9164a-5fc7-45f1-b85e-ba83d14f7c7a">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Practice Locn]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="226" y="72" width="75" height="15" uuid="f8a664f8-1446-44d2-8fff-f2d9961fa703">
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($P{PracticeLocation}==null)?"%":$P{PracticeLocation}+"%"]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</summary>
+</jasperReport>

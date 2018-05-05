@@ -11,39 +11,54 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Command;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
 import nextapp.echo2.app.TaskQueueHandle;
 import nextapp.echo2.app.Window;
 import nextapp.echo2.webcontainer.ContainerContext;
 import nextapp.echo2.webcontainer.command.BrowserOpenWindowCommand;
 import nextapp.echo2.webcontainer.command.BrowserRedirectCommand;
 import nextapp.echo2.webrender.ClientConfiguration;
-import nextapp.echo2.webrender.Connection;
-import nextapp.echo2.webrender.WebRenderServlet;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
 import org.openvpms.archetype.rules.user.UserRules;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.subscription.core.Subscription;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
-import org.openvpms.web.component.app.UserPreferences;
+import org.openvpms.web.component.app.PreferenceSelectionHistory;
+import org.openvpms.web.component.prefs.UserPreferences;
+import org.openvpms.web.component.subscription.SubscriptionHelper;
 import org.openvpms.web.component.workspace.WorkspacesFactory;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
+import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.lightbox.LightBox;
 import org.openvpms.web.echo.servlet.ServletHelper;
 import org.openvpms.web.echo.servlet.SessionMonitor;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
+import org.openvpms.web.system.ServiceHelper;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.Date;
 
 
 /**
@@ -127,6 +142,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
         if (monitor.getAutoLock() > 0) {
             getLockTaskQueue(DEFAULT_LOCK_POLL_INTERVAL);  // configure a queue to trigger polls of the server
         }
+        loadHistory();
     }
 
     /**
@@ -139,10 +155,34 @@ public class OpenVPMSApp extends ContextApplicationInstance {
         setStyleSheet();
         window = new Window();
         updateTitle();
-        ApplicationContentPane pane = new ApplicationContentPane(getContext(), factory);
+        ApplicationContentPane pane = new ApplicationContentPane(getContext(), factory, getPreferences());
         lightBox = new LightBox();
         window.setContent(pane);
         pane.add(lightBox);
+
+        if (getActiveWindowCount() <= 1) {
+            Subscription subscription = SubscriptionHelper.getSubscription(ServiceHelper.getArchetypeService());
+            final Date now = new Date();
+            Date expiryDate = subscription != null ? subscription.getExpiryDate() : null;
+            if (expiryDate == null || expiryDate.before(now)) {
+                Party practice = getContext().getPractice();
+                if (practice != null) {
+                    Date installDate = (Date) practice.getDetails().get("installDate");
+                    if (installDate == null || installDate.after(now)) {
+                        installDate = now;
+                        practice.getDetails().put("installDate", installDate);
+                        try {
+                            ServiceHelper.getArchetypeService(false).save(practice);
+                        } catch (Throwable exception) {
+                            //  do nothing
+                        }
+                    }
+                    SubscriptionDialog dialog = new SubscriptionDialog(installDate, expiryDate, lightBox);
+                    dialog.show(window, this);
+                }
+            }
+        }
+
         getContext().addListener(new ContextListener() {
             public void changed(String key, IMObject value) {
                 if (Context.CUSTOMER_SHORTNAME.equals(key)) {
@@ -163,7 +203,9 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     @Override
     public void dispose() {
         super.dispose();
-        window.dispose();
+        if (window != null) {
+            window.dispose();
+        }
     }
 
     /**
@@ -272,18 +314,23 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     /**
      * Unlocks the application.
      * <p/>
-     * <p/>
      * This method may be invoked outside a servlet request, so a task is queued to unlock the screen.
      */
     @Override
     public synchronized void unlock() {
         if (lockDialog != null) {
-            enqueueTask(getLockTaskQueue(1), new Runnable() {
-                @Override
-                public void run() {
-                    unlockScreen();
-                }
-            });
+            if (lockDialog.getParent() != null) {
+                enqueueTask(getLockTaskQueue(1), new Runnable() {
+                    @Override
+                    public void run() {
+                        unlockScreen();
+                    }
+                });
+            } else {
+                // the dialog hasn't been shown yet, so just destroy it.
+                lockDialog.dispose();
+                lockDialog = null;
+            }
         }
     }
 
@@ -297,22 +344,44 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     }
 
     /**
+     * Loads customer and patient selection history.
+     */
+    private void loadHistory() {
+        GlobalContext context = getContext();
+        UserPreferences prefs = getPreferences();
+        PreferenceSelectionHistory customer = new PreferenceSelectionHistory(context, GlobalContext.CUSTOMER_SHORTNAME, prefs,
+                                                                             PreferenceArchetypes.GENERAL,
+                                                                             "customerHistory");
+        PreferenceSelectionHistory patient = new PreferenceSelectionHistory(context, GlobalContext.PATIENT_SHORTNAME, prefs,
+                                                                            PreferenceArchetypes.GENERAL,
+                                                                            "patientHistory");
+        context.setHistory(customer.getShortName(), customer);
+        context.setHistory(patient.getShortName(), patient);
+    }
+
+    /**
      * Creates a lock screen dialog.
      *
      * @return a new dialog
      */
     private PopupDialog createLockDialog() {
         return new LockScreenDialog(this) {
+            private boolean showLightBox = !lightBox.isVisible();
+
             @Override
             public void show() {
                 super.show();
-                lightBox.setZIndex(getZIndex());
-                lightBox.show();
+                if (showLightBox) {
+                    lightBox.setZIndex(getZIndex());
+                    lightBox.show();
+                }
             }
 
             @Override
             public void userClose() {
-                lightBox.hide();
+                if (showLightBox) {
+                    lightBox.hide();
+                }
                 super.userClose();
                 resetLockTaskQueue(); // ensure the queue is set back to the default poll interval, to reduce load
             }
@@ -325,6 +394,7 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     private void lockScreen() {
         PopupDialog dialog = getLockDialog();
         if (dialog != null) {
+            monitor.locked();
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 public void onOK() {
@@ -350,7 +420,6 @@ public class OpenVPMSApp extends ContextApplicationInstance {
      */
     private void unlockScreen() {
         try {
-
             PopupDialog dialog = getLockDialog();
             if (dialog != null) {
                 setLockDialog(null);
@@ -423,12 +492,8 @@ public class OpenVPMSApp extends ContextApplicationInstance {
     private void configureSessionExpirationURL() {
         ContainerContext context = (ContainerContext) getContextProperty(
                 ContainerContext.CONTEXT_PROPERTY_NAME);
-        Connection connection = WebRenderServlet.getActiveConnection();
-        if (context != null && connection != null) {
-            HttpServletRequest request = connection.getRequest();
-            String url = request.getRequestURL().toString();
-            url = url.substring(0, url.length() - request.getRequestURI().length());
-            url = url + ServletHelper.getRedirectURI("login");
+        if (context != null) {
+            String url = ServletHelper.getServerURL() + ServletHelper.getRedirectURI("login");
             ClientConfiguration config = new ClientConfiguration();
             config.setProperty(ClientConfiguration.PROPERTY_SESSION_EXPIRATION_URI, url);
             config.setProperty(ClientConfiguration.PROPERTY_SESSION_EXPIRATION_MESSAGE,
@@ -479,4 +544,97 @@ public class OpenVPMSApp extends ContextApplicationInstance {
         return object.getName();
     }
 
+
+    private static class SubscriptionDialog extends PopupDialog {
+
+        private final Date installDate;
+        private final Date expiryDate;
+        private final LightBox lightBox;
+
+        private static final String SUBSCRIBE_ID = "button.subscribe";
+        private static final String NOT_NOW_ID = "button.notnow";
+        private static final String[] BUTTONS = {SUBSCRIBE_ID, NOT_NOW_ID};
+
+        /**
+         * Constructs a {@link SubscriptionDialog}.
+         */
+        public SubscriptionDialog(Date installDate, Date expiryDate, LightBox lightBox) {
+            super(Messages.get("subscription.title"), "MessageDialog", BUTTONS);
+            setModal(true);
+            this.installDate = installDate;
+            this.expiryDate = expiryDate;
+            this.lightBox = lightBox;
+        }
+
+        /**
+         * Invoked when a button is pressed. This delegates to the appropriate
+         * on*() method for the button if it is known, else sets the action to
+         * the button identifier and closes the window.
+         *
+         * @param button the button identifier
+         */
+        @Override
+        protected void onButton(String button) {
+            if (SUBSCRIBE_ID.equals(button)) {
+                String url = Messages.get("subscription.url");
+                ApplicationInstance.getActive().enqueueCommand(new BrowserOpenWindowCommand(url, null, null));
+            }
+            super.onButton(button);
+        }
+
+        public void show(Window window, final OpenVPMSApp app) {
+            doLayout();
+            setZIndex(1);
+            window.getContent().add(this);
+            Date date = DateRules.getDate(new Date(), -30, DateUnits.DAYS);
+            if ((expiryDate != null && expiryDate.before(date)) || (expiryDate == null && installDate.before(date))) {
+                getButtons().setEnabled(NOT_NOW_ID, false);
+                setClosable(false);
+                final TaskQueueHandle handle = app.createTaskQueue();
+                app.setTaskQueueInterval(handle, 30);
+                app.enqueueTask(handle, new Runnable() {
+                    @Override
+                    public void run() {
+                        app.removeTaskQueue(handle);
+                        getButtons().setEnabled(NOT_NOW_ID, true);
+                        setClosable(true);
+                    }
+                });
+            }
+            lightBox.setZIndex(getZIndex());
+            lightBox.show();
+        }
+
+        @Override
+        public void userClose() {
+            lightBox.hide();
+            super.userClose();
+        }
+
+        /**
+         * Lays out the component prior to display.
+         */
+        @Override
+        protected void doLayout() {
+            Label label = LabelFactory.create(true, true);
+            label.setStyleName(Styles.H4);
+            Label message = LabelFactory.create(true, true);
+
+            if (expiryDate == null) {
+                label.setText(Messages.get("subscription.nosubscription"));
+                int more = 30 - Days.daysBetween(new DateTime(installDate), new DateTime()).getDays();
+                if (more > 0) {
+                    message.setText(Messages.format("subscription.evaluate", more));
+                } else {
+                    message.setText(Messages.get("subscription.purchase"));
+                }
+            } else {
+                label.setText(Messages.format("subscription.expiredOn", DateFormatter.formatDate(expiryDate, false)));
+                message.setText(Messages.get("subscription.continue"));
+            }
+            Row row = RowFactory.create(Styles.LARGE_INSET,
+                                        ColumnFactory.create(Styles.WIDE_CELL_SPACING, label, message));
+            getLayout().add(row);
+        }
+    }
 }

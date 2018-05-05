@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -62,6 +62,11 @@ abstract class ScheduleEventFactory {
     private final IArchetypeService service;
 
     /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
+    /**
      * Cache of status lookup names, keyed on code.
      */
     private final Map<String, String> statusNames;
@@ -72,11 +77,12 @@ abstract class ScheduleEventFactory {
      *
      * @param eventShortName the event archetype short name
      * @param service        the archetype service
-     * @param lookupService  the lookup service
+     * @param lookups        the lookup service
      */
-    public ScheduleEventFactory(String eventShortName, IArchetypeService service, ILookupService lookupService) {
+    public ScheduleEventFactory(String eventShortName, IArchetypeService service, ILookupService lookups) {
         this.service = service;
-        statusNames = LookupHelper.getNames(service, lookupService, eventShortName, "status");
+        this.lookups = lookups;
+        statusNames = LookupHelper.getNames(service, lookups, eventShortName, "status");
     }
 
     /**
@@ -161,6 +167,15 @@ abstract class ScheduleEventFactory {
      */
     protected IArchetypeService getService() {
         return service;
+    }
+
+    /**
+     * Returns the lookup service.
+     *
+     * @return the lookup service
+     */
+    protected ILookupService getLookups() {
+        return lookups;
     }
 
     /**

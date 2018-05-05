@@ -11,12 +11,11 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.info;
 
-import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -37,8 +36,6 @@ import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.dialog.InformationDialog;
-import org.openvpms.web.echo.factory.ColumnFactory;
-import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -59,20 +56,19 @@ public class CustomerViewLayoutStrategy extends AbstractLayoutStrategy {
      * @param properties the properties
      * @param model      the tab model
      * @param context    the layout context
-     * @param shortcuts  if <tt>true</tt> include short cuts
+     * @param shortcuts  if {@code true} include short cuts
      */
     @Override
     protected void doTabLayout(IMObject object, List<Property> properties, IMObjectTabPaneModel model, LayoutContext context,
                                boolean shortcuts) {
         super.doTabLayout(object, properties, model, context, shortcuts);
         Browser<Act> appointments = getAppointments((Party) object, context);
-        Component inset = ColumnFactory.create(Styles.INSET, appointments.getComponent());
 
-        String label = Messages.get("customer.info.appointments");
+        String label = Messages.get("customer.information.appointments");
         if (shortcuts && model.size() < 10) {
             label = getShortcut(label, model.size() + 1);
         }
-        model.addTab(label, inset);
+        model.addTab(label, appointments.getComponent());
     }
 
     /**
@@ -87,7 +83,7 @@ public class CustomerViewLayoutStrategy extends AbstractLayoutStrategy {
         final LayoutContext subContext = new DefaultLayoutContext(context);
         subContext.setComponentFactory(new TableComponentFactory(subContext));
         IMTableModel<Act> model = new CustomerAppointmentTableModel(subContext);
-        Browser<Act> browser = new DefaultIMObjectTableBrowser<Act>(query, model, context);
+        Browser<Act> browser = new DefaultIMObjectTableBrowser<>(query, model, context);
         browser.addBrowserListener(new BrowserListener<Act>() {
             public void selected(Act object) {
                 // switch to the appointment workspace, and select the appointment.

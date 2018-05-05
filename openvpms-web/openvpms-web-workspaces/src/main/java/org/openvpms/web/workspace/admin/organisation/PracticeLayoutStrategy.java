@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.organisation;
@@ -31,13 +31,13 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.subscription.SubscriptionHelper;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.resource.subscription.SubscriptionHelper;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
@@ -56,10 +56,26 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
     private ComponentState subscription;
 
     /**
-     * The archetype nodes. This excludes the prescription expiry units as they are rendered inline with the
-     * expiry period.
+     * Prescription expiry units node.
      */
-    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude("prescriptionExpiryUnits");
+    private static final String PRESCRIPTION_EXPIRY_UNITS = "prescriptionExpiryUnits";
+
+    /**
+     * Record lock period units.
+     */
+    private static final String RECORD_LOCK_PERIOD_UNITS = "recordLockPeriodUnits";
+
+    /**
+     * Minimum quantities override.
+     */
+    private static final String MINIMUM_QUANTITIES_OVERRIDE = "minimumQuantitiesOverride";
+
+    /**
+     * The archetype nodes. This excludes nodes rendered alongside others.
+     */
+    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude(PRESCRIPTION_EXPIRY_UNITS,
+                                                                             RECORD_LOCK_PERIOD_UNITS,
+                                                                             MINIMUM_QUANTITIES_OVERRIDE);
 
     /**
      * Default constructor.
@@ -75,6 +91,7 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
      * @param focusGroup   the subscription component's focus group. May be {@code null}
      */
     public PracticeLayoutStrategy(Component subscription, FocusGroup focusGroup) {
+        super(NODES);
         this.subscription = new ComponentState(subscription, focusGroup);
     }
 
@@ -95,6 +112,8 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
         addPrescriptionExpiry(object, properties, factory);
         addAutoLockScreen(object, properties, factory);
         addAutoLogout(object, properties, factory);
+        addRecordLockPeriod(object, properties, factory);
+        addMinimumQuantities(object, properties, factory);
         if (subscription == null) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
             Participation participation = SubscriptionHelper.getSubscriptionParticipation((Party) object, service);
@@ -138,13 +157,38 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
      * @param factory    the component factory
      */
     private void addPrescriptionExpiry(IMObject object, PropertySet properties, IMObjectComponentFactory factory) {
-        Property period = properties.get("prescriptionExpiryPeriod");
-        Property units = properties.get("prescriptionExpiryUnits");
+        addPeriod(object, "prescriptionExpiryPeriod", PRESCRIPTION_EXPIRY_UNITS, properties, factory);
+    }
+
+    /**
+     * Registers a component to render the medical record lock period and units.
+     *
+     * @param object     the practice object
+     * @param properties the properties
+     * @param factory    the component factory
+     */
+    private void addRecordLockPeriod(IMObject object, PropertySet properties, IMObjectComponentFactory factory) {
+        addPeriod(object, "recordLockPeriod", RECORD_LOCK_PERIOD_UNITS, properties, factory);
+    }
+
+    /**
+     * Registers a component to render a period and its associated units.
+     *
+     * @param object     the practice object
+     * @param periodName the period node name
+     * @param unitsName  the units node name
+     * @param properties the properties
+     * @param factory    the component factory
+     */
+    private void addPeriod(IMObject object, String periodName, String unitsName, PropertySet properties,
+                           IMObjectComponentFactory factory) {
+        Property period = properties.get(periodName);
+        Property units = properties.get(unitsName);
 
         ComponentState periodComponent = factory.create(period, object);
         ComponentState unitsComponent = factory.create(units, object);
         Row row = RowFactory.create(Styles.CELL_SPACING, periodComponent.getComponent(), unitsComponent.getComponent());
-        FocusGroup group = new FocusGroup("PrescriptionExpiry");
+        FocusGroup group = new FocusGroup(periodName);
         group.add(periodComponent.getComponent());
         group.add(unitsComponent.getComponent());
         addComponent(new ComponentState(row, period, group));
@@ -186,6 +230,27 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
         Row row = RowFactory.create(Styles.CELL_SPACING, state.getComponent(),
                                     LabelFactory.create("admin.practice.minutes"));
         addComponent(new ComponentState(row, property));
+    }
+
+    /**
+     * Registers a component to render the minimum quantities and overrides properties.
+     *
+     * @param object     the practice object
+     * @param properties the properties
+     * @param factory    the component factory
+     */
+    private void addMinimumQuantities(IMObject object, PropertySet properties, IMObjectComponentFactory factory) {
+        Property minimumQuantities = properties.get("minimumQuantities");
+        Property minimumQuantitiesOverride = properties.get(MINIMUM_QUANTITIES_OVERRIDE);
+
+        ComponentState quantities = factory.create(minimumQuantities, object);
+        ComponentState override = factory.create(minimumQuantitiesOverride, object);
+        Row row = RowFactory.create(Styles.CELL_SPACING, quantities.getComponent(), override.getLabel(),
+                                    override.getComponent());
+        FocusGroup group = new FocusGroup(minimumQuantities.getName());
+        group.add(quantities.getComponent());
+        group.add(override.getComponent());
+        addComponent(new ComponentState(row, minimumQuantities, group));
     }
 
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -37,7 +37,6 @@ import org.openvpms.component.business.service.archetype.functor.IsActiveRelatio
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -73,12 +72,6 @@ public class ProductPriceRules {
      */
     private final IArchetypeService service;
 
-    /**
-     * The lookup service.
-     */
-    private final ILookupService lookups;
-
-
     private static final int PARTIAL_MATCH = 1;
 
     private static final int EXACT_MATCH = 2;
@@ -87,11 +80,9 @@ public class ProductPriceRules {
      * Constructs a {@link ProductPriceRules}.
      *
      * @param service the archetype service
-     * @param lookups the lookup service
      */
-    public ProductPriceRules(IArchetypeService service, ILookupService lookups) {
+    public ProductPriceRules(IArchetypeService service) {
         this.service = service;
-        this.lookups = lookups;
     }
 
     /**
@@ -279,51 +270,94 @@ public class ProductPriceRules {
     }
 
     /**
-     * Calculates a product price using the following formula:
+     * Calculates a tax-exclusive price, given the cost and markup.
      * <p/>
-     * {@code price = (cost * (1 + markup/100) ) * (1 + tax/100)}
+     * The formula is:
+     * {@code taxExPrice = cost * (1 + markup/100)}
      *
-     * @param product  the product
-     * @param cost     the product cost
-     * @param markup   the markup percentage
-     * @param practice the <em>party.organisationPractice</em> used to determine product taxes
-     * @param currency the currency, for rounding conventions
-     * @return the price
-     * @throws ArchetypeServiceException for any archetype service error
+     * @param cost   the cost
+     * @param markup the markup
+     * @return the tax-exclusive price
      */
-    public BigDecimal getPrice(Product product, BigDecimal cost, BigDecimal markup, Party practice, Currency currency) {
+    public BigDecimal getTaxExPrice(BigDecimal cost, BigDecimal markup) {
         BigDecimal price = ZERO;
         if (cost.compareTo(ZERO) != 0) {
             BigDecimal markupDec = getRate(markup);
-            BigDecimal taxRate = getTaxRate(product, practice);
-            price = cost.multiply(ONE.add(markupDec)).multiply(ONE.add(taxRate));
-            price = currency.roundPrice(price);
+            price = cost.multiply(ONE.add(markupDec));
         }
         return price;
     }
 
     /**
-     * Calculates a product markup using the following formula:
-     * <p/>
-     * {@code markup = ((price / (cost * ( 1 + tax/100))) - 1) * 100}
+     * Calculates a tax exclusive price given the tax-inclusive price, and tax rates derived from the product and
+     * practice.
      *
-     * @param product  the product
-     * @param cost     the product cost
-     * @param price    the price
-     * @param practice the <em>party.organisationPractice</em> used to determine product taxes
-     * @return the markup
-     * @throws ArchetypeServiceException for any archetype service error
+     * @param taxIncPrice the tax-inclusive price
+     * @param product     the product
+     * @param practice    the practice
+     * @return the tax-exclusive price
      */
-    public BigDecimal getMarkup(Product product, BigDecimal cost, BigDecimal price, Party practice) {
+    public BigDecimal getTaxExPrice(BigDecimal taxIncPrice, Product product, Party practice) {
+        BigDecimal price = taxIncPrice;
+        BigDecimal taxRate = getTaxRate(product, practice);
+        if (taxRate.compareTo(BigDecimal.ZERO) != 0) {
+            price = taxIncPrice.divide(ONE.add(getRate(taxRate)), 3, RoundingMode.HALF_UP);
+        }
+        return price;
+    }
+
+    /**
+     * Calculates a tax-inclusive product price using the following formula:
+     * <p/>
+     * {@code price = taxExPrice * (1 + taxRate/100)}
+     * <p/>
+     * The price is rounded according to currency conventions.
+     *
+     * @param taxExPrice the tax-exclusive price
+     * @param product    the product
+     * @param practice   the practice
+     * @param currency   the currency, used for rounding
+     * @return the tax-exclusive price
+     */
+    public BigDecimal getTaxIncPrice(BigDecimal taxExPrice, Product product, Party practice, Currency currency) {
+        BigDecimal taxRate = getTaxRate(product, practice);
+        return getTaxIncPrice(taxExPrice, taxRate, currency);
+    }
+
+    /**
+     * Calculates a tax-inclusive product price using the following formula:
+     * <p/>
+     * {@code price = taxExPrice * (1 + taxRate/100)}
+     * <p/>
+     * The price is rounded according to currency conventions.
+     *
+     * @param taxExPrice the tax-exclusive price
+     * @param currency   the currency, used for rounding
+     * @return the tax-exclusive price
+     */
+    public BigDecimal getTaxIncPrice(BigDecimal taxExPrice, BigDecimal taxRate, Currency currency) {
+        BigDecimal price = taxExPrice;
+        if (taxRate.compareTo(BigDecimal.ZERO) != 0) {
+            price = taxExPrice.multiply(ONE.add(getRate(taxRate)));
+        }
+        price = currency.roundPrice(price);
+        return price;
+    }
+
+    /**
+     * Calculates a tax-exclusive price markup, given the cost and tax-exclusive price.
+     * <p/>
+     * The formula is:
+     * {@code markup = (price/cost - 1) * 100}
+     *
+     * @param cost  the cost
+     * @param price the tax-exclusive price
+     * @return the tax-exclusive price markup
+     */
+    public BigDecimal getMarkup(BigDecimal cost, BigDecimal price) {
         BigDecimal markup = ZERO;
         if (cost.compareTo(ZERO) != 0) {
-            BigDecimal taxRate = ZERO;
-            if (product != null) {
-                taxRate = getTaxRate(product, practice);
-            }
-            markup = price.divide(
-                    cost.multiply(ONE.add(taxRate)), 3,
-                    RoundingMode.HALF_UP).subtract(ONE).multiply(ONE_HUNDRED);
+            markup = price.divide(cost, 3, RoundingMode.HALF_UP).subtract(ONE).multiply(ONE_HUNDRED);
             if (markup.compareTo(ZERO) < 0) {
                 markup = ZERO;
             }
@@ -335,12 +369,12 @@ public class ProductPriceRules {
      * Calculates the maximum discount that can be applied for a given markup.
      * <p/>
      * Uses the equation:
-     * <code>(markup / (100 + markup)) * 100</code>
+     * {@code (markup / (100 + markup)) * 100}
      *
      * @param markup the markup expressed as a percentage
      * @return the discount as a percentage rounded down
      */
-    public BigDecimal calcMaxDiscount(BigDecimal markup) {
+    public BigDecimal getMaxDiscount(BigDecimal markup) {
         BigDecimal discount = DEFAULT_MAX_DISCOUNT;
         if (markup.compareTo(BigDecimal.ZERO) > 0) {
             discount = markup.divide(ONE_HUNDRED.add(markup), 3, RoundingMode.HALF_DOWN).multiply(ONE_HUNDRED);
@@ -349,39 +383,58 @@ public class ProductPriceRules {
     }
 
     /**
-     * Updates the cost node of any <em>productPrice.unitPrice</em>
-     * associated with a product active at the current time, and recalculates its price.
+     * Updates the cost node of any <em>productPrice.unitPrice</em> associated with a product active at the current
+     * time, and recalculates its price.
      * <p/>
      * Returns a list of unit prices whose cost and price have changed.
      *
      * @param product  the product
      * @param cost     the new cost
-     * @param practice the <em>party.organisationPractice</em> used to determine product taxes
      * @param currency the currency, for rounding conventions
      * @return the list of any updated prices
      */
-    public List<ProductPrice> updateUnitPrices(Product product, BigDecimal cost, Party practice, Currency currency) {
+    public List<ProductPrice> updateUnitPrices(Product product, BigDecimal cost, Currency currency) {
+        return updateUnitPrices(product, cost, false, currency);
+    }
+
+    /**
+     * Updates the cost node of any <em>productPrice.unitPrice</em> associated with a product active at the current
+     * time, and recalculates its price.
+     * <p/>
+     * Returns a list of unit prices whose cost and price have changed.
+     *
+     * @param product            the product
+     * @param cost               the new cost
+     * @param ignoreCostDecrease if {@code true}, don't update any unit price if the new cost price would be less than
+     *                           the existing cost price
+     * @param currency           the currency, for rounding conventions
+     * @return the list of any updated prices
+     */
+    public List<ProductPrice> updateUnitPrices(Product product, BigDecimal cost, final boolean ignoreCostDecrease,
+                                               Currency currency) {
         List<ProductPrice> result = null;
         IMObjectBean bean = new IMObjectBean(product, service);
         final Date now = new Date();
-        Predicate predicate = new Predicate() {
-            @Override
-            public boolean evaluate(Object object) {
-                ProductPrice price = (ProductPrice) object;
-                return price.isActive() && DateRules.between(now, price.getFromDate(), price.getToDate());
+        final BigDecimal roundedCost = currency.round(cost);
+        Predicate predicate = object -> {
+            ProductPrice price = (ProductPrice) object;
+            boolean result1 = price.isActive() && TypeHelper.isA(price, ProductArchetypes.UNIT_PRICE)
+                              && DateRules.between(now, price.getFromDate(), price.getToDate());
+            if (result1 && ignoreCostDecrease) {
+                IMObjectBean bean1 = new IMObjectBean(price, service);
+                BigDecimal currentCost = bean1.getBigDecimal("cost", BigDecimal.ZERO);
+                result1 = currentCost.compareTo(roundedCost) < 0;
             }
+            return result1;
         };
         List<ProductPrice> prices = bean.getValues("prices", predicate, ProductPrice.class);
         if (!prices.isEmpty()) {
-            cost = currency.round(cost);
             for (ProductPrice price : prices) {
-                if (TypeHelper.isA(price, ProductArchetypes.UNIT_PRICE)) {
-                    if (updateUnitPrice(price, product, cost, practice, currency)) {
-                        if (result == null) {
-                            result = new ArrayList<>();
-                        }
-                        result.add(price);
+                if (updateUnitPrice(price, roundedCost)) {
+                    if (result == null) {
+                        result = new ArrayList<>();
                     }
+                    result.add(price);
                 }
             }
         }
@@ -396,7 +449,7 @@ public class ProductPriceRules {
      *
      * @param price the price
      * @return the maximum discount for the product price, or {@code 100} if there is no maximum discount associated
-     *         with the price.
+     * with the price.
      */
     public BigDecimal getMaxDiscount(ProductPrice price) {
         IMObjectBean bean = new IMObjectBean(price, service);
@@ -441,7 +494,7 @@ public class ProductPriceRules {
     public BigDecimal getServiceRatio(Product product, Party location) {
         BigDecimal ratio = BigDecimal.ONE;
         IMObjectBean bean = new IMObjectBean(product, service);
-        IMObjectReference productType = bean.getNodeSourceObjectRef("type");
+        IMObjectReference productType = bean.getNodeTargetObjectRef("type");
         if (productType != null) {
             IMObjectBean locationBean = new IMObjectBean(location, service);
             Predicate predicate = AndPredicate.getInstance(isActiveNow(), getTargetEquals(productType));
@@ -469,30 +522,6 @@ public class ProductPriceRules {
     }
 
     /**
-     * Updates an <em>productPrice.unitPrice</em> if required.
-     *
-     * @param price    the price
-     * @param product  the associated product
-     * @param cost     the cost price
-     * @param practice the <em>party.organisationPractice</em> used to determine product taxes
-     * @param currency the currency, for rounding conventions
-     * @return {@code true} if the price was updated
-     */
-    private boolean updateUnitPrice(ProductPrice price, Product product, BigDecimal cost, Party practice,
-                                    Currency currency) {
-        IMObjectBean priceBean = new IMObjectBean(price, service);
-        BigDecimal old = priceBean.getBigDecimal("cost", ZERO);
-        if (!MathRules.equals(old, cost)) {
-            priceBean.setValue("cost", cost);
-            BigDecimal markup = priceBean.getBigDecimal("markup", ZERO);
-            BigDecimal newPrice = getPrice(product, cost, markup, practice, currency);
-            price.setPrice(newPrice);
-            return true;
-        }
-        return false;
-    }
-
-    /**
      * Returns the tax rate of a product.
      *
      * @param product  the product
@@ -500,20 +529,42 @@ public class ProductPriceRules {
      * @return the product tax rate
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private BigDecimal getTaxRate(Product product, Party practice) {
-        TaxRules rules = new TaxRules(practice, service, lookups);
-        return getRate(rules.getTaxRate(product));
+    public BigDecimal getTaxRate(Product product, Party practice) {
+        TaxRules rules = new TaxRules(practice, service);
+        return rules.getTaxRate(product);
+    }
+
+    /**
+     * Updates an <em>productPrice.unitPrice</em> if required.
+     *
+     * @param price the price
+     * @param cost  the cost price
+     * @return {@code true} if the price was updated
+     */
+    private boolean updateUnitPrice(ProductPrice price, BigDecimal cost) {
+        IMObjectBean priceBean = new IMObjectBean(price, service);
+        BigDecimal old = priceBean.getBigDecimal("cost", ZERO);
+        if (!MathRules.equals(old, cost)) {
+            priceBean.setValue("cost", cost);
+            BigDecimal markup = priceBean.getBigDecimal("markup", ZERO);
+            BigDecimal newPrice = getTaxExPrice(cost, markup);
+            price.setPrice(newPrice);
+            return true;
+        }
+        return false;
     }
 
     /**
      * Returns a percentage / 100.
+     * <p/>
+     * This is expressed to 4 decimal places to support tax rates like "8.25%".
      *
      * @param percent the percent
      * @return {@code percent / 100 }
      */
     private BigDecimal getRate(BigDecimal percent) {
         if (percent.compareTo(ZERO) != 0) {
-            return MathRules.divide(percent, ONE_HUNDRED, 3);
+            return MathRules.divide(percent, ONE_HUNDRED, 4);
         }
         return ZERO;
     }
@@ -564,7 +615,8 @@ public class ProductPriceRules {
         ProductPrice result = null;
         ProductPrice fallback = null;
         int fallbackMatch = 0;
-        for (ProductPrice price : product.getProductPrices()) {
+        for (org.openvpms.component.model.product.ProductPrice p : product.getProductPrices()) {
+            ProductPrice price = (ProductPrice) p;
             int match = predicate.matches(price);
             if (match > 0) {
                 if (useDefault) {
@@ -576,7 +628,7 @@ public class ProductPriceRules {
                     result = price;
                     break;
                 }
-                if (match > fallbackMatch) {
+                if (match > fallbackMatch || (match == fallbackMatch && useDefault && isDefault(price))) {
                     fallback = price;
                     fallbackMatch = match;
                 }
@@ -594,7 +646,8 @@ public class ProductPriceRules {
      */
     private List<ProductPrice> findPrices(Product product, ProductPricePredicate predicate) {
         List<ProductPrice> result = null;
-        for (ProductPrice price : product.getProductPrices()) {
+        for (org.openvpms.component.model.product.ProductPrice p : product.getProductPrices()) {
+            ProductPrice price = (ProductPrice) p;
             if (predicate.evaluate(price)) {
                 if (result == null) {
                     result = new ArrayList<>();
@@ -670,7 +723,7 @@ public class ProductPriceRules {
          *
          * @param price the price
          * @return {@code 0} if it doesn't match, {@link #PARTIAL_MATCH} if it is a partial match on group,
-         *         {@link #EXACT_MATCH} if it is an exact match on group
+         * {@link #EXACT_MATCH} if it is an exact match on group
          */
         public int matches(ProductPrice price) {
             int result = 0;
@@ -713,7 +766,7 @@ public class ProductPriceRules {
             if (result > 0) {
                 Date from = price.getFromDate();
                 Date to = price.getToDate();
-                if (!DateRules.betweenDates(date, from, to)) {
+                if (!DateRules.between(date, from, to)) {
                     result = 0;
                 }
             }

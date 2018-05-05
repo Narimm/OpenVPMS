@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.function;
@@ -19,8 +19,10 @@ package org.openvpms.web.component.function;
 import org.apache.commons.jxpath.FunctionLibrary;
 import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.function.factory.DefaultArchetypeFunctionsFactory;
+import org.openvpms.archetype.rules.contact.AddressFormatter;
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.patient.PatientAgeFormatter;
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.FunctionsFactory;
@@ -44,16 +46,33 @@ public class DefaultFunctionsFactory extends DefaultArchetypeFunctionsFactory {
     private Macros macros;
 
     /**
+     * Constructs a {@link DefaultArchetypeFunctionsFactory}.
+     *
+     * @param service         the archetype service
+     * @param lookups         the lookup service
+     * @param practiceService the practice service
+     * @param currencies      the currencies
+     * @param ageFormatter    the patient age formatter. May be {@code null}
+     */
+    public DefaultFunctionsFactory(IArchetypeService service, ILookupService lookups, PracticeService practiceService,
+                                   Currencies currencies, PatientAgeFormatter ageFormatter) {
+        super(service, lookups, practiceService, currencies, ageFormatter);
+    }
+
+    /**
      * Constructs an {@link DefaultFunctionsFactory}.
      *
-     * @param service    the archetype service
-     * @param lookups    the lookup service
-     * @param currencies hte currencies
-     * @param formatter  the patient age formatter. May be {@code null}
+     * @param service          the archetype service
+     * @param lookups          the lookup service
+     * @param practiceService  the practice service
+     * @param currencies       the currencies
+     * @param addressFormatter the address formatter
+     * @param formatter        the patient age formatter. May be {@code null}
      */
-    public DefaultFunctionsFactory(IArchetypeService service, ILookupService lookups, Currencies currencies,
+    public DefaultFunctionsFactory(IArchetypeService service, ILookupService lookups, PracticeService practiceService,
+                                   Currencies currencies, AddressFormatter addressFormatter,
                                    PatientAgeFormatter formatter) {
-        super(service, lookups, currencies, formatter);
+        super(service, lookups, practiceService, currencies, addressFormatter, formatter);
     }
 
     /**
@@ -69,11 +88,12 @@ public class DefaultFunctionsFactory extends DefaultArchetypeFunctionsFactory {
      * Creates a new {@code FunctionLibrary} containing functions that use the specified {@link IArchetypeService}.
      *
      * @param service the archetype service
+     * @param cache   if {@code true}, indicates that functions may use caching
      * @return the functions
      */
     @Override
-    public FunctionLibrary create(IArchetypeService service) {
-        FunctionLibrary library = super.create(service);
+    public FunctionLibrary create(IArchetypeService service, boolean cache) {
+        FunctionLibrary library = super.create(service, cache);
         library.addFunctions(create("macro", new MacroFunctions(macros)));
         return library;
     }

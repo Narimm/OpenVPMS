@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.account;
@@ -70,8 +70,7 @@ public class AdjustmentActEditor extends AccountActEditor {
         Context context = getLayoutContext().getContext();
         Party practice = context.getPractice();
         if (practice != null) {
-            CustomerTaxRules rules = new CustomerTaxRules(practice, ServiceHelper.getArchetypeService(),
-                                                          ServiceHelper.getLookupService());
+            CustomerTaxRules rules = new CustomerTaxRules(practice, ServiceHelper.getArchetypeService());
             BigDecimal tax = rules.calculateTax(act);
             if (tax.compareTo(previousTax) != 0) {
                 Property property = getProperty("tax");

@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -20,9 +20,10 @@
                displayName="Report Macro">
         <node name="id" path="/id" type="java.lang.Long"
               hidden="true" readOnly="true"/>
-        <node name="code" path="/code" type="java.lang.String" minCardinality="1">
+        <node name="code" path="/code" type="java.lang.String" minCardinality="1" maxLength="100">
             <assertion name="regularExpression">
                 <property name="expression" value="[a-zA-Z@][a-zA-Z0-9_.]*"/>
+                <errorMessage>Invalid Code</errorMessage>
             </assertion>
         </node>
         <node name="name" type="java.lang.String" path="/name"

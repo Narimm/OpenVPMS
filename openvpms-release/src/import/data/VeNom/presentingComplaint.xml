@@ -1,0 +1,518 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetype>
+    <data id='VENOM_249' archetype='lookup.presentingComplaintVeNom' code='VENOM_249' name='Abdominal distension'
+          description='Abdominal finding' dataDictionaryId='249'/>
+    <data id='VENOM_7538' archetype='lookup.presentingComplaintVeNom' code='VENOM_7538' name='Abdominal injury'
+          description='Abdominal finding, Traumatic episode finding' dataDictionaryId='7538'/>
+    <data id='VENOM_13' archetype='lookup.presentingComplaintVeNom' code='VENOM_13' name='Alopecia'
+          description='Haircoat/skin (+ appendages) finding' dataDictionaryId='13'/>
+    <data id='VENOM_11101' archetype='lookup.presentingComplaintVeNom' code='VENOM_11101' name='Anal irritation'
+          description='Alimentary tract/Digestive system finding' dataDictionaryId='11101'/>
+    <data id='VENOM_312' archetype='lookup.presentingComplaintVeNom' code='VENOM_312' name='Anorexia'
+          description='Nervous system finding' dataDictionaryId='312'/>
+    <data id='VENOM_178' archetype='lookup.presentingComplaintVeNom' code='VENOM_178' name='Appetite decreased'
+          description='Nervous system finding' dataDictionaryId='178'/>
+    <data id='VENOM_179' archetype='lookup.presentingComplaintVeNom' code='VENOM_179' name='Appetite increased'
+          description='Nervous system finding' dataDictionaryId='179'/>
+    <data id='VENOM_16' archetype='lookup.presentingComplaintVeNom' code='VENOM_16' name='Behavioural abnormality'
+          description='Nervous system finding, Head and neck finding' dataDictionaryId='16'/>
+    <data id='VENOM_18' archetype='lookup.presentingComplaintVeNom' code='VENOM_18' name='Bleeding - bruising'
+          description='Cardiovascular system finding, Wound finding' dataDictionaryId='18'/>
+    <data id='VENOM_2102' archetype='lookup.presentingComplaintVeNom' code='VENOM_2102' name='Bleeding - epistaxis'
+          description='Respiratory system finding, Cardiovascular system finding, Head and neck finding'
+          dataDictionaryId='2102'/>
+    <data id='VENOM_2104' archetype='lookup.presentingComplaintVeNom' code='VENOM_2104' name='Bleeding - other orifice'
+          description='Cardiovascular system finding' dataDictionaryId='2104'/>
+    <data id='VENOM_2106' archetype='lookup.presentingComplaintVeNom' code='VENOM_2106'
+          name='Bleeding - petechiation/ecchymoses' description='Cardiovascular system finding'
+          dataDictionaryId='2106'/>
+    <data id='VENOM_20' archetype='lookup.presentingComplaintVeNom' code='VENOM_20' name='Blindness'
+          description='Ophthalmology/vision finding, Head and neck finding' dataDictionaryId='20'/>
+    <data id='VENOM_7711' archetype='lookup.presentingComplaintVeNom' code='VENOM_7711'
+          name='BLOOD/OTHER TEST APPOINTMENT' description='Clinical finding' dataDictionaryId='7711'/>
+    <data id='VENOM_2108' archetype='lookup.presentingComplaintVeNom' code='VENOM_2108' name='Cachexia'
+          description='Weight/Body condition finding, Nutritional finding' dataDictionaryId='2108'/>
+    <data id='VENOM_2117' archetype='lookup.presentingComplaintVeNom' code='VENOM_2117'
+          name='Cardiac (heart) abnormality - heart murmur'
+          description='Cardiovascular system finding, Thoracic finding' dataDictionaryId='2117'/>
+    <data id='VENOM_22' archetype='lookup.presentingComplaintVeNom' code='VENOM_22'
+          name='Cardiac (heart) abnormality - other' description='Cardiovascular system finding, Thoracic finding'
+          dataDictionaryId='22'/>
+    <data id='VENOM_38' archetype='lookup.presentingComplaintVeNom' code='VENOM_38' name='Cataract'
+          description='Ophthalmology/vision finding, Head and neck finding' dataDictionaryId='38'/>
+    <data id='VENOM_4672' archetype='lookup.presentingComplaintVeNom' code='VENOM_4672' name='CHEMOTHERAPY appointment'
+          description='Clinical finding' dataDictionaryId='4672'/>
+    <data id='VENOM_2132' archetype='lookup.presentingComplaintVeNom' code='VENOM_2132'
+          name='Collapse/syncopal episodes' description='Clinical finding' dataDictionaryId='2132'/>
+    <data id='VENOM_7580' archetype='lookup.presentingComplaintVeNom' code='VENOM_7580' name='Corneal abnormality'
+          description='Ophthalmology/vision finding, Head and neck finding' dataDictionaryId='7580'/>
+    <data id='VENOM_2134' archetype='lookup.presentingComplaintVeNom' code='VENOM_2134'
+          name='Corneal opacity or blue eye' description='Ophthalmology/vision finding, Head and neck finding'
+          dataDictionaryId='2134'/>
+    <data id='VENOM_29' archetype='lookup.presentingComplaintVeNom' code='VENOM_29' name='Coughing'
+          description='Respiratory system finding' dataDictionaryId='29'/>
+    <data id='VENOM_7634' archetype='lookup.presentingComplaintVeNom' code='VENOM_7634' name='Cyanosis'
+          description='Soft tissue finding, Haircoat/skin (+ appendages) finding' dataDictionaryId='7634'/>
+    <data id='VENOM_7630' archetype='lookup.presentingComplaintVeNom' code='VENOM_7630'
+          name='Dead (Deceased) on presentation' description='Administrative statuses finding' dataDictionaryId='7630'/>
+    <data id='VENOM_183' archetype='lookup.presentingComplaintVeNom' code='VENOM_183'
+          name='Defaecation abnormal - decreased frequency' description='Alimentary tract/Digestive system finding'
+          dataDictionaryId='183'/>
+    <data id='VENOM_185' archetype='lookup.presentingComplaintVeNom' code='VENOM_185'
+          name='Defaecation abnormal - defaecatory tenesmus' description='Alimentary tract/Digestive system finding'
+          dataDictionaryId='185'/>
+    <data id='VENOM_184' archetype='lookup.presentingComplaintVeNom' code='VENOM_184'
+          name='Defaecation abnormal - increased frequency' description='Alimentary tract/Digestive system finding'
+          dataDictionaryId='184'/>
+    <data id='VENOM_186' archetype='lookup.presentingComplaintVeNom' code='VENOM_186'
+          name='Defaecation abnormal - other' description='Alimentary tract/Digestive system finding'
+          dataDictionaryId='186'/>
+    <data id='VENOM_2137' archetype='lookup.presentingComplaintVeNom' code='VENOM_2137'
+          name='Dental (tooth) abnormality'
+          description='Alimentary tract/Digestive system finding, Head and neck finding' dataDictionaryId='2137'/>
+    <data id='VENOM_2141' archetype='lookup.presentingComplaintVeNom' code='VENOM_2141'
+          name='Dietary indiscretion - foreign body ingestion'
+          description='Alimentary tract/Digestive system finding, Foreign body finding' dataDictionaryId='2141'/>
+    <data id='VENOM_2144' archetype='lookup.presentingComplaintVeNom' code='VENOM_2144'
+          name='Dietary indiscretion - other' description='Alimentary tract/Digestive system finding'
+          dataDictionaryId='2144'/>
+    <data id='VENOM_7516' archetype='lookup.presentingComplaintVeNom' code='VENOM_7516' name='Discharge - aural (ear)'
+          description='Auditory system finding, Head and neck finding' dataDictionaryId='7516'/>
+    <data id='VENOM_36' archetype='lookup.presentingComplaintVeNom' code='VENOM_36' name='Discharge - nasal (nose)'
+          description='Respiratory system finding, Head and neck finding' dataDictionaryId='36'/>
+    <data id='VENOM_43' archetype='lookup.presentingComplaintVeNom' code='VENOM_43' name='Discharge - ocular (eye)'
+          description='Ophthalmology/vision finding, Head and neck finding' dataDictionaryId='43'/>
+    <data id='VENOM_7615' archetype='lookup.presentingComplaintVeNom' code='VENOM_7615' name='Discharge - penile'
+          description='Urogenital system finding, Reproductive system finding' dataDictionaryId='7615'/>
+    <data id='VENOM_2145' archetype='lookup.presentingComplaintVeNom' code='VENOM_2145' name='Discharge - sinus tract'
+          description='Soft tissue finding' dataDictionaryId='2145'/>
+    <data id='VENOM_46' archetype='lookup.presentingComplaintVeNom' code='VENOM_46' name='Discharge - vaginal'
+          description='Urogenital system finding, Reproductive system finding, Pelvic structure finding'
+          dataDictionaryId='46'/>
+    <data id='VENOM_11723' archetype='lookup.presentingComplaintVeNom' code='VENOM_11723'
+          name='Dressing-related complication' description='Episode of care finding' dataDictionaryId='11723'/>
+    <data id='VENOM_2149' archetype='lookup.presentingComplaintVeNom' code='VENOM_2149' name='Dry eye'
+          description='Ophthalmology/vision finding, Head and neck finding' dataDictionaryId='2149'/>
+    <data id='VENOM_2151' archetype='lookup.presentingComplaintVeNom' code='VENOM_2151' name='Dysphagia'
+          description='Alimentary tract/Digestive system finding' dataDictionaryId='2151'/>
+    <data id='VENOM_49' archetype='lookup.presentingComplaintVeNom' code='VENOM_49' name='Dysphonia'
+          description='Respiratory system finding' dataDictionaryId='49'/>
+    <data id='VENOM_55' archetype='lookup.presentingComplaintVeNom' code='VENOM_55' name='Dyspnoea - with coughing'
+          description='Respiratory system finding' dataDictionaryId='55'/>
+    <data id='VENOM_51' archetype='lookup.presentingComplaintVeNom' code='VENOM_51' name='Dyspnoea - without coughing'
+          description='Respiratory system finding' dataDictionaryId='51'/>
+    <data id='VENOM_57' archetype='lookup.presentingComplaintVeNom' code='VENOM_57' name='Dystocia'
+          description='Reproductive system finding' dataDictionaryId='57'/>
+    <data id='VENOM_2153' archetype='lookup.presentingComplaintVeNom' code='VENOM_2153' name='Ear (aural) abnormality'
+          description='Auditory system finding, Head and neck finding' dataDictionaryId='2153'/>
+    <data id='VENOM_7520' archetype='lookup.presentingComplaintVeNom' code='VENOM_7520' name='Ear (aural) injury'
+          description='Auditory system finding, Traumatic episode finding, Head and neck finding'
+          dataDictionaryId='7520'/>
+    <data id='VENOM_7528' archetype='lookup.presentingComplaintVeNom' code='VENOM_7528' name='Ear (aural) smell'
+          description='Auditory system finding, Head and neck finding' dataDictionaryId='7528'/>
+    <data id='VENOM_18317' archetype='lookup.presentingComplaintVeNom' code='VENOM_18317' name='Epiphora/tear staining'
+          description='Ophthalmology/vision finding, Head and neck finding' dataDictionaryId='18317'/>
+    <data id='VENOM_18320' archetype='lookup.presentingComplaintVeNom' code='VENOM_18320' name='Excess tear production'
+          description='Ophthalmology/vision finding, Head and neck finding' dataDictionaryId='18320'/>
+    <data id='VENOM_59' archetype='lookup.presentingComplaintVeNom' code='VENOM_59'
+          name='Exercise intolerance - episodic' description='Musculoskeletal system finding' dataDictionaryId='59'/>
+    <data id='VENOM_2158' archetype='lookup.presentingComplaintVeNom' code='VENOM_2158'
+          name='Exercise intolerance - persistent' description='Musculoskeletal system finding'
+          dataDictionaryId='2158'/>
+    <data id='VENOM_2160' archetype='lookup.presentingComplaintVeNom' code='VENOM_2160' name='Eyelid abnormality'
+          description='Ophthalmology/vision finding, Head and neck finding' dataDictionaryId='2160'/>
+    <data id='VENOM_32' archetype='lookup.presentingComplaintVeNom' code='VENOM_32'
+          name='Faecal appearance abnormal - diarrhoea'
+          description='Alimentary tract/Digestive system finding, Abdominal finding' dataDictionaryId='32'/>
+    <data id='VENOM_2162' archetype='lookup.presentingComplaintVeNom' code='VENOM_2162'
+          name='Faecal appearance abnormal - haematochezia' description='Alimentary tract/Digestive system finding'
+          dataDictionaryId='2162'/>
+    <data id='VENOM_2164' archetype='lookup.presentingComplaintVeNom' code='VENOM_2164'
+          name='Faecal appearance abnormal - melaena' description='Alimentary tract/Digestive system finding'
+          dataDictionaryId='2164'/>
+    <data id='VENOM_187' archetype='lookup.presentingComplaintVeNom' code='VENOM_187'
+          name='Faecal appearance abnormal - other' description='Alimentary tract/Digestive system finding'
+          dataDictionaryId='187'/>
+    <data id='VENOM_188' archetype='lookup.presentingComplaintVeNom' code='VENOM_188' name='Failure to gain weight'
+          description='Weight/Body condition finding' dataDictionaryId='188'/>
+    <data id='VENOM_2166' archetype='lookup.presentingComplaintVeNom' code='VENOM_2166' name='Failure to grow'
+          description='Height/growth finding' dataDictionaryId='2166'/>
+    <data id='VENOM_7612' archetype='lookup.presentingComplaintVeNom' code='VENOM_7612'
+          name='Female reproductive abnormality' description='Reproductive system finding' dataDictionaryId='7612'/>
+    <data id='VENOM_2169' archetype='lookup.presentingComplaintVeNom' code='VENOM_2169' name='Gagging/retching'
+          description='Alimentary tract/Digestive system finding' dataDictionaryId='2169'/>
+    <data id='VENOM_62' archetype='lookup.presentingComplaintVeNom' code='VENOM_62' name='Gait abnormality - ataxia'
+          description='Musculoskeletal system finding, Nervous system finding' dataDictionaryId='62'/>
+    <data id='VENOM_65' archetype='lookup.presentingComplaintVeNom' code='VENOM_65' name='Gait abnormality - lameness'
+          description='Musculoskeletal system finding, Nervous system finding' dataDictionaryId='65'/>
+    <data id='VENOM_67' archetype='lookup.presentingComplaintVeNom' code='VENOM_67' name='Gait abnormality - other'
+          description='Musculoskeletal system finding, Nervous system finding' dataDictionaryId='67'/>
+    <data id='VENOM_7619' archetype='lookup.presentingComplaintVeNom' code='VENOM_7619' name='Haemoptysis'
+          description='Respiratory system finding' dataDictionaryId='7619'/>
+    <data id='VENOM_7604' archetype='lookup.presentingComplaintVeNom' code='VENOM_7604' name='Halitosis'
+          description='Alimentary tract/Digestive system finding, Head and neck finding' dataDictionaryId='7604'/>
+    <data id='VENOM_2176' archetype='lookup.presentingComplaintVeNom' code='VENOM_2176' name='Head tilt'
+          description='Nervous system finding, Head and neck finding' dataDictionaryId='2176'/>
+    <data id='VENOM_2172' archetype='lookup.presentingComplaintVeNom' code='VENOM_2172' name='Hearing impaired/deafness'
+          description='Auditory system finding, Head and neck finding' dataDictionaryId='2172'/>
+    <data id='VENOM_18031' archetype='lookup.presentingComplaintVeNom' code='VENOM_18031' name='Hyphaema'
+          description='Ophthalmology/vision finding, Cardiovascular system finding, Head and neck finding'
+          dataDictionaryId='18031'/>
+    <data id='VENOM_2297' archetype='lookup.presentingComplaintVeNom' code='VENOM_2297' name='Hypothermia'
+          description='Body temperature finding' dataDictionaryId='2297'/>
+    <data id='VENOM_7637' archetype='lookup.presentingComplaintVeNom' code='VENOM_7637' name='Icterus (jaundice)'
+          description='Endocrine/Metabolic finding' dataDictionaryId='7637'/>
+    <data id='VENOM_2180' archetype='lookup.presentingComplaintVeNom' code='VENOM_2180' name='Incontinence - faecal'
+          description='Alimentary tract/Digestive system finding' dataDictionaryId='2180'/>
+    <data id='VENOM_2182' archetype='lookup.presentingComplaintVeNom' code='VENOM_2182' name='Incontinence - urinary'
+          description='Urogenital system finding' dataDictionaryId='2182'/>
+    <data id='VENOM_71' archetype='lookup.presentingComplaintVeNom' code='VENOM_71'
+          name='Intoxication (poisoning)/toxin exposure' description='Clinical finding' dataDictionaryId='71'/>
+    <data id='VENOM_18323' archetype='lookup.presentingComplaintVeNom' code='VENOM_18323' name='Iris abnormality - mass'
+          description='Ophthalmology/vision finding, Mass lesion/swelling finding, Head and neck finding'
+          dataDictionaryId='18323'/>
+    <data id='VENOM_18328' archetype='lookup.presentingComplaintVeNom' code='VENOM_18328'
+          name='Iris abnormality - other' description='Ophthalmology/vision finding, Head and neck finding'
+          dataDictionaryId='18328'/>
+    <data id='VENOM_18334' archetype='lookup.presentingComplaintVeNom' code='VENOM_18334'
+          name='Lens abnormality - other' description='Ophthalmology/vision finding, Head and neck finding'
+          dataDictionaryId='18334'/>
+    <data id='VENOM_18332' archetype='lookup.presentingComplaintVeNom' code='VENOM_18332' name='Lens opacity'
+          description='Ophthalmology/vision finding, Head and neck finding' dataDictionaryId='18332'/>
+    <data id='VENOM_2187' archetype='lookup.presentingComplaintVeNom' code='VENOM_2187' name='Lethargy'
+          description='Musculoskeletal system finding' dataDictionaryId='2187'/>
+    <data id='VENOM_2178' archetype='lookup.presentingComplaintVeNom' code='VENOM_2178' name='Loss of balance'
+          description='Nervous system finding' dataDictionaryId='2178'/>
+    <data id='VENOM_2189' archetype='lookup.presentingComplaintVeNom' code='VENOM_2189' name='Lymphadenomegaly'
+          description='Lymphatic system finding, Immune system finding, Haematopoietic system finding'
+          dataDictionaryId='2189'/>
+    <data id='VENOM_7639' archetype='lookup.presentingComplaintVeNom' code='VENOM_7639'
+          name='Male reproductive abnormality' description='Reproductive system finding' dataDictionaryId='7639'/>
+    <data id='VENOM_2193' archetype='lookup.presentingComplaintVeNom' code='VENOM_2193' name='Mass/swelling - abdominal'
+          description='Mass lesion/swelling finding, Abdominal finding' dataDictionaryId='2193'/>
+    <data id='VENOM_17363' archetype='lookup.presentingComplaintVeNom' code='VENOM_17363' name='Mass/swelling - axilla'
+          description='Mass lesion/swelling finding, Thoracic finding' dataDictionaryId='17363'/>
+    <data id='VENOM_7532' archetype='lookup.presentingComplaintVeNom' code='VENOM_7532'
+          name='Mass/swelling - ear (aural)'
+          description='Auditory system finding, Mass lesion/swelling finding, Head and neck finding'
+          dataDictionaryId='7532'/>
+    <data id='VENOM_7594' archetype='lookup.presentingComplaintVeNom' code='VENOM_7594'
+          name='Mass/swelling - eye (ophthalmic)'
+          description='Ophthalmology/vision finding, Mass lesion/swelling finding, Head and neck finding'
+          dataDictionaryId='7594'/>
+    <data id='VENOM_17366' archetype='lookup.presentingComplaintVeNom' code='VENOM_17366' name='Mass/swelling - eyelid'
+          description='Ophthalmology/vision finding, Mass lesion/swelling finding, Head and neck finding'
+          dataDictionaryId='17366'/>
+    <data id='VENOM_17368' archetype='lookup.presentingComplaintVeNom' code='VENOM_17368'
+          name='Mass/swelling - facial (site unspecified)'
+          description='Mass lesion/swelling finding, Head and neck finding' dataDictionaryId='17368'/>
+    <data id='VENOM_17370' archetype='lookup.presentingComplaintVeNom' code='VENOM_17370'
+          name='Mass/swelling - facial, lip'
+          description='Alimentary tract/Digestive system finding, Soft tissue finding, Mass lesion/swelling finding, Head and neck finding'
+          dataDictionaryId='17370'/>
+    <data id='VENOM_17372' archetype='lookup.presentingComplaintVeNom' code='VENOM_17372'
+          name='Mass/swelling - gingival (gum)'
+          description='Alimentary tract/Digestive system finding, Soft tissue finding, Mass lesion/swelling finding, Head and neck finding'
+          dataDictionaryId='17372'/>
+    <data id='VENOM_17373' archetype='lookup.presentingComplaintVeNom' code='VENOM_17373'
+          name='Mass/swelling - jaw (site unspecified)'
+          description='Musculoskeletal system finding, Mass lesion/swelling finding, Head and neck finding'
+          dataDictionaryId='17373'/>
+    <data id='VENOM_17375' archetype='lookup.presentingComplaintVeNom' code='VENOM_17375'
+          name='Mass/swelling - jaw, mandible'
+          description='Musculoskeletal system finding, Mass lesion/swelling finding, Head and neck finding'
+          dataDictionaryId='17375'/>
+    <data id='VENOM_17376' archetype='lookup.presentingComplaintVeNom' code='VENOM_17376'
+          name='Mass/swelling - jaw, maxilla'
+          description='Musculoskeletal system finding, Mass lesion/swelling finding, Head and neck finding'
+          dataDictionaryId='17376'/>
+    <data id='VENOM_17377' archetype='lookup.presentingComplaintVeNom' code='VENOM_17377' name='Mass/swelling - joint'
+          description='Musculoskeletal system finding, Mass lesion/swelling finding' dataDictionaryId='17377'/>
+    <data id='VENOM_17378' archetype='lookup.presentingComplaintVeNom' code='VENOM_17378'
+          name='Mass/swelling - limb, lower' description='Limb finding, Mass lesion/swelling finding'
+          dataDictionaryId='17378'/>
+    <data id='VENOM_17380' archetype='lookup.presentingComplaintVeNom' code='VENOM_17380'
+          name='Mass/swelling - limb, upper' description='Limb finding, Mass lesion/swelling finding'
+          dataDictionaryId='17380'/>
+    <data id='VENOM_17382' archetype='lookup.presentingComplaintVeNom' code='VENOM_17382'
+          name='Mass/swelling - lymph node'
+          description='Lymphatic system finding, Immune system finding, Haematopoietic system finding, Mass lesion/swelling finding'
+          dataDictionaryId='17382'/>
+    <data id='VENOM_17384' archetype='lookup.presentingComplaintVeNom' code='VENOM_17384' name='Mass/swelling - mammary'
+          description='Reproductive system finding, Mass lesion/swelling finding' dataDictionaryId='17384'/>
+    <data id='VENOM_7562' archetype='lookup.presentingComplaintVeNom' code='VENOM_7562'
+          name='Mass/swelling - musculoskeletal'
+          description='Musculoskeletal system finding, Mass lesion/swelling finding' dataDictionaryId='7562'/>
+    <data id='VENOM_17385' archetype='lookup.presentingComplaintVeNom' code='VENOM_17385'
+          name='Mass/swelling - neck (cervical)' description='Mass lesion/swelling finding, Head and neck finding'
+          dataDictionaryId='17385'/>
+    <data id='VENOM_17390' archetype='lookup.presentingComplaintVeNom' code='VENOM_17390'
+          name='Mass/swelling - nose (nasal), nasal planum'
+          description='Respiratory system finding, Mass lesion/swelling finding, Head and neck finding'
+          dataDictionaryId='17390'/>
+    <data id='VENOM_2198' archetype='lookup.presentingComplaintVeNom' code='VENOM_2198'
+          name='Mass/swelling - oral (mouth)'
+          description='Alimentary tract/Digestive system finding, Mass lesion/swelling finding, Head and neck finding'
+          dataDictionaryId='2198'/>
+    <data id='VENOM_2202' archetype='lookup.presentingComplaintVeNom' code='VENOM_2202' name='Mass/swelling - other'
+          description='Mass lesion/swelling finding' dataDictionaryId='2202'/>
+    <data id='VENOM_17391' archetype='lookup.presentingComplaintVeNom' code='VENOM_17391' name='Mass/swelling - penile'
+          description='Urogenital system finding, Reproductive system finding, Mass lesion/swelling finding'
+          dataDictionaryId='17391'/>
+    <data id='VENOM_7535' archetype='lookup.presentingComplaintVeNom' code='VENOM_7535' name='Mass/swelling - perianal'
+          description='Mass lesion/swelling finding, Perianal finding' dataDictionaryId='7535'/>
+    <data id='VENOM_17392' archetype='lookup.presentingComplaintVeNom' code='VENOM_17392' name='Mass/swelling - prepuce'
+          description='Urogenital system finding, Reproductive system finding, Mass lesion/swelling finding'
+          dataDictionaryId='17392'/>
+    <data id='VENOM_17393' archetype='lookup.presentingComplaintVeNom' code='VENOM_17393' name='Mass/swelling - scrotal'
+          description='Urogenital system finding, Reproductive system finding, Mass lesion/swelling finding'
+          dataDictionaryId='17393'/>
+    <data id='VENOM_17394' archetype='lookup.presentingComplaintVeNom' code='VENOM_17394'
+          name='Mass/swelling - skin (cutaneous)/subcutaneous (site unspecified)'
+          description='Haircoat/skin (+ appendages) finding, Soft tissue finding, Mass lesion/swelling finding'
+          dataDictionaryId='17394'/>
+    <data id='VENOM_17397' archetype='lookup.presentingComplaintVeNom' code='VENOM_17397'
+          name='Mass/swelling - skin (cutaneous)/subcutaneous, digit'
+          description='Haircoat/skin (+ appendages) finding, Soft tissue finding, Mass lesion/swelling finding, Limb finding'
+          dataDictionaryId='17397'/>
+    <data id='VENOM_17399' archetype='lookup.presentingComplaintVeNom' code='VENOM_17399'
+          name='Mass/swelling - skin (cutaneous)/subcutaneous, perianal'
+          description='Haircoat/skin (+ appendages) finding, Soft tissue finding, Mass lesion/swelling finding, Perineal finding'
+          dataDictionaryId='17399'/>
+    <data id='VENOM_17401' archetype='lookup.presentingComplaintVeNom' code='VENOM_17401'
+          name='Mass/swelling - testicular'
+          description='Urogenital system finding, Reproductive system finding, Mass lesion/swelling finding'
+          dataDictionaryId='17401'/>
+    <data id='VENOM_17402' archetype='lookup.presentingComplaintVeNom' code='VENOM_17402'
+          name='Mass/swelling - tongue (lingual)'
+          description='Alimentary tract/Digestive system finding, Soft tissue finding, Mass lesion/swelling finding, Head and neck finding'
+          dataDictionaryId='17402'/>
+    <data id='VENOM_17403' archetype='lookup.presentingComplaintVeNom' code='VENOM_17403' name='Mass/swelling - vulval'
+          description='Urogenital system finding, Reproductive system finding, Mass lesion/swelling finding'
+          dataDictionaryId='17403'/>
+    <data id='VENOM_72' archetype='lookup.presentingComplaintVeNom' code='VENOM_72'
+          name='Mentation altered - anxious/distressed' description='Nervous system finding' dataDictionaryId='72'/>
+    <data id='VENOM_2204' archetype='lookup.presentingComplaintVeNom' code='VENOM_2204'
+          name='Mentation altered - comatose' description='Nervous system finding' dataDictionaryId='2204'/>
+    <data id='VENOM_2206' archetype='lookup.presentingComplaintVeNom' code='VENOM_2206'
+          name='Mentation altered - depressed' description='Nervous system finding' dataDictionaryId='2206'/>
+    <data id='VENOM_7577' archetype='lookup.presentingComplaintVeNom' code='VENOM_7577'
+          name='Mentation altered - stuporous' description='Nervous system finding' dataDictionaryId='7577'/>
+    <data id='VENOM_7542' archetype='lookup.presentingComplaintVeNom' code='VENOM_7542' name='Moribund'
+          description='Clinical finding' dataDictionaryId='7542'/>
+    <data id='VENOM_2212' archetype='lookup.presentingComplaintVeNom' code='VENOM_2212'
+          name='Mucous membranes abnormal - cyanosed'
+          description='Soft tissue finding, Haircoat/skin (+ appendages) finding' dataDictionaryId='2212'/>
+    <data id='VENOM_2217' archetype='lookup.presentingComplaintVeNom' code='VENOM_2217'
+          name='Mucous membranes abnormal - hyperaemic' description='Soft tissue finding, Cardiovascular system finding'
+          dataDictionaryId='2217'/>
+    <data id='VENOM_75' archetype='lookup.presentingComplaintVeNom' code='VENOM_75'
+          name='Mucous membranes abnormal - other' description='Soft tissue finding' dataDictionaryId='75'/>
+    <data id='VENOM_74' archetype='lookup.presentingComplaintVeNom' code='VENOM_74'
+          name='Mucous membranes abnormal - pale' description='Soft tissue finding' dataDictionaryId='74'/>
+    <data id='VENOM_2221' archetype='lookup.presentingComplaintVeNom' code='VENOM_2221' name='Muscular atrophy - head'
+          description='Musculoskeletal system finding, Head and neck finding' dataDictionaryId='2221'/>
+    <data id='VENOM_2224' archetype='lookup.presentingComplaintVeNom' code='VENOM_2224' name='Muscular atrophy - limb'
+          description='Musculoskeletal system finding, Limb finding' dataDictionaryId='2224'/>
+    <data id='VENOM_2227' archetype='lookup.presentingComplaintVeNom' code='VENOM_2227' name='Muscular atrophy - other'
+          description='Musculoskeletal system finding' dataDictionaryId='2227'/>
+    <data id='VENOM_7565' archetype='lookup.presentingComplaintVeNom' code='VENOM_7565' name='Musculoskeletal injury'
+          description='Musculoskeletal system finding, Traumatic episode finding' dataDictionaryId='7565'/>
+    <data id='VENOM_4719' archetype='lookup.presentingComplaintVeNom' code='VENOM_4719'
+          name='NOT PRESENTED FOR A COMPLAINT' description='Clinical finding' dataDictionaryId='4719'/>
+    <data id='VENOM_2228' archetype='lookup.presentingComplaintVeNom' code='VENOM_2228' name='Nystagmus'
+          description='Ophthalmology/vision finding, Nervous system finding, Head and neck finding'
+          dataDictionaryId='2228'/>
+    <data id='VENOM_2230' archetype='lookup.presentingComplaintVeNom' code='VENOM_2230' name='Obesity'
+          description='Weight/Body condition finding' dataDictionaryId='2230'/>
+    <data id='VENOM_76' archetype='lookup.presentingComplaintVeNom' code='VENOM_76' name='Ophthalmic (eye) abnormality'
+          description='Ophthalmology/vision finding, Head and neck finding' dataDictionaryId='76'/>
+    <data id='VENOM_7583' archetype='lookup.presentingComplaintVeNom' code='VENOM_7583' name='Ophthalmic (eye) injury'
+          description='Ophthalmology/vision finding, Traumatic episode finding, Head and neck finding'
+          dataDictionaryId='7583'/>
+    <data id='VENOM_2236' archetype='lookup.presentingComplaintVeNom' code='VENOM_2236'
+          name='Oral (mouth) abnormality - other'
+          description='Alimentary tract/Digestive system finding, Head and neck finding' dataDictionaryId='2236'/>
+    <data id='VENOM_2233' archetype='lookup.presentingComplaintVeNom' code='VENOM_2233'
+          name='Oral (mouth) abnormality - ulceration'
+          description='Alimentary tract/Digestive system finding, Inflammatory disorder finding, Head and neck finding'
+          dataDictionaryId='2233'/>
+    <data id='VENOM_7608' archetype='lookup.presentingComplaintVeNom' code='VENOM_7608' name='Oral (mouth) injury'
+          description='Alimentary tract/Digestive system finding, Traumatic episode finding, Head and neck finding'
+          dataDictionaryId='7608'/>
+    <data id='VENOM_2898' archetype='lookup.presentingComplaintVeNom' code='VENOM_2898' name='Pain - abdominal'
+          description='Nervous system finding, Abdominal finding' dataDictionaryId='2898'/>
+    <data id='VENOM_7524' archetype='lookup.presentingComplaintVeNom' code='VENOM_7524' name='Pain - aural (ear)'
+          description='Nervous system finding, Auditory system finding, Head and neck finding' dataDictionaryId='7524'/>
+    <data id='VENOM_7569' archetype='lookup.presentingComplaintVeNom' code='VENOM_7569' name='Pain - musculoskeletal'
+          description='Nervous system finding, Musculoskeletal system finding' dataDictionaryId='7569'/>
+    <data id='VENOM_2899' archetype='lookup.presentingComplaintVeNom' code='VENOM_2899' name='Pain - neck (cervical)'
+          description='Nervous system finding, Head and neck finding' dataDictionaryId='2899'/>
+    <data id='VENOM_2238' archetype='lookup.presentingComplaintVeNom' code='VENOM_2238' name='Pain - on being handled'
+          description='Nervous system finding' dataDictionaryId='2238'/>
+    <data id='VENOM_2240' archetype='lookup.presentingComplaintVeNom' code='VENOM_2240' name='Pain - on eating/chewing'
+          description='Nervous system finding' dataDictionaryId='2240'/>
+    <data id='VENOM_7587' archetype='lookup.presentingComplaintVeNom' code='VENOM_7587' name='Pain - ophthalmic (eye)'
+          description='Nervous system finding, Ophthalmology/vision finding, Head and neck finding'
+          dataDictionaryId='7587'/>
+    <data id='VENOM_7642' archetype='lookup.presentingComplaintVeNom' code='VENOM_7642' name='Pain - oral (mouth)'
+          description='Nervous system finding, Alimentary tract/Digestive system finding, Head and neck finding'
+          dataDictionaryId='7642'/>
+    <data id='VENOM_77' archetype='lookup.presentingComplaintVeNom' code='VENOM_77' name='Pain - other'
+          description='Nervous system finding' dataDictionaryId='77'/>
+    <data id='VENOM_2900' archetype='lookup.presentingComplaintVeNom' code='VENOM_2900' name='Pain - spinal'
+          description='Nervous system finding, Musculoskeletal system finding, Spine (vertebral column) finding'
+          dataDictionaryId='2900'/>
+    <data id='VENOM_79' archetype='lookup.presentingComplaintVeNom' code='VENOM_79' name='Panting'
+          description='Respiratory system finding' dataDictionaryId='79'/>
+    <data id='VENOM_2242' archetype='lookup.presentingComplaintVeNom' code='VENOM_2242' name='Paresis/paralysis'
+          description='Nervous system finding, Musculoskeletal system finding, Limb finding' dataDictionaryId='2242'/>
+    <data id='VENOM_2245' archetype='lookup.presentingComplaintVeNom' code='VENOM_2245' name='Paronychia'
+          description='Haircoat/skin (+ appendages) finding, Inflammatory disorder finding, Limb finding'
+          dataDictionaryId='2245'/>
+    <data id='VENOM_2252' archetype='lookup.presentingComplaintVeNom' code='VENOM_2252'
+          name='Penile/preputial abnormality – other'
+          description='Urogenital system finding, Reproductive system finding' dataDictionaryId='2252'/>
+    <data id='VENOM_2248' archetype='lookup.presentingComplaintVeNom' code='VENOM_2248'
+          name='Penile/preputial abnormality – paraphimosis'
+          description='Urogenital system finding, Reproductive system finding' dataDictionaryId='2248'/>
+    <data id='VENOM_2253' archetype='lookup.presentingComplaintVeNom' code='VENOM_2253' name='Polydipsia'
+          description='Nervous system finding' dataDictionaryId='2253'/>
+    <data id='VENOM_2255' archetype='lookup.presentingComplaintVeNom' code='VENOM_2255'
+          name='Polyphagia/ravenous appetite' description='Nervous system finding' dataDictionaryId='2255'/>
+    <data id='VENOM_194' archetype='lookup.presentingComplaintVeNom' code='VENOM_194' name='Polyuria'
+          description='Urogenital system finding' dataDictionaryId='194'/>
+    <data id='VENOM_81' archetype='lookup.presentingComplaintVeNom' code='VENOM_81' name='Polyuria/polydipsia'
+          description='Urogenital system finding, Nervous system finding' dataDictionaryId='81'/>
+    <data id='VENOM_7505' archetype='lookup.presentingComplaintVeNom' code='VENOM_7505' name='Poor quality of life'
+          description='Clinical finding' dataDictionaryId='7505'/>
+    <data id='VENOM_2262' archetype='lookup.presentingComplaintVeNom' code='VENOM_2262'
+          name='Post-operative complication - other' description='Complication of medical care finding'
+          dataDictionaryId='2262'/>
+    <data id='VENOM_2259' archetype='lookup.presentingComplaintVeNom' code='VENOM_2259'
+          name='Post-operative complication - wound related'
+          description='Complication of medical care finding, Wound finding' dataDictionaryId='2259'/>
+    <data id='VENOM_7558' archetype='lookup.presentingComplaintVeNom' code='VENOM_7558'
+          name='Posture abnormal - low head carriage'
+          description='Musculoskeletal system finding, Head and neck finding' dataDictionaryId='7558'/>
+    <data id='VENOM_7554' archetype='lookup.presentingComplaintVeNom' code='VENOM_7554' name='Posture abnormal - other'
+          description='Musculoskeletal system finding' dataDictionaryId='7554'/>
+    <data id='VENOM_15541' archetype='lookup.presentingComplaintVeNom' code='VENOM_15541'
+          name='Presented for investigation of abnormal test result' description='Clinical finding'
+          dataDictionaryId='15541'/>
+    <data id='VENOM_15537' archetype='lookup.presentingComplaintVeNom' code='VENOM_15537'
+          name='Presented for radioactive treatment' description='Clinical finding' dataDictionaryId='15537'/>
+    <data id='VENOM_15540' archetype='lookup.presentingComplaintVeNom' code='VENOM_15540'
+          name='Presented for specific therapeutic intervention' description='Clinical finding'
+          dataDictionaryId='15540'/>
+    <data id='VENOM_4670' archetype='lookup.presentingComplaintVeNom' code='VENOM_4670'
+          name='Presenting complaint not listed' description='Clinical finding' dataDictionaryId='4670'/>
+    <data id='VENOM_84' archetype='lookup.presentingComplaintVeNom' code='VENOM_84' name='Pruritus'
+          description='Haircoat/skin (+ appendages) finding, Nervous system finding' dataDictionaryId='84'/>
+    <data id='VENOM_2263' archetype='lookup.presentingComplaintVeNom' code='VENOM_2263'
+          name='Pupillary abnormality - anisocoria'
+          description='Ophthalmology/vision finding, Nervous system finding, Head and neck finding'
+          dataDictionaryId='2263'/>
+    <data id='VENOM_2267' archetype='lookup.presentingComplaintVeNom' code='VENOM_2267'
+          name='Pupillary abnormality - other' description='Ophthalmology/vision finding, Head and neck finding'
+          dataDictionaryId='2267'/>
+    <data id='VENOM_2294' archetype='lookup.presentingComplaintVeNom' code='VENOM_2294' name='Pyrexia/hyperthermia'
+          description='Body temperature finding' dataDictionaryId='2294'/>
+    <data id='VENOM_2268' archetype='lookup.presentingComplaintVeNom' code='VENOM_2268'
+          name='Recumbency/reluctance to move' description='Musculoskeletal system finding, Nervous system finding'
+          dataDictionaryId='2268'/>
+    <data id='VENOM_2270' archetype='lookup.presentingComplaintVeNom' code='VENOM_2270' name='Red eye'
+          description='Ophthalmology/vision finding, Head and neck finding' dataDictionaryId='2270'/>
+    <data id='VENOM_4671' archetype='lookup.presentingComplaintVeNom' code='VENOM_4671'
+          name='RE-EXAMINATION appointment' description='Clinical finding' dataDictionaryId='4671'/>
+    <data id='VENOM_86' archetype='lookup.presentingComplaintVeNom' code='VENOM_86' name='Regurgitation'
+          description='Alimentary tract/Digestive system finding' dataDictionaryId='86'/>
+    <data id='VENOM_88' archetype='lookup.presentingComplaintVeNom' code='VENOM_88' name='Respiratory noise increased'
+          description='Respiratory system finding' dataDictionaryId='88'/>
+    <data id='VENOM_90' archetype='lookup.presentingComplaintVeNom' code='VENOM_90'
+          name='Salivation - increased/drooling'
+          description='Alimentary tract/Digestive system finding, Head and neck finding' dataDictionaryId='90'/>
+    <data id='VENOM_93' archetype='lookup.presentingComplaintVeNom' code='VENOM_93' name='Seizure(s)'
+          description='Nervous system finding, Head and neck finding' dataDictionaryId='93'/>
+    <data id='VENOM_2275' archetype='lookup.presentingComplaintVeNom' code='VENOM_2275'
+          name='Skeletal abnormality - acquired' description='Musculoskeletal system finding' dataDictionaryId='2275'/>
+    <data id='VENOM_2279' archetype='lookup.presentingComplaintVeNom' code='VENOM_2279'
+          name='Skeletal abnormality - congenital' description='Musculoskeletal system finding, Congenital finding'
+          dataDictionaryId='2279'/>
+    <data id='VENOM_2281' archetype='lookup.presentingComplaintVeNom' code='VENOM_2281'
+          name='Skin (cutaneous) abnormality – eruptions/hives/rash' description='Haircoat/skin (+ appendages) finding'
+          dataDictionaryId='2281'/>
+    <data id='VENOM_2283' archetype='lookup.presentingComplaintVeNom' code='VENOM_2283'
+          name='Skin (cutaneous) abnormality – other' description='Haircoat/skin (+ appendages) finding'
+          dataDictionaryId='2283'/>
+    <data id='VENOM_96' archetype='lookup.presentingComplaintVeNom' code='VENOM_96' name='Sneezing'
+          description='Respiratory system finding, Head and neck finding' dataDictionaryId='96'/>
+    <data id='VENOM_7624' archetype='lookup.presentingComplaintVeNom' code='VENOM_7624' name='Stertor (snoring)'
+          description='Respiratory system finding, Head and neck finding' dataDictionaryId='7624'/>
+    <data id='VENOM_7573' archetype='lookup.presentingComplaintVeNom' code='VENOM_7573' name='Stiffness'
+          description='Musculoskeletal system finding' dataDictionaryId='7573'/>
+    <data id='VENOM_7597' archetype='lookup.presentingComplaintVeNom' code='VENOM_7597' name='Strabismus'
+          description='Ophthalmology/vision finding, Nervous system finding, Head and neck finding'
+          dataDictionaryId='7597'/>
+    <data id='VENOM_7627' archetype='lookup.presentingComplaintVeNom' code='VENOM_7627' name='Stridor'
+          description='Respiratory system finding, Head and neck finding' dataDictionaryId='7627'/>
+    <data id='VENOM_2284' archetype='lookup.presentingComplaintVeNom' code='VENOM_2284' name='Tachypnoea'
+          description='Respiratory system finding' dataDictionaryId='2284'/>
+    <data id='VENOM_2286' archetype='lookup.presentingComplaintVeNom' code='VENOM_2286'
+          name='Testicular/scrotal abnormality' description='Urogenital system finding, Reproductive system finding'
+          dataDictionaryId='2286'/>
+    <data id='VENOM_7550' archetype='lookup.presentingComplaintVeNom' code='VENOM_7550' name='Thin'
+          description='Weight/Body condition finding' dataDictionaryId='7550'/>
+    <data id='VENOM_7546' archetype='lookup.presentingComplaintVeNom' code='VENOM_7546' name='Thirst decreased'
+          description='Nervous system finding' dataDictionaryId='7546'/>
+    <data id='VENOM_98' archetype='lookup.presentingComplaintVeNom' code='VENOM_98' name='Traumatic episode'
+          description='Clinical finding' dataDictionaryId='98'/>
+    <data id='VENOM_2288' archetype='lookup.presentingComplaintVeNom' code='VENOM_2288' name='Tremors/shaking/trembling'
+          description='Nervous system finding' dataDictionaryId='2288'/>
+    <data id='VENOM_189' archetype='lookup.presentingComplaintVeNom' code='VENOM_189'
+          name='Urination abnormal - dysuria' description='Urogenital system finding' dataDictionaryId='189'/>
+    <data id='VENOM_2290' archetype='lookup.presentingComplaintVeNom' code='VENOM_2290'
+          name='Urination abnormal - inappropriate urination' description='Urogenital system finding'
+          dataDictionaryId='2290'/>
+    <data id='VENOM_191' archetype='lookup.presentingComplaintVeNom' code='VENOM_191'
+          name='Urination abnormal - oliguria' description='Urogenital system finding' dataDictionaryId='191'/>
+    <data id='VENOM_192' archetype='lookup.presentingComplaintVeNom' code='VENOM_192' name='Urination abnormal - other'
+          description='Urogenital system finding' dataDictionaryId='192'/>
+    <data id='VENOM_193' archetype='lookup.presentingComplaintVeNom' code='VENOM_193'
+          name='Urination abnormal - pollakiuria' description='Urogenital system finding' dataDictionaryId='193'/>
+    <data id='VENOM_195' archetype='lookup.presentingComplaintVeNom' code='VENOM_195' name='Urine colour abnormal'
+          description='Urogenital system finding' dataDictionaryId='195'/>
+    <data id='VENOM_7601' archetype='lookup.presentingComplaintVeNom' code='VENOM_7601' name='Uveal abnormality'
+          description='Ophthalmology/vision finding, Head and neck finding' dataDictionaryId='7601'/>
+    <data id='VENOM_100' archetype='lookup.presentingComplaintVeNom' code='VENOM_100' name='Vision impaired'
+          description='Ophthalmology/vision finding, Head and neck finding' dataDictionaryId='100'/>
+    <data id='VENOM_2292' archetype='lookup.presentingComplaintVeNom' code='VENOM_2292' name='Vocalisation'
+          description='Nervous system finding' dataDictionaryId='2292'/>
+    <data id='VENOM_5764' archetype='lookup.presentingComplaintVeNom' code='VENOM_5764' name='Vomiting - haematemesis'
+          description='Alimentary tract/Digestive system finding' dataDictionaryId='5764'/>
+    <data id='VENOM_5766' archetype='lookup.presentingComplaintVeNom' code='VENOM_5766' name='Vomiting - other'
+          description='Alimentary tract/Digestive system finding' dataDictionaryId='5766'/>
+    <data id='VENOM_103' archetype='lookup.presentingComplaintVeNom' code='VENOM_103' name='Weakness'
+          description='Musculoskeletal system finding' dataDictionaryId='103'/>
+    <data id='VENOM_196' archetype='lookup.presentingComplaintVeNom' code='VENOM_196' name='Weight gain'
+          description='Weight/Body condition finding' dataDictionaryId='196'/>
+    <data id='VENOM_197' archetype='lookup.presentingComplaintVeNom' code='VENOM_197' name='Weight loss'
+          description='Weight/Body condition finding' dataDictionaryId='197'/>
+    <data id='VENOM_105' archetype='lookup.presentingComplaintVeNom' code='VENOM_105' name='Wound'
+          description='Clinical finding' dataDictionaryId='105'/>
+</archetype>

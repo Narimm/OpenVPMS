@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -26,6 +26,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ResolvingPropertySet;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.util.PropertySet;
+import org.openvpms.report.Parameters;
 import org.openvpms.report.ReportException;
 
 import java.util.Map;
@@ -71,15 +72,19 @@ public class TemplatedJasperIMObjectReport extends AbstractTemplatedJasperIMRepo
     /**
      * Creates a data source for a collection of objects.
      *
-     * @param objects an iterator over the collection of objects
-     * @param fields  a map of additional field names and their values, to pass to the report. May be {@code null}
+     * @param objects    an iterator over the collection of objects
+     * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @return a new data source
      */
     @Override
-    protected JRRewindableDataSource createDataSource(Iterable<IMObject> objects, Map<String, Object> fields) {
-        PropertySet f = (fields != null) ? new ResolvingPropertySet(fields, getArchetypeService()) : null;
-        return new IMObjectCollectionDataSource(objects, f, getArchetypeService(), getLookupService(),
-                                                getDocumentHandlers(), getFunctions());
+    protected JRRewindableDataSource createDataSource(Iterable<IMObject> objects, Map<String, Object> parameters,
+                                                      Map<String, Object> fields) {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
+        PropertySet f = (fields != null) ? new ResolvingPropertySet(fields, service, lookups) : null;
+        Parameters p = (parameters) != null ? new Parameters(parameters) : null;
+        return new IMObjectCollectionDataSource(objects, p, f, service, lookups, getDocumentHandlers(), getFunctions());
     }
 
 }

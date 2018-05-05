@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -21,6 +21,7 @@ import org.openvpms.web.component.im.lookup.LookupFilter;
 import org.openvpms.web.component.im.lookup.LookupQuery;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -70,6 +71,15 @@ public class ActStatuses implements LookupQuery {
      */
     public ActStatuses(String shortName, String exclude) {
         this(new NodeLookupQuery(shortName, "status"), exclude);
+    }
+
+    /**
+     * Constructs an {@link ActStatuses}.
+     *
+     * @param lookups the lookups
+     */
+    public ActStatuses(LookupQuery lookups) {
+        this(lookups, null);
     }
 
     /**
@@ -145,6 +155,19 @@ public class ActStatuses implements LookupQuery {
     }
 
     /**
+     * Returns the act status lookup codes.
+     *
+     * @return the act status lookup codes
+     */
+    public List<String> getCodes() {
+        List<String> result = new ArrayList<>();
+        for (Lookup lookup : getLookups()) {
+            result.add(lookup.getCode());
+        }
+        return result;
+    }
+
+    /**
      * Returns the excluded status code.
      *
      * @return the excluded status code. May be {@code null}
@@ -152,4 +175,5 @@ public class ActStatuses implements LookupQuery {
     public String getExcluded() {
         return exclude;
     }
+
 }

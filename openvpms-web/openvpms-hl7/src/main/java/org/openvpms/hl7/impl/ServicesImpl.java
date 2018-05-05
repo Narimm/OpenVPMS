@@ -11,16 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.MonitoringIMObjectCache;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.service.Services;
@@ -44,6 +47,11 @@ public abstract class ServicesImpl extends MonitoringIMObjectCache<Entity> imple
      * Listeners to notify when a pharmacy changes.
      */
     private final List<Services.Listener> listeners = new ArrayList<Services.Listener>();
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(ServicesImpl.class);
 
     /**
      * Constructs a {@link ServicesImpl}.
@@ -136,28 +144,34 @@ public abstract class ServicesImpl extends MonitoringIMObjectCache<Entity> imple
     }
 
     /**
-     * Adds an object to the cache, if it active, and newer than the existing instance, if any.
+     * Invoked when an object is added to the cache.
      *
-     * @param object the object to add
+     * @param object the added object
      */
     @Override
-    protected void addObject(Entity object) {
-        super.addObject(object);
+    protected void added(Entity object) {
         for (Services.Listener listener : getListeners()) {
-            listener.added(object);
+            try {
+                listener.added(object);
+            } catch (Throwable exception) {
+                log.error(exception, exception);
+            }
         }
     }
 
     /**
-     * Removes an object.
+     * Invoked when an object is removed from the cache.
      *
-     * @param object the object to remove
+     * @param object the removed object
      */
     @Override
-    protected void removeObject(Entity object) {
-        super.removeObject(object);
+    protected void removed(Entity object) {
         for (Services.Listener listener : getListeners()) {
-            listener.removed(object);
+            try {
+                listener.removed(object);
+            } catch (Throwable exception) {
+                log.error(exception, exception);
+            }
         }
     }
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.error;
 
@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.report.DocFormats;
+import org.openvpms.web.component.service.PracticeMailService;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -37,8 +38,7 @@ import java.io.StringWriter;
 /**
  * Sends an {@link ErrorReport} via email.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ErrorReporter {
 
@@ -107,7 +107,7 @@ public class ErrorReporter {
      */
     public void report(final ErrorReport report, String replyTo) {
         try {
-            JavaMailSender sender = ServiceHelper.getMailSender();
+            JavaMailSender sender = ServiceHelper.getBean(PracticeMailService.class);
             MimeMessage message = sender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             String subject = report.getVersion() + ": " + report.getMessage();

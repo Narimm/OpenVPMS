@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -24,7 +24,7 @@ import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -71,7 +71,7 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         Party practice = (Party) create(PracticeArchetypes.PRACTICE);
         gst = TestHelper.createTaxType(BigDecimal.TEN);
         practice.addClassification(gst);
-        taxRules = new TaxRules(practice, getArchetypeService(), getLookupService());
+        taxRules = new TaxRules(practice, getArchetypeService());
     }
 
     /**
@@ -166,7 +166,7 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         addRelationships(product1, stockLocation, supplier1, true, 1, 10, 6);
         ProductSupplier ps = addRelationships(product2, stockLocation, supplier1, true, 2, 10, 5);
         addProductSupplierRelationship(product3, supplier1, true, BigDecimal.ONE, 1);
-        EntityRelationship er = addProductStockLocationRelationship(product3, stockLocation, null, 1, 10, 5);
+        EntityLink er = addProductStockLocationRelationship(product3, stockLocation, null, 1, 10, 5);
 
         supplier1 = get(supplier1);
         List<Stock> stock = generator.getOrderableStock(supplier1, stockLocation, false);
@@ -211,7 +211,7 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         addRelationships(product1, stockLocation, supplier1, true, 0, 200, 10);
 
         // create a part delivered order
-        List<FinancialAct> acts = createOrder(product1, supplier1, stockLocation, 100, OrderStatus.ACCEPTED, 20, 0,
+        List<FinancialAct> acts = createOrder(product1, supplier1, stockLocation, 100, 1, OrderStatus.ACCEPTED, 20, 0,
                                               DeliveryStatus.PART);
 
         List<Stock> stock = generator.getOrderableStock(supplier1, stockLocation, true);
@@ -225,7 +225,7 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
 
         stock = generator.getOrderableStock(supplier1, stockLocation, true);
         assertEquals(1, stock.size());
-        checkStock(stock, product1, supplier1, stockLocation, 0, 150, 50);
+        checkStock(stock, product1, supplier1, stockLocation, 0, 0, 200);
     }
 
     /**
@@ -387,13 +387,13 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         save(product);
 
         // create a cancelled order of 200 units
-        createOrder(product, supplier, stockLocation, 200, OrderStatus.CANCELLED, 0, 0, DeliveryStatus.PENDING);
+        createOrder(product, supplier, stockLocation, 200, 1, OrderStatus.CANCELLED, 0, 0, DeliveryStatus.PENDING);
 
         // create a fully delivered order of 100 units
-        createOrder(product, supplier, stockLocation, 100, OrderStatus.ACCEPTED, 100, 0, DeliveryStatus.FULL);
+        createOrder(product, supplier, stockLocation, 100, 1, OrderStatus.ACCEPTED, 100, 0, DeliveryStatus.FULL);
 
         // create a part delivered order. 50 units left to deliver
-        createOrder(product, supplier, stockLocation, 100, OrderStatus.ACCEPTED, 50, 0, DeliveryStatus.PART);
+        createOrder(product, supplier, stockLocation, 100, 1, OrderStatus.ACCEPTED, 50, 0, DeliveryStatus.PART);
 
         // 0 units on hand, want 100
         addRelationships(product, stockLocation, supplier, true, 0, 100, 100, new BigDecimal("2.0"), 1);
@@ -666,9 +666,24 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
      * @param status        the order status
      * @return a new order
      */
+    private FinancialAct createOrder(Product product, Party supplier, Party stockLocation, int quantity, String status) {
+        return createOrder(product, supplier, stockLocation, quantity, 1, status);
+    }
+
+    /**
+     * Creates an order.
+     *
+     * @param product       the product to order
+     * @param supplier      the supplier to order from
+     * @param stockLocation the stock location for delivery to
+     * @param quantity      the order quantity
+     * @param packageSize   the package size
+     * @param status        the order status
+     * @return a new order
+     */
     private FinancialAct createOrder(Product product, Party supplier, Party stockLocation, int quantity,
-                                     String status) {
-        List<FinancialAct> order = createOrder(product, supplier, stockLocation, quantity, status, 0, 0,
+                                     int packageSize, String status) {
+        List<FinancialAct> order = createOrder(product, supplier, stockLocation, quantity, packageSize, status, 0, 0,
                                                DeliveryStatus.PENDING);
         return order.get(0);
     }
@@ -687,9 +702,9 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
      * @return a new order
      */
     private List<FinancialAct> createOrder(Product product, Party supplier, Party stockLocation, int quantity,
-                                           String status, int receivedQuantity, int cancelledQuantity,
+                                           int packageSize, String status, int receivedQuantity, int cancelledQuantity,
                                            DeliveryStatus deliveryStatus) {
-        FinancialAct orderItem = createOrderItem(product, BigDecimal.valueOf(quantity), 1, BigDecimal.ONE);
+        FinancialAct orderItem = createOrderItem(product, BigDecimal.valueOf(quantity), packageSize, BigDecimal.ONE);
         FinancialAct order = createOrder(orderItem, supplier, stockLocation, status, receivedQuantity,
                                          cancelledQuantity, deliveryStatus);
         return Arrays.asList(order, orderItem);
@@ -755,6 +770,26 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
     private ProductSupplier addRelationships(Product product, Party stockLocation, Party supplier, boolean preferred,
                                              int quantity, int idealQty, int criticalQty, BigDecimal unitPrice,
                                              int packageSize) {
+        return addRelationships(product, stockLocation, supplier, preferred, BigDecimal.valueOf(quantity), idealQty,
+                                criticalQty, unitPrice, packageSize);
+    }
+
+    /**
+     * Creates relationships between a product and stock location and product and supplier.
+     *
+     * @param product       the product
+     * @param stockLocation the stock location
+     * @param supplier      the supplier
+     * @param preferred     indicates if the supplier is the preferred supplier
+     * @param quantity      the quantity
+     * @param idealQty      the ideal quantity
+     * @param criticalQty   the critical quantity
+     * @param unitPrice     the unit price
+     * @return the product-supplier relationship
+     */
+    private ProductSupplier addRelationships(Product product, Party stockLocation, Party supplier, boolean preferred,
+                                             BigDecimal quantity, int idealQty, int criticalQty, BigDecimal unitPrice,
+                                             int packageSize) {
         addProductStockLocationRelationship(product, stockLocation, null, quantity, idealQty, criticalQty);
         return addProductSupplierRelationship(product, supplier, preferred, unitPrice, packageSize);
     }
@@ -773,7 +808,8 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
                                                            BigDecimal unitPrice,
                                                            int packageSize) {
         EntityBean bean = new EntityBean(product);
-        ProductSupplier ps = new ProductSupplier(bean.addNodeRelationship("suppliers", supplier));
+        ProductSupplier ps = new ProductSupplier(bean.addNodeTarget("suppliers", supplier),
+                                                 getArchetypeService());
         ps.setPreferred(preferred);
         ps.setPackageSize(packageSize);
         ps.setNettPrice(unitPrice);
@@ -781,10 +817,38 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         return ps;
     }
 
-    private EntityRelationship addProductStockLocationRelationship(Product product, Party stockLocation, Party supplier,
-                                                                   int quantity, int idealQty, int criticalQty) {
+    /**
+     * Adds a product-stock location relationship.
+     *
+     * @param product       the product
+     * @param stockLocation the stock location
+     * @param supplier      the supplier
+     * @param quantity      the quantity
+     * @param idealQty      the ideal quantity
+     * @param criticalQty   the critical quantity
+     * @return a new relationship
+     */
+    private EntityLink addProductStockLocationRelationship(Product product, Party stockLocation, Party supplier,
+                                                           int quantity, int idealQty, int criticalQty) {
+        return addProductStockLocationRelationship(product, stockLocation, supplier, BigDecimal.valueOf(quantity),
+                                                   idealQty, criticalQty);
+    }
+
+    /**
+     * Adds a product-stock location relationship.
+     *
+     * @param product       the product
+     * @param stockLocation the stock location
+     * @param supplier      the supplier
+     * @param quantity      the quantity
+     * @param idealQty      the ideal quantity
+     * @param criticalQty   the critical quantity
+     * @return a new relationship
+     */
+    private EntityLink addProductStockLocationRelationship(Product product, Party stockLocation, Party supplier,
+                                                           BigDecimal quantity, int idealQty, int criticalQty) {
         EntityBean bean = new EntityBean(product);
-        EntityRelationship relationship = bean.addNodeRelationship("stockLocations", stockLocation);
+        EntityLink relationship = (EntityLink) bean.addNodeTarget("stockLocations", stockLocation);
         IMObjectBean productStockLocation = new IMObjectBean(relationship);
         if (supplier != null) {
             productStockLocation.setValue("supplier", supplier.getObjectReference());

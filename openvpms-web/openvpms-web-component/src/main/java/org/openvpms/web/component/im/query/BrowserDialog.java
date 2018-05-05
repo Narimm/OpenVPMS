@@ -11,21 +11,25 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
 
-import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.PaneContainer;
 import nextapp.echo2.app.Row;
+import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
 
@@ -122,7 +126,7 @@ public class BrowserDialog<T> extends PopupDialog {
 
     /**
      * Constructs a {@link BrowserDialog}.
-     * <p/>
+     * <p>
      * Subclasses may use this constructor to lazily initialise the browser. They can invoke {@link #init} to
      * initialise it after construction.
      *
@@ -146,7 +150,7 @@ public class BrowserDialog<T> extends PopupDialog {
 
     /**
      * Determines if the dialog should close on selection.
-     * <p/>
+     * <p>
      * Defaults to {@code true}.
      *
      * @param close if {@code true}, close the dialog when an object is selected
@@ -193,8 +197,27 @@ public class BrowserDialog<T> extends PopupDialog {
     }
 
     /**
+     * Sets the action and closes the window.
+     * <p>
+     * If the action isn't {@link #CANCEL_ID}, the browser's state will be saved.
+     * <p>
+     * If the action is {@link #CANCEL_ID} any selection will be discarded.
+     *
+     * @param action the action
+     */
+    @Override
+    public void close(String action) {
+        if (CANCEL_ID.equals(action)) {
+            setSelected(null);
+        } else {
+            BrowserStates.getInstance().add(browser);
+        }
+        super.close(action);
+    }
+
+    /**
      * Initialise the dialog.
-     * <p/>
+     * <p>
      * This method may only be invoked once.
      *
      * @param browser the browser
@@ -206,11 +229,20 @@ public class BrowserDialog<T> extends PopupDialog {
             Label label = LabelFactory.create(null, Styles.BOLD);
             label.setText(message);
             Row inset = RowFactory.create(Styles.INSET, label);
-            Column column = ColumnFactory.create(Styles.CELL_SPACING, inset, component);
-            getLayout().add(column);
-        } else {
-            getLayout().add(component);
+            if (component instanceof PaneContainer) {
+                SplitPane pane = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL);
+                int size = StyleSheetHelper.getProperty("font.size", -1);
+                if (size != -1) {
+                    pane.setSeparatorPosition(new Extent(size * 2));
+                }
+                pane.add(inset);
+                pane.add(component);
+                component = pane;
+            } else {
+                component = ColumnFactory.create(Styles.CELL_SPACING, inset, component);
+            }
         }
+        getLayout().add(component);
 
         browser.addBrowserListener(new BrowserListener<T>() {
             public void query() {
@@ -236,25 +268,6 @@ public class BrowserDialog<T> extends PopupDialog {
         if (isSelected()) {
             super.onOK();
         }
-    }
-
-    /**
-     * Sets the action and closes the window.
-     * <p/>
-     * If the action isn't {@link #CANCEL_ID}, the browser's state will be saved.
-     * <p/>
-     * If the action is {@link #CANCEL_ID} any selection will be discarded.
-     *
-     * @param action the action
-     */
-    @Override
-    protected void close(String action) {
-        if (CANCEL_ID.equals(action)) {
-            setSelected(null);
-        } else {
-            BrowserStates.getInstance().add(browser);
-        }
-        super.close(action);
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -47,9 +47,9 @@ public class ExpressionEvaluatorFactory {
     public static ExpressionEvaluator create(Object object, Map<String, Object> fields, IArchetypeService service,
                                              ILookupService lookups, Functions functions) {
         if (object instanceof IMObject) {
-            return new IMObjectExpressionEvaluator((IMObject) object, fields, service, lookups, functions);
+            return new IMObjectExpressionEvaluator((IMObject) object, null, fields, service, lookups, functions);
         } else if (object instanceof ObjectSet) {
-            return new ObjectSetExpressionEvaluator((ObjectSet) object, fields, service, lookups, functions);
+            return new ObjectSetExpressionEvaluator((ObjectSet) object, null, fields, service, lookups, functions);
         }
         throw new ReportException(NoExpressionEvaluatorForType, object.getClass().getName());
     }

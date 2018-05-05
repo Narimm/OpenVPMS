@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
 
 import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.CachingReadOnlyArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
@@ -27,7 +26,7 @@ import org.openvpms.component.system.common.cache.LRUIMObjectCache;
 /**
  * An {@link ReportFactory} that caches objects to improve performance.
  * <p/>
- * This implementation supports caching of objects returned by the {@link IArchetypeService#get(IMObjectReference)}
+ * This implementation supports caching of objects returned by the {@link IArchetypeService#get(org.openvpms.component.model.object.Reference)}
  * method. A {@link LRUIMObjectCache} is constructed for each report.
  *
  * @author Tim Anderson

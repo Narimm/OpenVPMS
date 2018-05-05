@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -44,6 +44,26 @@ public interface EditorQueue {
     void queue(PopupDialog dialog);
 
     /**
+     * Queues a callback.
+     * <p/>
+     * These must execute synchronously.
+     * <p/>
+     * Note that calls to {@link #isComplete()} return {@code true} if the queue is empty but a callback is in progress.
+     * <p/>
+     * This is required so that callbacks can trigger automatic saves without affecting the valid status of editors.
+     *
+     * @param runnable the callback
+     */
+    void queue(Runnable runnable);
+
+    /**
+     * Returns the current popup dialog.
+     *
+     * @return the current popup dialog. May be {@code null}
+     */
+    PopupDialog getCurrent();
+
+    /**
      * Determines if editing is complete.
      *
      * @return {@code true} if there are no more editors
@@ -53,7 +73,7 @@ public interface EditorQueue {
     /**
      * Listener to notify completion of the edit.
      */
-    public interface Listener {
+    interface Listener {
 
         /**
          * Invoked when the edit is complete.
@@ -63,4 +83,5 @@ public interface EditorQueue {
          */
         void completed(boolean skipped, boolean cancelled);
     }
+
 }

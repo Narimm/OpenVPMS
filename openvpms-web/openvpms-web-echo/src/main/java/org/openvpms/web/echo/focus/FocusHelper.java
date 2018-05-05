@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.focus;
@@ -24,6 +24,7 @@ import nextapp.echo2.app.ListBox;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.button.AbstractButton;
 import nextapp.echo2.app.text.TextComponent;
+import org.openvpms.web.echo.colour.ColorSelect;
 import org.openvpms.web.echo.table.KeyTable;
 
 
@@ -43,8 +44,7 @@ public class FocusHelper {
     public static Component getFocusable(Component component) {
         Component result = null;
         if (component != null) {
-            if (isFocusable(component) && component.isEnabled()
-                && component.isFocusTraversalParticipant()) {
+            if (component.isEnabled() && component.isFocusTraversalParticipant() && isFocusable(component)) {
                 if (component instanceof DateField) {
                     result = ((DateField) component).getTextField();
                 } else {
@@ -67,7 +67,7 @@ public class FocusHelper {
      *
      * @param component the component
      * @return the focussed component or {@code null} if no component may
-     *         receive the focus
+     * receive the focus
      */
     public static Component setFocus(Component component) {
         Component focusable = getFocusable(component);
@@ -101,7 +101,8 @@ public class FocusHelper {
                 || component instanceof AbstractButton
                 || component instanceof KeyTable
                 || component instanceof ListBox
-                || component instanceof SelectField);
+                || component instanceof SelectField
+                || (component instanceof ColorSelect && ((ColorSelect) component).isDisplayValue()));
     }
 
 }

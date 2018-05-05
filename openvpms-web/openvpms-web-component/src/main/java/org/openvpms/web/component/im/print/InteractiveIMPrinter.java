@@ -11,12 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.print;
 
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.report.Reporter;
+import org.openvpms.web.component.mail.MailDialog;
+import org.openvpms.web.component.mail.MailEditor;
 import org.openvpms.web.component.print.InteractivePrinter;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
@@ -29,12 +34,10 @@ import org.openvpms.web.resource.i18n.Messages;
  *
  * @author Tim Anderson
  */
-public class InteractiveIMPrinter<T>
-        extends InteractivePrinter implements IMPrinter<T> {
-
+public class InteractiveIMPrinter<T> extends InteractivePrinter implements IMPrinter<T> {
 
     /**
-     * Constructs an {@code InteractiveIMPrinter}.
+     * Constructs an {@link InteractiveIMPrinter}.
      *
      * @param printer the printer to delegate to
      * @param context the context
@@ -45,7 +48,7 @@ public class InteractiveIMPrinter<T>
     }
 
     /**
-     * Constructs an {@code InteractiveIMPrinter}.
+     * Constructs an {@link InteractiveIMPrinter}.
      *
      * @param printer the printer to delegate to
      * @param skip    if {@code true} display a 'skip' button that simply closes the dialog
@@ -57,7 +60,7 @@ public class InteractiveIMPrinter<T>
     }
 
     /**
-     * Constructs an {@code InteractiveIMPrinter}.
+     * Constructs an {@link InteractiveIMPrinter}.
      *
      * @param title   the dialog title. May be {@code null}
      * @param printer the printer to delegate to
@@ -69,7 +72,7 @@ public class InteractiveIMPrinter<T>
     }
 
     /**
-     * Constructs an {@code InteractiveIMPrinter}.
+     * Constructs an {@link InteractiveIMPrinter}.
      *
      * @param title   the dialog title. May be {@code null}
      * @param printer the printer to delegate to
@@ -88,6 +91,16 @@ public class InteractiveIMPrinter<T>
      */
     public Iterable<T> getObjects() {
         return getPrinter().getObjects();
+    }
+
+    /**
+     * Returns the reporter.
+     *
+     * @return the reporter
+     */
+    @Override
+    public Reporter<T> getReporter() {
+        return getPrinter().getReporter();
     }
 
     /**
@@ -112,5 +125,30 @@ public class InteractiveIMPrinter<T>
             return title;
         }
         return Messages.format("imobject.print.title", getDisplayName());
+    }
+
+    /**
+     * Shows the mail dialog.
+     * <p/>
+     * This implementation pre-fills the email with the template associated with the document being printed, if any.
+     *
+     * @param dialog the dialog
+     */
+    @Override
+    protected void show(MailDialog dialog) {
+        super.show(dialog);
+        MailEditor editor = dialog.getMailEditor();
+        Reporter<T> reporter = getReporter();
+
+        //  make the object available to the editor for subsequent template expansion
+        editor.setObject(reporter.getObject());
+
+        DocumentTemplate template = reporter.getTemplate();
+        if (template != null) {
+            Entity emailTemplate = template.getEmailTemplate();
+            if (emailTemplate != null) {
+                editor.setContent(emailTemplate);
+            }
+        }
     }
 }

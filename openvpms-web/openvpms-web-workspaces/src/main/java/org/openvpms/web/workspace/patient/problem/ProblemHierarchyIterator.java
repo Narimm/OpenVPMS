@@ -11,15 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.problem;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
-
-import java.util.List;
 
 /**
  * An iterator over patient problem acts.
@@ -31,25 +29,13 @@ import java.util.List;
 public class ProblemHierarchyIterator extends ActHierarchyIterator<Act> {
 
     /**
-     * Constructs an {@link ActHierarchyIterator}.
+     * Constructs an {@link ProblemHierarchyIterator}.
      *
      * @param acts   the collection of acts
      * @param filter the hierarchy filter
      */
     public ProblemHierarchyIterator(Iterable<Act> acts, ProblemFilter filter) {
-        super(acts, filter, 2);
+        super(acts, filter, 4);
     }
 
-    /**
-     * Flattens the tree of child acts beneath the specified root.
-     *
-     * @param root the root element
-     * @return the flattened tree
-     */
-    @Override
-    protected List<Act> flattenTree(Act root) {
-        List<Act> result = getFilter().filter(root);
-        result.add(0, root);
-        return result;
-    }
 }

@@ -1,0 +1,71 @@
+#!/bin/sh
+
+usage() {
+    echo
+    echo Loads OpenVPMS document and report templates
+    echo
+    echo usage: templateload [type size]\|[file]
+    echo "   type - the template type. One of: documents, reports"
+    echo "   size - the page size. One of: A4, A5, Letter"
+    echo "   file - templates.xml file path"
+    echo
+    echo NOTE: existing templates with the same name and content file name will be replaced
+    echo
+    echo E.g.:
+    echo "   templateload documents A4"
+    echo "   templateload reports Letter"
+    echo "   templateload ~/myreports/my-custom-A4.xml"
+    exit 1
+}
+
+load() {
+    file="$1"
+    if [ $cygwin = "true" ]; then
+        file="$(cygpath --path -w "$file")"
+    fi
+
+    cd "$OPENVPMS_HOME/bin"
+    . ./setenv.sh
+
+    java -classpath "$CLASSPATH" -Dlog4j.configuration=file:../conf/log4j.properties org.openvpms.report.tools.TemplateLoader -c ../conf/applicationContext.xml -f "$file"
+    exit $?
+}
+
+# OS specific support
+cygwin=false
+case "`uname`" in
+CYGWIN*) cygwin=true;;
+esac
+
+OPENVPMS_HOME=$(cd -- "$(dirname -- "$0")/.." && pwd)
+if [ ! -f "$OPENVPMS_HOME/bin/setenv.sh" ]; then
+    echo templateload: OpenVPMS installation not found
+    exit 1
+fi
+
+if [ "$#" -eq 0 ]; then
+    usage
+elif [ "$#" -eq 1 ]; then
+    # need to get the absolute path as the command is run from the bin dir
+    file="$(cd "$(dirname "$1")"; pwd)/$(basename "$1")"
+    if [ -f "$file" ]; then
+        load "$file"
+    else
+        echo templateload: File "$1" does not exist
+        exit 1
+    fi
+elif ([ "$#" -eq 2 ] && ([ "$1" = "documents" ] || [ "$1" = "reports" ])) ; then
+    if [ "$2" = "A4" ] || [ "$2" = "A5" ] || [ "$2" = "Letter" ]; then
+        file="$OPENVPMS_HOME/reports/$1-$2.xml"
+        if [  -f "$file" ]; then
+            load "$file"
+        else
+            echo templateload: $1 are not available in size $2
+            exit 1
+        fi
+     else
+        usage
+     fi
+ else
+    usage
+fi

@@ -11,11 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
 
+
+import org.apache.commons.io.FilenameUtils;
+import org.openvpms.component.business.domain.im.document.Document;
 
 /**
  * Supported reporting document formats.
@@ -128,5 +131,45 @@ public class DocFormats {
      * Text file extension.
      */
     public static final String TEXT_EXT = "txt";
+
+    /**
+     * HTML mime type.
+     */
+    public static final String HTML_TYPE = "text/html";
+
+    /**
+     * HTML file extension.
+     */
+    public static final String HTML_EXT = "html";
+
+    /**
+     * Determines if a document name has one of the specified extensions.
+     *
+     * @param document   the document
+     * @param extensions the file name extensions
+     * @return {@code true} if the document name has one of the specified extensions (case insensitive)
+     */
+    public static boolean hasExtension(Document document, String... extensions) {
+        return hasExtension(document.getName(), extensions);
+    }
+
+    /**
+     * Determines if a file name has one of the specified extensions.
+     *
+     * @param name       the file name
+     * @param extensions the file name extensions
+     * @return {@code true} if the name has one of the specified extensions (case insensitive)
+     */
+    public static boolean hasExtension(String name, String... extensions) {
+        String nameExt = FilenameUtils.getExtension(name);
+        if (nameExt != null) {
+            for (String extension : extensions) {
+                if (nameExt.equalsIgnoreCase(extension)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
 }

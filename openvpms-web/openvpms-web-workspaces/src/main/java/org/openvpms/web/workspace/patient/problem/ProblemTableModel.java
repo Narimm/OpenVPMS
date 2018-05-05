@@ -11,18 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.problem;
 
 import echopointng.LabelEx;
+import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -91,9 +92,8 @@ public class ProblemTableModel extends AbstractPatientHistoryTableModel {
             // hack to pad the presenting complaint to line up with the item text
             Row row1 = RowFactory.create(Styles.CELL_SPACING, dateLabel, titleLabel);
             Row padding = RowFactory.create(Styles.INSET, new Label(""));
-            LabelEx spacer1 = new LabelEx("");
+            Component spacer1 = getDateSpacer();
             LabelEx spacer2 = new LabelEx("");
-            spacer1.setStyleName("MedicalRecordSummary.date");
             spacer2.setStyleName("MedicalRecordSummary.type");
             Row row2 = RowFactory.create(Styles.CELL_SPACING, padding, spacer1, spacer2, complaintLabel);
             result = ColumnFactory.create(Styles.CELL_SPACING, row1, row2);
@@ -143,10 +143,19 @@ public class ProblemTableModel extends AbstractPatientHistoryTableModel {
      * @throws OpenVPMSException for any error
      */
     private Component formatEvent(ActBean bean) {
+        Component result;
         String text = formatEventText(bean);
         Label summary = LabelFactory.create();
         summary.setText(text);
-        return summary;
+        String detail = getText(bean.getAct(), false);
+        if (detail != null) {
+            result = new Column();
+            result.add(summary);
+            result.add(getTextDetail(detail));
+        } else {
+            result = summary;
+        }
+        return result;
     }
 
 }

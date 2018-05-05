@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.invoice;
@@ -25,7 +25,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -65,7 +65,7 @@ public class ChargeItemEventLinker {
      * @param changes the patient history changes
      */
     public void link(FinancialAct item, PatientHistoryChanges changes) {
-        link(Arrays.asList(item), changes);
+        link(Collections.singletonList(item), changes);
     }
 
     /**
@@ -78,7 +78,7 @@ public class ChargeItemEventLinker {
      * @param changes the patient history changes
      */
     public void link(Act event, Act item, PatientHistoryChanges changes) {
-        link(event, Arrays.asList(item), changes);
+        link(event, Collections.singletonList(item), changes);
     }
 
     /**
@@ -144,6 +144,25 @@ public class ChargeItemEventLinker {
     }
 
     /**
+     * Links multiple clinical notes to the associated patient's clinical events.
+     * The modifications are recorded in the supplied {@code changes}.
+     * <p/>
+     * Invoke {@link PatientHistoryChanges#save()} to commit the changes.
+     *
+     * @param notes   the notes
+     * @param changes the patient history changes
+     */
+    public void prepareNotes(List<Act> notes, PatientHistoryChanges changes) {
+        for (Act act : notes) {
+            Date startTime = act.getActivityStartTime();
+            if (startTime == null) {
+                startTime = new Date();
+            }
+            rules.addToEvents(notes, startTime, changes);
+        }
+    }
+
+    /**
      * Returns the dispensing, investigations, and documents acts linked to a charge item.
      *
      * @param item    the charge item
@@ -151,7 +170,7 @@ public class ChargeItemEventLinker {
      * @return the acts
      */
     private List<Act> getActs(Act item, PatientHistoryChanges changes) {
-        List<Act> acts = new ArrayList<Act>();
+        List<Act> acts = new ArrayList<>();
         ActBean bean = new ActBean(item, service);
         acts.add(item);
         acts.addAll(getActs(bean, "dispensing", changes));
@@ -161,7 +180,7 @@ public class ChargeItemEventLinker {
     }
 
     private List<Act> getActs(ActBean bean, String node, PatientHistoryChanges changes) {
-        List<Act> result = new ArrayList<Act>();
+        List<Act> result = new ArrayList<>();
         for (IMObjectReference ref : bean.getNodeTargetObjectRefs(node)) {
             Act act = (Act) changes.getObject(ref);
             if (act != null) {
@@ -178,7 +197,7 @@ public class ChargeItemEventLinker {
     private class Rules extends MedicalRecordRules {
 
         /**
-         * Constructs a {@code Rules}.
+         * Constructs a {@link Rules}.
          *
          * @param service the archetype service
          */

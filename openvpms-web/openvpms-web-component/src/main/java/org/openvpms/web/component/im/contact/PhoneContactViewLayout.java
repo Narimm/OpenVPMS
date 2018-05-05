@@ -27,7 +27,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -49,7 +48,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class PhoneContactViewLayout extends AbstractLayoutStrategy {
+public class PhoneContactViewLayout extends AbstractContactViewLayout {
 
     /**
      * Lays out child components in a grid.

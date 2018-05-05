@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.Message;
+import ca.uhn.hl7v2.model.v25.datatype.EI;
 import ca.uhn.hl7v2.model.v25.message.RDE_O11;
 import ca.uhn.hl7v2.model.v25.segment.ORC;
 import ca.uhn.hl7v2.model.v25.segment.RXO;
@@ -64,81 +65,86 @@ public class RDEMessageFactory extends AbstractMessageFactory {
     /**
      * Creates a new order.
      *
-     * @param context           the patient context
-     * @param product           the product to order
-     * @param quantity          the quantity to order
-     * @param placerOrderNumber the order identifier
-     * @param date              the order date
-     * @param config            the message population configuration
+     * @param context            the patient context
+     * @param product            the product to order
+     * @param quantity           the quantity to order
+     * @param placerOrderNumber  the order identifier
+     * @param sendingApplication the sending application. May be {@code null}
+     * @param date               the order date
+     * @param config             the message population configuration
      * @return a new message
      */
     public Message createOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                               Date date, HL7Mapping config) {
-        return createOrder(context, "NW", product, quantity, placerOrderNumber, date, config);
+                               String sendingApplication, Date date, HL7Mapping config) {
+        return createOrder(context, "NW", product, quantity, placerOrderNumber, sendingApplication, date, config);
     }
 
     /**
      * Creates an update order.
      *
-     * @param context           the patient context
-     * @param product           the product to order
-     * @param quantity          the quantity to order
-     * @param placerOrderNumber the order identifier
-     * @param date              the order date
-     * @param config            the message population configuration
+     * @param context            the patient context
+     * @param product            the product to order
+     * @param quantity           the quantity to order
+     * @param placerOrderNumber  the order identifier
+     * @param sendingApplication the sending application. May be {@code null}
+     * @param date               the order date
+     * @param config             the message population configuration
      * @return a new message
      */
     public Message updateOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                               Date date, HL7Mapping config) {
-        return createOrder(context, "RP", product, quantity, placerOrderNumber, date, config);
+                               String sendingApplication, Date date, HL7Mapping config) {
+        return createOrder(context, "RP", product, quantity, placerOrderNumber, sendingApplication, date, config);
     }
 
     /**
      * Creates a cancel order.
      *
-     * @param context           the patient context
-     * @param product           the product to order
-     * @param quantity          the quantity to order
-     * @param placerOrderNumber the order identifier
-     * @param config            the message population configuration
-     * @param date              the order date
+     * @param context            the patient context
+     * @param product            the product to order
+     * @param quantity           the quantity to order
+     * @param placerOrderNumber  the order identifier
+     * @param sendingApplication the sending application. May be {@code null}
+     * @param config             the message population configuration
+     * @param date               the order date
      * @return a new message
      */
     public Message cancelOrder(PatientContext context, Product product, BigDecimal quantity, long placerOrderNumber,
-                               HL7Mapping config, Date date) {
-        return createOrder(context, "CA", product, quantity, placerOrderNumber, date, config);
+                               String sendingApplication, HL7Mapping config, Date date) {
+        return createOrder(context, "CA", product, quantity, placerOrderNumber, sendingApplication, date, config);
     }
 
     /**
      * Creates a discontinue order.
      *
-     * @param context           the patient context
-     * @param product           the product to order
-     * @param quantity          the quantity to order
-     * @param placerOrderNumber the order identifier
-     * @param config            the message population configuration
-     * @param date              the order date
+     * @param context            the patient context
+     * @param product            the product to order
+     * @param quantity           the quantity to order
+     * @param placerOrderNumber  the order identifier
+     * @param sendingApplication the sending application. May be {@code null}
+     * @param config             the message population configuration
+     * @param date               the order date
      * @return a new message
      */
     public Message discontinueOrder(PatientContext context, Product product, BigDecimal quantity,
-                                    long placerOrderNumber, HL7Mapping config, Date date) {
-        return createOrder(context, "DC", product, quantity, placerOrderNumber, date, config);
+                                    long placerOrderNumber, String sendingApplication, HL7Mapping config, Date date) {
+        return createOrder(context, "DC", product, quantity, placerOrderNumber, sendingApplication, date, config);
     }
 
     /**
      * Creates an order message.
      *
-     * @param context           the patient context
-     * @param orderControl      the type of order
-     * @param product           the product to order
-     * @param quantity          the quantity to order
-     * @param placerOrderNumber the order identifier
-     * @param date              the order date
-     * @param config            the message population configuration
+     * @param context            the patient context
+     * @param orderControl       the type of order
+     * @param product            the product to order
+     * @param quantity           the quantity to order
+     * @param placerOrderNumber  the order identifier
+     * @param sendingApplication the sending application. May be {@code null}
+     * @param date               the order date
+     * @param config             the message population configuration
      * @return a new message
      */
     private RDE_O11 createOrder(PatientContext context, String orderControl, Product product, BigDecimal quantity,
-                                long placerOrderNumber, Date date, HL7Mapping config) {
+                                long placerOrderNumber, String sendingApplication, Date date, HL7Mapping config) {
         RDE_O11 rde;
         try {
             rde = new RDE_O11(getModelClassFactory());
@@ -147,7 +153,11 @@ public class RDEMessageFactory extends AbstractMessageFactory {
             populate(rde.getPATIENT().getPATIENT_VISIT().getPV1(), context, config);
             ORC orc = rde.getORDER().getORC();
             orc.getOrderControl().setValue(orderControl);
-            orc.getPlacerOrderNumber().getEntityIdentifier().setValue(Long.toString(placerOrderNumber));
+            EI orderNumber = orc.getPlacerOrderNumber();
+            orderNumber.getEntityIdentifier().setValue(Long.toString(placerOrderNumber));
+            if (sendingApplication != null) {
+                orderNumber.getNamespaceID().setValue(sendingApplication);
+            }
             populateDTM(orc.getDateTimeOfTransaction().getTime(), date, config);
             if (context.getClinicianId() != -1) {
                 PopulateHelper.populateClinician(orc.getEnteredBy(0), context);

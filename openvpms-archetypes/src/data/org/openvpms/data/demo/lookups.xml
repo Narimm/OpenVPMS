@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetype>
@@ -80,13 +80,14 @@
     <data archetype="lookup.uom" code="PACKET" unitCode="PA"/>
     <data archetype="lookup.uom" code="VIAL" unitCode="VI"/>
     <data archetype="lookup.uom" code="BOX" unitCode="BX"/>
-    <data archetype="lookup.uom" code="GRAMS" unitCode="GRM"/>
-    <data archetype="lookup.uom" code="LITRES" unitCode="LTR"/>
+    <data archetype="lookup.uom" code="GRAMS" unitCode="GRM" printedName="g"/>
+    <data archetype="lookup.uom" code="LITRES" unitCode="LTR" printedName="l"/>
     <data archetype="lookup.uom" code="AMPOULE" unitCode="AM"/>
-    <data archetype="lookup.uom" code="MLS" unitCode="MLT"/>
+    <data archetype="lookup.uom" code="MG" unitCode="MGM" printedName="mg"/>
+    <data archetype="lookup.uom" code="MLS" unitCode="MLT" printedName="ml"/>
     <data archetype="lookup.uom" code="TUBE" unitCode="TU"/>
-    <data id="Kilogram" archetype="lookup.uom" code="KILOGRAM" unitCode="KGM"/>
-    <data id="Pounds" archetype="lookup.uom" code="POUNDS" unitCode="LBR"/>
+    <data id="Kilogram" archetype="lookup.uom" code="KILOGRAM" unitCode="KGM" printedName="kg"/>
+    <data id="Pounds" archetype="lookup.uom" code="POUNDS" unitCode="LBR" printedName="lb"/>
     <data id="Weight" archetype="lookup.uomGroup" code="WEIGHT"/>
     <data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Kilogram"/>
     <data archetype="lookupRelationship.uomGroup" source="id:Weight" target="id:Pounds"/>
@@ -102,6 +103,14 @@
     <data archetype="lookup.customerType" code="LARGE_ANIMAL"/>
     <data archetype="lookup.customerType" code="STUD"/>
     <data archetype="lookup.customerType" code="FARM"/>
+    <data id="Normal" archetype="lookup.customerType" code="NORMAL"/>
+    <data id="Valued" archetype="lookup.customerType" code="VALUED"/>
+    <data id="Bad" archetype="lookup.customerType" code="BAD"/>
+    <data id="Pensioner" archetype="lookup.customerType" code="PENSIONER"/>
+    <data id="Monthly" archetype="lookup.customerType" code="MONTHLY"/>
+    <data id="Cash Only" archetype="lookup.customerType" code="CASH_ONLY"/>
+    <data id="PUPPY_SCHOOL" archetype="lookup.customerType" code="PUPPY_SCHOOL"/>
+    <data id="HEALTH_CLUB" archetype="lookup.customerType" code="HEALTH_CLUB"/>
     <data id="GST" archetype="lookup.taxType" code="GST" rate="10.0" taxScheme="GST" taxCategory="S"/>
     <data archetype="lookup.productIncomeType" code="PROFESSIONAL"/>
     <data archetype="lookup.productIncomeType" code="MEDICATION"/>
@@ -111,12 +120,6 @@
     <data archetype="lookup.supplierType" code="MANUFACTURER"/>
     <data archetype="lookup.supplierType" code="RETAIL"/>
     <data archetype="lookup.supplierType" code="OTHER"/>
-    <data id="Normal" archetype="lookup.customerType" code="NORMAL"/>
-    <data id="Valued" archetype="lookup.customerType" code="VALUED"/>
-    <data id="Bad" archetype="lookup.customerType" code="BAD"/>
-    <data id="Pensioner" archetype="lookup.customerType" code="PENSIONER"/>
-    <data id="Monthly" archetype="lookup.customerType" code="MONTHLY"/>
-    <data id="Cash Only" archetype="lookup.customerType" code="CASH_ONLY"/>
     <data archetype="lookup.reminderGroup" code="VACCINATIONS"/>
     <data archetype="lookup.reminderGroup" code="DESEXING"/>
     <data archetype="lookup.reminderGroup" code="WORMING"/>
@@ -138,11 +141,8 @@
     <data archetype="lookup.personTitle" code="MS"/>
     <data archetype="lookup.personTitle" code="DR"/>
     <data archetype="lookup.personTitle" code="LADY"/>
-    <data archetype="lookup.customerAlertType" code="BAD_DEBT" priority="HIGH" colour="0xFF0000"/>
-    <data archetype="lookup.customerNoteCategory" code="NOTES"/>
-    <data archetype="lookup.patientAlertType" code="ALLERGY" priority="HIGH" colour="0xFF0000"/>
-    <data archetype="lookup.patientAlertType" code="AGGRESSION" priority="HIGH" colour="0xFF0000"/>
-    <data archetype="lookup.patientAlertType" code="OTHER" defaultLookup="true" priority="MEDIUM" colour="0xFFFF00"/>
+    <data archetype="lookup.patientAlertType" code="ALLERGY"/>
+    <data archetype="lookup.patientAlertType" code="AGGRESSION"/>
     <data archetype="lookup.reportType" code="CUSTOMER"/>
     <data archetype="lookup.reportType" code="PATIENT"/>
     <data archetype="lookup.reportType" code="SUPPLIER"/>
@@ -155,6 +155,7 @@
     <data archetype="lookup.pricingGroup" code="MAIN" name="Main Pricing Group"/>
     <data archetype="lookup.pricingGroup" code="BRANCH" name="Branch Pricing Group"/>
 
+    <data archetype="lookup.addressformat" code="DEFAULT_ADDRESS_FORMAT" name="Default Address Format"/>
     <data archetype="lookup.fileNameFormat" code="DOC_NAME_DOC_DATE"
           name="Document name - document date"
           description="Valid for customer, patient, and supplier documents only"
@@ -191,4 +192,35 @@
     <data archetype="lookup.customerReferral" code="WEBSITE" name="Website"/>
     <data archetype="lookup.customerVet" code="DR_BLOGGS" name="Dr Bloggs"/>
     <data archetype="lookup.customerInsurance" code="PET_INSURE" name="Pet Insure Australia"/>
+    <data archetype="lookup.userNameFormat" code="NAME"
+          name="Name"
+          description="User name format including the name only"
+          expression="expr:ifempty(expr:concatIf($firstName, ' ', $lastName), $name)"/>
+    <data archetype="lookup.userNameFormat" code="TITLE_NAME" name="Title and Name"
+          description="User name format including the title and name"
+          expression="concat(expr:concatIf($title,' '),
+                             expr:ifempty(expr:concatIf($firstName, ' ', $lastName), $name))"/>
+    <data archetype="lookup.userNameFormat" code="TITLE_NAME_QUALIFICATIONS"
+          name="Title, Name and Qualifications"
+          description="User name format including the title, name, and qualifications"
+          expression="concat(expr:concatIf($title,' '),
+                             expr:ifempty(expr:concatIf($firstName, ' ', $lastName), $name),
+                             expr:concatIf(', ', $qualifications))"/>
+    <data archetype="lookup.userNameFormat" code="LOGIN_NAME"
+          name="Login name"
+          description="User name format including the login name"
+          expression="$username"/>
+    <data archetype="lookup.userNameFormat" code="DESCRIPTION"
+          name="Description"
+          description="User name format including the description"
+          expression="expr:ifempty($description, $name)"/>
+
+    <data archetype="lookup.productDrugSchedule" code="S1" name="S1"/>
+    <data archetype="lookup.productDrugSchedule" code="S2" name="S2"/>
+    <data archetype="lookup.productDrugSchedule" code="S3" name="S3"/>
+    <data archetype="lookup.productDrugSchedule" code="S4" name="S4" restricted="true"/>
+    <data archetype="lookup.productDrugSchedule" code="S5" name="S5"/>
+    <data archetype="lookup.productDrugSchedule" code="S6" name="S6"/>
+    <data archetype="lookup.productDrugSchedule" code="S7" name="S7"/>
+    <data archetype="lookup.productDrugSchedule" code="S8" name="S8"/>
 </archetype>

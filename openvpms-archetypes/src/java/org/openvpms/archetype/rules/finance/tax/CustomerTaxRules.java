@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.tax;
@@ -25,7 +25,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -63,10 +62,9 @@ public class CustomerTaxRules extends TaxRules {
      *
      * @param practice the practice, for default tax classifications.
      * @param service  the archetype service
-     * @param lookups  the lookup service
      */
-    public CustomerTaxRules(Party practice, IArchetypeService service, ILookupService lookups) {
-        super(practice, service, lookups);
+    public CustomerTaxRules(Party practice, IArchetypeService service) {
+        super(practice, service);
     }
 
     /**
@@ -127,20 +125,6 @@ public class CustomerTaxRules extends TaxRules {
     }
 
     /**
-     * Returns an amount exclusive of tax that a customer has exemptions for.
-     *
-     * @param amount   the tax-inclusive amount
-     * @param product  the product
-     * @param customer the customer
-     * @return the tax ex-amount
-     */
-    public BigDecimal getTaxExAmount(BigDecimal amount, Product product, Party customer) {
-        Collection<Lookup> productTaxRates = new ArrayList<Lookup>(getProductTaxRates(product));
-        productTaxRates.retainAll(getTaxExemptions(customer));
-        return amount.subtract(calculateTax(amount, productTaxRates, true));
-    }
-
-    /**
      * Returns the tax rate of a product, minus any taxes the customer is exempt from, expressed as a percentage.
      *
      * @param product  the product
@@ -149,7 +133,7 @@ public class CustomerTaxRules extends TaxRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public BigDecimal getTaxRate(Product product, Party customer) {
-        Collection<Lookup> rates = new ArrayList<Lookup>(getProductTaxRates(product));
+        Collection<Lookup> rates = new ArrayList<>(getProductTaxRates(product));
         rates.removeAll(getTaxExemptions(customer));
         return getTaxRate(rates);
     }
@@ -198,7 +182,7 @@ public class CustomerTaxRules extends TaxRules {
         } else {
             throw new TaxRuleException(InvalidActForTax, act.getArchetypeId().getShortName());
         }
-        List<Lookup> result = new ArrayList<Lookup>(taxRates);
+        List<Lookup> result = new ArrayList<>(taxRates);
         if (!result.isEmpty()) {
             List<Lookup> exclusions = getTaxExemptions(customer);
             result.removeAll(exclusions);

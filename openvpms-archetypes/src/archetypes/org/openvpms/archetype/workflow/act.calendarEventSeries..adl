@@ -1,0 +1,45 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="act.calendarEventSeries.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.act.Act" displayName="Calendar Event Series">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="0" readOnly="true"/>
+        <node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"/>
+        <node name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="0" hidden="true"/>
+        <node name="status" path="/status" type="java.lang.String" minCardinality="0" hidden="true"/>
+        <node name="interval" path="/details/interval" type="java.lang.Integer" minCardinality="0" maxCardinality="1"/>
+        <node name="units" path="/details/units" minCardinality="0" maxCardinality="1" type="java.lang.String">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="DAYS" value="days"/>
+                    <property name="WEEKS" value="weeks"/>
+                    <property name="MONTHS" value="months"/>
+                    <property name="YEARS" value="years"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="expression" path="/details/expression" type="java.lang.String" minCardinality="0" maxLength="5000"/>
+        <node name="times" path="/details/times" type="java.lang.Integer" minCardinality="0"
+              defaultValue="0" hidden="true"/>
+        <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+              filter="participation.author" hidden="true"/>
+        <node name="items" path="/sourceActRelationships"
+              type="java.util.HashSet" baseName="SourceActRelationship" hidden="true" minCardinality="0"
+              maxCardinality="*" filter="actRelationship.calendarEventSeries"/>
+    </archetype>
+</archetypes>

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -21,19 +21,21 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectCreator;
+import org.openvpms.web.system.ServiceHelper;
 
 /**
  * Base class for classes invoicing an act.
  *
  * @author Tim Anderson
  */
-public class AbstractInvoicer {
+public abstract class AbstractInvoicer {
 
     /**
      * Creates a new {@link CustomerChargeActEditor}.
@@ -43,7 +45,10 @@ public class AbstractInvoicer {
      * @return a new charge editor
      */
     protected CustomerChargeActEditor createChargeEditor(FinancialAct invoice, LayoutContext context) {
-        return new CustomerChargeActEditor(invoice, null, context, false);
+        IMObjectEditorFactory factory = ServiceHelper.getBean(IMObjectEditorFactory.class);
+        CustomerChargeActEditor editor = (CustomerChargeActEditor) factory.create(invoice, context);
+        editor.setAddDefaultItem(false);
+        return editor;
     }
 
     /**
@@ -77,13 +82,13 @@ public class AbstractInvoicer {
 
     /**
      * Returns the next item editor for population.
-     * <p/>
+     * <p>
      * This returns the current editor, if it has no product, else it creates a new one.
      *
      * @param editor the charge editor
      * @return the next item editor
      */
-    protected CustomerChargeActItemEditor getItemEditor(AbstractCustomerChargeActEditor editor) {
+    protected CustomerChargeActItemEditor getItemEditor(CustomerChargeActEditor editor) {
         CustomerChargeActItemEditor result;
         // if there is an existing empty editor, populate it first
         ActRelationshipCollectionEditor items = editor.getItems();
@@ -98,6 +103,7 @@ public class AbstractInvoicer {
             }
             result = getItemEditor(act, editor);
         }
+
         return result;
     }
 
@@ -108,12 +114,14 @@ public class AbstractInvoicer {
      * @param editor the parent charge editor
      * @return an editor for the charge item
      */
-    protected CustomerChargeActItemEditor getItemEditor(Act act, AbstractCustomerChargeActEditor editor) {
+    protected CustomerChargeActItemEditor getItemEditor(Act act, CustomerChargeActEditor editor) {
         ActRelationshipCollectionEditor items = editor.getItems();
         CustomerChargeActItemEditor result;
         result = (CustomerChargeActItemEditor) items.getEditor(act);
         result.getComponent();
         items.addEdited(result);
+        items.setModified(act, true);
+        // need to explicitly flag the  item as modified, or it can be excluded as a default value object
         return result;
     }
 
@@ -148,28 +156,16 @@ public class AbstractInvoicer {
         /**
          * Saves the current object.
          *
-         * @return {@code true} if the object was saved
+         * @param editor the editor
+         * @throws OpenVPMSException if the save fails
          */
         @Override
-        protected boolean doSave() {
-            boolean result = super.doSave();
-            if (result && !saved) {
+        protected void doSave(IMObjectEditor editor) {
+            super.doSave(editor);
+            if (!saved) {
+                ServiceHelper.getArchetypeService().save(act);
                 saved = true;
             }
-            return result;
-        }
-
-        /**
-         * Invoked when the editor is saved, to allow subclasses to participate in the save transaction.
-         * <p/>
-         * This implementation always returns {@code true}.
-         *
-         * @param editor the editor
-         * @return {@code true} if the save was successful
-         */
-        @Override
-        protected boolean saved(final IMObjectEditor editor) {
-            return saved || SaveHelper.save(act);
         }
     }
 

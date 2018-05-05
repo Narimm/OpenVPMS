@@ -11,20 +11,29 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.order;
 
 import nextapp.echo2.app.text.TextComponent;
+import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.supplier.DeliveryStatus;
 import org.openvpms.archetype.rules.supplier.OrderRules;
 import org.openvpms.archetype.rules.supplier.OrderStatus;
+import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.EditableIMObjectCollectionEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.FinancialActEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -36,7 +45,12 @@ import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
+import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
+import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.supplier.SupplierHelper;
 
 import java.util.List;
@@ -88,6 +102,53 @@ public class OrderEditor extends FinancialActEditor {
         posted = OrderStatus.POSTED.equals(act.getStatus());
         accepted = OrderStatus.ACCEPTED.equals(act.getStatus());
         rules = SupplierHelper.createOrderRules(context.getContext().getPractice());
+        initialise();
+    }
+
+    /**
+     * Validates the object.
+     * <p/>
+     * This extends validation by ensuring that the total matches that of the sum of the item totals.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        return checkRestricted(validator) && super.doValidation(validator);
+    }
+
+    /**
+     * Ensures that if when the order is being POSTED, and contains restricted products, and finalisation is restricted
+     * to clinicians,
+     *
+     * @param validator the validator
+     * @return {@code true} if the order is valid
+     */
+    protected boolean checkRestricted(Validator validator) {
+        boolean valid = true;
+        if (!posted && OrderStatus.POSTED.equals(getStatus())) {
+            Context context = getLayoutContext().getContext();
+            Party practice = context.getPractice();
+            User user = context.getUser();
+            if (practice != null) {
+                ProductRules productRules = ServiceHelper.getBean(ProductRules.class);
+                PracticeRules practiceRules = ServiceHelper.getBean(PracticeRules.class);
+                UserRules userRules = ServiceHelper.getBean(UserRules.class);
+                if (!userRules.isClinician(user) && practiceRules.isOrderingRestricted(practice)) {
+                    for (IMObjectEditor editor : getItems().getEditors()) {
+                        OrderItemEditor itemEditor = (OrderItemEditor) editor;
+                        Product product = itemEditor.getProduct();
+                        if (product != null && productRules.isRestricted(product)) {
+                            validator.add(this, new ValidatorError(Messages.get("supplier.order.restricted.message")));
+                            valid = false;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        return valid;
     }
 
     /**
@@ -97,6 +158,18 @@ public class OrderEditor extends FinancialActEditor {
         super.onItemsChanged();
         List<Act> acts = getItems().getCurrentActs();
         checkDeliveryStatus(acts);
+    }
+
+    /**
+     * Creates a collection editor for the items collection.
+     *
+     * @param act   the act
+     * @param items the items collection
+     * @return a new collection editor
+     */
+    @Override
+    protected ActRelationshipCollectionEditor createItemsEditor(Act act, CollectionProperty items) {
+        return super.createItemsEditor(act, items);
     }
 
     /**

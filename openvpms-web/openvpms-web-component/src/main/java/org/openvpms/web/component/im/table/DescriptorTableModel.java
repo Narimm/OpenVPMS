@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -24,14 +24,16 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.im.filter.FilterHelper;
+import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -48,10 +50,14 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      */
     private final LayoutContext context;
 
+    /**
+     * The archetypes used to create the column model. May be {@code null}
+     */
+    private List<ArchetypeDescriptor> archetypes;
 
     /**
-     * Constructs a {@code DescriptorTableModel}.
-     * <p/>
+     * Constructs a {@link DescriptorTableModel}.
+     * <p>
      * The column model must be set using {@link #setTableColumnModel}.
      *
      * @param context the layout context
@@ -66,7 +72,7 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
     }
 
     /**
-     * Creates a new {@code DescriptorTableModel}.
+     * Constructs a {@link DescriptorTableModel}.
      *
      * @param shortNames the archetype short names
      * @param context    the layout context
@@ -98,8 +104,18 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
     }
 
     /**
+     * Returns a column, given its node name.
+     *
+     * @param name the node name
+     * @return the descriptor column, or {@code null} if none exists
+     */
+    public DescriptorTableColumn getColumn(String name) {
+        return getColumn(getColumnModel(), name);
+    }
+
+    /**
      * Returns the sort constraints, given a primary sort column.
-     * <p/>
+     * <p>
      * If the column is not sortable, this implementation returns null.
      *
      * @param primary   the primary sort column
@@ -126,12 +142,24 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      */
     protected List<SortConstraint> getSortConstraints(DescriptorTableColumn primary, boolean ascending,
                                                       String... names) {
-        List<SortConstraint> result = new ArrayList<SortConstraint>();
+        List<SortConstraint> result = new ArrayList<>();
         result.add(primary.createSortConstraint(ascending));
         for (String name : names) {
             DescriptorTableColumn column = getColumn(name);
             if (column != null && column.isSortable()) {
                 result.add(column.createSortConstraint(ascending));
+            } else if (column == null && archetypes != null) {
+                // node is not present in the table. If it exists in each of the archetypes, add it as a sort constraint
+                boolean found = true;
+                for (ArchetypeDescriptor archetype : archetypes) {
+                    if (archetype.getNodeDescriptor(name) == null) {
+                        found = false;
+                        break;
+                    }
+                }
+                if (found) {
+                    result.add(new NodeSortConstraint(name, ascending));
+                }
             }
         }
         return result;
@@ -202,13 +230,14 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * @return a new column model
      */
     protected TableColumnModel createColumnModel(List<ArchetypeDescriptor> archetypes, LayoutContext context) {
+        this.archetypes = archetypes;
         List<String> names = getNodeNames(archetypes, context);
         TableColumnModel columns = new DefaultTableColumnModel();
 
         int idIndex = names.indexOf("id");
         if (idIndex != -1) {
             if (!(names instanceof ArrayList)) {
-                names = new ArrayList<String>(names);  // Arrays.asList() doesn't support remove
+                names = new ArrayList<>(names);  // Arrays.asList() doesn't support remove
             }
             names.remove(idIndex);
             // use default formatting for ID columns.
@@ -225,15 +254,6 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
         } else {
             addColumns(archetypes, names, columns);
         }
-
-        // if an id column is present, and has not be explicitly placed, move it to the first column
-        if (names.contains("id") && getNodeNames() == null) {
-            int offset = getColumnOffset(columns, "id");
-            if (offset != -1) {
-                columns.moveColumn(offset, 0);
-            }
-        }
-
         return columns;
     }
 
@@ -261,10 +281,10 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
      * @param name      the node name
      * @param columns   the columns to add to
      * @return the new column, or {@code null} if the node is not found in
-     *         the archetypes
+     * the archetypes
      */
     protected TableColumn addColumn(ArchetypeDescriptor archetype, String name, TableColumnModel columns) {
-        return addColumn(Arrays.asList(archetype), name, getNextModelIndex(columns), columns);
+        return addColumn(Collections.singletonList(archetype), name, getNextModelIndex(columns), columns);
     }
 
     /**
@@ -323,16 +343,6 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
     /**
      * Returns a column, given its node name.
      *
-     * @param name the node name
-     * @return the descriptor column, or {@code null} if none exists
-     */
-    protected DescriptorTableColumn getColumn(String name) {
-        return getColumn(getColumnModel(), name);
-    }
-
-    /**
-     * Returns a column, given its node name.
-     *
      * @param model the model
      * @param name  the node name
      * @return the descriptor column, or {@code null} if none exists
@@ -365,31 +375,48 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
 
     /**
      * Returns the node names for a set of archetypes.
-     * <p/>
+     * <p>
      * If {@link #getNodeNames()} returns a non-empty list, then
-     * these names will be used, otherwise the node names common to each
-     * archetype will be returned.
+     * these names will be used, otherwise the {@link #getArchetypeNodes()} will be used to determine which nodes
+     * are returned.
      *
      * @param archetypes the archetype descriptors
      * @param context    the layout context
      * @return the node names for the archetypes
      */
     protected List<String> getNodeNames(List<ArchetypeDescriptor> archetypes, LayoutContext context) {
-        List<String> result = null;
+        List<String> result;
         String[] names = getNodeNames();
         if (names != null && names.length != 0) {
             result = Arrays.asList(names);
         } else {
-            for (ArchetypeDescriptor archetype : archetypes) {
-                List<String> nodes = getNodeNames(archetype, context);
-                if (result == null) {
-                    result = nodes;
-                } else {
-                    result = getIntersection(result, nodes);
-                }
-            }
+            ArchetypeNodes nodes = getArchetypeNodes();
+            result = nodes.getNodeNames(archetypes);
         }
         return result;
+    }
+
+    /**
+     * Returns an {@link ArchetypeNodes} that determines what nodes appear in the table.
+     * This is only used when {@link #getNodeNames()} returns null or empty.
+     *
+     * @return the nodes to include
+     */
+    protected ArchetypeNodes getArchetypeNodes() {
+        return allSimpleNodesMinusIdAndLongText();
+    }
+
+    /**
+     * Helper to create an {@link ArchetypeNodes} that includes all simple nodes except for strings > 255 characters,
+     * and any id or password node.
+     *
+     * @return a new instance
+     */
+    protected ArchetypeNodes allSimpleNodesMinusIdAndLongText() {
+        return ArchetypeNodes.allSimple()
+                .excludeStringLongerThan(NodeDescriptor.DEFAULT_MAX_LENGTH)
+                .exclude("id")
+                .excludePassword(true);
     }
 
     /**
@@ -404,25 +431,8 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
     }
 
     /**
-     * Returns a filtered list of simple node descriptor names for an archetype.
-     *
-     * @param archetype the archetype
-     * @param context   the layout context
-     * @return a filtered list of node descriptor names for the archetype
-     */
-    protected List<String> getNodeNames(ArchetypeDescriptor archetype, LayoutContext context) {
-        List<String> result = new ArrayList<String>();
-        List<NodeDescriptor> descriptors
-                = filter(archetype.getSimpleNodeDescriptors(), context);
-        for (NodeDescriptor descriptor : descriptors) {
-            result.add(descriptor.getName());
-        }
-        return result;
-    }
-
-    /**
      * Determines if the archetype column should be displayed.
-     * <p/>
+     * <p>
      * This implementation returns true if there is more than one archetype.
      *
      * @param archetypes the archetypes
@@ -442,35 +452,4 @@ public abstract class DescriptorTableModel<T extends IMObject> extends BaseIMObj
         return showId ? 1 : 0;
     }
 
-    /**
-     * Filters descriptors using the context's default node filter.
-     *
-     * @param descriptors the column descriptors
-     * @param context     the layout context
-     * @return the filtered descriptors
-     */
-    protected List<NodeDescriptor> filter(List<NodeDescriptor> descriptors, LayoutContext context) {
-        return FilterHelper.filter(null, context.getDefaultNodeFilter(), descriptors);
-    }
-
-    /**
-     * Helper to return the intersection of two lists of strings, maintaining
-     * insertion order.
-     *
-     * @param first  the first list
-     * @param second the second list
-     * @return the intersection of the two lists
-     */
-    private List<String> getIntersection(List<String> first, List<String> second) {
-        List<String> result = new ArrayList<String>();
-        for (String a : first) {
-            for (String b : second) {
-                if (a.equals(b)) {
-                    result.add(a);
-                    break;
-                }
-            }
-        }
-        return result;
-    }
 }

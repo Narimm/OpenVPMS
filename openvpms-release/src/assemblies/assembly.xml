@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <!-- http://maven.apache.org/plugins/maven-assembly-plugin/assembly.html -->
@@ -20,6 +20,7 @@
         xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.0 http://maven.apache.org/xsd/assembly-1.1.0.xsd">
+    <id>release</id>
     <formats>
         <format>zip</format>
     </formats>
@@ -39,6 +40,8 @@
                 <include>org.openvpms:openvpms-framework</include>
                 <include>org.openvpms:openvpms-reports</include>
                 <include>org.openvpms:openvpms-etl-load</include>
+                <include>org.openvpms:openvpms-db</include>
+                <include>org.openvpms:jasperreports-scaler</include>
                 <include>org.apache.commons:commons-dbcp2</include>
                 <include>dom4j:dom4j</include>
                 <!-- TODO - not sure why this needs to be explicit, but is being excluded somewhere -->
@@ -112,15 +115,6 @@
             <outputDirectory>conf</outputDirectory>
         </fileSet>
 
-        <!-- startcom certification authority, required by Smart Flow Sheet -->
-        <fileSet>
-            <directory>${basedir}/src/conf/</directory>
-            <includes>
-                <include>startcom-ca.crt</include>
-            </includes>
-            <outputDirectory>conf</outputDirectory>
-        </fileSet>
-
         <!-- shell scripts -->
         <fileSet>
             <directory>${basedir}/src/bin</directory>
@@ -142,17 +136,7 @@
             <lineEnding>crlf</lineEnding>
         </fileSet>
 
-        <!-- database scripts -->
-        <fileSet>
-            <directory>${basedir}/src/db</directory>
-            <outputDirectory>db</outputDirectory>
-        </fileSet>
-        <fileSet>
-            <directory>${basedir}/target/db</directory>
-            <outputDirectory>db</outputDirectory>
-        </fileSet>
-
-        <!-- update scripts -->
+        <!-- legacy update scripts -->
         <fileSet>
             <directory>${basedir}/src/update</directory>
             <outputDirectory>update</outputDirectory>
@@ -180,6 +164,21 @@
             </includes>
         </fileSet>
 
+        <!-- plugins -->
+        <fileSet>
+            <directory>${basedir}/target/plugins</directory>
+            <outputDirectory>plugins</outputDirectory>
+        </fileSet>
+
+        <!-- license -->
+        <fileSet>
+            <directory>${basedir}/src/doc</directory>
+            <includes>
+                <include>LICENSE.txt</include>
+            </includes>
+            <outputDirectory>/</outputDirectory>
+        </fileSet>
+
         <!-- readme -->
         <fileSet>
             <directory>${basedir}/src/doc</directory>
@@ -188,14 +187,6 @@
             </includes>
             <outputDirectory>/</outputDirectory>
             <filtered>true</filtered>
-            <useStrictFiltering>true</useStrictFiltering>
-        </fileSet>
-
-        <!-- License -->
-        <fileSet>
-            <includes>
-                <include>License.txt</include>
-            </includes>
         </fileSet>
 
         <!-- images -->

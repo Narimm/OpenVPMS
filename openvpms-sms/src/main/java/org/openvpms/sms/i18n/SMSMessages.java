@@ -1,32 +1,29 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.sms.i18n;
 
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.i18n.Message;
-import org.openvpms.component.system.common.i18n.Messages;
+import org.openvpms.component.i18n.Message;
+import org.openvpms.component.i18n.Messages;
 
 /**
  * Messages reported by the SMS interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class SMSMessages {
 
@@ -42,7 +39,7 @@ public class SMSMessages {
      * @return a new messsage
      */
     public static Message SMSNotConfigured(Party practice) {
-        return messages.getMessage(100, practice.getName());
+        return messages.create(100, practice.getName());
     }
 
     /**
@@ -51,7 +48,7 @@ public class SMSMessages {
      * @return a new message
      */
     public static Message practiceNotFound() {
-        return messages.getMessage(101);
+        return messages.create(101);
     }
 
     /**
@@ -61,7 +58,7 @@ public class SMSMessages {
      * @return a new message
      */
     public static Message failedToCreateEmail(String reason) {
-        return messages.getMessage(200, reason);
+        return messages.create(200, reason);
     }
 
     /**
@@ -71,7 +68,7 @@ public class SMSMessages {
      * @return a new message
      */
     public static Message mailAuthenticationFailed(String reason) {
-        return messages.getMessage(201, reason);
+        return messages.create(201, reason);
     }
 
     /**
@@ -81,7 +78,7 @@ public class SMSMessages {
      * @return a new message
      */
     public static Message mailConnectionFailed(String reason) {
-        return messages.getMessage(202, reason);
+        return messages.create(202, reason);
     }
 
     /**
@@ -91,7 +88,7 @@ public class SMSMessages {
      * @return a new message
      */
     public static Message mailSendFailed(String reason) {
-        return messages.getMessage(203, reason);
+        return messages.create(203, reason);
     }
 
     /**
@@ -101,7 +98,7 @@ public class SMSMessages {
      * @return a new message
      */
     public static Message failedToEvaluateExpression(String expression) {
-        return messages.getMessage(300, expression);
+        return messages.create(300, expression);
     }
 
     /**
@@ -111,7 +108,7 @@ public class SMSMessages {
      * @return a new message
      */
     public static Message invalidFromAddress(String address) {
-        return messages.getMessage(301, address);
+        return messages.create(301, address);
     }
 
     /**
@@ -121,7 +118,7 @@ public class SMSMessages {
      * @return a new message
      */
     public static Message invalidToAddress(String address) {
-        return messages.getMessage(302, address);
+        return messages.create(302, address);
     }
 
     /**
@@ -131,7 +128,7 @@ public class SMSMessages {
      * @return a new message
      */
     public static Message invalidReplyToAddress(String address) {
-        return messages.getMessage(303, address);
+        return messages.create(303, address);
     }
 
     /**
@@ -140,6 +137,6 @@ public class SMSMessages {
      * @return a new message
      */
     public static Message noMessageText() {
-        return messages.getMessage(304);
+        return messages.create(304);
     }
 }

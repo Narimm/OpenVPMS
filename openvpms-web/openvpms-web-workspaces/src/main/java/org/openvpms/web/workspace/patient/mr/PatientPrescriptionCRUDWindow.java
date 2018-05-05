@@ -11,27 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
 
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.prescription.PrescriptionRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
-import org.openvpms.web.component.im.edit.SaveHelper;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.ActCRUDWindow;
@@ -44,9 +37,7 @@ import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
-import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
-import org.openvpms.web.workspace.customer.charge.DefaultEditorQueue;
+import org.openvpms.web.workspace.patient.mr.prescription.PrescriptionDispenser;
 
 /**
  * CRUD window for patient prescriptions.
@@ -122,7 +113,7 @@ public class PatientPrescriptionCRUDWindow extends ActCRUDWindow<Act> {
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
         boolean dispense = enable && getActions().canDispense(getObject());
-        buttons.setEnabled(PRINT_ID, enable);
+        enablePrintPreview(buttons, enable);
         buttons.setEnabled(DISPENSE_ID, dispense);
         buttons.setEnabled(CANCEL_ID, dispense); // if it can be dispensed, it can be cancelled
     }
@@ -141,37 +132,19 @@ public class PatientPrescriptionCRUDWindow extends ActCRUDWindow<Act> {
      * Dispenses a prescription.
      */
     protected void onDispense() {
-        CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
         Context context = getContext();
-        Party customer = context.getCustomer();
-        if (customer != null) {
-            FinancialAct invoice = rules.getInvoice(customer);
-            if (invoice == null) {
-                invoice = (FinancialAct) IMObjectCreator.create(CustomerAccountArchetypes.INVOICE);
-                ActBean invoiceBean = new ActBean(invoice);
-                invoiceBean.addNodeParticipation("customer", customer);
-            }
-            Act prescription = getObject();
-            ActBean prescriptionBean = new ActBean(prescription);
-            DefaultLayoutContext layout = new DefaultLayoutContext(new LocalContext(context), getHelpContext());
-            final CustomerChargeActEditor editor = new CustomerChargeActEditor(invoice, null, layout, false);
-            editor.getComponent();
-            CustomerChargeActItemEditor item = editor.addItem();
-            item.getComponent();
-            item.setPromptForPrescriptions(false);
-            item.setCancelPrescription(true);
-            item.getPrescriptions().add(prescription);
-            item.setEditorQueue(new DefaultEditorQueue(context) {
-                @Override
-                protected void completed() {
-                    super.completed();
-                    SaveHelper.save(editor);
-                    onSaved(getObject(), false);
-                }
-            });
-            item.setProductRef(prescriptionBean.getNodeParticipantRef("product"));
+        Act prescription = IMObjectHelper.reload(getObject());
+        if (prescription == null || !getActions().canDispense(prescription)) {
+            ErrorHelper.show(Messages.get("patient.prescription.cannotdispense"));
+            onRefresh(getObject());
         } else {
-            ErrorHelper.show(Messages.get("patient.prescription.nocustomer"));
+            Party customer = context.getCustomer();
+            if (customer == null) {
+                ErrorHelper.show(Messages.get("patient.prescription.nocustomer"));
+            } else {
+                PrescriptionDispenser dispenser = new PrescriptionDispenser(context, getHelpContext());
+                dispenser.dispense(prescription, customer, () -> onSaved(getObject(), false));
+            }
         }
     }
 
@@ -200,6 +173,7 @@ public class PatientPrescriptionCRUDWindow extends ActCRUDWindow<Act> {
             dialog.show();
         }
     }
+
 
     protected static class PrescriptionActions extends ActActions<Act> {
 

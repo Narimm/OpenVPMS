@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -22,7 +22,6 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.query.QueryBrowser;
-import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.util.DoubleClickMonitor;
 
@@ -33,7 +32,7 @@ import org.openvpms.web.echo.util.DoubleClickMonitor;
  *
  * @author Tim Anderson
  */
-public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends BrowserCRUDWorkspace<T, T> {
+public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends QueryBrowserCRUDWorkspace<T, T> {
 
     /**
      * The double click monitor.
@@ -42,17 +41,16 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
 
 
     /**
-     * Constructs a {@code ResultSetCRUDWorkspace}.
+     * Constructs a {@link ResultSetCRUDWorkspace}.
      * <p/>
      * The {@link #setArchetypes} method must be invoked to set archetypes that the workspace supports, before
      * performing any operations.
      *
-     * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId  the workspace localisation identifier
-     * @param context      the context
+     * @param id          the workspace id
+     * @param context     the context
      */
-    public ResultSetCRUDWorkspace(String workspacesId, String workspaceId, Context context) {
-        super(workspacesId, workspaceId, context, false);
+    public ResultSetCRUDWorkspace(String id, Context context) {
+        super(id, context, false);
     }
 
     /**
@@ -114,7 +112,7 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
     @Override
     protected Component createWorkspace() {
         Component window = getCRUDWindow().getComponent();
-        Component browser = ColumnFactory.create("Inset", getBrowser().getComponent());
+        Component browser = getBrowser().getComponent();
         return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP, "SplitPaneWithButtonRow",
                                        window, browser);
     }
@@ -127,8 +125,8 @@ public abstract class ResultSetCRUDWorkspace<T extends IMObject> extends Browser
     @Override
     protected CRUDWindow<T> createCRUDWindow() {
         QueryBrowser<T> browser = getBrowser();
-        return new ResultSetCRUDWindow<T>(getArchetypes(), browser.getQuery(), browser.getResultSet(),
-                                          getContext(), getHelpContext());
+        return new ResultSetCRUDWindow<>(getArchetypes(), browser.getQuery(), browser.getResultSet(),
+                                         getContext(), getHelpContext());
     }
 
     /**

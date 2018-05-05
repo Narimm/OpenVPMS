@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkout;
@@ -20,12 +20,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
+import org.openvpms.archetype.rules.patient.PatientTestHelper;
+import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -35,6 +39,7 @@ import org.openvpms.web.workspace.workflow.WorkflowTestHelper;
 
 import java.math.BigDecimal;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -81,8 +86,8 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
      */
     @Test
     public void testCheckOutWorkflowForAppointment() {
-        Act appointment = createAppointment();
-        checkWorkflow(appointment);
+        Act appointment = createAppointment(clinician);
+        checkWorkflow(appointment, clinician);
     }
 
     /**
@@ -90,8 +95,15 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
      */
     @Test
     public void testCheckoutWorkflowForTask() {
+        Act appointment = createAppointment(clinician);
+        appointment.setStatus(AppointmentStatus.CHECKED_IN);
         Act task = createTask(customer, patient, clinician);
-        checkWorkflow(task);
+        ActBean bean = new ActBean(appointment);
+        bean.addNodeRelationship("tasks", task);
+        save(appointment, task);
+        checkWorkflow(task, clinician);
+        appointment = get(appointment);
+        assertEquals(AppointmentStatus.COMPLETED, appointment.getStatus());
     }
 
     /**
@@ -131,14 +143,16 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
      */
     @Test
     public void testNoFinaliseInvoice() {
-        CheckoutWorkflowRunner workflow = new CheckoutWorkflowRunner(createAppointment(), getPractice(), context);
+        Act appointment = createAppointment(clinician);
+        createEvent(appointment);
+        CheckoutWorkflowRunner workflow = new CheckoutWorkflowRunner(appointment, getPractice(), context);
         workflow.start();
-        BigDecimal amount = workflow.addInvoice(patient, clinician, false);
+        BigDecimal amount = workflow.addInvoice(patient, false);
         workflow.confirm(PopupDialog.NO_ID);        // skip posting the invoice. Payment is skipped
         workflow.print();
         workflow.checkComplete(true);
         workflow.checkContext(context, customer, patient, null, clinician);
-        workflow.checkInvoice(ActStatus.IN_PROGRESS, amount);
+        workflow.checkInvoice(ActStatus.IN_PROGRESS, amount, clinician);
         assertNull(workflow.getPayment());
     }
 
@@ -163,16 +177,16 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
      */
     @Test
     public void testSkipPayment() {
-        CheckoutWorkflowRunner workflow = new CheckoutWorkflowRunner(createAppointment(), getPractice(), context);
+        CheckoutWorkflowRunner workflow = new CheckoutWorkflowRunner(createAppointment(clinician), getPractice(), context);
         workflow.start();
-        BigDecimal amount = workflow.addInvoice(patient, clinician, true);
+        BigDecimal amount = workflow.addInvoice(patient, true);
 
         workflow.confirm(PopupDialog.NO_ID); // skip payment
 
         workflow.print();
         workflow.checkComplete(true);
         workflow.checkContext(context, customer, patient, null, clinician);
-        workflow.checkInvoice(ActStatus.POSTED, amount);
+        workflow.checkInvoice(ActStatus.POSTED, amount, clinician);
         assertNull(workflow.getPayment());
     }
 
@@ -221,8 +235,8 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
         context.setUser(user);
 
         customer = TestHelper.createCustomer();
-        patient = TestHelper.createPatient(customer);
         clinician = TestHelper.createClinician();
+        patient = TestHelper.createPatient(customer);
         till = FinancialTestHelper.createTill();
         EntityBean bean = new EntityBean(location);
         bean.addNodeRelationship("tills", till);
@@ -230,22 +244,81 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
     }
 
     /**
+     * Verifies that when the practice 'usedLoggedInClinician' is set true, the clinician comes from the context
+     * user rather than the appointment.
+     */
+    @Test
+    public void testUseLoggedInClinicianForClinician() {
+        User clinician2 = TestHelper.createClinician();
+        checkUseLoggedInClinician(true, clinician2, clinician, clinician2);
+    }
+
+    /**
+     * Verifies that when the practice 'usedLoggedInClinician' is set true, and the logged in user is not a
+     * clinician, the clinician comes from the appointment.
+     */
+    @Test
+    public void testUseLoggedInClinicianForNonClinician() {
+        User user = TestHelper.createUser();
+        checkUseLoggedInClinician(true, user, clinician, clinician);
+    }
+
+    /**
+     * Verifies that when the practice 'usedLoggedInClinician' is set false, the clinician comes from the context
+     * user rather than the appointment.
+     */
+    @Test
+    public void testUseLoggedInClinicianDisabledForClinician() {
+        User clinician2 = TestHelper.createClinician();
+        checkUseLoggedInClinician(false, clinician, clinician2, clinician2);
+    }
+
+    /**
+     * Verifies that when the practice 'usedLoggedInClinician' is set false, and the logged in user is not a
+     * clinician, the clinician comes from the appointment.
+     */
+    @Test
+    public void testUseLoggedInClinicianDisabledForNonClinician() {
+        User user = TestHelper.createUser();
+        checkUseLoggedInClinician(false, user, clinician, clinician);
+    }
+
+    /**
+     * Tests the effects of the practice useLoggedInClinician option during the Check-Out workflow.
+     *
+     * @param enabled              if {@code true}, enable the option, otherwise disable it
+     * @param user                 the current user
+     * @param appointmentClinician the appointment clinician
+     * @param expectedClinician    the expected clinician on new acts
+     */
+    private void checkUseLoggedInClinician(boolean enabled, User user, User appointmentClinician,
+                                           User expectedClinician) {
+        context.setUser(user);
+        context.setClinician(clinician);
+        IMObjectBean bean = new IMObjectBean(getPractice());
+        bean.setValue("useLoggedInClinician", enabled);
+        Act appointment = createAppointment(appointmentClinician);
+        checkWorkflow(appointment, expectedClinician);
+    }
+
+    /**
      * Runs the workflow for the specified act.
      *
-     * @param act the act
+     * @param act       the act
+     * @param clinician the expected clinician
      */
-    private void checkWorkflow(Act act) {
+    private void checkWorkflow(Act act, User clinician) {
         CheckoutWorkflowRunner workflow = new CheckoutWorkflowRunner(act, getPractice(), context);
         workflow.start();
 
         // first task to pause should by the invoice edit task.
-        BigDecimal amount = workflow.addInvoice(patient, clinician, false);
+        BigDecimal amount = workflow.addInvoice(patient, false);
 
         // second task to pause should be a confirmation, prompting to post the invoice
         workflow.confirm(PopupDialog.YES_ID);
 
         // verify the invoice has been posted
-        workflow.checkInvoice(ActStatus.POSTED, amount);
+        workflow.checkInvoice(ActStatus.POSTED, amount, clinician);
 
         // third task to pause should be a confirmation prompting to pay the invoice
         workflow.confirm(PopupDialog.YES_ID);
@@ -268,22 +341,24 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
      * @param userClose if <tt>true</tt> cancel via the 'user close' button, otherwise use the 'cancel' button
      */
     private void checkCancelInvoice(boolean save, boolean userClose) {
-        CheckoutWorkflowRunner workflow = new CheckoutWorkflowRunner(createAppointment(), getPractice(), context);
+        context.setClinician(clinician);
+        CheckoutWorkflowRunner workflow = new CheckoutWorkflowRunner(createAppointment(clinician), getPractice(), context);
         workflow.start();
 
         // first task to pause should by the invoice edit task.
-        BigDecimal amount = BigDecimal.valueOf(20);
-        EditDialog dialog = workflow.addInvoiceItem(patient, amount, clinician);
+        BigDecimal fixedPrice = new BigDecimal("18.18");
+        EditDialog dialog = workflow.addInvoiceItem(patient, fixedPrice);
         if (save) {
             fireDialogButton(dialog, PopupDialog.APPLY_ID);          // save the invoice
         }
-        workflow.addInvoiceItem(patient, amount, clinician);                    // add another item. Won't be saved
+        workflow.addInvoiceItem(patient, fixedPrice);     // add another item. Won't be saved
 
         // close the dialog
         cancelDialog(dialog, userClose);
 
         if (save) {
-            workflow.checkInvoice(ActStatus.IN_PROGRESS, amount);
+            BigDecimal fixedPriceIncTax = BigDecimal.valueOf(20);
+            workflow.checkInvoice(ActStatus.IN_PROGRESS, fixedPriceIncTax, clinician);
         } else {
             FinancialAct invoice = workflow.getInvoice();
             assertNotNull(invoice);
@@ -291,7 +366,7 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
         }
 
         workflow.checkComplete(false);
-        workflow.checkContext(context, null, null, null, null);
+        workflow.checkContext(context, null, null, null, clinician);
         assertNull(workflow.getPayment());
     }
 
@@ -301,14 +376,14 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
      * @param userClose if <tt>true</tt> cancel via the 'user close' button, otherwise use the 'cancel' button
      */
     private void checkCancelFinaliseInvoice(boolean userClose) {
-        CheckoutWorkflowRunner workflow = new CheckoutWorkflowRunner(createAppointment(), getPractice(), context);
+        CheckoutWorkflowRunner workflow = new CheckoutWorkflowRunner(createAppointment(clinician), getPractice(), context);
         workflow.start();
-        BigDecimal amount = workflow.addInvoice(patient, clinician, false);
+        BigDecimal amount = workflow.addInvoice(patient, false);
         String id = (userClose) ? null : PopupDialog.CANCEL_ID;
         workflow.confirm(id);
         workflow.checkComplete(false);
         workflow.checkContext(context, null, null, null, null);
-        workflow.checkInvoice(ActStatus.IN_PROGRESS, amount);
+        workflow.checkInvoice(ActStatus.IN_PROGRESS, amount, clinician);
         assertNull(workflow.getPayment());
     }
 
@@ -318,16 +393,16 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
      * @param userClose if <tt>true</tt> cancel via the 'user close' button, otherwise use the 'cancel' button
      */
     private void checkCancelPaymentConfirmation(boolean userClose) {
-        CheckoutWorkflowRunner workflow = new CheckoutWorkflowRunner(createAppointment(), getPractice(), context);
+        CheckoutWorkflowRunner workflow = new CheckoutWorkflowRunner(createAppointment(clinician), getPractice(), context);
         workflow.start();
-        BigDecimal amount = workflow.addInvoice(patient, clinician, true);
+        BigDecimal amount = workflow.addInvoice(patient, true);
 
         String id = (userClose) ? null : PopupDialog.CANCEL_ID;
         workflow.confirm(id); // cancel payment
 
         workflow.checkComplete(false);
         workflow.checkContext(context, null, null, null, null);
-        workflow.checkInvoice(ActStatus.POSTED, amount);
+        workflow.checkInvoice(ActStatus.POSTED, amount, clinician);
         assertNull(workflow.getPayment());
     }
 
@@ -338,9 +413,10 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
      * @param userClose if <tt>true</tt> cancel via the 'user close' button, otherwise use the 'cancel' button
      */
     private void checkCancelPayment(boolean userClose) {
-        CheckoutWorkflowRunner workflow = new CheckoutWorkflowRunner(createAppointment(), getPractice(), context);
+        CheckoutWorkflowRunner workflow = new CheckoutWorkflowRunner(createAppointment(clinician), getPractice(),
+                                                                     context);
         workflow.start();
-        BigDecimal amount = workflow.addInvoice(patient, clinician, true);
+        BigDecimal amount = workflow.addInvoice(patient, true);
 
         workflow.confirm(PopupDialog.YES_ID);
         EditDialog dialog = workflow.addPaymentItem(till);
@@ -348,7 +424,7 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
 
         workflow.checkComplete(false);
         workflow.checkContext(context, null, null, null, null);
-        workflow.checkInvoice(ActStatus.POSTED, amount);
+        workflow.checkInvoice(ActStatus.POSTED, amount, clinician);
         FinancialAct payment = workflow.getPayment();
         assertNotNull(payment);
         assertTrue(payment.isNew()); // unsaved
@@ -357,10 +433,19 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
     /**
      * Helper to create an appointment.
      *
+     * @param clinician the clinician
      * @return a new appointment
      */
-    private Act createAppointment() {
-        return WorkflowTestHelper.createAppointment(customer, patient, clinician);
+    private Act createAppointment(User clinician) {
+        return WorkflowTestHelper.createAppointment(customer, patient, clinician, context.getLocation());
+    }
+
+    private Act createEvent(Act appointment) {
+        Act event = PatientTestHelper.createEvent(patient);
+        ActBean bean = new ActBean(appointment);
+        bean.addNodeTarget("event", event);
+        save(event, appointment);
+        return event;
     }
 
 }

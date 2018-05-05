@@ -12,8 +12,6 @@
  *  License.
  *
  *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -23,31 +21,36 @@ import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.web.component.im.doc.FileNameFormatter;
 import org.openvpms.web.component.im.report.DocumentActReporter;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
 import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.im.report.StaticDocumentTemplateLocator;
-import org.openvpms.web.system.ServiceHelper;
 
 
 /**
  * A {@link Reporter} for <em>act.patientInvestigation</em> acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class PatientInvestigationReporter extends DocumentActReporter {
 
     /**
-     * Constructs a <tt>PatientInvestigationReporter</tt>.
+     * Constructs a {@link PatientInvestigationReporter}.
      *
-     * @param act     the act
-     * @param locator the document template locator if the act doesn't have a template
+     * @param act       the act
+     * @param locator   the document template locator if the act doesn't have a template
+     * @param formatter the file name formatter
+     * @param service   the archetype service
+     * @param lookups   the lookup service
      */
-    public PatientInvestigationReporter(DocumentAct act, DocumentTemplateLocator locator) {
-        super(act, getTemplateLocator(act, locator));
+    public PatientInvestigationReporter(DocumentAct act, DocumentTemplateLocator locator, FileNameFormatter formatter,
+                                        IArchetypeService service, ILookupService lookups) {
+        super(act, getTemplateLocator(act, locator, service), formatter, service, lookups);
     }
 
     /**
@@ -55,17 +58,19 @@ public class PatientInvestigationReporter extends DocumentActReporter {
      *
      * @param investigation the investigation
      * @param locator       the document template locator if the act doesn't have a template
+     * @param service       the archetype service
      * @return the document template locator
      */
-    private static DocumentTemplateLocator getTemplateLocator(Act investigation, DocumentTemplateLocator locator) {
+    private static DocumentTemplateLocator getTemplateLocator(Act investigation, DocumentTemplateLocator locator,
+                                                              IArchetypeService service) {
         DocumentTemplateLocator result = locator;
-        ActBean act = new ActBean(investigation);
+        ActBean act = new ActBean(investigation, service);
         Entity investigationType = act.getParticipant(InvestigationArchetypes.INVESTIGATION_TYPE_PARTICIPATION);
         if (investigationType != null) {
-            EntityBean bean = new EntityBean(investigationType);
+            EntityBean bean = new EntityBean(investigationType, service);
             Entity entity = bean.getNodeTargetEntity("template");
             if (entity != null) {
-                DocumentTemplate template = new DocumentTemplate(entity, ServiceHelper.getArchetypeService());
+                DocumentTemplate template = new DocumentTemplate(entity, service);
                 result = new StaticDocumentTemplateLocator(template);
             }
         }

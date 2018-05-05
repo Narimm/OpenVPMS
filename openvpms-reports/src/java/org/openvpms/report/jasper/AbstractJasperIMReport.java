@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -21,11 +21,13 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRExpression;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JRRewindableDataSource;
-import net.sf.jasperreports.engine.JasperCompileManager;
+import net.sf.jasperreports.engine.JRRuntimeException;
 import net.sf.jasperreports.engine.JasperFillManager;
 import net.sf.jasperreports.engine.JasperPrint;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.ReportContext;
+import net.sf.jasperreports.engine.SimpleJasperReportsContext;
+import net.sf.jasperreports.engine.export.HtmlExporter;
 import net.sf.jasperreports.engine.export.JRCsvExporter;
 import net.sf.jasperreports.engine.export.JRPdfExporter;
 import net.sf.jasperreports.engine.export.JRPrintServiceExporter;
@@ -35,6 +37,7 @@ import net.sf.jasperreports.engine.export.JRXlsExporter;
 import net.sf.jasperreports.engine.export.JRXmlExporter;
 import net.sf.jasperreports.engine.fill.JREvaluator;
 import net.sf.jasperreports.engine.query.JRQueryExecuter;
+import net.sf.jasperreports.engine.query.JRQueryExecuterFactoryBundle;
 import net.sf.jasperreports.export.Exporter;
 import net.sf.jasperreports.export.ExporterConfiguration;
 import net.sf.jasperreports.export.ExporterInput;
@@ -42,6 +45,8 @@ import net.sf.jasperreports.export.OutputStreamExporterOutput;
 import net.sf.jasperreports.export.ReportExportConfiguration;
 import net.sf.jasperreports.export.SimpleCsvExporterConfiguration;
 import net.sf.jasperreports.export.SimpleExporterInput;
+import net.sf.jasperreports.export.SimpleHtmlExporterConfiguration;
+import net.sf.jasperreports.export.SimpleHtmlExporterOutput;
 import net.sf.jasperreports.export.SimpleOutputStreamExporterOutput;
 import net.sf.jasperreports.export.SimplePrintServiceExporterConfiguration;
 import net.sf.jasperreports.export.SimpleWriterExporterOutput;
@@ -53,7 +58,6 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
-import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -81,11 +85,13 @@ import java.sql.Connection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static org.openvpms.report.ReportException.ErrorCode.FailedToGenerateReport;
 import static org.openvpms.report.ReportException.ErrorCode.FailedToGetParameters;
+import static org.openvpms.report.ReportException.ErrorCode.FailedToPrintReport;
 import static org.openvpms.report.ReportException.ErrorCode.NoPagesToPrint;
 import static org.openvpms.report.ReportException.ErrorCode.UnsupportedMimeType;
 
@@ -113,14 +119,19 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     private final DocumentHandlers handlers;
 
     /**
-     * Cached expression evaluator.
-     */
-    private JREvaluator evaluator;
-
-    /**
      * The JXPath extension functions.
      */
     private final Functions functions;
+
+    /**
+     * The jasper reports context.
+     */
+    private final SimpleJasperReportsContext context;
+
+    /**
+     * The JDBC query factory.
+     */
+    private final JDBCQueryExecuterFactory factory;
 
     /**
      * The supported mime types.
@@ -132,6 +143,23 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * The logger.
      */
     private static final Log log = LogFactory.getLog(AbstractJasperIMReport.class);
+
+    /**
+     * Header to use when exporting to HTML.
+     */
+    private static final String HTML_HEADER =
+            "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Transitional//EN\" " +
+            "\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd\">\n" +
+            "<html>\n" +
+            "<head>\n" +
+            "    <title></title>\n" +
+            "</head>\n" +
+            "<body>";
+
+    /**
+     * Footer to use when exporting to HTML.
+     */
+    private static final String HTML_FOOTER = "</body>\n" + "</html>";
 
 
     /**
@@ -148,6 +176,13 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         this.lookups = lookups;
         this.handlers = handlers;
         this.functions = functions;
+        context = new SimpleJasperReportsContext();
+
+        // need to register the factory even if its not used, as they are registered when the template is loaded.
+        factory = new JDBCQueryExecuterFactory(service, lookups, functions);
+        List<JDBCQueryExecutorFactoryBundle> extensions = Collections.singletonList(
+                new JDBCQueryExecutorFactoryBundle(factory));
+        context.setExtensions(JRQueryExecuterFactoryBundle.class, extensions);
     }
 
     /**
@@ -158,7 +193,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      */
     @Override
     public Set<ParameterType> getParameterTypes() {
-        Set<ParameterType> types = new LinkedHashSet<ParameterType>();
+        Set<ParameterType> types = new LinkedHashSet<>();
         JasperReport report = getReport();
         for (JRParameter p : report.getParameters()) {
             if (!p.isSystemDefined() && p.isForPrompting()) {
@@ -167,8 +202,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
                 if (expression != null) {
                     try {
                         defaultValue = getEvaluator().evaluate(expression);
-                    } catch (JRException exception) {
-                        throw new ReportException(exception, FailedToGetParameters);
+                    } catch (JRException | JRRuntimeException exception) {
+                        throw new ReportException(exception, FailedToGetParameters, getName());
                     }
                 }
                 ParameterType type = new ParameterType(p.getName(), p.getValueClass(), p.getDescription(),
@@ -221,7 +256,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
 
     /**
      * Generates a report.
-     * <p/>
+     * <p>
      * The default mime type will be used to select the output format.
      *
      * @param parameters a map of parameter names and their values, to pass to the report
@@ -258,11 +293,11 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         JasperReport report = getReport();
         JRQueryExecuter executer = null;
         try {
-            executer = initDataSource(properties, fields, report);
-            JasperPrint print = JasperFillManager.fillReport(report, properties);
+            executer = initDataSource(properties, fields, report, context);
+            JasperPrint print = JasperFillManager.getInstance(context).fill(report, properties);
             document = export(print, properties, mimeType);
-        } catch (JRException exception) {
-            throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
+        } catch (JRException | JRRuntimeException exception) {
+            throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
         } finally {
             if (executer != null) {
                 executer.close();
@@ -273,7 +308,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
 
     /**
      * Generates a report for a collection of objects.
-     * <p/>
+     * <p>
      * The default mime type will be used to select the output format.
      *
      * @param objects the objects to report on
@@ -303,7 +338,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
 
     /**
      * Generates a report for a collection of objects.
-     * <p/>
+     * <p>
      * The default mime type will be used to select the output format.
      *
      * @param objects    the objects to report on
@@ -331,15 +366,15 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
     public Document generate(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields,
                              String mimeType) {
         Document document;
-        parameters = (parameters != null) ? new HashMap<String, Object>(parameters) : new HashMap<String, Object>();
+        parameters = (parameters != null) ? new HashMap<>(parameters) : new HashMap<String, Object>();
         try {
             if (mimeType.equals(DocFormats.CSV_TYPE) || mimeType.equals(DocFormats.XLS_TYPE)) {
                 parameters.put(JRParameter.IS_IGNORE_PAGINATION, true);
             }
             JasperPrint print = report(objects, parameters, fields);
             document = export(print, parameters, mimeType);
-        } catch (JRException exception) {
-            throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
+        } catch (JRException | JRRuntimeException exception) {
+            throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
         }
         return document;
     }
@@ -362,8 +397,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             }
             JasperPrint report = report(objects, parameters, fields);
             export(report, stream, parameters, mimeType);
-        } catch (JRException exception) {
-            throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
+        } catch (JRException | JRRuntimeException exception) {
+            throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
         }
     }
 
@@ -384,11 +419,12 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         }
         JRQueryExecuter executer = null;
         try {
-            executer = initDataSource(params, fields, report);
-            JasperPrint print = JasperFillManager.fillReport(getReport(), params);
+            executer = initDataSource(params, fields, report, context);
+            JasperPrint print = JasperFillManager.getInstance(context).fill(getReport(), params);
             print(print, properties);
-        } catch (JRException exception) {
-            throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
+        } catch (JRException | JRRuntimeException exception) {
+            throw new ReportException(exception, FailedToPrintReport, getName(), properties.getPrinterName(),
+                                      exception.getMessage());
         } finally {
             if (executer != null) {
                 executer.close();
@@ -425,8 +461,9 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         try {
             JasperPrint print = report(objects, parameters, fields);
             print(print, properties);
-        } catch (JRException exception) {
-            throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
+        } catch (JRException | JRRuntimeException exception) {
+            throw new ReportException(exception, FailedToPrintReport, getName(), properties.getPrinterName(),
+                                      exception.getMessage());
         }
     }
 
@@ -453,24 +490,26 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      */
     public JasperPrint report(Iterable<T> objects, Map<String, Object> parameters, Map<String, Object> fields)
             throws JRException {
-        JRDataSource source = createDataSource(objects, fields);
-        HashMap<String, Object> properties = new HashMap<String, Object>(getDefaultParameters());
+        JRDataSource source = createDataSource(objects, parameters, fields);
+        HashMap<String, Object> properties = new HashMap<>(getDefaultParameters());
         if (parameters != null) {
             properties.putAll(parameters);
         }
         properties.put("dataSource", source);  // custom data source name, to avoid casting
         properties.put(JRParameter.REPORT_DATA_SOURCE, source);
-        return JasperFillManager.fillReport(getReport(), properties, source);
+        return JasperFillManager.getInstance(context).fill(getReport(), properties, source);
     }
 
     /**
      * Creates a data source for a collection of objects.
      *
-     * @param objects an iterator over the collection of objects
-     * @param fields  a map of additional field names and their values, to pass to the report. May be {@code null}
+     * @param objects    an iterator over the collection of objects
+     * @param parameters a map of parameter names and their values, to pass to the report. May be {@code null}
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @return a new data source
      */
-    protected abstract JRRewindableDataSource createDataSource(Iterable<T> objects, Map<String, Object> fields);
+    protected abstract JRRewindableDataSource createDataSource(Iterable<T> objects, Map<String, Object> parameters,
+                                                               Map<String, Object> fields);
 
     /**
      * Returns the archetype service.
@@ -514,7 +553,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @return the report parameters
      */
     protected Map<String, Object> getDefaultParameters() {
-        return new HashMap<String, Object>();
+        return new HashMap<>();
     }
 
     /**
@@ -538,12 +577,8 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             DocumentHandler handler = handlers.get(name, DocumentArchetypes.DEFAULT_DOCUMENT, mimeType);
             ByteArrayInputStream stream = new ByteArrayInputStream(data);
             document = handler.create(name, stream, mimeType, data.length);
-        } catch (DocumentException exception) {
-            throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
-        } catch (JRException exception) {
-            throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
         } catch (Exception exception) {
-            throw new ReportException(exception, FailedToGenerateReport, exception.getMessage());
+            throw new ReportException(exception, FailedToGenerateReport, getName(), exception.getMessage());
         }
         return document;
     }
@@ -564,6 +599,9 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
         if (DocFormats.PDF_TYPE.equals(mimeType)) {
             exportToPDF(report, stream);
             ext = DocFormats.PDF_EXT;
+        } else if (DocFormats.HTML_TYPE.equals(mimeType)) {
+            exportToHTML(report, stream);
+            ext = DocFormats.HTML_EXT;
         } else if (DocFormats.RTF_TYPE.equals(mimeType)) {
             exportToRTF(report, stream);
             ext = DocFormats.RTF_EXT;
@@ -580,7 +618,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
             exportToText(report, stream, parameters);
             ext = DocFormats.TEXT_EXT;
         } else {
-            throw new ReportException(UnsupportedMimeType, mimeType);
+            throw new ReportException(UnsupportedMimeType, mimeType, getName());
         }
         return ext;
     }
@@ -594,6 +632,25 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      */
     private void exportToPDF(JasperPrint report, OutputStream stream) throws JRException {
         exportStream(report, stream, new JRPdfExporter());
+    }
+
+    /**
+     * Exports a generated jasper report to HTML.
+     *
+     * @param report the report
+     * @param stream the stream to write to
+     * @throws JRException if the export fails
+     */
+    private void exportToHTML(JasperPrint report, OutputStream stream) throws JRException {
+        HtmlExporter exporter = new HtmlExporter();
+        // set the HTML header and footer. The JasperReports default is to centre everything
+        SimpleHtmlExporterConfiguration configuration = new SimpleHtmlExporterConfiguration();
+        configuration.setHtmlHeader(HTML_HEADER);
+        configuration.setHtmlFooter(HTML_FOOTER);
+        exporter.setConfiguration(configuration);
+        exporter.setExporterInput(new SimpleExporterInput(report));
+        exporter.setExporterOutput(new SimpleHtmlExporterOutput(stream));
+        exporter.exportReport();
     }
 
     /**
@@ -713,7 +770,7 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      */
     private void print(JasperPrint print, PrintProperties properties) throws JRException {
         if (print.getPages().isEmpty()) {
-            throw new ReportException(NoPagesToPrint);
+            throw new ReportException(NoPagesToPrint, getName());
         }
         if (log.isDebugEnabled()) {
             log.debug("PrinterName: " + properties.getPrinterName());
@@ -768,27 +825,34 @@ public abstract class AbstractJasperIMReport<T> implements JasperIMReport<T> {
      * @return the expression evaluator
      * @throws JRException if the evaluator can't be loaded
      */
-    private JREvaluator getEvaluator() throws JRException {
-        if (evaluator == null) {
-            evaluator = JasperCompileManager.loadEvaluator(getReport());
-        }
-        return evaluator;
+    protected abstract JREvaluator getEvaluator() throws JRException;
+
+    /**
+     * Returns the jasper reports context.
+     *
+     * @return a the jasper reports context
+     */
+    protected SimpleJasperReportsContext getJasperReportsContext() {
+        return context;
     }
 
     /**
      * Initialises a JDBC data source, if required.
      *
-     * @param params the report parameters
-     * @param fields a map of additional field names and their values, to pass to the report. May be {@code null}
-     * @param report the report
+     * @param params  the report parameters
+     * @param fields  additional fields available to the report. May be {@code null}
+     * @param report  the report
+     * @param context the jasper reports context
      * @throws JRException if the data source cannot be created
      */
-    private JRQueryExecuter initDataSource(Map<String, Object> params, Map<String, Object> fields, JasperReport report)
+    private JRQueryExecuter initDataSource(Map<String, Object> params, Map<String, Object> fields, JasperReport report,
+                                           SimpleJasperReportsContext context)
             throws JRException {
         JRQueryExecuter executer = null;
         Connection connection = (Connection) params.get(JRParameter.REPORT_CONNECTION);
         if (connection != null) {
-            executer = new JDBCQueryExecuter(report.getMainDataset(), params, fields, service);
+            factory.setFields(fields);
+            executer = factory.createQueryExecuter(context, report, params);
             JRDataSource dataSource = executer.createDatasource();
             params.put(JRParameter.REPORT_DATA_SOURCE, dataSource);
         }

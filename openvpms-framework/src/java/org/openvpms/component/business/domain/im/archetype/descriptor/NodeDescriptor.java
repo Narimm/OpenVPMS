@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.archetype.descriptor;
@@ -24,13 +22,10 @@ import org.apache.commons.jxpath.JXPathTypeConversionException;
 import org.apache.commons.jxpath.util.TypeConverter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
-import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyCollection;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
@@ -50,15 +45,11 @@ import java.util.Map;
 
 
 /**
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * Node descriptor.
+ *
+ * @author Jim Alateras
  */
-public class NodeDescriptor extends Descriptor {
-
-    /**
-     * Serialization version identifier.
-     */
-    private static final long serialVersionUID = 2L;
+public class NodeDescriptor extends Descriptor implements org.openvpms.component.model.archetype.NodeDescriptor {
 
     /**
      * The default display length if one is not defined in the node definition
@@ -66,19 +57,9 @@ public class NodeDescriptor extends Descriptor {
     public static final int DEFAULT_DISPLAY_LENGTH = 50;
 
     /**
-     * The default maximum Length if one is not defined in the node definition
-     */
-    public static final int DEFAULT_MAX_LENGTH = 255;
-
-    /**
      * The name given to the object id node
      */
     public static final String IDENTIFIER_NODE_NAME = "id";
-
-    /**
-     * This is used to identify a max cardinality that is unbounded.
-     */
-    public static final int UNBOUNDED = -1;
 
     /**
      * Representation of max cardinality as a string
@@ -86,15 +67,10 @@ public class NodeDescriptor extends Descriptor {
     public static final String UNBOUNDED_AS_STRING = "*";
 
     /**
-     * Type converter.
-     */
-    private static final TypeConverter CONVERTER = new OpenVPMSTypeConverter();
-
-    /**
      * Contains a list of {@link AssertionDescriptor} instances
      */
-    private Map<String, AssertionDescriptor> assertionDescriptors =
-            new LinkedHashMap<String, AssertionDescriptor>();
+    private Map<String, org.openvpms.component.model.archetype.AssertionDescriptor> assertionDescriptors
+            = new LinkedHashMap<>();
 
     /**
      * This is an option property, which is required for nodes that represent
@@ -110,19 +86,17 @@ public class NodeDescriptor extends Descriptor {
     private transient Class clazz;
 
     /**
-     * The default value
+     * The default value.
      */
     private String defaultValue;
 
     /**
-     * This is a jxpath expression, which is used to determine the value of the
-     * node
+     * This is a jxpath expression, which is used to determine the value of the node.
      */
     private String derivedValue;
 
     /**
-     * This is the display name, which is only supplied if it is different to
-     * the node name
+     * This is the display name, which is only supplied if it is different to the node name.
      */
     private String displayName;
 
@@ -182,7 +156,7 @@ public class NodeDescriptor extends Descriptor {
     /**
      * A node can have other nodeDescriptors to define a nested structure
      */
-    private Map<String, NodeDescriptor> nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>();
+    private Map<String, NodeDescriptor> nodeDescriptors = new LinkedHashMap<>();
 
     /**
      * The XPath/JXPath expression that is used to resolve this node within the
@@ -199,10 +173,11 @@ public class NodeDescriptor extends Descriptor {
      * The filter is only valid for collections and defines the subset of
      * the collection that this node refers too.  The filter is an archetype
      * shortName, which can also be in the form of a regular expression
-     * <p/>
+     * <p>
      * The modeFilter is a regex compliant filter
      */
     private String filter;
+
     private String modFilter;
 
     /**
@@ -215,17 +190,21 @@ public class NodeDescriptor extends Descriptor {
      */
     private ArchetypeDescriptor archetype;
 
+    /**
+     * Serialization version identifier.
+     */
+    private static final long serialVersionUID = 2L;
+
+    /**
+     * Type converter.
+     */
+    private static final TypeConverter CONVERTER = new OpenVPMSTypeConverter();
+
     private static final ArchetypeId NODE = new ArchetypeId(
             "descriptor.node.1.0");
 
     private static final ArchetypeId COLLECTION_NODE = new ArchetypeId(
             "descriptor.collectionNode");
-
-    /**
-     * The logger.
-     */
-    private static final Log log = LogFactory.getLog(NodeDescriptor.class);
-
 
     /**
      * Default constructor.
@@ -250,7 +229,7 @@ public class NodeDescriptor extends Descriptor {
      *
      * @param descriptor the assertion descriptor to add
      */
-    public void addAssertionDescriptor(AssertionDescriptor descriptor) {
+    public void addAssertionDescriptor(org.openvpms.component.model.archetype.AssertionDescriptor descriptor) {
         assertionDescriptors.put(descriptor.getName(), descriptor);
     }
 
@@ -338,10 +317,8 @@ public class NodeDescriptor extends Descriptor {
     @Override
     public Object clone() throws CloneNotSupportedException {
         NodeDescriptor copy = (NodeDescriptor) super.clone();
-        copy.assertionDescriptors = new LinkedHashMap<String, AssertionDescriptor>(
-                this.assertionDescriptors);
-        copy.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>(
-                this.nodeDescriptors);
+        copy.assertionDescriptors = new LinkedHashMap<>(this.assertionDescriptors);
+        copy.nodeDescriptors = new LinkedHashMap<>(this.nodeDescriptors);
         return copy;
     }
 
@@ -385,50 +362,23 @@ public class NodeDescriptor extends Descriptor {
     }
 
     /**
-     * Return the archetype names associated with a particular object reference
-     * or collection.
-     *
-     * @return String pattern
-     * @deprecated no replacement
-     */
-    @Deprecated
-    public String[] getArchetypeNames() {
-        ArrayList<String> result = new ArrayList<String>();
-
-        AssertionDescriptor desc = assertionDescriptors.get("validArchetypes");
-        if (desc != null) {
-            PropertyList archetypes = (PropertyList) desc.getPropertyMap()
-                    .getProperties().get("archetypes");
-            for (NamedProperty archetype : archetypes.getProperties()) {
-                AssertionProperty shortName = (AssertionProperty) ((PropertyMap) archetype)
-                        .getProperties().get("shortName");
-                result.add(shortName.getValue());
-            }
-        }
-
-        return result.toArray(new String[result.size()]);
-    }
-
-    /**
      * Return an array of short names or short name regular expression that are
      * associated with the archetypeRange assertion. If the node does not have
      * such an assertion then return a zero length string array
-     * <p/>
+     * <p>
      * TODO Should we more this into a utility class TODO Change return type to
      * List
      *
      * @return String[] the array of short names
      */
     public String[] getArchetypeRange() {
-        if (assertionDescriptors.containsKey("archetypeRange")) {
-            ArrayList<String> range = new ArrayList<String>();
-            AssertionDescriptor desc = assertionDescriptors
-                    .get("archetypeRange");
-            PropertyList archetypes = (PropertyList) desc.getPropertyMap()
-                    .getProperties().get("archetypes");
-            for (NamedProperty archetype : archetypes.getProperties()) {
-                AssertionProperty shortName = (AssertionProperty) ((PropertyMap) archetype)
-                        .getProperties().get("shortName");
+        org.openvpms.component.model.archetype.AssertionDescriptor desc = assertionDescriptors.get("archetypeRange");
+        if (desc != null) {
+            ArrayList<String> range = new ArrayList<>();
+            PropertyList archetypes = (PropertyList) desc.getPropertyMap().getProperties().get("archetypes");
+            for (org.openvpms.component.model.archetype.NamedProperty archetype : archetypes.getProperties()) {
+                AssertionProperty shortName = (AssertionProperty) ((PropertyMap) archetype).getProperties().get(
+                        "shortName");
                 range.add(shortName.getValue());
             }
 
@@ -445,7 +395,7 @@ public class NodeDescriptor extends Descriptor {
      * @param type the type of the assertion descriptor
      * @return AssertionDescriptor
      */
-    public AssertionDescriptor getAssertionDescriptor(String type) {
+    public org.openvpms.component.model.archetype.AssertionDescriptor getAssertionDescriptor(String type) {
         return assertionDescriptors.get(type);
     }
 
@@ -454,7 +404,7 @@ public class NodeDescriptor extends Descriptor {
      *
      * @return Returns the assertionDescriptors.
      */
-    public Map<String, AssertionDescriptor> getAssertionDescriptors() {
+    public Map<String, org.openvpms.component.model.archetype.AssertionDescriptor> getAssertionDescriptors() {
         return assertionDescriptors;
     }
 
@@ -463,13 +413,12 @@ public class NodeDescriptor extends Descriptor {
      *
      * @return the assertion descriptors, ordered on index
      */
+    @SuppressWarnings("unchecked")
     public List<AssertionDescriptor> getAssertionDescriptorsInIndexOrder() {
-        List<AssertionDescriptor> adescs =
-                new ArrayList<AssertionDescriptor>(
-                        assertionDescriptors.values());
+        List<org.openvpms.component.model.archetype.AssertionDescriptor> adescs
+                = new ArrayList<>(assertionDescriptors.values());
         Collections.sort(adescs, new AssertionDescriptorIndexComparator());
-
-        return adescs;
+        return (List<AssertionDescriptor>) (List) adescs;
     }
 
     /**
@@ -478,8 +427,24 @@ public class NodeDescriptor extends Descriptor {
      * @return the assertion descriptors
      */
     public AssertionDescriptor[] getAssertionDescriptorsAsArray() {
-        return assertionDescriptors.values().toArray(
-                new AssertionDescriptor[assertionDescriptors.size()]);
+        return assertionDescriptors.values().toArray(new AssertionDescriptor[assertionDescriptors.size()]);
+    }
+
+
+    /**
+     * <br/>
+     * NOTE: this is used by castor serialisation
+     *
+     * @param assertionDescriptors The assertionDescriptors to set.
+     */
+    public void setAssertionDescriptorsAsArray(
+            AssertionDescriptor[] assertionDescriptors) {
+        this.assertionDescriptors = new LinkedHashMap<>();
+        int index = 0;
+        for (AssertionDescriptor descriptor : assertionDescriptors) {
+            descriptor.setIndex(index++);
+            addAssertionDescriptor(descriptor);
+        }
     }
 
     /**
@@ -490,77 +455,32 @@ public class NodeDescriptor extends Descriptor {
     }
 
     /**
-     * Return a list of candiate children for the specified node. This is only
-     * applicable for collection nodes that have a candidateChildren assertion
-     * defined.
-     *
-     * @param context the context object
-     * @return List a list of candiate children, which can also be an empty list
-     * @deprecated unused, no replacement. Will be removed post 1.0
-     */
-    @SuppressWarnings("unchecked")
-    @Deprecated
-    public List<IMObject> getCandidateChildren(IMObject context) {
-        List<IMObject> result = null;
-        AssertionDescriptor descriptor = assertionDescriptors
-                .get("candidateChildren");
-
-        if ((descriptor == null) ||
-                (!descriptor.getPropertyMap().getProperties().containsKey(
-                        "path"))) {
-            return result;
-        }
-
-        String path = (String) descriptor.getPropertyMap().getProperties().get(
-                "path").getValue();
-        try {
-            Object obj = JXPathHelper.newContext(context).getValue(path);
-            if (obj == null) {
-                result = new ArrayList<IMObject>();
-            } else if (obj instanceof Collection) {
-                result = new ArrayList<IMObject>((Collection) obj);
-            } else {
-                log.warn("getCandidateChildren for path " + path
-                        + " returned object of type "
-                        + obj.getClass().getName());
-            }
-        } catch (Exception exception) {
-            log.warn("Failed in getCandidateChildren for path " + path,
-                     exception);
-        }
-
-        return result;
-    }
-
-    /**
      * Return the children {@link IMObject} instances that are part of
      * a collection. If the NodeDescriptor does not denote a collection then
      * a null list is returned.
-     * <p/>
+     * <p>
      * Furthermore if this is a collection and the filter attribute has been
      * specified then return a subset of the children; those matching the
      * filter.
      *
      * @param target the target object.
      * @return List<IMObject>
-     *         the list of children, an empty list or  null
+     * the list of children, an empty list or  null
      */
     @SuppressWarnings("unchecked")
     public List<IMObject> getChildren(IMObject target) {
         List<IMObject> children = null;
         if (isCollection()) {
             try {
-                Object obj = JXPathHelper.newContext(target).getValue(
-                        getPath());
+                Object obj = JXPathHelper.newContext(target).getValue(getPath());
                 if (obj == null) {
-                    children = new ArrayList<IMObject>();
+                    children = new ArrayList<>();
                 } else if (obj instanceof Collection) {
-                    children = new ArrayList<IMObject>((Collection) obj);
+                    children = new ArrayList<>((Collection) obj);
                 } else if (obj instanceof PropertyCollection) {
-                    children = new ArrayList<IMObject>(
-                            ((PropertyCollection) obj).values());
+                    children = new ArrayList<>(((PropertyCollection) obj).values());
                 } else if (obj instanceof Map) {
-                    children = new ArrayList<IMObject>(((Map) obj).values());
+                    children = new ArrayList<>(((Map) obj).values());
                 }
 
                 // filter the children
@@ -570,44 +490,16 @@ public class NodeDescriptor extends Descriptor {
                         DescriptorException.ErrorCode.FailedToGetChildren,
                         exception, target.getName(), getName(), getPath());
             }
-
-            return children;
-
         }
 
         return children;
     }
 
     /**
-     * Filter the children in the list and return only those that comply with
-     * the filter term
-     *
-     * @param children the initial list of children
-     * @return List<IMObject>
-     *         the filtered set
-     */
-    private List<IMObject> filterChildren(List<IMObject> children) {
-        // if no filter was specified return the complete list
-        if (StringUtils.isEmpty(filter)) {
-            return children;
-        }
-
-        // otherwise filter on
-        List<IMObject> filteredSet = new ArrayList<IMObject>();
-        for (IMObject obj : children) {
-            if (obj.getArchetypeId().getShortName().matches(modFilter)) {
-                filteredSet.add(obj);
-            }
-        }
-
-        return filteredSet;
-    }
-
-    /**
      * Returns the class for the specified type.
      *
      * @return the class, or <tt>null</tt> if {@link #getType()} returns
-     *         empty/null
+     * empty/null
      * @throws DescriptorException if the class can't be loaded
      */
     public Class getClazz() {
@@ -652,7 +544,7 @@ public class NodeDescriptor extends Descriptor {
         if (StringUtils.isEmpty(result)) {
             String name = getName();
             if (name != null) {
-               result = StringUtilities.unCamelCase(name);
+                result = StringUtilities.unCamelCase(name);
             }
         }
         return result;
@@ -709,7 +601,7 @@ public class NodeDescriptor extends Descriptor {
     public Number getMaxValue() {
         Number number = null;
         if (isNumeric()) {
-            AssertionDescriptor descriptor
+            org.openvpms.component.model.archetype.AssertionDescriptor descriptor
                     = assertionDescriptors.get("numericRange");
             if (descriptor != null) {
                 number = NumberUtils.createNumber((String) descriptor
@@ -749,8 +641,8 @@ public class NodeDescriptor extends Descriptor {
     public Number getMinValue() {
         Number number = null;
         if (isNumeric()) {
-            AssertionDescriptor descriptor = assertionDescriptors
-                    .get("numericRange");
+            org.openvpms.component.model.archetype.AssertionDescriptor descriptor
+                    = assertionDescriptors.get("numericRange");
             if (descriptor != null) {
                 number = NumberUtils.createNumber((String) descriptor
                         .getPropertyMap().getProperties().get("minValue")
@@ -808,8 +700,8 @@ public class NodeDescriptor extends Descriptor {
     public String getStringPattern() {
         String expression = null;
         if (isString()) {
-            AssertionDescriptor descriptor = assertionDescriptors
-                    .get("regularExpression");
+            org.openvpms.component.model.archetype.AssertionDescriptor descriptor
+                    = assertionDescriptors.get("regularExpression");
             if (descriptor != null) {
                 expression = (String) descriptor.getPropertyMap()
                         .getProperties().get("expression").getValue();
@@ -841,8 +733,12 @@ public class NodeDescriptor extends Descriptor {
     public Object getValue(IMObject context) {
         Object value;
         if (isDerived()) {
-            value = JXPathHelper.newContext(context).getValue(
-                    getDerivedValue());
+            String derivedValue = getDerivedValue();
+            if (derivedValue != null) {
+                value = JXPathHelper.newContext(context).getValue(derivedValue);
+            } else {
+                value = null;
+            }
         } else {
             if (isCollection()) {
                 value = getChildren(context);
@@ -859,7 +755,7 @@ public class NodeDescriptor extends Descriptor {
      *
      * @param context the context to use
      * @return Object
-     *         the returned object
+     * the returned object
      */
     public Object getValue(JXPathContext context) {
         Object value = null;
@@ -899,8 +795,8 @@ public class NodeDescriptor extends Descriptor {
                     .loadClass(getType());
 
             return Collection.class.isAssignableFrom(aclass)
-                    || Map.class.isAssignableFrom(aclass)
-                    || PropertyCollection.class.isAssignableFrom(aclass);
+                   || Map.class.isAssignableFrom(aclass)
+                   || PropertyCollection.class.isAssignableFrom(aclass);
         } catch (Exception ignore) {
             return false;
         }
@@ -912,7 +808,7 @@ public class NodeDescriptor extends Descriptor {
      *
      * @param object the object to cast
      * @return Collection
-     *         the returned collection object
+     * the returned collection object
      * @throws DescriptorException if the cast cannot be made
      */
     public Collection toCollection(Object object) {
@@ -941,8 +837,8 @@ public class NodeDescriptor extends Descriptor {
      */
     public boolean isComplexNode() {
         return (getMaxCardinality() == NodeDescriptor.UNBOUNDED)
-                || (getMaxCardinality() > 1)
-                || (containsAssertionType("archetypeRange"));
+               || (getMaxCardinality() > 1)
+               || (containsAssertionType("archetypeRange"));
     }
 
     /**
@@ -1032,9 +928,9 @@ public class NodeDescriptor extends Descriptor {
 
         Class aclass = getClazz();
         return (Number.class.isAssignableFrom(aclass)) || (byte.class == aclass)
-                || (short.class == aclass) || (int.class == aclass)
-                || (long.class == aclass) || (float.class == aclass)
-                || (double.class == aclass);
+               || (short.class == aclass) || (int.class == aclass)
+               || (long.class == aclass) || (float.class == aclass)
+               || (double.class == aclass);
     }
 
     /**
@@ -1093,7 +989,7 @@ public class NodeDescriptor extends Descriptor {
      *
      * @param imobj the object to check
      * @return boolean
-     *         true if it matches the filter
+     * true if it matches the filter
      */
     public boolean matchesFilter(IMObject imobj) {
         boolean matches = false;
@@ -1115,7 +1011,7 @@ public class NodeDescriptor extends Descriptor {
      *
      * @param descriptor the assertion to delete
      */
-    public void removeAssertionDescriptor(AssertionDescriptor descriptor) {
+    public void removeAssertionDescriptor(org.openvpms.component.model.archetype.AssertionDescriptor descriptor) {
         assertionDescriptors.remove(descriptor.getName());
     }
 
@@ -1131,7 +1027,7 @@ public class NodeDescriptor extends Descriptor {
     /**
      * Remove the specified child object from the collection defined by this
      * node descriptor using the nominated {@link IMObject} as the root context.
-     * <p/>
+     * <p>
      * If this node descriptor is not of type collection, or the context object
      * is null it will raise an exception.
      *
@@ -1184,33 +1080,6 @@ public class NodeDescriptor extends Descriptor {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.FailedToRemoveChildElement,
                     exception, getName());
-        }
-    }
-
-    /**
-     * @param assertionDescriptors The assertionDescriptors to set.
-     * @deprecated use {@link #addAssertionDescriptor} instead. Will be removed
-     *             post 1.x.
-     */
-    @Deprecated
-    public void setAssertionDescriptors(
-            Map<String, AssertionDescriptor> assertionDescriptors) {
-        this.assertionDescriptors = assertionDescriptors;
-    }
-
-    /**
-     * @param assertionDescriptors The assertionDescriptors to set.
-     * @deprecated use {@link #addAssertionDescriptor} instead. Will be removed
-     *             post 1.x.
-     */
-    @Deprecated
-    public void setAssertionDescriptorsAsArray(
-            AssertionDescriptor[] assertionDescriptors) {
-        this.assertionDescriptors = new LinkedHashMap<String, AssertionDescriptor>();
-        int index = 0;
-        for (AssertionDescriptor descriptor : assertionDescriptors) {
-            descriptor.setIndex(index++);
-            addAssertionDescriptor(descriptor);
         }
     }
 
@@ -1283,6 +1152,8 @@ public class NodeDescriptor extends Descriptor {
     /**
      * This setter enabled the user to specify an unbounded maximum collection
      * using '*'.
+     * <br/>
+     * NOTE: this is used by castor serialisation
      *
      * @param maxCardinality The maxCardinality to set.
      */
@@ -1316,22 +1187,12 @@ public class NodeDescriptor extends Descriptor {
     }
 
     /**
-     * @param nodeDescriptors The nodeDescriptors to set.
-     * @deprecated use {@link #addNodeDescriptor} instead.
-     */
-    @Deprecated
-    public void setNodeDescriptors(
-            Map<String, NodeDescriptor> nodeDescriptors) {
-        this.nodeDescriptors = nodeDescriptors;
-    }
-
-    /**
+     * NOTE: this is used by castor serialisation
+     *
      * @param nodes The nodeDescriptors to set.
-     * @deprecated use {@link #addNodeDescriptor} instead.
      */
-    @Deprecated
     public void setNodeDescriptorsAsArray(NodeDescriptor[] nodes) {
-        this.nodeDescriptors = new LinkedHashMap<String, NodeDescriptor>();
+        this.nodeDescriptors = new LinkedHashMap<>();
         int index = 0;
         for (NodeDescriptor node : nodes) {
             node.setIndex(index++);
@@ -1403,7 +1264,7 @@ public class NodeDescriptor extends Descriptor {
         }
 
         try {
-            for (AssertionDescriptor descriptor: getAssertionDescriptorsAsArray()) {
+            for (AssertionDescriptor descriptor : getAssertionDescriptorsAsArray()) {
                 value = descriptor.set(value, context, this);
             }
             if (isArray) {
@@ -1420,37 +1281,10 @@ public class NodeDescriptor extends Descriptor {
     }
 
     /**
-     * This is a helper method that will attempt to convert a string to the
-     * type specified by this node descriptor. If the node descriptor is of
-     * type string then it will simply return the same string otherwise it
-     * will search for a constructor of that type that takes a string and
-     * return the transformed object.
-     *
-     * @param value the string value
-     * @return Object
-     *         the transformed object
-     */
-    private Object transform(Object value) {
-        if ((value == null) ||
-                (this.isCollection()) ||
-                (value.getClass() == getClazz())) {
-            return value;
-        }
-
-        try {
-            return CONVERTER.convert(value, getClazz());
-        } catch (JXPathTypeConversionException exception) {
-            throw new DescriptorException(
-                    DescriptorException.ErrorCode.FailedToCoerceValue,
-                    value.getClass().getName(), getClazz().getName());
-        }
-    }
-
-    /**
      * Returns the archetype descriptor that this is a node of.
      *
      * @return the archetype descriptor that this is a node of. May be
-     *         <code>null</code>
+     * <code>null</code>
      */
     public ArchetypeDescriptor getArchetypeDescriptor() {
         return archetype;
@@ -1460,7 +1294,7 @@ public class NodeDescriptor extends Descriptor {
      * Returns the parent node descriptor.
      *
      * @return the parent node descriptor or <code>null</code>, if this node
-     *         has no parent.
+     * has no parent.
      */
     public NodeDescriptor getParent() {
         return parent;
@@ -1485,28 +1319,75 @@ public class NodeDescriptor extends Descriptor {
         this.parent = parent;
     }
 
-}
-
-/**
- * This comparator is used to compare the indices of AssertionDescriptors
- */
-class AssertionDescriptorIndexComparator
-        implements Comparator<AssertionDescriptor> {
-
-    /* (non-Javadoc)
-     * @see java.util.Comparator#compare(T, T)
+    /**
+     * Filter the children in the list and return only those that comply with
+     * the filter term
+     *
+     * @param children the initial list of children
+     * @return List<IMObject>
+     * the filtered set
      */
-    public int compare(AssertionDescriptor no1, AssertionDescriptor no2) {
-        if (no1 == no2) {
-            return 0;
+    private List<IMObject> filterChildren(List<IMObject> children) {
+        // if no filter was specified return the complete list
+        if (StringUtils.isEmpty(filter)) {
+            return children;
         }
 
-        if (no1.getIndex() == no2.getIndex()) {
-            return 0;
-        } else if (no1.getIndex() > no2.getIndex()) {
-            return 1;
-        } else {
-            return -1;
+        // otherwise filter on
+        List<IMObject> filteredSet = new ArrayList<>();
+        for (IMObject obj : children) {
+            if (obj.getArchetypeId().getShortName().matches(modFilter)) {
+                filteredSet.add(obj);
+            }
+        }
+
+        return filteredSet;
+    }
+
+    /**
+     * This is a helper method that will attempt to convert a string to the
+     * type specified by this node descriptor. If the node descriptor is of
+     * type string then it will simply return the same string otherwise it
+     * will search for a constructor of that type that takes a string and
+     * return the transformed object.
+     *
+     * @param value the string value
+     * @return Object
+     * the transformed object
+     */
+    private Object transform(Object value) {
+        if ((value == null) ||
+            (this.isCollection()) ||
+            (value.getClass() == getClazz())) {
+            return value;
+        }
+
+        try {
+            return CONVERTER.convert(value, getClazz());
+        } catch (JXPathTypeConversionException exception) {
+            throw new DescriptorException(
+                    DescriptorException.ErrorCode.FailedToCoerceValue,
+                    value.getClass().getName(), getClazz().getName());
         }
     }
+
+    /**
+     * This comparator is used to compare the indices of AssertionDescriptors
+     */
+    private static class AssertionDescriptorIndexComparator
+            implements Comparator<org.openvpms.component.model.archetype.AssertionDescriptor> {
+
+        /* (non-Javadoc)
+         * @see java.util.Comparator#compare(T, T)
+         */
+        public int compare(org.openvpms.component.model.archetype.AssertionDescriptor no1,
+                           org.openvpms.component.model.archetype.AssertionDescriptor no2) {
+            if (no1 == no2) {
+                return 0;
+            }
+            return Integer.compare(no1.getIndex(), no2.getIndex());
+        }
+    }
+
 }
+

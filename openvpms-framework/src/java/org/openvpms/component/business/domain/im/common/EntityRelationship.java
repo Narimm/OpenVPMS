@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.common;
@@ -26,7 +26,8 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
  * @author Jim Alateras
  * @author Tim Anderson
  */
-public class EntityRelationship extends SequencedRelationship {
+public class EntityRelationship extends SequencedRelationship
+        implements org.openvpms.component.model.entity.EntityRelationship {
 
     /**
      * Serialisation version identifier.
@@ -37,11 +38,6 @@ public class EntityRelationship extends SequencedRelationship {
      * A relationship may also have an associated entity identity
      */
     private EntityIdentity identity;
-
-    /**
-     * TODO Definition for reason
-     */
-    private String reason;
 
     /**
      * Default constructor.
@@ -71,28 +67,10 @@ public class EntityRelationship extends SequencedRelationship {
     }
 
     /**
-     * @return Returns the reason.
-     * @deprecated no replacement
-     */
-    @Deprecated
-    public String getReason() {
-        return reason;
-    }
-
-    /**
      * @param identity The identity to set.
      */
     public void setIdentity(EntityIdentity identity) {
         this.identity = identity;
-    }
-
-    /**
-     * @param reason The reason to set.
-     * @deprecated no replacement
-     */
-    @Deprecated
-    public void setReason(String reason) {
-        this.reason = reason;
     }
 
     /* (non-Javadoc)

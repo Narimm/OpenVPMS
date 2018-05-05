@@ -1,63 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--
-  ~ Version: 1.0
-  ~
-  ~ The contents of this file are subject to the OpenVPMS License Version
-  ~ 1.0 (the 'License'); you may not use this file except in compliance with
-  ~ the License. You may obtain a copy of the License at
-  ~ http://www.openvpms.org/license/
-  ~
-  ~ Software distributed under the License is distributed on an 'AS IS' basis,
-  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-  ~ for the specific language governing rights and limitations under the
-  ~ License.
-  ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
-  -->
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-12-14T13:38:39 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Practice Summary_CountVisitsLocation" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="539" leftMargin="0" rightMargin="56" topMargin="0" bottomMargin="0" uuid="bb55dd52-4d73-4273-b097-d555ce83282f">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
+	<parameter name="DateFrom" class="java.util.Date"/>
+	<parameter name="DateTo" class="java.util.Date"/>
+	<queryString language="SQL">
+		<![CDATA[select
 
-<!-- Created with Jaspersoft Studio version 6.0.4.final using JasperReports Library version 6.0.4  -->
-<!-- 2015-06-15T05:54:13 -->
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
-              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
-              name="Practice Summary_CountVisitsLocation" pageWidth="535" pageHeight="754"
-              whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="0" rightMargin="0" topMargin="0"
-              bottomMargin="0" uuid="bb55dd52-4d73-4273-b097-d555ce83282f">
-    <property name="ireport.zoom" value="1.5"/>
-    <property name="ireport.x" value="0"/>
-    <property name="ireport.y" value="0"/>
-    <property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS Local"/>
-    <property name="com.jaspersoft.studio.unit." value="pixel"/>
-    <property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
-    <property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
-    <property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
-    <property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
-    <property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
-    <property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
-    <property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
-    <property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
-    <parameter name="DateFrom" class="java.util.Date"/>
-    <parameter name="DateTo" class="java.util.Date"/>
-    <queryString language="SQL">
-        <![CDATA[select
-(
-select count(*) as patientCount
-from entities ep
-left join entity_details ed1 on ed1.entity_id = ep.entity_id and ed1.name = 'dateOfBirth'
-left join entity_details ed2 on ed2.entity_id = ep.entity_id and ed2.name = 'deceased'
-where ep.arch_short_name = 'party.patientpet'
-and ep.active = 1
-and date(ed1.value) < $P{DateFrom}
+(select count(*)
+from entities e
+   join entity_details d
+         on e.entity_id = d.entity_id
+         and d.name = 'createdDate'
+	join entity_relationships r on r.target_id=e.entity_id and r.arch_short_name = 'entityRelationship.patientOwner'
+where e.arch_short_name = 'party.patientpet'
+    and cast(d.value as Date) <=  $P{DateFrom}
+    and (r.active_start_time <= $P{DateFrom}
+          and (isnull(r.active_end_time) or r.active_end_time > $P{DateFrom}))
+    and (e.active=1
+		or exists ( select * 
+                      from  participations p
+                      where p.entity_id = e.entity_id
+                          and p.arch_short_name = 'participation.patient'
+                          and p.activity_start_time > $P{DateFrom})
+		 )
 ) as activePatientsStart,
-(
-select count(*) as patientCount
-from entities ep
-left join entity_details ed1 on ed1.entity_id = ep.entity_id and ed1.name = 'dateOfBirth'
-left join entity_details ed2 on ed2.entity_id = ep.entity_id and ed2.name = 'deceased'
-where ep.arch_short_name = 'party.patientpet'
-and ep.active = 1
-and date(ed1.value) < DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
+
+(select count(*)
+from entities e
+   join entity_details d
+         on e.entity_id = d.entity_id
+         and d.name = 'createdDate'
+	join entity_relationships r on r.target_id=e.entity_id and r.arch_short_name = 'entityRelationship.patientOwner'
+where e.arch_short_name = 'party.patientpet'
+    and cast(d.value as Date) <=  DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
+    and (r.active_start_time <= DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
+          and (isnull(r.active_end_time) or r.active_end_time > DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)))
+    and (e.active=1
+		or exists ( select * 
+                      from  participations p
+                      where p.entity_id = e.entity_id
+                          and p.arch_short_name = 'participation.patient'
+                          and p.activity_start_time > DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND))
+		 )
 ) as activePatientsEnd,
+
 (
 select count(distinct pp.entity_id) as patientCount
 from acts a
@@ -70,233 +63,226 @@ left join entities el on el.entity_id = pl.entity_id
 where a.arch_short_name = 'act.patientClinicalEvent'
 and a.activity_start_time between  $P{DateFrom} and DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
 ) as totalPatientCount,
-count(distinct pp.entity_id) as patientCount, count(a.act_id) as visitCount,
+count(distinct pp.entity_id) as patientCount, count(distinct a.act_id) as visitCount,
        ifnull(el.name,'--None--') as location
 from acts a
 join participations pp on pp.act_id = a.act_id and pp.arch_short_name = 'participation.patient'
 left join act_relationships ar on ar.source_id = a.act_id and ar.arch_short_name = 'actRelationship.patientClinicalEventChargeItem'
-left join act_relationships ari on ari.target_id = ar.target_id and ari.arch_short_name = 'actRelationship.customerAccountInvoiceItem'
-left join acts i on i.act_id = ari.source_id
-left join participations pl on pl.act_id = i.act_id and pl.arch_short_name = 'participation.location'
+left join participations pl on pl.act_id = a.act_id and pl.arch_short_name = 'participation.location'
 left join entities el on el.entity_id = pl.entity_id
 where a.arch_short_name = 'act.patientClinicalEvent'
 and a.activity_start_time between  $P{DateFrom} and DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
 group by location order by location]]>
-    </queryString>
-    <field name="activePatientsStart" class="java.lang.Long"/>
-    <field name="activePatientsEnd" class="java.lang.Long"/>
-    <field name="totalPatientCount" class="java.lang.Long"/>
-    <field name="patientCount" class="java.lang.Long"/>
-    <field name="visitCount" class="java.lang.Long"/>
-    <field name="location" class="java.lang.String"/>
-    <variable name="SumVisitCount" class="java.lang.Long" calculation="Sum">
-        <variableExpression><![CDATA[$F{visitCount}]]></variableExpression>
-    </variable>
-    <variable name="SumPatientCount" class="java.lang.Long" calculation="Sum">
-        <variableExpression><![CDATA[$F{patientCount}]]></variableExpression>
-    </variable>
-    <background>
-        <band splitType="Stretch"/>
-    </background>
-    <title>
-        <band height="5"/>
-    </title>
-    <columnHeader>
-        <band height="36">
-            <staticText>
-                <reportElement x="21" y="20" width="129" height="14" uuid="882c375e-986e-4d07-889f-7f4eb93329cb"/>
-                <textElement>
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <text><![CDATA[Location]]></text>
-            </staticText>
-            <staticText>
-                <reportElement x="166" y="20" width="75" height="14" uuid="b5b41026-1254-4102-9dab-88f285399006"/>
-                <textElement textAlignment="Right">
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <text><![CDATA[Patient Count]]></text>
-            </staticText>
-            <staticText>
-                <reportElement x="270" y="20" width="75" height="14" uuid="0c3777f4-1cc0-499c-9d1e-a61e2baed5d3"/>
-                <textElement textAlignment="Right">
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <text><![CDATA[Visit Count]]></text>
-            </staticText>
-            <staticText>
-                <reportElement x="0" y="0" width="216" height="19" uuid="c5df7d46-5fd0-40d6-9280-8f658c4ec5cd"/>
-                <textElement>
-                    <font size="12" isBold="true"/>
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <text><![CDATA[Visit Counts by Practice Location]]></text>
-            </staticText>
-        </band>
-    </columnHeader>
-    <detail>
-        <band height="18" splitType="Stretch">
-            <textField>
-                <reportElement x="166" y="0" width="75" height="15" uuid="3ae3cfa1-6cc9-4035-b4b8-356ca57c49e7"/>
-                <textElement textAlignment="Right">
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{patientCount}]]></textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="21" y="0" width="129" height="15" uuid="fccc98bd-3bcf-4e38-b12f-e79ef3393060"/>
-                <textElement>
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{location}]]></textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="270" y="0" width="75" height="15" uuid="fb77476f-95cc-4b93-8e93-5f411ec6ff03"/>
-                <textElement textAlignment="Right">
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{visitCount}]]></textFieldExpression>
-            </textField>
-            <textField evaluationTime="Auto" pattern="#,##0%">
-                <reportElement x="241" y="0" width="30" height="15" uuid="907afd61-c5c8-430b-a1cd-721ba46ea0c6"/>
-                <textElement textAlignment="Right">
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <textFieldExpression>
-                    <![CDATA[$F{patientCount}.doubleValue()/$F{totalPatientCount}.doubleValue()]]></textFieldExpression>
-            </textField>
-            <textField evaluationTime="Auto" pattern="#,##0%">
-                <reportElement x="345" y="0" width="30" height="15" uuid="ba2a30dd-abbb-4e56-abe4-7bc92c1fb7da"/>
-                <textElement textAlignment="Right">
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <textFieldExpression>
-                    <![CDATA[$F{visitCount}.doubleValue()/$V{SumVisitCount}.doubleValue()]]></textFieldExpression>
-            </textField>
-        </band>
-    </detail>
-    <summary>
-        <band height="142">
-            <textField>
-                <reportElement x="270" y="3" width="75" height="15" uuid="a50fbae2-3544-4396-b335-7148ecdb8560"/>
-                <textElement textAlignment="Right">
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$V{SumVisitCount}]]></textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="166" y="3" width="75" height="15" uuid="4b9d9f3f-d218-4142-b9f0-a5f9c4296e9f"/>
-                <textElement textAlignment="Right">
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$V{SumPatientCount}]]></textFieldExpression>
-            </textField>
-            <staticText>
-                <reportElement x="21" y="4" width="129" height="14" uuid="020210ed-7eb6-46ee-ad0a-e233f4c012ad"/>
-                <textElement textAlignment="Right">
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <text><![CDATA[Totals]]></text>
-            </staticText>
-            <staticText>
-                <reportElement x="21" y="23" width="129" height="14" uuid="27cb2c59-33d7-409d-97e6-b253d5d95b0c"/>
-                <textElement textAlignment="Right">
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <text><![CDATA[Total patients seen:]]></text>
-            </staticText>
-            <textField>
-                <reportElement x="166" y="23" width="75" height="15" uuid="260397a5-33b5-4246-861b-82c1d339ff5b"/>
-                <textElement textAlignment="Right">
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{totalPatientCount}]]></textFieldExpression>
-            </textField>
-            <staticText>
-                <reportElement x="0" y="82" width="535" height="51" uuid="3fde0f89-4281-41ab-9107-9b90986ef5e9"/>
-                <textElement>
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <text><![CDATA[The location is --None-- if there is no location recorded for the visit AND no charges are associated with the visit.
-The percentages in the Patient Count column show the ratio of the location's count to the total number of patients.
-Those in the Visit Count column show the ratio of the location's count to the total number of visits.
-The Total patients seen Percentage is the ratio of the seen count to the active count at the end of the period.]]></text>
-            </staticText>
-            <textField>
-                <reportElement x="166" y="38" width="75" height="15" uuid="9d2a3941-84f4-45e7-9c2c-ef25bbe3dbbd"/>
-                <textElement textAlignment="Right">
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{activePatientsStart}]]></textFieldExpression>
-            </textField>
-            <staticText>
-                <reportElement x="21" y="38" width="129" height="14" uuid="54f27d76-dc70-431a-94f2-29334d0751ac"/>
-                <textElement textAlignment="Right">
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <text><![CDATA[Active patients at start:]]></text>
-            </staticText>
-            <textField>
-                <reportElement x="166" y="52" width="75" height="15" uuid="1a3ae488-49a4-44d4-b7b8-60975c6f7ff7"/>
-                <textElement textAlignment="Right">
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{activePatientsEnd}]]></textFieldExpression>
-            </textField>
-            <staticText>
-                <reportElement x="21" y="52" width="129" height="14" uuid="fec409b9-d52c-424d-a894-7181d50e0f3b"/>
-                <textElement textAlignment="Right">
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <text><![CDATA[Active patients at end:]]></text>
-            </staticText>
-            <textField evaluationTime="Auto" pattern="#,##0%">
-                <reportElement x="241" y="23" width="30" height="15" uuid="ce2bc037-2876-4b83-992d-dd42ae7791d4"/>
-                <textElement textAlignment="Right">
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <textFieldExpression>
-                    <![CDATA[$F{totalPatientCount}.doubleValue()/$F{activePatientsEnd}.doubleValue()]]></textFieldExpression>
-            </textField>
-            <staticText>
-                <reportElement x="21" y="67" width="129" height="14" uuid="8c81ff4f-bc16-4c0b-8fd3-239ef72f1217"/>
-                <textElement textAlignment="Right">
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <text><![CDATA[Increase/Decrease:]]></text>
-            </staticText>
-            <textField>
-                <reportElement x="166" y="67" width="75" height="15" uuid="449546d2-9eaf-47cb-9d73-61d12bd59099"/>
-                <textElement textAlignment="Right">
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{activePatientsEnd}-$F{activePatientsStart}]]></textFieldExpression>
-            </textField>
-            <staticText>
-                <reportElement x="284" y="47" width="251" height="20" uuid="4ff3ce3c-ec68-4616-bfd0-2bfdf16fd7f7">
-                    <printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
-                </reportElement>
-                <textElement textAlignment="Center">
-                    <font size="14" isBold="true"/>
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <text><![CDATA[No Data Found - Check Parameters]]></text>
-            </staticText>
-            <textField evaluationTime="Auto" pattern="#,##0%">
-                <reportElement x="240" y="68" width="30" height="14" uuid="7218e934-7c40-4e9e-81fe-40d9c3997a0d"/>
-                <textElement textAlignment="Right">
-                    <paragraph lineSpacing="Single"/>
-                </textElement>
-                <textFieldExpression>
-                    <![CDATA[($F{activePatientsEnd}.doubleValue()-$F{activePatientsStart}.doubleValue())/$F{activePatientsStart}.doubleValue()]]></textFieldExpression>
-            </textField>
-            <line>
-                <reportElement positionType="Float" x="0" y="133" width="535" height="1"
-                               uuid="6afc9d8b-c34f-4c9d-904d-97e47272c977"/>
-                <graphicElement>
-                    <pen lineStyle="Double"/>
-                </graphicElement>
-            </line>
-        </band>
-    </summary>
+	</queryString>
+	<field name="activePatientsStart" class="java.lang.Long"/>
+	<field name="activePatientsEnd" class="java.lang.Long"/>
+	<field name="totalPatientCount" class="java.lang.Long"/>
+	<field name="patientCount" class="java.lang.Long"/>
+	<field name="visitCount" class="java.lang.Long"/>
+	<field name="location" class="java.lang.String"/>
+	<variable name="SumVisitCount" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{visitCount}]]></variableExpression>
+	</variable>
+	<variable name="SumPatientCount" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{patientCount}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="5"/>
+	</title>
+	<columnHeader>
+		<band height="36">
+			<staticText>
+				<reportElement x="21" y="20" width="145" height="14" uuid="882c375e-986e-4d07-889f-7f4eb93329cb"/>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Location]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="166" y="20" width="75" height="14" uuid="b5b41026-1254-4102-9dab-88f285399006"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Distinct Patients]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="270" y="20" width="75" height="14" uuid="0c3777f4-1cc0-499c-9d1e-a61e2baed5d3"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Visit Count]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="0" width="284" height="19" uuid="c5df7d46-5fd0-40d6-9280-8f658c4ec5cd"/>
+				<textElement>
+					<font size="12" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Visit Counts by Practice Location]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="18" splitType="Stretch">
+			<textField>
+				<reportElement x="180" y="0" width="61" height="15" uuid="3ae3cfa1-6cc9-4035-b4b8-356ca57c49e7"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patientCount}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="21" y="0" width="159" height="15" uuid="fccc98bd-3bcf-4e38-b12f-e79ef3393060"/>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{location}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="270" y="0" width="75" height="15" uuid="fb77476f-95cc-4b93-8e93-5f411ec6ff03"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{visitCount}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="241" y="0" width="30" height="15" uuid="907afd61-c5c8-430b-a1cd-721ba46ea0c6"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patientCount}.doubleValue()/$V{SumPatientCount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="345" y="0" width="30" height="15" uuid="ba2a30dd-abbb-4e56-abe4-7bc92c1fb7da"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{visitCount}.doubleValue()/$V{SumVisitCount}.doubleValue()]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="172">
+			<textField>
+				<reportElement x="270" y="3" width="75" height="15" uuid="a50fbae2-3544-4396-b335-7148ecdb8560"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumVisitCount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="166" y="3" width="75" height="15" uuid="4b9d9f3f-d218-4142-b9f0-a5f9c4296e9f"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumPatientCount}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="21" y="4" width="129" height="14" uuid="020210ed-7eb6-46ee-ad0a-e233f4c012ad"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Totals]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="21" y="23" width="129" height="14" uuid="27cb2c59-33d7-409d-97e6-b253d5d95b0c"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Distinct patients seen:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="166" y="23" width="75" height="15" uuid="260397a5-33b5-4246-861b-82c1d339ff5b"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalPatientCount}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="82" width="535" height="88" uuid="3fde0f89-4281-41ab-9107-9b90986ef5e9"/>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[The percentages in the location columns show the ratio of the location's count to the column total.
+The Distinct patients seen Percentage is the ratio of the seen count to the active count at the end of the period.
+The 'Distinct patients seen' count will be less than the Total of the Distinct Patients column if a given patient is seen at multiple locations.
+A patient is taken to be active at a given date if they have a Date Created prior to or equal to the given date and either have their Active flag set, or have activities after the given date.]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="166" y="38" width="75" height="15" uuid="9d2a3941-84f4-45e7-9c2c-ef25bbe3dbbd"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{activePatientsStart}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="21" y="38" width="129" height="14" uuid="54f27d76-dc70-431a-94f2-29334d0751ac"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Active patients at start:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="166" y="52" width="75" height="15" uuid="1a3ae488-49a4-44d4-b7b8-60975c6f7ff7"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{activePatientsEnd}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="21" y="52" width="129" height="14" uuid="fec409b9-d52c-424d-a894-7181d50e0f3b"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Active patients at end:]]></text>
+			</staticText>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="241" y="23" width="30" height="15" uuid="ce2bc037-2876-4b83-992d-dd42ae7791d4"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalPatientCount}.doubleValue()/$F{activePatientsEnd}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="21" y="67" width="129" height="14" uuid="8c81ff4f-bc16-4c0b-8fd3-239ef72f1217"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Increase/Decrease:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="166" y="67" width="75" height="15" uuid="449546d2-9eaf-47cb-9d73-61d12bd59099"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{activePatientsEnd}-$F{activePatientsStart}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="284" y="47" width="251" height="20" uuid="4ff3ce3c-ec68-4616-bfd0-2bfdf16fd7f7">
+					<printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font size="12" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[No Data Found - Check Parameters]]></text>
+			</staticText>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="240" y="68" width="30" height="14" uuid="7218e934-7c40-4e9e-81fe-40d9c3997a0d"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{activePatientsEnd}.doubleValue()-$F{activePatientsStart}.doubleValue())/$F{activePatientsStart}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement positionType="Float" x="0" y="171" width="535" height="1" uuid="6afc9d8b-c34f-4c9d-904d-97e47272c977"/>
+				<graphicElement>
+					<pen lineStyle="Double"/>
+				</graphicElement>
+			</line>
+		</band>
+	</summary>
 </jasperReport>

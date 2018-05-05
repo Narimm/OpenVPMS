@@ -13,7 +13,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -24,12 +24,19 @@
     <parent>
         <groupId>org.openvpms</groupId>
         <artifactId>openvpms</artifactId>
-        <version>1.9-SNAPSHOT</version>
+        <version>2.0-beta-2-SNAPSHOT</version>
     </parent>
 
     <artifactId>openvpms-archetypes</artifactId>
     <packaging>bundle</packaging>
     <name>OpenVPMS Archetypes</name>
+
+    <!-- ========================================================================== -->
+    <!-- Debugging notes:                                                           -->
+    <!-- . p6spy can be enabled using:                                              -->
+    <!--   -Djdbc.driverClassName=com.p6spy.engine.spy.P6SpyDriver                  -->
+    <!--   -Djdbc.url=jdbc:p6spy:mysql://localhost:3306/openvpms-1_8                -->
+    <!-- ========================================================================== -->
 
     <build>
         <sourceDirectory>src/java</sourceDirectory>
@@ -68,12 +75,6 @@
                 </includes>
             </resource>
             <resource>
-                <directory>${basedir}/src/conf/log4j</directory>
-                <includes>
-                    <include>log4j.properties</include>
-                </includes>
-            </resource>
-            <resource>
                 <directory>${basedir}/src/conf/rules</directory>
                 <includes>
                     <include>rules.xml</include>
@@ -100,6 +101,12 @@
                     <include>*.odt</include>
                 </includes>
             </testResource>
+            <testResource>
+                <directory>${basedir}/src/test/resources</directory>
+                <includes>
+                    <include>*.properties</include>
+                </includes>
+            </testResource>
         </testResources>
         <plugins>
             <plugin>
@@ -108,7 +115,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-RequiredExecutionEnvironment>JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
+                        <Bundle-RequiredExecutionEnvironment>JavaSE-1.7</Bundle-RequiredExecutionEnvironment>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Bundle-Version>${project.version}</Bundle-Version>
                         <Export-Package>org.openvpms.archetype.*;version="${project.version}"</Export-Package>
@@ -116,22 +123,23 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>hibernate3-maven-plugin</artifactId>
-                <version>2.2</version>
+                <groupId>org.openvpms</groupId>
+                <artifactId>openvpms-db-plugin</artifactId>
+                <version>${project.version}</version>
                 <configuration>
-                    <componentProperties>
-                        <drop>true</drop>
-                        <jdk5>true</jdk5>
-                        <configurationfile>target/test-classes/hibernate.cfg.xml</configurationfile>
-                        <skip>${skipTests}</skip>
-                    </componentProperties>
+                    <driver>${build.jdbc.driverClassName}</driver>
+                    <url>${build.jdbc.url}</url>
+                    <username>${build.jdbc.username}</username>
+                    <password>${build.jdbc.password}</password>
+                    <adminUsername>${jdbc.admin.username}</adminUsername>
+                    <adminPassword>${jdbc.admin.password}</adminPassword>
+                    <skip>${skipTests}</skip>
                 </configuration>
                 <executions>
                     <execution>
                         <phase>process-test-classes</phase>
                         <goals>
-                            <goal>hbm2ddl</goal>
+                            <goal>create</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -313,6 +321,11 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

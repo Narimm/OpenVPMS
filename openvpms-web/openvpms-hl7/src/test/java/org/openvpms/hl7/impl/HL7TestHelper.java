@@ -89,13 +89,27 @@ public class HL7TestHelper {
      * @return a new sender
      */
     public static MLLPSender createSender(int port, Entity mapping, String receivingApp, String receivingFacility) {
+        return createSender(port, mapping, "VPMS", "Main Clinic", receivingApp, receivingFacility);
+    }
+
+    /**
+     * Creates an MLLP sender.
+     *
+     * @param port              the port
+     * @param mapping           the mapping
+     * @param receivingApp      the receiving application
+     * @param receivingFacility the receiving facility
+     * @return a new sender
+     */
+    public static MLLPSender createSender(int port, Entity mapping, String sendingApp, String sendingFacility,
+                                          String receivingApp, String receivingFacility) {
         Entity sender = (Entity) TestHelper.create(HL7Archetypes.MLLP_SENDER);
         EntityBean bean = new EntityBean(sender);
         bean.setValue("name", "ZTest MLLP Sender");
         bean.setValue("host", "localhost");
         bean.setValue("port", port);
-        bean.setValue("sendingApplication", "VPMS");
-        bean.setValue("sendingFacility", "Main Clinic");
+        bean.setValue("sendingApplication", sendingApp);
+        bean.setValue("sendingFacility", sendingFacility);
         bean.setValue("receivingApplication", receivingApp);
         bean.setValue("receivingFacility", receivingFacility);
         if (mapping != null) {

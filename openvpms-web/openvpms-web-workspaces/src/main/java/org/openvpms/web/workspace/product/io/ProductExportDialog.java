@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.io;
@@ -49,6 +49,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -89,11 +90,11 @@ public class ProductExportDialog extends BrowserDialog<Product> {
         super(Messages.get("product.export.title"), BUTTONS, false, help);
         setStyleName("ProductImportExportDialog");
         rules = ServiceHelper.getBean(ProductPriceRules.class);
-        taxRules = new TaxRules(context.getContext().getPractice(), ServiceHelper.getArchetypeService(),
-                                ServiceHelper.getLookupService());
-        ProductExportQuery query = new ProductExportQuery(context);
+        taxRules = new TaxRules(context.getContext().getPractice(), ServiceHelper.getArchetypeService()
+        );
+        ProductExportQuery query = new ProductExportQuery(context.getContext());
         PagedProductPricesTableModel model = new PagedProductPricesTableModel();
-        Browser<Product> browser = new DefaultIMObjectTableBrowser<Product>(query, model, context);
+        Browser<Product> browser = new DefaultIMObjectTableBrowser<>(query, model, context);
         init(browser, null);
         setCloseOnSelection(false);
     }
@@ -128,7 +129,7 @@ public class ProductExportDialog extends BrowserDialog<Product> {
         ProductExportQuery query = getQuery();
         ProductWriter exporter = new ProductCSVWriter(ServiceHelper.getArchetypeService(),
                                                       rules, taxRules, ServiceHelper.getBean(DocumentHandlers.class));
-        Iterator<Product> iterator = new ResultSetIterator<Product>(query.query());
+        Iterator<Product> iterator = new ResultSetIterator<>(query.query());
         Document document;
         boolean includeLinkedPrices = query.includeLinkedPrices();
         PricingGroup pricingGroup = query.getPricingGroup();
@@ -171,7 +172,7 @@ public class ProductExportDialog extends BrowserDialog<Product> {
          */
         @Override
         protected List<ProductPrices> convertTo(List<Product> list) {
-            List<ProductPrices> result = new ArrayList<ProductPrices>();
+            List<ProductPrices> result = new ArrayList<>();
             boolean includeLinkedPrices = getQuery().includeLinkedPrices();
             PricingGroup pricingGroup = getQuery().getPricingGroup();
             for (Product product : list) {
@@ -204,14 +205,15 @@ public class ProductExportDialog extends BrowserDialog<Product> {
          */
         private List<ProductPrice> getPrices(Product product, String shortName, boolean includeLinkedPrices,
                                              PricingGroup pricingGroup) {
-            List<ProductPrice> result = new ArrayList<ProductPrice>();
+            List<ProductPrice> result = new ArrayList<>();
             ProductExportQuery query = getQuery();
             ProductExportQuery.Prices prices = query.getPrices();
             if (prices == ProductExportQuery.Prices.CURRENT) {
+                Date now = new Date();
                 if (pricingGroup.isAll()) {
-                    result.addAll(rules.getProductPrices(product, shortName, includeLinkedPrices, pricingGroup));
+                    result.addAll(rules.getProductPrices(product, shortName, now, includeLinkedPrices, pricingGroup));
                 } else {
-                    List<ProductPrice> list = rules.getProductPrices(product, shortName, includeLinkedPrices,
+                    List<ProductPrice> list = rules.getProductPrices(product, shortName, now, includeLinkedPrices,
                                                                      pricingGroup);
                     if (!list.isEmpty()) {
                         result.add(list.get(0));

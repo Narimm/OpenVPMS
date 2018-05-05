@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -56,7 +56,7 @@ public abstract class AbstractEstimateEditorTestCase extends AbstractCustomerCha
                              int highQuantity, BigDecimal lowUnitPrice, BigDecimal highUnitPrice,
                              BigDecimal fixedPrice, BigDecimal lowDiscount, BigDecimal highDiscount,
                              BigDecimal lowTotal, BigDecimal highTotal) {
-        Act item = find(items, product);
+        Act item = find(items, patient, product);
         checkItem(item, patient, product, author, BigDecimal.valueOf(lowQuantity), BigDecimal.valueOf(highQuantity),
                   lowUnitPrice, highUnitPrice, fixedPrice, lowDiscount, highDiscount, lowTotal, highTotal);
     }
@@ -82,7 +82,7 @@ public abstract class AbstractEstimateEditorTestCase extends AbstractCustomerCha
                              BigDecimal highQuantity, BigDecimal lowUnitPrice, BigDecimal highUnitPrice,
                              BigDecimal fixedPrice, BigDecimal lowDiscount, BigDecimal highDiscount,
                              BigDecimal lowTotal, BigDecimal highTotal) {
-        Act item = find(items, product);
+        Act item = find(items, patient, product);
         checkItem(item, patient, product, author, lowQuantity, highQuantity, lowUnitPrice, highUnitPrice, fixedPrice,
                   lowDiscount, highDiscount, lowTotal, highTotal);
     }

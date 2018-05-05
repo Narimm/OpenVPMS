@@ -11,17 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.patient;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.CustomerRules;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -30,11 +28,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.Constraints;
-import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -96,9 +90,19 @@ public class PatientContext {
     private Act weight;
 
     /**
+     * Determines if alerts have been initialised.
+     */
+    private boolean initAlerts = false;
+
+    /**
      * The patient allergies.
      */
     private List<Act> allergies = null;
+
+    /**
+     * Determines if the patient is aggressive.
+     */
+    private boolean aggressive = false;
 
     /**
      * The patient bean.
@@ -109,11 +113,6 @@ public class PatientContext {
      * The customer bean.
      */
     private final IMObjectBean customerBean;
-
-    /**
-     * The archetype service.
-     */
-    private final IArchetypeService service;
 
     /**
      * The lookup service.
@@ -143,7 +142,6 @@ public class PatientContext {
         this.clinician = clinician;
         this.patientRules = patientRules;
         this.customerRules = customerRules;
-        this.service = service;
         this.lookups = lookups;
         patientBean = new IMObjectBean(patient, service);
         customerBean = (customer != null) ? new IMObjectBean(customer, service) : null;
@@ -414,7 +412,7 @@ public class PatientContext {
      * @return the customer address. May be {@code null}
      */
     public Contact getAddress() {
-        return (customer != null) ? customerRules.getContact(customer, ContactArchetypes.LOCATION, "HOME") : null;
+        return (customer != null) ? customerRules.getAddressContact(customer, ContactArchetypes.HOME_PURPOSE) : null;
     }
 
     /**
@@ -423,22 +421,18 @@ public class PatientContext {
      * @return the patient allergies
      */
     public List<Act> getAllergies() {
-        if (allergies == null) {
-            allergies = new ArrayList<>();
-            ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.ALERT);
-            query.add(Constraints.eq("status", ActStatus.IN_PROGRESS));
-            query.add(Constraints.join("patient").add(Constraints.eq("entity", patient)));
-            query.add(Constraints.sort("id"));
-            IMObjectQueryIterator<Act> alerts = new IMObjectQueryIterator<>(query);
-            while (alerts.hasNext()) {
-                Act alert = alerts.next();
-                IMObjectBean bean = new IMObjectBean(alert, service);
-                if ("ALLERGY".equals(bean.getString("alertType"))) {
-                    allergies.add(alert);
-                }
-            }
-        }
+        getAlerts();
         return allergies;
+    }
+
+    /**
+     * Determines if the patient is aggressive.
+     *
+     * @return {@code true} if the patient is aggressive
+     */
+    public boolean isAggressive() {
+        getAlerts();
+        return aggressive;
     }
 
     /**
@@ -447,6 +441,17 @@ public class PatientContext {
     private void getWeightAct() {
         if (weight == null) {
             weight = patientRules.getWeightAct(patient);
+        }
+    }
+
+    /**
+     * Initialises {@link #allergies} and {@link #aggressive} if required.
+     */
+    private void getAlerts() {
+        if (!initAlerts) {
+            allergies = patientRules.getAllergies(patient, new Date());
+            aggressive = patientRules.isAggressive(patient);
+            initAlerts = true;
         }
     }
 

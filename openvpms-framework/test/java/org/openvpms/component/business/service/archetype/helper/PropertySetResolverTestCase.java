@@ -1,41 +1,51 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.business.service.lookup.LookupUtil;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
+
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 
 /**
  * {@link PropertySetResolver} test case.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 @ContextConfiguration("../archetype-service-appcontext.xml")
-public class PropertySetResolverTestCase extends AbstractArchetypeServiceTest {
+public class PropertySetResolverTestCase extends AbstractIMObjectBeanTestCase {
+
+    /**
+     * Thge lookup service.
+     */
+    @Autowired
+    private ILookupService lookups;
 
     /**
      * Tests single-level property resolution.
@@ -45,7 +55,7 @@ public class PropertySetResolverTestCase extends AbstractArchetypeServiceTest {
         ObjectSet set = new ObjectSet();
         set.set("firstName", "J");
         set.set("lastName", "Zoo");
-        PropertySetResolver resolver = new PropertySetResolver(set, getArchetypeService());
+        PropertySetResolver resolver = new PropertySetResolver(set, getArchetypeService(), lookups);
         assertEquals("J", resolver.getObject("firstName"));
         assertEquals("Zoo", resolver.getObject("lastName"));
     }
@@ -61,9 +71,9 @@ public class PropertySetResolverTestCase extends AbstractArchetypeServiceTest {
         ObjectSet set = new ObjectSet();
         set.set("act", act.getAct());
 
-        PropertySetResolver resolver = new PropertySetResolver(set, getArchetypeService());
-        assertEquals("J", resolver.getObject("act.customer.entity.firstName"));
-        assertEquals("Zoo", resolver.getObject("act.customer.entity.lastName"));
+        PropertySetResolver resolver = new PropertySetResolver(set, getArchetypeService(), lookups);
+        assertEquals("Foo", resolver.getObject("act.customer.entity.firstName"));
+        assertEquals("Bar", resolver.getObject("act.customer.entity.lastName"));
 
         assertEquals("Estimation", resolver.getObject("act.displayName"));
         assertEquals("Act Customer",
@@ -82,9 +92,9 @@ public class PropertySetResolverTestCase extends AbstractArchetypeServiceTest {
         Party party = createCustomer();
         ObjectSet set = new ObjectSet();
         set.set("ref", party.getObjectReference());
-        PropertySetResolver resolver = new PropertySetResolver(set, getArchetypeService());
-        assertEquals("J", resolver.getObject("ref.firstName"));
-        assertEquals("Zoo", resolver.getObject("ref.lastName"));
+        PropertySetResolver resolver = new PropertySetResolver(set, getArchetypeService(), lookups);
+        assertEquals("Foo", resolver.getObject("ref.firstName"));
+        assertEquals("Bar", resolver.getObject("ref.lastName"));
         assertEquals("Customer(Person)",
                      resolver.getObject("ref.displayName"));
         assertEquals("party.customerperson",
@@ -99,7 +109,7 @@ public class PropertySetResolverTestCase extends AbstractArchetypeServiceTest {
         ActBean act = createAct("act.customerEstimation");
         ObjectSet set = new ObjectSet();
         set.set("act", act.getAct());
-        PropertySetResolver resolver = new PropertySetResolver(set, getArchetypeService());
+        PropertySetResolver resolver = new PropertySetResolver(set, getArchetypeService(), lookups);
         assertNull(resolver.getObject("act.customer.entity.firstName"));
     }
 
@@ -113,7 +123,7 @@ public class PropertySetResolverTestCase extends AbstractArchetypeServiceTest {
         act.setParticipant("participation.customer", party);
         ObjectSet set = new ObjectSet();
         set.set("act", act.getAct());
-        PropertySetResolver resolver = new PropertySetResolver(set, getArchetypeService());
+        PropertySetResolver resolver = new PropertySetResolver(set, getArchetypeService(), lookups);
 
         // root node followed by invalid node
         try {
@@ -144,6 +154,81 @@ public class PropertySetResolverTestCase extends AbstractArchetypeServiceTest {
     }
 
     /**
+     * Tests lookups.
+     */
+    @Test
+    public void testLookups() {
+        Party patient = (Party) create("party.patientpet");
+        Lookup species = LookupUtil.createLookup(getArchetypeService(), "lookup.species", "CANINE", "Canine");
+        save(species);
+
+        IMObjectBean bean = new IMObjectBean(patient);
+        bean.setValue("species", species.getCode());
+
+        ObjectSet set = new ObjectSet();
+        set.set("patient", patient);
+        PropertySetResolver resolver = new PropertySetResolver(set, getArchetypeService(), lookups);
+
+        assertEquals(species.getCode(), resolver.getObject("patient.species"));
+        assertEquals(species.getCode(), resolver.getObject("patient.species.code"));
+        assertEquals("Canine", resolver.getObject("patient.species.name"));
+        assertEquals(species.getId(), resolver.getObject("patient.species.id"));
+        assertEquals("Species", resolver.getObject("patient.species.displayName"));
+    }
+
+    /**
+     * Tests local lookups.
+     */
+    @Test
+    public void testLocalLookups() {
+        Party party = createCustomer();
+        ActBean act = createAct("act.customerEstimation");
+        act.setParticipant("participation.customer", party);
+        ObjectSet set = new ObjectSet();
+        set.set("act", act.getAct());
+        PropertySetResolver resolver = new PropertySetResolver(set, getArchetypeService(), lookups);
+
+        assertEquals("MR", resolver.getObject("act.customer.entity.title"));
+        assertEquals("MR", resolver.getObject("act.customer.entity.title.code"));
+        assertEquals("Mr", resolver.getObject("act.customer.entity.title.name"));
+    }
+
+    /**
+     * Tests the {@link PropertyResolver#getObjects(String)} method.
+     */
+    @Test
+    public void testGetObjects() {
+        Party customer = createCustomer();
+        Party patient1 = createPatient(customer);
+        Party patient2 = createPatient(customer);
+
+        ActBean act = createAct("act.customerEstimation");
+        act.setNodeParticipant("customer", customer);
+
+        ObjectSet set = new ObjectSet();
+        set.set("string", "Bar");
+        set.set("act", act.getAct());
+        PropertySetResolver resolver = new PropertySetResolver(set, getArchetypeService(), lookups);
+        checkCollection(resolver, "string", "Bar");
+        checkCollection(resolver, "act.customer.entity.title", "MR");
+        checkCollection(resolver, "act.customer.entity.title.code", "MR");
+        checkCollection(resolver, "act.customer.entity.title.name", "Mr");
+        checkCollection(resolver, "act.customer.entity.patients.target", patient1, patient2);
+    }
+
+    /**
+     * Verifies that the {@link PropertySetResolver#getObjects(String)} method returns the expected objects.
+     *
+     * @param resolver the resolver
+     * @param name     the property name
+     * @param expected the expected objects
+     */
+    private void checkCollection(PropertySetResolver resolver, String name, Object... expected) {
+        List<Object> values = resolver.getObjects(name);
+        checkEquals(values, expected);
+    }
+
+    /**
      * Helper to create a new act wrapped in a bean.
      *
      * @param shortName the act short name
@@ -153,20 +238,4 @@ public class PropertySetResolverTestCase extends AbstractArchetypeServiceTest {
         return new ActBean((Act) create(shortName));
     }
 
-    /**
-     * Helper to create and save a customer.
-     *
-     * @return a new customer
-     */
-    private Party createCustomer() {
-        IMObjectBean bean = createBean("party.customerperson");
-        bean.setValue("title", "MR");
-        bean.setValue("firstName", "J");
-        bean.setValue("lastName", "Zoo");
-        Contact contact = (Contact) create("contact.phoneNumber");
-        assertNotNull(contact);
-        bean.addValue("contacts", contact);
-        bean.save();
-        return (Party) bean.getObject();
-    }
 }

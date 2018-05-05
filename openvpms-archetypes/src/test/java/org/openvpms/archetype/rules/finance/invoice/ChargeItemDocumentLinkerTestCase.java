@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.invoice;
@@ -71,8 +71,8 @@ public class ChargeItemDocumentLinkerTestCase extends ArchetypeServiceTest {
     @Test
     public void testSimpleLink() {
         Party patient = TestHelper.createPatient();
-        Entity template1 = createDocumentTemplate();
-        Entity template2 = createDocumentTemplate();
+        Entity template1 = createDocumentTemplate(PatientArchetypes.DOCUMENT_FORM);
+        Entity template2 = createDocumentTemplate(PatientArchetypes.DOCUMENT_LETTER);
         Product product1 = createProduct(template1);
         User author = TestHelper.createUser();
         User clinician = TestHelper.createClinician();
@@ -90,6 +90,7 @@ public class ChargeItemDocumentLinkerTestCase extends ArchetypeServiceTest {
         List<Act> documents = bean.getNodeActs("documents");
         assertEquals(1, documents.size());
         Act document1 = documents.get(0);
+        assertTrue(TypeHelper.isA(document1, PatientArchetypes.DOCUMENT_FORM));
         checkDocument(document1, patient, product1, template1, author, clinician, item);
 
         bean.setParticipant(ProductArchetypes.PRODUCT_PARTICIPATION, product2);
@@ -97,6 +98,7 @@ public class ChargeItemDocumentLinkerTestCase extends ArchetypeServiceTest {
         documents = bean.getNodeActs("documents");
         assertEquals(1, documents.size());
         Act document2 = documents.get(0);
+        assertTrue(TypeHelper.isA(document2, PatientArchetypes.DOCUMENT_LETTER));
         checkDocument(document2, patient, product2, template2, author, clinician, item);
 
         // now test a product with 2 documents
@@ -107,6 +109,8 @@ public class ChargeItemDocumentLinkerTestCase extends ArchetypeServiceTest {
         assertEquals(2, documents.size());
         Act doc3template1 = getDocument(documents, template1);
         Act doc3template2 = getDocument(documents, template2);
+        assertTrue(TypeHelper.isA(doc3template1, PatientArchetypes.DOCUMENT_FORM));
+        assertTrue(TypeHelper.isA(doc3template2, PatientArchetypes.DOCUMENT_LETTER));
         checkDocument(doc3template1, patient, product3, template1, author, clinician, item);
         checkDocument(doc3template2, patient, product3, template2, author, clinician, item);
 
@@ -128,8 +132,8 @@ public class ChargeItemDocumentLinkerTestCase extends ArchetypeServiceTest {
         User clinician2 = TestHelper.createClinician();
         Party patient1 = TestHelper.createPatient();
         Party patient2 = TestHelper.createPatient();
-        Entity template1 = createDocumentTemplate();
-        Entity template2 = createDocumentTemplate();
+        Entity template1 = createDocumentTemplate(PatientArchetypes.DOCUMENT_FORM);
+        Entity template2 = createDocumentTemplate(PatientArchetypes.DOCUMENT_LETTER);
         Product product1 = createProduct(template1);
         Product product2 = createProduct(template2);
 
@@ -200,8 +204,8 @@ public class ChargeItemDocumentLinkerTestCase extends ArchetypeServiceTest {
     @Test
     public void testRecreateDocumentsLinkedToEvent() {
         Party patient = TestHelper.createPatient();
-        Entity template1 = createDocumentTemplate();
-        Entity template2 = createDocumentTemplate();
+        Entity template1 = createDocumentTemplate(PatientArchetypes.DOCUMENT_FORM);
+        Entity template2 = createDocumentTemplate(PatientArchetypes.DOCUMENT_LETTER);
         Product product = createProduct(template1, template2);
         User author = TestHelper.createUser();
         User clinician1 = TestHelper.createClinician();
@@ -270,11 +274,10 @@ public class ChargeItemDocumentLinkerTestCase extends ArchetypeServiceTest {
      */
     private void checkDocument(Act document, Party patient, Product product, Entity template, User author,
                                User clinician, FinancialAct item) {
-        assertTrue(TypeHelper.isA(document, PatientArchetypes.DOCUMENT_FORM));
         // verify the start time is the same as the invoice item start time
         assertEquals(0, DateRules.compareTo(item.getActivityStartTime(), document.getActivityStartTime(), true));
 
-        // check participations
+        // check participants
         ActBean docBean = new ActBean(document);
         assertEquals(patient, docBean.getNodeParticipant("patient"));
         assertEquals(template, docBean.getNodeParticipant("documentTemplate"));
@@ -327,7 +330,7 @@ public class ChargeItemDocumentLinkerTestCase extends ArchetypeServiceTest {
      * @return a new product
      */
     private Product createProduct(Entity... templates) {
-        Product product = (Product) create("product.medication");
+        Product product = (Product) create(ProductArchetypes.MEDICATION);
         EntityBean bean = new EntityBean(product);
         bean.setValue("name", "XProduct");
         for (Entity template : templates) {
@@ -343,13 +346,14 @@ public class ChargeItemDocumentLinkerTestCase extends ArchetypeServiceTest {
     /**
      * Creates and saves a new document template.
      *
+     * @param archetype the document archetype
      * @return a new document template
      */
-    private Entity createDocumentTemplate() {
+    private Entity createDocumentTemplate(String archetype) {
         Entity template = (Entity) create(DocumentArchetypes.DOCUMENT_TEMPLATE);
         EntityBean bean = new EntityBean(template);
         bean.setValue("name", "XDocumentTemplate");
-        bean.setValue("archetype", PatientArchetypes.DOCUMENT_FORM);
+        bean.setValue("archetype", archetype);
         bean.save();
 
         return template;

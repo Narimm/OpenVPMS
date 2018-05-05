@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -19,15 +19,20 @@ package org.openvpms.web.workspace.workflow.scheduling;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.prefs.PreferenceMonitor;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextListener;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workspace.AbstractViewWorkspace;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.component.workspace.CRUDWindowListener;
@@ -71,20 +76,35 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
      */
     private ContextListener locationListener;
 
+    /**
+     * The user preferences.
+     */
+    private final Preferences preferences;
+
+    /**
+     * The scheduling preference group.
+     */
+    private final String preferenceGroup;
+
+    /**
+     * Monitors changes to scheduling preferences.
+     */
+    private final PreferenceMonitor monitor;
 
     /**
      * Constructs a {@code SchedulingWorkspace}.
      * <p/>
      * If no archetypes are supplied, the {@link #setArchetypes} method must before performing any operations.
      *
-     * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId  the workspace localisation identifier
-     * @param archetypes   the archetype that this operates on. May be {@code null}
-     * @param context      the context
+     * @param id              the workspace identifier
+     * @param archetypes      the archetype that this operates on. May be {@code null}
+     * @param context         the context
+     * @param preferences     user preferences
+     * @param preferenceGroup the preference group to monitor for changes
      */
-    public SchedulingWorkspace(String workspacesId, String workspaceId, Archetypes<Entity> archetypes,
-                               Context context) {
-        super(workspacesId, workspaceId, archetypes, context, false);
+    public SchedulingWorkspace(String id, Archetypes<Entity> archetypes, Context context, Preferences preferences,
+                               String preferenceGroup) {
+        super(id, archetypes, context, false);
         locationListener = new ContextListener() {
             public void changed(String key, IMObject value) {
                 if (Context.LOCATION_SHORTNAME.equals(key)) {
@@ -92,6 +112,10 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
                 }
             }
         };
+        this.preferences = preferences;
+        this.preferenceGroup = preferenceGroup;
+        monitor = new PreferenceMonitor(preferences);
+        monitor.add(preferenceGroup);
     }
 
     /**
@@ -114,7 +138,8 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
         if (window != null) {
             Act act = window.getObject();
             CustomerPatientSummaryFactory factory = ServiceHelper.getBean(CustomerPatientSummaryFactory.class);
-            CustomerPatientSummary summary = factory.createCustomerPatientSummary(getContext(), getHelpContext());
+            CustomerPatientSummary summary = factory.createCustomerPatientSummary(getContext(), getHelpContext(),
+                                                                                  preferences);
             return summary.getSummary(act);
         }
         return null;
@@ -127,6 +152,7 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
     public void show() {
         // listen for context change events
         ((GlobalContext) getContext()).addListener(locationListener);
+        checkPreferences();
     }
 
     /**
@@ -135,6 +161,46 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
     @Override
     public void hide() {
         ((GlobalContext) getContext()).removeListener(locationListener);
+    }
+
+    /**
+     * Invoked when user preferences have changed.
+     * <p/>
+     * This updates the workspace if scheduling preferences have changed.
+     */
+    @Override
+    public void preferencesChanged() {
+        checkPreferences();
+    }
+
+    /**
+     * Returns the preferences.
+     *
+     * @return the preferences
+     */
+    protected Preferences getPreferences() {
+        return preferences;
+    }
+
+    /**
+     * Checks preferences, refreshing the view if they have updated.
+     */
+    protected void checkPreferences() {
+        if (monitor.changed()) {
+            Entity object = getObject();
+            IMObjectReference defaultValue = object != null ? object.getObjectReference() : null;
+            IMObjectReference viewRef = preferences.getReference(preferenceGroup, "view", defaultValue);
+            Party location = getContext().getLocation();
+            if (location != null && viewRef != null) {
+                LocationRules rules = ServiceHelper.getBean(LocationRules.class);
+                Entity view = IMObjectHelper.getObject(viewRef, rules.getScheduleViews(location));
+                if (view != null) {
+                    object = view;
+                }
+            }
+            setObject(object);
+
+        }
     }
 
     /**
@@ -167,11 +233,11 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
     /**
      * Returns the default schedule view for the specified practice location.
      *
-     * @param location the practice location
-     * @return the default schedule view, or {@code null} if there is no
-     *         default
+     * @param location    the practice location
+     * @param preferences the user preferences
+     * @return the default schedule view, or {@code null} if there is no default
      */
-    protected abstract Entity getDefaultView(Party location);
+    protected abstract Entity getDefaultView(Party location, Preferences preferences);
 
     /**
      * Determines if the workspace should be refreshed.
@@ -386,11 +452,11 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
      */
     protected void doLayout(Component container) {
         Entity latest = getLatest();
-        if (latest != getObject()) {
-            setObject(latest);
-        } else if (browser == null) {
+        if (browser == null || !ObjectUtils.equals(location, getContext().getLocation())) {
             layoutWorkspace();
             latest = browser.getScheduleView();
+            setObject(latest);
+        } else if (latest != getObject()) {
             setObject(latest);
         } else {
             browser.query();
@@ -412,7 +478,7 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
         if (newLocation == null) {
             setObject(null);
         } else if (!ObjectUtils.equals(location, newLocation)) {
-            setObject(getDefaultView(newLocation));
+            setObject(getDefaultView(newLocation, preferences));
         }
     }
 

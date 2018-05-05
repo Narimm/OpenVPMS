@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.doc;
 
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 
 import java.io.InputStream;
 
@@ -71,6 +71,16 @@ public interface DocumentHandler {
      * @throws OpenVPMSException         for any other error
      */
     Document create(String name, InputStream stream, String mimeType, int size);
+
+    /**
+     * Updates a {@link Document} from a stream.
+     *
+     * @param document the document to update
+     * @param stream   a stream representing the new document content
+     * @param mimeType the mime type of the document. May be {@code null}
+     * @param size     the size of stream, or {@code -1} if the size is not known
+     */
+    void update(Document document, InputStream stream, String mimeType, int size);
 
     /**
      * Returns the document content as a stream.

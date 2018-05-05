@@ -11,30 +11,39 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
 
+import nextapp.echo2.app.event.WindowPaneEvent;
 import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
+import org.openvpms.smartflow.client.FlowSheetException;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.HospitalizationService;
+import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.InformationTask;
-import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.Tasks;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
+import org.openvpms.web.echo.error.ErrorHandler;
+import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.patient.visit.FlowSheetEditDialog;
 
 /**
  * Creates a new flow sheet.
@@ -74,6 +83,11 @@ public class NewFlowSheetTask extends Tasks {
     private final FlowSheetServiceFactory factory;
 
     /**
+     * If {@code false} don't display a note if a hospitalisation already exists.
+     */
+    private final boolean ignoreExisting;
+
+    /**
      * The patient context.
      */
     private PatientContext patientContext;
@@ -82,11 +96,6 @@ public class NewFlowSheetTask extends Tasks {
      * The patient visit.
      */
     private Act visit;
-
-    /**
-     * If {@code false} don't display a note if a hospitalisation already exists.
-     */
-    private final boolean ignoreExisting;
 
     /**
      * The hospitalisation service.
@@ -119,8 +128,9 @@ public class NewFlowSheetTask extends Tasks {
      *
      * @param act            the appointment/task
      * @param visit          the patient visit. May be {@code null}
-     * @param location       the practice location
      * @param ignoreExisting if {@code true}, ignore any existing hospitalisation, otherwise display a note
+     * @param location       the practice location
+     * @param factory        the FlowSheet service factory
      * @param help           the help context
      */
     public NewFlowSheetTask(Act act, Act visit, boolean ignoreExisting, Party location, FlowSheetServiceFactory factory,
@@ -155,7 +165,7 @@ public class NewFlowSheetTask extends Tasks {
                 context.setLocation(location);
                 context.setPatient(patient);
                 context.addObject(visit);
-                client = factory.getHospitalisationService(location);
+                client = factory.getHospitalizationService(location);
                 patientContext = getPatientContext(visit);
                 if (!client.exists(patientContext)) {
                     Weight weight = patientContext.getWeight();
@@ -195,16 +205,28 @@ public class NewFlowSheetTask extends Tasks {
         return contextFactory.createContext(patient, customer, visit, location, clinician);
     }
 
-    private class AddFlowSheet extends SynchronousTask {
+    private class AddFlowSheet extends AbstractTask {
 
         /**
-         * Executes the task.
+         * The appointment rules.
+         */
+        private final AppointmentRules rules;
+
+        /**
+         * Constructs an {@link AddFlowSheet}.
+         */
+        public AddFlowSheet() {
+            rules = ServiceHelper.getBean(AppointmentRules.class);
+        }
+
+        /**
+         * Starts the task.
          *
          * @param context the task context
          * @throws OpenVPMSException for any error
          */
         @Override
-        public void execute(TaskContext context) {
+        public void start(TaskContext context) {
             if (patientContext == null) {
                 patientContext = getPatientContext(visit);
             }
@@ -213,8 +235,69 @@ public class NewFlowSheetTask extends Tasks {
                 // no weight entered
                 notifyCancelled();
             } else {
-                client.add(patientContext);
+                final FlowSheetEditDialog dialog = new FlowSheetEditDialog(factory, location, -1, null, getDays(),
+                                                                           false);
+                dialog.addWindowPaneListener(new PopupDialogListener() {
+                    @Override
+                    public void onOK() {
+                        int days = dialog.getExpectedStay();
+                        int departmentId = dialog.getDepartmentId();
+                        String template = dialog.getTemplate();
+                        try {
+                            client.add(patientContext, days, departmentId, template);
+                            notifyCompleted();
+                        } catch (FlowSheetException exception) {
+                            // want to display the SFS exception, not the root cause
+                            ErrorHandler.getInstance().error(exception.getMessage(), exception,
+                                                             new WindowPaneListener() {
+                                                                 @Override
+                                                                 public void onClose(WindowPaneEvent event) {
+                                                                     notifyCancelled();
+                                                                 }
+                                                             });
+                        } catch (Exception exception) {
+                            notifyCancelledOnError(exception);
+                        }
+                    }
+
+                    @Override
+                    public void onAction(String action) {
+                        notifyCancelled();
+                    }
+                });
+                dialog.show();
             }
+        }
+
+        /**
+         * Returns the estimated no. of days stay, based on the current appointment.
+         *
+         * @return the estimated days stay
+         */
+        protected int getDays() {
+            int days = 1;
+            Act appointment = getAppointment();
+            if (appointment != null) {
+                days = rules.getBoardingDays(appointment);
+            }
+            return days;
+        }
+
+        /**
+         * Returns the current appointment.
+         *
+         * @return the current appointment. May be {@code null}
+         */
+        private Act getAppointment() {
+            Act appointment = TypeHelper.isA(act, ScheduleArchetypes.APPOINTMENT) ? act : null;
+            if (appointment == null) {
+                ActBean bean = new ActBean(act); // its a task
+                appointment = (Act) bean.getNodeSourceObject("appointments");
+            }
+            if (appointment == null) {
+                appointment = rules.getActiveAppointment(patient);
+            }
+            return appointment;
         }
     }
 }

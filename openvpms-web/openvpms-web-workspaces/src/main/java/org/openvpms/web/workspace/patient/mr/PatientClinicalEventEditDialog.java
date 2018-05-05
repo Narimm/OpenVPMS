@@ -11,13 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.patient.mr;
 
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -27,7 +27,9 @@ import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,8 +90,9 @@ public class PatientClinicalEventEditDialog extends EditDialog {
                 Iterable<Act> acts = new ActHierarchyIterator<Act>(objects);
                 DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(PatientArchetypes.CLINICAL_EVENT,
                                                                                      context);
-                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, locator, context);
-                IMPrinter<Act> interactive = new InteractiveIMPrinter<Act>(printer, context, getHelpContext());
+                ReporterFactory factory = ServiceHelper.getBean(ReporterFactory.class);
+                IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<>(acts, locator, context, factory);
+                IMPrinter<Act> interactive = new InteractiveIMPrinter<>(printer, context, getHelpContext());
                 interactive.print();
             } catch (OpenVPMSException exception) {
                 ErrorHelper.show(exception);

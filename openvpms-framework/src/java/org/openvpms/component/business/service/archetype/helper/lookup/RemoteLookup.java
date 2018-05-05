@@ -11,18 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper.lookup;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.archetype.AssertionDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,28 +58,32 @@ public class RemoteLookup extends AbstractLookupAssertion {
     public static final String TYPE = "lookup"; // NON-NLS
 
     /**
+     * The node descriptor.
+     */
+    private final NodeDescriptor descriptor;
+
+    /**
      * The lookup shortname.
      */
-    private String source;
+    private final String source;
 
 
     /**
-     * Constructs a new <code>RemoteLookup</code>.
+     * Constructs a {@link RemoteLookup}.
      *
+     * @param descriptor    the node descriptor
      * @param assertion     the assertion descriptor
      * @param service       the archetype service
      * @param lookupService the lookup service
      */
-    @SuppressWarnings("HardCodedStringLiteral")
-    public RemoteLookup(AssertionDescriptor assertion,
-                        IArchetypeService service,
+    public RemoteLookup(NodeDescriptor descriptor, AssertionDescriptor assertion, IArchetypeService service,
                         ILookupService lookupService) {
         super(assertion, TYPE, service, lookupService);
+        this.descriptor = descriptor;
         source = getProperty("source");
         if (StringUtils.isEmpty(source)) {
             throw new LookupHelperException(
-                    LookupHelperException.ErrorCode.SourceNotSpecified,
-                    new Object[]{assertion.getName(), "lookup"});
+                    LookupHelperException.ErrorCode.SourceNotSpecified, new Object[]{assertion.getName(), "lookup"});
         }
     }
 
@@ -95,30 +101,59 @@ public class RemoteLookup extends AbstractLookupAssertion {
      *
      * @return a list of lookups
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws LookupHelperException     if this method is unsupported by the
-     *                                   lookup type
+     * @throws LookupHelperException     if this method is unsupported by the lookup type
      */
     public List<Lookup> getLookups() {
         Collection<Lookup> lookups = getLookupService().getLookups(source);
-        return new ArrayList<Lookup>(lookups);
+        return new ArrayList<>(lookups);
+    }
+
+    /**
+     * Returns the lookups for this assertion.
+     *
+     * @param context the context
+     * @return a list of lookups
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    @Override
+    public Collection<Lookup> getLookups(IMObject context) {
+        Collection<Lookup> lookups = super.getLookups(context);
+        Object value = descriptor.getValue(context);
+        String code = (value instanceof String) ? (String) value : null;
+        if (code != null) {
+            // if the code refers to an inactive lookup, ensure it is included
+            boolean found = false;
+            for (Lookup lookup : lookups) {
+                if (code.equals(lookup.getCode())) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                Lookup lookup = getLookup(code);
+                if (lookup != null) {
+                    lookups.add(lookup);
+                }
+            }
+        }
+        return lookups;
     }
 
     /**
      * Returns the lookup with the specified code.
      *
-     * @return the lookup matching <code>code</code>, or <code>null</code> if
-     *         none is found
+     * @return the lookup matching {@code code}, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
     public Lookup getLookup(String code) {
-        return getLookupService().getLookup(source, code);
+        return getLookupService().getLookup(source, code, false);
     }
 
     /**
      * Returns the default lookup.
      *
-     * @return the default lookup or <tt>null</tt> if there is no default
+     * @return the default lookup or {@code null} if there is no default
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Override

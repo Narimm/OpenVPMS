@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -21,6 +21,7 @@ import org.apache.commons.collections4.Predicate;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.ErrorListener;
@@ -55,13 +56,13 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
     /**
      * The set of edited objects.
      */
-    private final Set<IMObject> edited = new HashSet<IMObject>();
+    private final Set<IMObject> edited = new HashSet<>();
 
     /**
      * The editors. Where present, these will be responsible for saving/removing
      * the associated object.
      */
-    private Map<IMObject, IMObjectEditor> editors = new HashMap<IMObject, IMObjectEditor>();
+    private Map<IMObject, IMObjectEditor> editors = new HashMap<>();
 
     /**
      * Indicates if any object has been saved.
@@ -147,7 +148,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
 
     /**
      * Returns the editors.
-     * <p/>
+     * <p>
      * There may be fewer editors than there are objects in the collection,
      * as objects may not have an associated editor.
      *
@@ -252,15 +253,10 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
 
     /**
      * Saves any edits.
-     *
-     * @return {@code true} if the save was successful
      */
-    public boolean save() {
-        boolean saved = doSave();
-        if (saved) {
-            clearModified();
-        }
-        return saved;
+    public void save() {
+        doSave();
+        clearModified();
     }
 
     /**
@@ -285,7 +281,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
         List values = property.getValues();
         int size = values.size();
         if (size != 0) {
-            objects = new ArrayList<T>();
+            objects = new ArrayList<>();
             for (Object value : values) {
                 objects.add((T) value);
             }
@@ -303,7 +299,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
         List<T> result;
         List<T> objects = getObjects();
         if (!objects.isEmpty()) {
-            result = new ArrayList<T>();
+            result = new ArrayList<>();
             CollectionUtils.select(objects, predicate, result);
         } else {
             result = Collections.emptyList();
@@ -331,7 +327,7 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
 
     /**
      * Registers a handler to be notified to remove an object from the collection.
-     * <p/>
+     * <p>
      * The handler is only invoked when the collection is saved. It takes on the responsibility of object removal.
      *
      * @param handler the handler. May be {@code null}
@@ -361,17 +357,34 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
         boolean result = validator.validate(property);
         IArchetypeService service = ServiceHelper.getArchetypeService();
         for (IMObject object : getObjects()) {
-            IMObjectEditor editor = getEditor(object);
-            if (editor != null) {
-                if (!validator.validate(editor)) {
-                    result = false;
-                }
-            } else {
-                List<ValidatorError> errors = ValidationHelper.validate(object, service);
-                if (errors != null) {
-                    validator.add(property, errors);
-                    result = false;
-                }
+            if (!doValidation(object, validator, service)) {
+                result = false;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Validates an object.
+     *
+     * @param object    the object to validate
+     * @param validator the  validator
+     * @param service   the archetype service
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    protected boolean doValidation(IMObject object, Validator validator, IArchetypeService service) {
+        boolean result = true;
+        IMObjectEditor editor = getEditor(object);
+        if (editor != null) {
+            if (!validator.validate(editor)) {
+                result = false;
+            }
+        } else {
+            List<ValidatorError> errors = ValidationHelper.validate(object, service);
+            if (errors != null) {
+                validator.add(property, errors);
+                result = false;
             }
         }
         return result;
@@ -395,35 +408,36 @@ public abstract class AbstractCollectionPropertyEditor extends AbstractModifiabl
     /**
      * Saves the collection.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
-    protected boolean doSave() {
+    protected void doSave() {
         saved = false;
         if (!edited.isEmpty() || !editors.isEmpty()) {
             for (IMObjectEditor editor : editors.values()) {
-                boolean result = editor.save();
-                if (result) {
-                    edited.remove(editor.getObject());
-                    saved = true;
-                } else {
-                    return false;
-                }
+                editor.save();
+                edited.remove(editor.getObject());
+                saved = true;
             }
 
             // now save objects with no associated editor
             IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
             IMObject[] edited = this.edited.toArray(new IMObject[this.edited.size()]);
             for (IMObject object : edited) {
-                boolean result = SaveHelper.save(object, service);
-                if (result) {
-                    this.edited.remove(object);
-                    saved = true;
-                } else {
-                    return false;
-                }
+                save(object, service);
+                this.edited.remove(object);
+                saved = true;
             }
         }
-        return true;
+    }
+
+    /**
+     * Saves an object.
+     *
+     * @param object  the object to save
+     * @param service the archetype service
+     */
+    protected void save(IMObject object, IArchetypeService service) {
+        service.save(object);
     }
 
     /**

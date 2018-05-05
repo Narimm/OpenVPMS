@@ -1,30 +1,28 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.component.business.dao.hibernate.im.lookup;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.datatypes.property.NamedProperty;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.archetype.AssertionDescriptor;
+import org.openvpms.component.model.archetype.NamedProperty;
 
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -36,8 +34,7 @@ import java.util.Set;
 /**
  * Helper to determine which node descriptors refer to a lookup.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class LookupUsageFinder {
 
@@ -62,7 +59,7 @@ class LookupUsageFinder {
      * @return a map of the node descriptors and their corresponding archetypes
      */
     public Map<NodeDescriptor, ArchetypeDescriptor> getCodeReferences(String shortName) {
-        Map<NodeDescriptor, ArchetypeDescriptor> result = new HashMap<NodeDescriptor, ArchetypeDescriptor>();
+        Map<NodeDescriptor, ArchetypeDescriptor> result = new HashMap<>();
         ArchetypeId id = new ArchetypeId(shortName);
         for (ArchetypeDescriptor archetype : archetypes.getArchetypeDescriptors()) {
             if (!TypeHelper.isA(archetype.getType(), shortName)) {
@@ -140,7 +137,7 @@ class LookupUsageFinder {
      *          for any error
      */
     private String[] getShortNames(String[] shortNames) {
-        Set<String> result = new LinkedHashSet<String>();
+        Set<String> result = new LinkedHashSet<>();
         for (String shortName : shortNames) {
             List<String> matches = archetypes.getArchetypeShortNames(shortName, false);
             result.addAll(matches);

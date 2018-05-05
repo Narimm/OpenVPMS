@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
@@ -22,17 +22,16 @@ import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.model.act.ActRelationship;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -84,12 +83,16 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
         Party person = createPerson("MR", "Jim", "Alateras");
         save(person);
         Act act = createSimpleAct("study", "inprogress");
+        act.setStatus2("secondary status");
         Participation participation = createSimpleParticipation("studyParticipation", person, act);
         act.addParticipation(participation);
         save(act);
 
         Act act1 = (Act) get(act.getObjectReference());
         assertEquals(act1, act);
+        assertEquals("study", act1.getName());
+        assertEquals("inprogress", act1.getStatus());
+        assertEquals("secondary status", act1.getStatus2());
     }
 
     /**
@@ -240,7 +243,7 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
     }
 
     /**
-     * Verifies that the {@link IArchetypeService#save(Collection)}
+     * Verifies that the {@link IArchetypeService#save(Collection<IMObject>)}
      * method can be used to save 2 or more acts that reference the same
      * ActRelationship.
      *
@@ -291,7 +294,7 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
     }
 
     /**
-     * Verifies that the {@link IArchetypeService#save(Collection)}
+     * Verifies that the {@link IArchetypeService#save(Collection<IMObject>)}
      * method and {@link IArchetypeService#save(IMObject) method can be used
      * to save the same object.
      *
@@ -381,7 +384,7 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
 
     /**
      * Verifies that saved but uncommitted acts can be resolved using
-     * {@link IArchetypeService#get(IMObjectReference)} in a transaction,
+     * {@link IArchetypeService#get(org.openvpms.component.model.object.Reference)} in a transaction,
      * even if an identifier hasn't been assigned.
      */
     @Test

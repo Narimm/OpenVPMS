@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -26,13 +26,14 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
-import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.edit.AlertManager;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditorSaver;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.IMObjectViewer;
-import org.openvpms.web.component.property.DefaultValidator;
-import org.openvpms.web.component.property.ValidationHelper;
-import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.workspace.AbstractCRUDWindow;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
@@ -43,7 +44,8 @@ import org.openvpms.web.workspace.customer.charge.OrderChargeManager;
 import org.openvpms.web.workspace.customer.order.OrderCharger;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
+
+import java.util.List;
 
 
 /**
@@ -103,6 +105,10 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
      */
     private boolean autoChargeOrders = true;
 
+    /**
+     * The alert manager.
+     */
+    private final AlertManager alerts;
 
     /**
      * Constructs a {@link VisitChargeCRUDWindow}.
@@ -118,7 +124,8 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
         OrderRules rules = ServiceHelper.getBean(OrderRules.class);
         OrderCharger charger = new OrderCharger(context.getCustomer(), context.getPatient(), rules, context,
                                                 help.subtopic("order"));
-        manager = new OrderChargeManager(charger, container);
+        alerts = new AlertManager(container, 2);
+        manager = new OrderChargeManager(charger, alerts.getListener());
     }
 
     /**
@@ -149,22 +156,40 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
     @Override
     public void setObject(FinancialAct object) {
         container.removeAll();
+        if (editor != null) {
+            editor.setAddItemListener(null);
+        }
         if (object != null) {
+            List<Selection> path = (editor != null) ? editor.getSelectionPath() : null;
             posted = ActStatus.POSTED.equals(object.getStatus());
             if (posted) {
                 IMObjectViewer viewer = new IMObjectViewer(object, new DefaultLayoutContext(getContext(),
                                                                                             getHelpContext()));
                 container.add(viewer.getComponent());
+                if (path != null) {
+                    viewer.setSelectionPath(path);
+                }
                 editor = null;
             } else {
                 HelpContext edit = createEditTopic(object);
                 editor = createVisitChargeEditor(object, event, createLayoutContext(edit));
-                manager.clear();
+
+                editor.setAlertListener(alerts.getListener());
+                editor.setAddItemListener(new Runnable() {
+                    @Override
+                    public void run() {
+                        autoSave();
+                    }
+                });
                 container.add(editor.getComponent());
+                if (path != null) {
+                    editor.setSelectionPath(path);
+                }
             }
         } else {
             editor = null;
         }
+        manager.clear();
         super.setObject(object);
     }
 
@@ -207,32 +232,13 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
     /**
      * Saves the invoice.
      *
-     * @return {@code true} if the invoice was saved
+     * @return {@code true} if the invoice was saved, or no save was required.
      */
     public boolean save() {
-        boolean result;
-        if (editor != null && !posted) {
-            Validator validator = new DefaultValidator();
-            if (editor.validate(validator)) {
-                result = SaveHelper.save(editor, new TransactionCallback<Boolean>() {
-                    @Override
-                    public Boolean doInTransaction(TransactionStatus status) {
-                        return manager.save();
-                    }
-                });
-                if (result) {
-                    manager.clear();
-                }
-                posted = ActStatus.POSTED.equals(getObject().getStatus());
-            } else {
-                result = false;
-                ValidationHelper.showError(validator);
-            }
-        } else {
-            result = true;
-        }
+        boolean saved;
+        saved = !(editor != null && !posted) || doSave();
         manager.check();
-        return result;
+        return saved;
     }
 
     /**
@@ -301,6 +307,35 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
     }
 
     /**
+     * Saves the invoice.
+     *
+     * @return {@code true} if the invoice was saved
+     */
+    protected boolean doSave() {
+        boolean saved;
+        IMObjectEditorSaver saver = new IMObjectEditorSaver() {
+
+            @Override
+            protected void save(IMObjectEditor editor, TransactionStatus status) {
+                super.save(editor, status);
+                manager.save();
+            }
+
+            @Override
+            protected boolean reload(IMObjectEditor editor) {
+                FinancialAct act = (FinancialAct) IMObjectHelper.reload(editor.getObject());
+                setObject(act);
+                return act != null;
+            }
+        };
+        saved = saver.save(editor);
+        manager.clear();
+        FinancialAct object = getObject();
+        posted = object != null && ActStatus.POSTED.equals(getObject().getStatus());
+        return saved;
+    }
+
+    /**
      * Lays out the component.
      *
      * @return the component
@@ -351,4 +386,15 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
         }
     }
 
+    /**
+     * Auto save the invoice if it is valid, isn't new and isn't POSTED.
+     */
+    protected void autoSave() {
+        FinancialAct object = editor.getObject();
+        if (!object.isNew() && !ActStatus.POSTED.equals(editor.getStatus())) {
+            if (editor.isValid()) {
+                save();
+            }
+        }
+    }
 }

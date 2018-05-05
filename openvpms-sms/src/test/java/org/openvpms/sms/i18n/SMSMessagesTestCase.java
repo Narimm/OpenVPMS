@@ -1,26 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.sms.i18n;
 
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.i18n.Message;
+import org.openvpms.component.i18n.Message;
 
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -33,8 +31,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Tests the {@link SMSMessages} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class SMSMessagesTestCase {
 
@@ -43,8 +40,8 @@ public class SMSMessagesTestCase {
      */
     @Test
     public void testCoverage() {
-        Set<String> messages = new HashSet<String>();
-        Set<String> tests = new HashSet<String>();
+        Set<String> messages = new HashSet<>();
+        Set<String> tests = new HashSet<>();
         for (Method method : SMSMessages.class.getMethods()) {
             if (method.getReturnType() == Message.class) {
                 messages.add(method.getName());

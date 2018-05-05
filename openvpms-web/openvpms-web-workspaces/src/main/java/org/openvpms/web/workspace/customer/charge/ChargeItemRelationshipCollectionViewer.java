@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -19,8 +19,9 @@ package org.openvpms.web.workspace.customer.charge;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.app.UserPreferences;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DelegatingIMTableModel;
 import org.openvpms.web.component.im.table.IMTableModel;
@@ -31,7 +32,6 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.CheckBoxFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -75,10 +75,10 @@ public class ChargeItemRelationshipCollectionViewer extends ActRelationshipColle
         Row row = RowFactory.create(Styles.CELL_SPACING);
 
         // TODO - this largely duplicates code from AbstractChargeItemRelationshipCollectionEditor
-        final UserPreferences preferences = ServiceHelper.getPreferences();
-        boolean showBatch = preferences.getShowBatchDuringCharging();
-        boolean showTemplate = preferences.getShowTemplateDuringCharging();
-        boolean showProductType = preferences.getShowProductTypeDuringCharging();
+        final Preferences prefs = getLayoutContext().getPreferences();
+        boolean showBatch = prefs.getBoolean(PreferenceArchetypes.CHARGE, "showBatch", false);
+        boolean showTemplate = prefs.getBoolean(PreferenceArchetypes.CHARGE, "showTemplate", false);
+        boolean showProductType = prefs.getBoolean(PreferenceArchetypes.CHARGE, "showProductType", false);
 
         ChargeItemTableModel model = getModel();
         if (model != null) {
@@ -88,8 +88,8 @@ public class ChargeItemRelationshipCollectionViewer extends ActRelationshipColle
                     @Override
                     public void onAction(ActionEvent event) {
                         boolean selected = batch.isSelected();
-                        preferences.setShowBatchDuringCharging(selected);
-                        getModel().setShowBatch(preferences.getShowBatchDuringCharging());
+                        prefs.setPreference(PreferenceArchetypes.CHARGE, "showBatch", selected);
+                        getModel().setShowBatch(prefs.getBoolean(PreferenceArchetypes.CHARGE, "showBatch", false));
                     }
                 });
                 row.add(batch);
@@ -101,7 +101,7 @@ public class ChargeItemRelationshipCollectionViewer extends ActRelationshipColle
                 @Override
                 public void onAction(ActionEvent event) {
                     boolean selected = template.isSelected();
-                    preferences.setShowTemplateDuringCharging(selected);
+                    prefs.setPreference(PreferenceArchetypes.CHARGE, "showTemplate", selected);
                     getModel().setShowTemplate(selected);
                 }
             });
@@ -109,7 +109,7 @@ public class ChargeItemRelationshipCollectionViewer extends ActRelationshipColle
                 @Override
                 public void onAction(ActionEvent event) {
                     boolean selected = productType.isSelected();
-                    preferences.setShowProductTypeDuringCharging(selected);
+                    prefs.setPreference(PreferenceArchetypes.CHARGE, "showProductType", selected);
                     getModel().setShowProductType(selected);
                 }
             });

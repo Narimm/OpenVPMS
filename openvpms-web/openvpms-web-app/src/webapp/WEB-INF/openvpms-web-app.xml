@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -25,8 +25,9 @@
 
     <bean id="macros" class="org.openvpms.macro.impl.LookupMacros">
         <constructor-arg ref="lookupService"/>
-        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="reportFactory"/>
+        <constructor-arg ref="functionsFactory"/>
     </bean>
 
     <!-- ================================================================== -->
@@ -39,7 +40,23 @@
     <!-- ================================================================== -->
     <!--                        EMAIL                                       -->
     <!-- ================================================================== -->
-    <bean id="mailSender" class="org.openvpms.web.component.service.MailService" scope="session"/>
+    <bean id="mailSender" class="org.openvpms.web.component.service.CurrentLocationMailService" scope="session">
+        <constructor-arg ref="practiceService"/>
+        <constructor-arg ref="locationRules"/>
+
+        <!-- sets the timeout for establishing a connection, in seconds. Use 0 for the default timeout -->
+        <property name="connectionTimeout" value="20"/>
+
+        <!-- sets the timeout for sending a message, in seconds. Use 0 for the default timeout -->
+        <property name="timeout" value="60"/>
+
+        <!-- Set the following to "true" to turn on JavaMail debugging output -->
+        <!-- The debugAuth flag includes protocol authentication commands in  -->
+        <!-- the debug output (including usernames and passwords) and may not -->
+        <!-- be supported in all JavaMail implementations                     -->
+        <property name="debug" value="false"/>
+        <property name="debugAuth" value="false"/>
+    </bean>
 
     <!-- ================================================================== -->
     <!--                        APPLICATION                                 -->
@@ -70,7 +87,12 @@
 
     <bean id="browserStates" class="org.openvpms.web.component.im.query.BrowserStates" scope="session"/>
 
-    <bean id="preferences" class="org.openvpms.web.component.app.UserPreferences" scope="session"/>
+    <bean class="org.openvpms.web.component.help.HelpTopics"/>
+
+    <bean id="preferences" class="org.openvpms.web.component.prefs.UserPreferences" scope="session">
+        <constructor-arg ref="preferenceService"/>
+        <constructor-arg ref="practiceService"/>
+    </bean>
 
     <bean id="messageMonitor" class="org.openvpms.web.workspace.workflow.messaging.MessageMonitor">
         <constructor-arg ref="archetypeRuleService"/>
@@ -117,11 +139,118 @@
         <constructor-arg value="file:c:\tmp"/>
         -->
     </bean>
+
+    <bean id="scheduleColours" class="org.openvpms.web.workspace.workflow.scheduling.ScheduleColours">
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="fileNameFormatter" class="org.openvpms.web.component.im.doc.FileNameFormatter">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="patientRules"/>
+    </bean>
+
     <!-- ================================================================== -->
     <!--                        FACTORIES                                   -->
     <!-- ================================================================== -->
     <bean id="viewLayoutStrategyFactory" class="org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory"/>
-    <bean id="editorFactory" class="org.openvpms.web.component.im.edit.IMObjectEditorFactory"/>
+    <bean id="editorFactory" class="org.openvpms.web.component.im.edit.IMObjectEditorFactory">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
 
     <bean id="reminderGeneratorFactory" class="org.openvpms.web.workspace.reporting.reminder.ReminderGeneratorFactory"/>
+
+    <bean class="org.openvpms.web.component.mail.MailDialogFactory"/>
+
+    <bean id="mailerFactory" class="org.openvpms.web.workspace.customer.communication.LoggingMailerFactory">
+        <constructor-arg ref="documentHandlers"/>
+        <constructor-arg ref="communicationLogger"/>
+        <constructor-arg ref="practiceService"/>
+        <constructor-arg ref="archetypeRuleService"/>
+    </bean>
+
+    <bean id="reporterFactory" class="org.openvpms.web.component.im.report.ReporterFactory">
+        <constructor-arg ref="reportFactory"/>
+        <constructor-arg ref="fileNameFormatter"/>
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="documentConverter"/>
+    </bean>
+
+    <bean id="imPrinterFactory" class="org.openvpms.web.component.im.print.IMPrinterFactory">
+        <constructor-arg ref="reporterFactory"/>
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
+    <bean id="documentGeneratorFactory" class="org.openvpms.web.component.im.doc.DocumentGeneratorFactory">
+        <constructor-arg ref="fileNameFormatter"/>
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="lookupService"/>
+    </bean>
+
+    <bean id="deletionHandlerFactory" class="org.openvpms.web.component.im.delete.IMObjectDeletionHandlerFactory">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
+    <bean id="confirmingDeleter" class="org.openvpms.web.component.im.delete.ConfirmingDeleter">
+        <constructor-arg ref="deletionHandlerFactory"/>
+    </bean>
+
+    <!-- ================================================================== -->
+    <!--                        SMS                                         -->
+    <!-- ================================================================== -->
+    <bean id="smsService" class="org.openvpms.web.workspace.customer.communication.LoggingSMSService">
+        <constructor-arg ref="smsConnectionFactory"/>
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="communicationLogger"/>
+        <constructor-arg ref="practiceService"/>
+    </bean>
+
+    <bean id="smsTemplateEvaluator" class="org.openvpms.web.component.im.sms.SMSTemplateEvaluator">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="macros"/>
+    </bean>
+
+    <bean id="communicationLogger" class="org.openvpms.web.workspace.customer.communication.CommunicationLogger">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="userRules"/>
+    </bean>
+
+    <bean id="reminderSMSEvaluator" class="org.openvpms.web.workspace.reporting.reminder.ReminderSMSEvaluator">
+        <constructor-arg ref="smsTemplateEvaluator"/>
+    </bean>
+
+    <bean id="appointmentReminderEvaluator"
+          class="org.openvpms.web.workspace.workflow.appointment.reminder.AppointmentReminderEvaluator">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="smsTemplateEvaluator"/>
+    </bean>
+
+    <!-- =========================================================================================================== -->
+    <!-- Email templates                                                                                             -->
+    <!-- =========================================================================================================== -->
+    <bean id="emailTemplateEvaluator" class="org.openvpms.web.component.mail.EmailTemplateEvaluator">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="macros"/>
+        <constructor-arg ref="reportFactory"/>
+        <constructor-arg ref="documentConverter"/>
+    </bean>
+
+    <!-- =========================================================================================================== -->
+    <!-- Medical Record Locking                                                                                      -->
+    <!-- =========================================================================================================== -->
+
+    <bean class="org.openvpms.web.workspace.patient.history.DefaultPatientHistoryDatingPolicy">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="practiceService"/>
+    </bean>
+
+    <bean class="org.openvpms.web.jobs.recordlocking.MedicalRecordLockingScheduler">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="practiceService"/>
+        <constructor-arg ref="practiceRules"/>
+        <constructor-arg ref="txnManager"/>
+    </bean>
 </beans>

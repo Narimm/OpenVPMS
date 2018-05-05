@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.wip;
@@ -46,7 +46,7 @@ public class IncompleteChargesWorkspace extends ResultSetCRUDWorkspace<Act> {
      * @param context the context
      */
     public IncompleteChargesWorkspace(Context context, MailContext mailContext) {
-        super("reporting", "wip", context);
+        super("reporting.wip", context);
         setArchetypes(Archetypes.create(IncompleteChargesQuery.SHORT_NAMES, Act.class));
         setMailContext(mailContext);
     }

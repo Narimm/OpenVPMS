@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.io;
@@ -67,7 +67,7 @@ public class ProductExportResultSet extends ProductResultSet {
     public ProductExportResultSet(ShortNameConstraint archetypes, String value, boolean searchIdentities,
                                   String species, Entity productType, Party stockLocation, String incomeType,
                                   String productGroup, SortConstraint[] sort, int rows) {
-        super(archetypes, value, searchIdentities, species, stockLocation, sort, rows);
+        super(archetypes, value, searchIdentities, species, false, null, stockLocation, sort, rows);
         this.productType = productType;
         this.incomeType = incomeType;
         this.productGroup = productGroup;
@@ -82,7 +82,7 @@ public class ProductExportResultSet extends ProductResultSet {
     protected ArchetypeQuery createQuery() {
         ArchetypeQuery query = super.createQuery();
         if (productType != null) {
-            query.add(join("type").add(eq("source", productType.getObjectReference())));
+            query.add(join("type").add(eq("target", productType.getObjectReference())));
         }
         if (incomeType != null) {
             query.add(join("classifications", shortName("incomeType", "lookup.productIncomeType"))

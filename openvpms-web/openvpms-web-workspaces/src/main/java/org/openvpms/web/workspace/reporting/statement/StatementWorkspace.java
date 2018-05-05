@@ -11,12 +11,11 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
 
-import echopointng.GroupBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
@@ -24,15 +23,16 @@ import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
-import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
 import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -40,10 +40,10 @@ import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.factory.GroupBoxFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.reporting.AbstractReportingWorkspace;
 
@@ -81,7 +81,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
      * @param mailContext the mail context
      */
     public StatementWorkspace(Context context, MailContext mailContext) {
-        super("reporting", "statement", Act.class, context, mailContext);
+        super("reporting.statement", Act.class, context, mailContext);
     }
 
     /**
@@ -109,12 +109,11 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
      */
     @Override
     protected void doLayout(Component container, FocusGroup group) {
-        query = new CustomerBalanceQuery();
+        query = new CustomerBalanceQuery(getContext().getPractice());
         query.getComponent();
         query.setDate(getYesterday()); // default statement date to yesterday
         browser = new CustomerBalanceBrowser(query, new DefaultLayoutContext(getContext(), getHelpContext()));
-        GroupBox box = GroupBoxFactory.create(browser.getComponent());
-        container.add(box);
+        container.add(browser.getComponent());
         group.add(browser.getFocusGroup());
     }
 
@@ -309,8 +308,10 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
      */
     private void onReport() {
         try {
-            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(
-                    query.getObjects(), "CUSTOMER_BALANCE", getContext());
+            IMPrinterFactory factory = ServiceHelper.getBean(IMPrinterFactory.class);
+            Context context = getContext();
+            ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator("CUSTOMER_BALANCE", context);
+            IMPrinter<ObjectSet> printer = factory.createObjectSetReportPrinter(query.getObjects(), locator, context);
             String type;
             if (query.queryAllBalances()) {
                 type = Messages.get("reporting.statements.print.all");
@@ -321,8 +322,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
             }
             String title = Messages.format("imobject.print.title", type);
             HelpContext help = getHelpContext().subtopic("report");
-            InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<ObjectSet>(title, printer, getContext(),
-                                                                                           help);
+            InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<>(title, printer, context, help);
             iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {

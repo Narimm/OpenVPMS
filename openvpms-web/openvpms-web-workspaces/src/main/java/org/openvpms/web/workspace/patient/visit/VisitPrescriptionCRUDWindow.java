@@ -11,24 +11,21 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
-import org.openvpms.web.workspace.customer.charge.DefaultEditorQueue;
-import org.openvpms.web.workspace.customer.charge.EditorQueue;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
 import org.openvpms.web.workspace.patient.mr.PatientPrescriptionCRUDWindow;
+import org.openvpms.web.workspace.patient.mr.prescription.PrescriptionDispenser;
 
 
 /**
@@ -68,43 +65,15 @@ public class VisitPrescriptionCRUDWindow extends PatientPrescriptionCRUDWindow {
      */
     @Override
     protected void onDispense() {
-        Act prescription = getObject();
-        ActBean prescriptionBean = new ActBean(prescription);
         if (chargeEditor == null) {
-            showStatusError(prescription, "patient.prescription.dispense", "patient.prescription.noinvoice");
+            showStatusError(getObject(), "patient.prescription.dispense", "patient.prescription.noinvoice");
         } else {
-            if (!chargeEditor.isValid()) {
-                // don't add prescription to invalid invoice
-                showStatusError(prescription, "patient.prescription.dispense", "patient.prescription.saveinvoice");
-            } else {
-                final CustomerChargeActItemEditor item = chargeEditor.addItem();
-                if (item == null) {
-                    // shouldn't happen, but prompt user to save just in case
-                    showStatusError(prescription, "patient.prescription.dispense", "patient.prescription.saveinvoice");
-                } else {
-                    item.getComponent();
-                    item.setPromptForPrescriptions(false);
-                    item.setCancelPrescription(true);
-                    item.getPrescriptions().add(prescription);
-                    final EditorQueue existing = item.getEditorQueue();
-                    item.setEditorQueue(new DefaultEditorQueue(getContext()) {
-                        @Override
-                        protected void completed() {
-                            super.completed();
-                            item.setEditorQueue(existing);
-                            SaveHelper.save(chargeEditor);
-                            onSaved(getObject(), false);
-                        }
-
-                        @Override
-                        protected void cancelled() {
-                            super.cancelled();
-                            // need to remove the item from the invoice
-                            chargeEditor.removeItem((Act) item.getObject());
-                        }
-                    });
-                    item.setProductRef(prescriptionBean.getNodeParticipantRef("product"));
-                }
+            Act prescription = IMObjectHelper.reload(getObject());
+            if (prescription != null) {
+                PrescriptionDispenser dispenser = new PrescriptionDispenser(getContext(), getHelpContext());
+                dispenser.dispense(prescription, chargeEditor, () -> {
+                    onSaved(getObject(), false);
+                });
             }
         }
     }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -22,6 +22,7 @@ import nextapp.echo2.app.event.ChangeEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -43,9 +44,9 @@ import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.component.workspace.AbstractCRUDWindow;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
+import org.openvpms.web.echo.button.ShortcutHelper;
 import org.openvpms.web.echo.event.ChangeListener;
 import org.openvpms.web.echo.event.VetoListener;
-import org.openvpms.web.echo.event.Vetoable;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
@@ -59,7 +60,6 @@ import org.openvpms.web.workspace.patient.history.AbstractPatientHistoryCRUDWind
 import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 import org.openvpms.web.workspace.patient.mr.PatientDocumentQuery;
-import org.openvpms.web.workspace.patient.mr.PatientQueryFactory;
 import org.openvpms.web.workspace.patient.problem.ProblemBrowser;
 import org.openvpms.web.workspace.patient.problem.ProblemQuery;
 import org.openvpms.web.workspace.patient.problem.ProblemRecordCRUDWindow;
@@ -131,6 +131,11 @@ public class VisitEditor {
      * The help context.
      */
     private final HelpContext help;
+
+    /**
+     * User preferences.
+     */
+    private final Preferences preferences;
 
     /**
      * The problem CRUD window, or {@code null} if problem view is disabled.
@@ -205,7 +210,8 @@ public class VisitEditor {
         this.context = context;
         this.help = help;
 
-        query = PatientQueryFactory.createHistoryQuery(patient, context.getPractice());
+        preferences = ServiceHelper.getPreferences();
+        query = new PatientHistoryQuery(patient, preferences);
         query.setAllDates(true);
         query.setFrom(event.getActivityStartTime());
         query.setTo(DateRules.getDate(event.getActivityStartTime(), 1, DateUnits.DAYS));
@@ -390,11 +396,10 @@ public class VisitEditor {
             tabbedPane.setStyleName("VisitEditor.TabbedPane");
             VetoableSingleSelectionModel selectionModel = new VetoableSingleSelectionModel();
             tabbedPane.setSelectionModel(selectionModel);
-            selectionModel.setVetoListener(new VetoListener() {
+            selectionModel.setVetoListener(new VetoListener<VetoableSingleSelectionModel.Change>() {
                 @Override
-                public void onVeto(Vetoable action) {
-                    VetoableSingleSelectionModel.Change change = (VetoableSingleSelectionModel.Change) action;
-                    action.veto(!switchTabs(change.getOldIndex(), change.getNewIndex()));
+                public void onVeto(VetoableSingleSelectionModel.Change change) {
+                    change.veto(!switchTabs(change.getOldIndex(), change.getNewIndex()));
                 }
             });
             tabbedPane.getSelectionModel().addChangeListener(new ChangeListener() {
@@ -559,8 +564,9 @@ public class VisitEditor {
      * @param context  the context
      * @param listener listener for context switch events. May be {@code null}
      */
-    protected VisitProblemBrowserCRUDWindow createProblemBrowserCRUDWindow(Context context, ContextSwitchListener listener) {
-        ProblemQuery query = PatientQueryFactory.createProblemQuery(patient, context.getPractice());
+    protected VisitProblemBrowserCRUDWindow createProblemBrowserCRUDWindow(Context context,
+                                                                           ContextSwitchListener listener) {
+        ProblemQuery query = new ProblemQuery(patient, preferences);
         DefaultLayoutContext layout = new DefaultLayoutContext(context, help);
         layout.setContextSwitchListener(listener);
         ProblemBrowser browser = new ProblemBrowser(query, layout);
@@ -671,7 +677,7 @@ public class VisitEditor {
     protected void addTab(String button, ObjectTabPaneModel<VisitEditorTab> model, VisitEditorTab tab, int id) {
         int index = model.size();
         int shortcut = index + 1;
-        String text = "&" + shortcut + " " + Messages.get(button);
+        String text = "&" + shortcut + " " + ShortcutHelper.getText(Messages.get(button));
         model.addTab(tab, text, tab.getComponent());
         tab.setId(id);
     }

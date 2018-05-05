@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.dialog;
@@ -21,7 +21,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.VetoListener;
-import org.openvpms.web.echo.event.Vetoable;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 
@@ -157,9 +156,9 @@ public abstract class PopupDialog extends PopupWindow {
 
 
     /**
-     * Constructs a {@code PopupDialog}.
+     * Constructs a {@link PopupDialog}.
      *
-     * @param title   the window title
+     * @param title   the window title. May be {@code null}
      * @param buttons the buttons to display
      */
     public PopupDialog(String title, String[] buttons) {
@@ -167,9 +166,9 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
-     * Constructs a {@code PopupDialog}.
+     * Constructs a {@link PopupDialog}.
      *
-     * @param title   the window title
+     * @param title   the window title. May be {@code null}
      * @param buttons the buttons to display
      * @param help    the help context. May be {@code null}
      */
@@ -178,7 +177,7 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
-     * Constructs a {@code PopupDialog}.
+     * Constructs a {@link PopupDialog}.
      *
      * @param title   the window title
      * @param style   the window style. May be {@code null}
@@ -189,9 +188,9 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
-     * Constructs a {@code PopupDialog}.
+     * Constructs a {@link PopupDialog}.
      *
-     * @param title   the window title
+     * @param title   the window title. May be {@code null}
      * @param style   the window style. May be {@code null}
      * @param buttons the buttons to display
      * @param help    the help context. May be {@code null}
@@ -201,7 +200,7 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
-     * Constructs a {@code PopupDialog}.
+     * Constructs a {@link PopupDialog}.
      *
      * @param title   the window title. May be {@code null}
      * @param style   the window style. May be {@code null}
@@ -258,7 +257,7 @@ public abstract class PopupDialog extends PopupWindow {
 
     /**
      * Sets the default action when the close button is pressed.
-     * <p>
+     * <p/>
      * Defaults to the last button displayed.
      *
      * @param action the default action. May be {@code null}
@@ -269,7 +268,7 @@ public abstract class PopupDialog extends PopupWindow {
 
     /**
      * Processes a user request to close the window (via the close button).
-     * <p>
+     * <p/>
      * If there is an {@link #defaultCloseAction}, this will be invoked.
      */
     @Override
@@ -355,11 +354,9 @@ public abstract class PopupDialog extends PopupWindow {
      */
     protected void onCancel() {
         if (cancelListener != null) {
-            cancelListener.onVeto(new Vetoable() {
-                public void veto(boolean veto) {
-                    if (!veto) {
-                        doCancel();
-                    }
+            cancelListener.onVeto(veto -> {
+                if (!veto) {
+                    doCancel();
                 }
             });
         } else {
@@ -369,7 +366,7 @@ public abstract class PopupDialog extends PopupWindow {
 
     /**
      * Cancels the operation.
-     * <p>
+     * <p/>
      * This implementation closes the dialog, setting the action to {@link #CANCEL_ID}.
      */
     protected void doCancel() {
@@ -399,11 +396,9 @@ public abstract class PopupDialog extends PopupWindow {
      */
     protected void onSkip() {
         if (skipListener != null) {
-            skipListener.onVeto(new Vetoable() {
-                public void veto(boolean veto) {
-                    if (!veto) {
-                        doSkip();
-                    }
+            skipListener.onVeto(veto -> {
+                if (!veto) {
+                    doSkip();
                 }
             });
         } else {
@@ -450,14 +445,14 @@ public abstract class PopupDialog extends PopupWindow {
      *
      * @param action the action
      */
-    protected void close(String action) {
+    public void close(String action) {
         setAction(action);
         close();
     }
 
     /**
      * Invoked just prior to the dialog closing.
-     * <p>
+     * <p/>
      * This implementation is a no-op.
      */
     protected void onClosing() {
@@ -491,14 +486,20 @@ public abstract class PopupDialog extends PopupWindow {
 
     /**
      * Invokes {@link #onButton(String)}, catching exceptions.
+     * <p/>
+     * Note that this ignores any event if there are other modal dialogs displayed above the dialog. This is to handle
+     * the case where an echo ChangeEvent is processed that generates dialogs, before the button action listener is
+     * triggered.
      *
      * @param id the button identifier
      */
     private void onButtonProtected(String id) {
-        try {
-            onButton(id);
-        } catch (Throwable exception) {
-            ErrorHandler.getInstance().error(exception);
+        if (!DialogManager.isHidden(this)) {
+            try {
+                onButton(id);
+            } catch (Throwable exception) {
+                ErrorHandler.getInstance().error(exception);
+            }
         }
     }
 

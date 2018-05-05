@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -20,10 +20,14 @@ import org.openvpms.archetype.function.list.ListFunctions;
 import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.product.ProductRules;
+import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.cache.IMObjectCache;
@@ -42,7 +46,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 
 /**
@@ -50,19 +53,71 @@ import static java.math.BigDecimal.ZERO;
  *
  * @author Tim Anderson
  */
-class ProductTemplateExpander {
+public class ProductTemplateExpander {
+
+    /**
+     * Determines if products should be restricted to those available at the location or stock location.
+     */
+    private final boolean useLocationProducts;
+
+    /**
+     * The practice location to restrict products to. May be {@code null}
+     */
+    private final Party location;
+
+    /**
+     * The stock location to restrict products to. May be {@code null}
+     */
+    private final Party stockLocation;
+
+    /**
+     * Stock rules.
+     */
+    private final StockRules stockRules;
+
+    /**
+     * Product rules.
+     */
+    private final ProductRules productRules;
+
+    /**
+     * Constructs a {@link ProductTemplateExpander}.
+     */
+    public ProductTemplateExpander() {
+        this(false, null, null);
+    }
+
+    /**
+     * Constructs a {@link ProductTemplateExpander}.
+     *
+     * @param useLocationProducts if {@code true}, products must be present at the location or stock location to be
+     *                            included, unless the relationship is set to always include products
+     * @param location            the practice location to restrict products to. Only relevant when
+     *                            {@code useLocationProducts == true}. May be {@code null}
+     * @param stockLocation       the stock location to restrict products to. Only relevant when
+     *                            {@code useLocationProducts == true}. May be {@code null}
+     */
+    public ProductTemplateExpander(boolean useLocationProducts, Party location, Party stockLocation) {
+        this.useLocationProducts = useLocationProducts;
+        this.location = location;
+        this.stockLocation = stockLocation;
+        stockRules = ServiceHelper.getBean(StockRules.class);
+        productRules = ServiceHelper.getBean(ProductRules.class);
+    }
 
     /**
      * Expands a product template.
      *
      * @param template the template to expand
      * @param weight   the patient weight. If {@code 0}, indicates the weight is unknown
-     * @param cache    the object cache
-     * @return a map products to their corresponding quantities
+     * @param quantity the quantity
+     * @param cache    the object cache  @return a map products to their corresponding quantities
      */
-    public Collection<TemplateProduct> expand(Product template, Weight weight, IMObjectCache cache) {
+    public Collection<TemplateProduct> expand(Product template, Weight weight, BigDecimal quantity,
+                                              IMObjectCache cache) {
         Map<TemplateProduct, TemplateProduct> includes = new LinkedHashMap<>();
-        if (!expand(template, template, weight, includes, ONE, ONE, false, new ArrayDeque<Product>(), cache)) {
+        ArrayDeque<Product> parents = new ArrayDeque<>();
+        if (!expand(template, template, weight, includes, quantity, quantity, false, parents, cache)) {
             includes.clear();
         } else if (includes.isEmpty()) {
             reportNoExpansion(template, weight);
@@ -86,46 +141,89 @@ class ProductTemplateExpander {
      */
     protected boolean expand(Product root, Product template, Weight weight,
                              Map<TemplateProduct, TemplateProduct> includes, BigDecimal lowQuantity,
-                             BigDecimal highQuantity, boolean zeroPrice, Deque<Product> parents,
-                             IMObjectCache cache) {
+                             BigDecimal highQuantity, boolean zeroPrice, Deque<Product> parents, IMObjectCache cache) {
         boolean result = true;
-        if (!parents.contains(template)) {
-            parents.push(template);
-            IMObjectBean bean = new IMObjectBean(template);
-            for (EntityLink relationship : bean.getValues("includes", EntityLink.class)) {
-                Include include = new Include(relationship);
-                if (include.requiresWeight() && weight.isZero()) {
-                    reportWeightError(template, relationship);
-                    result = false;
-                    break;
-                } else if (include.isIncluded(weight)) {
-                    Product product = include.getProduct(cache);
-                    if (product != null) {
-                        BigDecimal newLowQty = include.lowQuantity.multiply(lowQuantity);
-                        BigDecimal newHighQty = include.highQuantity.multiply(highQuantity);
-                        boolean zero = include.zeroPrice || zeroPrice;
-                        if (TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
-                            if (!expand(root, product, weight, includes, newLowQty, newHighQty, zero, parents, cache)) {
-                                result = false;
-                                break;
-                            }
+        if (template.isActive()) {
+            if (!parents.contains(template)) {
+                parents.push(template);
+                IMObjectBean bean = new IMObjectBean(template);
+                List<EntityLink> links = bean.getValues("includes", EntityLink.class);
+                Collections.sort(links, SequenceComparator.INSTANCE); // sort relationships on sequence
+                for (EntityLink relationship : links) {
+                    if (!include(relationship, root, template, weight, includes, lowQuantity, highQuantity, zeroPrice,
+                                 parents, cache)) {
+                        result = false;
+                        break;
+                    }
+                }
+                parents.pop();
+            } else {
+                reportRecursionError(root, template, parents);
+                result = false;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Includes a product.
+     *
+     * @param relationship the <em>entityLink.productIncludes</em>
+     * @param root         the root template
+     * @param template     the template to expand
+     * @param weight       the patient weight. If {@code 0}, indicates the weight is unknown
+     * @param includes     the existing includes
+     * @param lowQuantity  the low quantity
+     * @param highQuantity the high quantity
+     * @param zeroPrice    if {@code true}, zero prices for all included products
+     * @param parents      the parent templates
+     * @param cache        the cache
+     * @return {@code true} if the template expanded
+     */
+    protected boolean include(EntityLink relationship, Product root, Product template, Weight weight,
+                              Map<TemplateProduct, TemplateProduct> includes, BigDecimal lowQuantity,
+                              BigDecimal highQuantity, boolean zeroPrice, Deque<Product> parents,
+                              IMObjectCache cache) {
+        boolean result = true;
+        Include include = new Include(relationship);
+        if (include.requiresWeight() && weight.isZero()) {
+            reportWeightError(template, relationship);
+            result = false;
+        } else if (include.isIncluded(weight)) {
+            Product product = include.getProduct(cache);
+            if (product != null && product.isActive()) {
+                boolean skip = false;
+                if (useLocationProducts) {
+                    Party location = checkProductLocation(product);
+                    if (location != null) {
+                        if (!include.skipIfMissing()) {
+                            reportLocationError(template, product, location);
+                            result = false;
                         } else {
-                            TemplateProduct included = new TemplateProduct(product, newLowQty, newHighQty, zero,
-                                                                           include.print);
-                            TemplateProduct existing = includes.get(included);
-                            if (existing == null) {
-                                includes.put(included, included);
-                            } else {
-                                existing.add(newLowQty, newHighQty);
-                            }
+                            skip = true;
+                        }
+                    }
+                }
+                if (!skip) {
+                    BigDecimal newLowQty = include.lowQuantity.multiply(lowQuantity);
+                    BigDecimal newHighQty = include.highQuantity.multiply(highQuantity);
+                    boolean zero = include.zeroPrice || zeroPrice;
+                    if (TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
+                        if (!expand(root, product, weight, includes, newLowQty, newHighQty, zero, parents, cache)) {
+                            result = false;
+                        }
+                    } else {
+                        TemplateProduct included = new TemplateProduct(product, newLowQty, newHighQty, zero,
+                                                                       include.print);
+                        TemplateProduct existing = includes.get(included);
+                        if (existing == null) {
+                            includes.put(included, included);
+                        } else {
+                            existing.add(newLowQty, newHighQty);
                         }
                     }
                 }
             }
-            parents.pop();
-        } else {
-            reportRecursionError(root, template, parents);
-            result = false;
         }
         return result;
     }
@@ -152,7 +250,7 @@ class ProductTemplateExpander {
     protected void reportRecursionError(Product root, Product template, Deque<Product> parents) {
         ListFunctions functions = new ListFunctions(ServiceHelper.getArchetypeService(),
                                                     ServiceHelper.getLookupService());
-        List<Product> products = new ArrayList<>(parents);
+        List<Object> products = new ArrayList<Object>(parents);
         Collections.reverse(products);
         products.add(template);
         String names = functions.names(products, Messages.get("product.template.includes"));
@@ -169,6 +267,43 @@ class ProductTemplateExpander {
     protected void reportNoExpansion(Product root, Weight weight) {
         String message = Messages.format("product.template.noproducts", root.getName(), weight.getWeight());
         ErrorDialog.show(message);
+    }
+
+    /**
+     * Invoked when an included product is not available at a location.
+     *
+     * @param template the template
+     * @param product  the included product
+     * @param location the location or stock location
+     */
+    protected void reportLocationError(Product template, Product product, Party location) {
+        String message = Messages.format("product.template.notatlocation", template.getName(),
+                                         product.getName(), location.getName());
+        ErrorDialog.show(message);
+    }
+
+    /**
+     * Verifies that a product is a available at a location.
+     * <p/>
+     * For medication and merchandise products, the product must have a relationship to the stock location, if
+     * specified. <br/>
+     * For service and template products, the product must have a relationship to the practice location, if specified.
+     *
+     * @param product the product
+     * @return {@code true} if the product is available, or the location isn't specified, otherwise {@code false}
+     */
+    protected Party checkProductLocation(Product product) {
+        Party result = null;
+        if (TypeHelper.isA(product, ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE)) {
+            if (stockLocation != null && !stockRules.hasStockRelationship(product, stockLocation)) {
+                result = stockLocation;
+            }
+        } else if (TypeHelper.isA(product, ProductArchetypes.SERVICE, ProductArchetypes.TEMPLATE)) {
+            if (location != null && !productRules.canUseProductAtLocation(product, location)) {
+                result = location;
+            }
+        }
+        return result;
     }
 
     /**
@@ -219,6 +354,10 @@ class ProductTemplateExpander {
          */
         private final boolean print;
 
+        /**
+         * Determines if products are skipped if they are not available at the location.
+         */
+        private final boolean skipIfMissing;
 
         /**
          * Constructs an {@link Include}.
@@ -235,6 +374,7 @@ class ProductTemplateExpander {
             zeroPrice = bean.getBoolean("zeroPrice");
             print = bean.getBoolean("print", true);
             product = relationship.getTarget();
+            skipIfMissing = bean.getBoolean("skipIfMissing");
         }
 
         /**
@@ -263,6 +403,15 @@ class ProductTemplateExpander {
          */
         public Product getProduct(IMObjectCache cache) {
             return (Product) cache.get(product);
+        }
+
+        /**
+         * Determines if the product should be skipped, if it isn't available at the location.
+         *
+         * @return {@code true} if the product should be skipped
+         */
+        public boolean skipIfMissing() {
+            return skipIfMissing;
         }
 
     }

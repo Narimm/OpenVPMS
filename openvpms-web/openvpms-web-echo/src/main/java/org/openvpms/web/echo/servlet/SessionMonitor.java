@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.servlet;
@@ -31,7 +31,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.Executors;
@@ -40,6 +43,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.collections4.map.AbstractReferenceMap.ReferenceStrength.WEAK;
+import static org.apache.commons.lang.time.DurationFormatUtils.formatDurationHMS;
 
 /**
  * Monitors HTTP sessions, forcing idle sessions to expire.
@@ -85,6 +89,43 @@ public class SessionMonitor implements DisposableBean {
      * The logger.
      */
     private static final Log log = LogFactory.getLog(SessionMonitor.class);
+
+    /**
+     * Represents a user session.
+     */
+    public static class Session {
+
+        private final String name;
+
+        private final String host;
+
+        private final Date loggedIn;
+
+        private final Date lastAccessed;
+
+        public Session(String name, String host, Date loggedIn, Date lastAccessed) {
+            this.name = name;
+            this.host = host;
+            this.loggedIn = loggedIn;
+            this.lastAccessed = lastAccessed;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getHost() {
+            return host;
+        }
+
+        public Date getLoggedIn() {
+            return loggedIn;
+        }
+
+        public Date getLastAccessed() {
+            return lastAccessed;
+        }
+    }
 
     /**
      * Constructs an {@link SessionMonitor}.
@@ -150,7 +191,7 @@ public class SessionMonitor implements DisposableBean {
      */
     public boolean isLocked(HttpSession session) {
         Monitor monitor = monitors.get(session);
-        return monitor != null && monitor.locked;
+        return monitor != null && monitor.status != Status.UNLOCKED;
     }
 
     /**
@@ -185,6 +226,19 @@ public class SessionMonitor implements DisposableBean {
     }
 
     /**
+     * Invoked by the application when it locks.
+     */
+    public void locked() {
+        Connection connection = getConnection();
+        if (connection != null) {
+            Monitor monitor = monitors.get(connection.getRequest().getSession());
+            if (monitor != null) {
+                monitor.locked();
+            }
+        }
+    }
+
+    /**
      * Unlocks the current session.
      */
     public void unlock() {
@@ -207,12 +261,36 @@ public class SessionMonitor implements DisposableBean {
     }
 
     /**
+     * Returns the current sessions.
+     *
+     * @return the current sessions
+     */
+    public List<Session> getSessions() {
+        List<Session> result = new ArrayList<>();
+        for (Monitor monitor : new ArrayList<>(monitors.values())) {
+            Session session = monitor.getSession();
+            if (session != null) {
+                result.add(session);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Destroys this.
      */
     @Override
     public void destroy() {
         log.info("Shutting down SessionMonitor");
-        executor.shutdown();
+        executor.shutdownNow();
+        try {
+            if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+                log.error("Pool did not terminate");
+            }
+        } catch (InterruptedException exception) {
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+        }
         monitors.clear();
     }
 
@@ -278,6 +356,10 @@ public class SessionMonitor implements DisposableBean {
         }
     }
 
+    private enum Status {
+        UNLOCKED, LOCK_PENDING, LOCKED
+    }
+
     /**
      * Monitors session activity.
      */
@@ -291,7 +373,7 @@ public class SessionMonitor implements DisposableBean {
         /**
          * Determines if the applications are currently locked.
          */
-        private volatile boolean locked;
+        private volatile Status status = Status.UNLOCKED;
 
         /**
          * The applications linked to the session.
@@ -346,7 +428,13 @@ public class SessionMonitor implements DisposableBean {
             }
             address = request.getRemoteAddr();
             if (doLog && log.isInfoEnabled()) {
-                log.info("Active session, user=" + user + ", address=" + address);
+                log.info("Active session, user=" + user + ", address=" + address + ", status=" + status);
+            }
+
+            if (status == Status.LOCK_PENDING) {
+                // if the UI was scheduled to lock, but there was user activity prior to the screen locking,
+                // unlock it
+                unlock();
             }
         }
 
@@ -415,12 +503,34 @@ public class SessionMonitor implements DisposableBean {
                     }
                 }
             } finally {
-                locked = false;
+                status = Status.UNLOCKED;
                 reschedule();
             }
             if (log.isInfoEnabled()) {
                 log.info("Unlocked session for user=" + user + ", address=" + address);
             }
+        }
+
+        /**
+         * Returns the session details.
+         *
+         * @return the session details, or {@code null} if the session hasn't been fully established, or is
+         * destroyed
+         */
+        public Session getSession() {
+            Session result = null;
+            String name = user;
+            HttpSession httpSession = session.get();
+            if (user != null && httpSession != null) {
+                try {
+                    Date created = new Date(httpSession.getCreationTime());
+                    Date lastAccessed = new Date(lastAccessedTime);
+                    result = new Session(name, address, created, lastAccessed);
+                } catch (IllegalStateException ignore) {
+                    // do nothing - session has been invalidated
+                }
+            }
+            return result;
         }
 
         /**
@@ -447,8 +557,8 @@ public class SessionMonitor implements DisposableBean {
             long logout = autoLogout;
             long lock = autoLock;
             if (log.isDebugEnabled()) {
-                log.debug("Monitor user=" + user + ", address=" + address + ", inactive=" + inactive + "ms, "
-                          + "logout=" + logout + "ms, lock=" + lock + "ms");
+                log.debug("Monitor user=" + user + ", address=" + address + ", inactive=" + formatDurationHMS(inactive)
+                          + ", " + "logout=" + formatDurationHMS(logout) + ", lock=" + formatDurationHMS(lock));
             }
             if (logout != 0 && inactive >= logout) {
                 // session is inactive, so kill it
@@ -457,7 +567,7 @@ public class SessionMonitor implements DisposableBean {
                 long reschedule = (logout != 0) ? logout - inactive : 0;
                 if (lock != 0 && lock < logout) {
                     if (inactive >= lock) {
-                        if (!locked) {
+                        if (status == Status.UNLOCKED) {
                             lock();
                         }
                     } else {
@@ -477,7 +587,8 @@ public class SessionMonitor implements DisposableBean {
          */
         private void schedule(long delay) {
             if (log.isDebugEnabled()) {
-                log.info("Scheduling monitor for " + delay + "ms,  user=" + user + ", address=" + address);
+                log.info("Scheduling monitor in " + formatDurationHMS(delay) + ",  user=" + user + ", address="
+                         + address);
             }
             future = executor.schedule(this, delay, TimeUnit.MILLISECONDS);
         }
@@ -486,13 +597,25 @@ public class SessionMonitor implements DisposableBean {
          * Locks applications linked to the session.
          */
         private synchronized void lock() {
-            locked = true;
+            status = Status.LOCK_PENDING;
+            int count = 0;
             SpringApplicationInstance[] list = apps.values().toArray(new SpringApplicationInstance[apps.size()]);
             for (SpringApplicationInstance app : list) {
                 if (app != null) {
+                    count++;
                     app.lock();
                 }
             }
+            if (log.isInfoEnabled()) {
+                log.info("Locking " + count + " apps for user=" + user + ", address=" + address);
+            }
+        }
+
+        /**
+         * Flags the session as locked.
+         */
+        private void locked() {
+            status = Status.LOCKED;
             if (log.isInfoEnabled()) {
                 log.info("Locked session for user=" + user + ", address=" + address);
             }
@@ -515,13 +638,12 @@ public class SessionMonitor implements DisposableBean {
 
             HttpSession httpSession = session.get();
             if (httpSession != null) {
+                session.clear();
                 httpSession.invalidate();
                 if (log.isInfoEnabled()) {
                     log.info("Invalidated session for user=" + user + ", address=" + address);
                 }
             }
         }
-
     }
-
 }

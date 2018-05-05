@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.io;
@@ -76,10 +76,10 @@ public class ProductImportDialog extends PopupDialog {
         setModal(true);
         rules = ServiceHelper.getBean(ProductPriceRules.class);
 
-        ResultSet<ProductData> resultSet = new ListResultSet<ProductData>(data, 20);
+        ResultSet<ProductData> resultSet = new ListResultSet<>(data, 20);
         PagedProductDataTableModel model = new PagedProductDataTableModel();
-        PagedIMTable<ProductData> table = new PagedIMTable<ProductData>(model, resultSet);
-        getLayout().add(ColumnFactory.create(Styles.INSET, table));
+        PagedIMTable<ProductData> table = new PagedIMTable<>(model, resultSet);
+        getLayout().add(ColumnFactory.create(Styles.INSET, table.getComponent()));
     }
 
     /**
@@ -115,7 +115,7 @@ public class ProductImportDialog extends PopupDialog {
          */
         @Override
         protected List<ProductPriceData> convertTo(List<ProductData> list) {
-            List<ProductPriceData> result = new ArrayList<ProductPriceData>();
+            List<ProductPriceData> result = new ArrayList<>();
             for (ProductData product : list) {
                 List<PriceData> fixedPrices = product.getFixedPrices();
                 List<PriceData> unitPrices = product.getUnitPrices();
@@ -260,7 +260,7 @@ public class ProductImportDialog extends PopupDialog {
             ProductPrice current = getProductPrice(object, price);
             Set<Lookup> newValue = price.getPricingGroups();
             if (current != null) {
-                Set<Lookup> oldValue = new HashSet<Lookup>(rules.getPricingGroups(current));
+                Set<Lookup> oldValue = new HashSet<>(rules.getPricingGroups(current));
                 if (!oldValue.equals(newValue)) {
                     result = getOldAndNewValueGrid(getPricingGroups(oldValue, LINE_THROUGH),
                                                    getPricingGroups(newValue, Styles.DEFAULT));
@@ -278,9 +278,9 @@ public class ProductImportDialog extends PopupDialog {
             if (price.getId() != -1) {
                 Product product = object.getProduct();
                 if (product != null) {
-                    for (ProductPrice productPrice : product.getProductPrices()) {
+                    for (org.openvpms.component.model.product.ProductPrice productPrice : product.getProductPrices()) {
                         if (productPrice.getId() == price.getId()) {
-                            result = productPrice;
+                            result = (ProductPrice) productPrice;
                             break;
                         }
                     }

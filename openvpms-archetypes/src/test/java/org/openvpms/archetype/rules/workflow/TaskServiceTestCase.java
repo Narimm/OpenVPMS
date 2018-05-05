@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -312,16 +312,17 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
      * @throws Exception for any error
      */
     private void checkConcurrentReadWrite(final TaskService taskService) throws Exception {
-        final Date date = getDate("2007-01-01");
+        final Date startTime = getDate("2007-01-01");
+        final Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
         final Party schedule = ScheduleTestHelper.createWorkList();
         Party patient = TestHelper.createPatient();
-        final Act task = createTask(date, schedule, patient);
+        final Act task = createTask(startTime, schedule, patient);
 
         Callable<PropertySet> read = new Callable<PropertySet>() {
             @Override
             public PropertySet call() throws Exception {
                 System.err.println("read");
-                List<PropertySet> events = taskService.getEvents(schedule, date);
+                List<PropertySet> events = taskService.getEvents(schedule, startTime);
                 assertFalse(events.size() > 1);
                 return events.isEmpty() ? null : events.get(0);
             }
@@ -331,7 +332,7 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
             @Override
             public PropertySet call() throws Exception {
                 System.err.println("write");
-                task.setActivityEndTime(date);
+                task.setActivityEndTime(endTime);
                 save(task);
                 return null;
             }
@@ -339,9 +340,9 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
 
         runConcurrent(read, write);
 
-        List<PropertySet> events = taskService.getEvents(schedule, date);
+        List<PropertySet> events = taskService.getEvents(schedule, startTime);
         assertEquals(1, events.size());
-        assertEquals(date, events.get(0).getDate(ScheduleEvent.ACT_END_TIME));
+        assertEquals(endTime, events.get(0).getDate(ScheduleEvent.ACT_END_TIME));
     }
 
     /**
@@ -353,17 +354,18 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
      * @throws Exception for any error
      */
     private void checkConcurrentReadWrite2(final TaskService taskService) throws Exception {
-        final Date date1 = getDate("2007-01-01");
+        final Date startTime = getDate("2007-01-01");
+        final Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
         final Date date2 = getDate("2007-01-02");
         final Party schedule = ScheduleTestHelper.createWorkList();
         Party patient = TestHelper.createPatient();
-        final Act task = createTask(date1, schedule, patient);
+        final Act task = createTask(startTime, schedule, patient);
 
         Callable<PropertySet> readDate1 = new Callable<PropertySet>() {
             @Override
             public PropertySet call() throws Exception {
                 System.err.println("Read date1 thread=" + Thread.currentThread().getName());
-                List<PropertySet> events = taskService.getEvents(schedule, date1);
+                List<PropertySet> events = taskService.getEvents(schedule, startTime);
                 assertFalse(events.size() > 1);
                 return events.isEmpty() ? null : events.get(0);
             }
@@ -381,7 +383,7 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
             @Override
             public PropertySet call() throws Exception {
                 System.err.println("Writer thread=" + Thread.currentThread().getName());
-                task.setActivityEndTime(date1);
+                task.setActivityEndTime(endTime);
                 save(task);
                 return null;
             }
@@ -389,7 +391,7 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
 
         runConcurrent(readDate1, readDate2, write);
 
-        List<PropertySet> events = taskService.getEvents(schedule, date1);
+        List<PropertySet> events = taskService.getEvents(schedule, startTime);
         assertEquals(1, events.size());
         events = taskService.getEvents(schedule, date2);
         assertEquals(0, events.size());

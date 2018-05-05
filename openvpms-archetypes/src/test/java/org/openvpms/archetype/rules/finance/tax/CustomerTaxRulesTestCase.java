@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.tax;
@@ -19,12 +19,13 @@ package org.openvpms.archetype.rules.finance.tax;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -115,24 +116,6 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link CustomerTaxRules#getTaxExAmount(BigDecimal, Product, Party)} method.
-     */
-    @Test
-    public void getTaxExAmount() {
-        Party customer = createCustomer();
-        Product product = createProduct();
-        product.addClassification(taxType);
-
-        BigDecimal amount1 = rules.getTaxExAmount(BigDecimal.TEN, product, customer);
-        checkEquals(BigDecimal.TEN, amount1);
-
-        customer.addClassification(taxType); // tax exemption
-
-        BigDecimal amount2 = rules.getTaxExAmount(BigDecimal.TEN, product, customer);
-        checkEquals(new BigDecimal("9.091"), amount2);
-    }
-
-    /**
      * Tests the {@link CustomerTaxRules#calculateTax(FinancialAct, Party)} method where the product has a 10% tax, but
      * the customer has a tax exemption.
      */
@@ -159,7 +142,7 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
         practice.addClassification(taxType);
 
         // need to refresh cache
-        rules = new CustomerTaxRules(practice, getArchetypeService(), getLookupService());
+        rules = new CustomerTaxRules(practice, getArchetypeService());
 
         // product is now charged at 10% tax rate
         checkEquals(BigDecimal.TEN, rules.getTaxRate(product, customer));
@@ -176,7 +159,7 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
     public void setUp() {
         taxType = TestHelper.createTaxType(BigDecimal.TEN);
         practice = (Party) create("party.organisationPractice");
-        rules = new CustomerTaxRules(practice, getArchetypeService(), getLookupService());
+        rules = new CustomerTaxRules(practice, getArchetypeService());
     }
 
     /**
@@ -273,17 +256,11 @@ public class CustomerTaxRulesTestCase extends ArchetypeServiceTest {
      */
     private Product createProductWithProductTypeTax() {
         Product product = createProduct();
-        Entity type = (Entity) create("entity.productType");
+        Entity type = (Entity) create(ProductArchetypes.PRODUCT_TYPE);
         type.setName("TaxRulesTestCase-entity" + type.hashCode());
         type.addClassification(taxType);
         save(type);
-        EntityRelationship relationship
-                = (EntityRelationship) create(
-                "entityRelationship.productTypeProduct");
-        relationship.setSource(type.getObjectReference());
-        relationship.setTarget(product.getObjectReference());
-        product.addEntityRelationship(relationship);
-        save(product);
+        ProductTestHelper.addProductType(product, type);
         return product;
     }
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -77,7 +77,7 @@ class SequencedRelationshipCollectionHelper {
 
     /**
      * Sequences relationships, using the first relationship sequence as the starting point.
-     * <p/>
+     * <p>
      * This preserves gaps in the sequence.
      *
      * @param states the states to sequence
@@ -110,24 +110,19 @@ class SequencedRelationshipCollectionHelper {
      * @param map the map to sort
      * @return the sorted map entries
      */
-    public static List<Map.Entry<IMObject, IMObjectRelationship>> sort(
-            Map<IMObject, IMObjectRelationship> map) {
-        List<Map.Entry<IMObject, IMObjectRelationship>> entries = new ArrayList<>(map.entrySet());
-        Collections.sort(entries, new Comparator<Map.Entry<IMObject, IMObjectRelationship>>() {
-            @Override
-            public int compare(Map.Entry<IMObject, IMObjectRelationship> o1,
-                               Map.Entry<IMObject, IMObjectRelationship> o2) {
-                SequencedRelationship r1 = (SequencedRelationship) o1.getValue();
-                SequencedRelationship r2 = (SequencedRelationship) o2.getValue();
-                int compare = Integer.compare(r1.getSequence(), r2.getSequence());
+    public static <T extends SequencedRelationship> List<Map.Entry<IMObject, T>> sort(Map<IMObject, T> map) {
+        List<Map.Entry<IMObject, T>> entries = new ArrayList<>(map.entrySet());
+        Collections.sort(entries, (o1, o2) -> {
+            T r1 = o1.getValue();
+            T r2 = o2.getValue();
+            int compare = Integer.compare(r1.getSequence(), r2.getSequence());
+            if (compare == 0) {
+                compare = Long.compare(r1.getId(), r2.getId());
                 if (compare == 0) {
-                    compare = Long.compare(r1.getId(), r2.getId());
-                    if (compare == 0) {
-                        compare = r1.getLinkId().compareTo(r2.getLinkId());
-                    }
+                    compare = r1.getLinkId().compareTo(r2.getLinkId());
                 }
-                return compare;
             }
+            return compare;
         });
         return entries;
     }

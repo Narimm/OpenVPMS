@@ -11,15 +11,11 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.system.common.query;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.util.MapPropertySet;
 import org.openvpms.component.system.common.util.PropertySet;
 
@@ -90,18 +86,6 @@ public class ObjectSet extends MapPropertySet implements Serializable {
     }
 
     /**
-     * Adds an object.
-     *
-     * @param name  the object name
-     * @param value the object value
-     * @deprecated use {@link #set}
-     */
-    @Deprecated
-    public void add(String name, Object value) {
-        set(name, value);
-    }
-
-    /**
      * Returns the type alias for a name.
      *
      * @return the type alias for a name
@@ -119,34 +103,6 @@ public class ObjectSet extends MapPropertySet implements Serializable {
      */
     public Collection<String> getShortNames(String name) {
         return types.get(getAlias(name));
-    }
-
-    /**
-     * Returns the node descriptor for a name.
-     *
-     * @return the node descriptor for the name, or {@code null} if none is found
-     */
-    @Deprecated
-    public NodeDescriptor getDescriptor(String name) {
-        NodeDescriptor result = null;
-        int index = name.indexOf(".");
-        if (index != -1) {
-            String alias = name.substring(0, index);
-            String nodeName = name.substring(index + 1);
-            String shortName;
-            Set<String> shortNames = types.get(alias);
-            if (shortNames != null && !shortNames.isEmpty()) {
-                shortName = shortNames.toArray(new String[0])[0];
-                IArchetypeService service
-                        = ArchetypeServiceHelper.getArchetypeService();
-                ArchetypeDescriptor archetype = service.getArchetypeDescriptor(
-                        shortName);
-                if (archetype != null) {
-                    result = archetype.getNodeDescriptor(nodeName);
-                }
-            }
-        }
-        return result;
     }
 
 

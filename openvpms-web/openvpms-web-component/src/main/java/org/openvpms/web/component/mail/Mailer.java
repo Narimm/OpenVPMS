@@ -11,13 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
 
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
+
+import java.util.List;
 
 
 /**
@@ -26,6 +28,13 @@ import org.openvpms.component.system.common.exception.OpenVPMSException;
  * @author Tim Anderson
  */
 public interface Mailer {
+
+    /**
+     * Returns the mail context.
+     *
+     * @return the mail context
+     */
+    MailContext getContext();
 
     /**
      * Sets the from address.
@@ -117,6 +126,13 @@ public interface Mailer {
      * @param document the document to attach
      */
     void addAttachment(Document document);
+
+    /**
+     * Returns the attachments.
+     *
+     * @return the attachments
+     */
+    List<Document> getAttachments();
 
     /**
      * Sends the mail.

@@ -11,13 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
 
 import org.openvpms.archetype.rules.product.ProductPriceRules;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
@@ -55,13 +54,12 @@ public class ProductImporter {
      * Runs the import.
      *
      * @param products the products to import
-     * @param practice the practice, used to determine tax rates
      */
-    public void run(List<ProductData> products, Party practice) {
+    public void run(List<ProductData> products) {
         for (ProductData data : products) {
             Product product = (Product) service.get(data.getReference());
             if (product != null) {
-                updater.update(product, data, practice);
+                updater.update(product, data);
                 service.save(product);
             }
         }

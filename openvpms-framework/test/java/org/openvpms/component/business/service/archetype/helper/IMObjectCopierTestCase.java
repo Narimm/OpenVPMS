@@ -1,24 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -31,6 +28,10 @@ import org.openvpms.component.business.service.lookup.LookupUtil;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
@@ -163,19 +164,4 @@ public class IMObjectCopierTestCase extends AbstractArchetypeServiceTest {
         assertEquals(1, petCopy.getEntityRelationships().size());
     }
 
-    /**
-     * Tests copying.
-     */
-    @SuppressWarnings({"deprecation"})
-    @Test
-    public void testCopy() {
-        IMObjectCopier copier
-                = new IMObjectCopier(new DefaultIMObjectCopyHandler());
-        IMObjectBean bean = createBean("party.animalpet");
-        bean.setValue("name", "Fido");
-
-        IMObject copy = copier.copy(bean.getObject());
-        assertTrue(copy != bean.getObject());
-        assertEquals("Fido", copy.getName());
-    }
 }

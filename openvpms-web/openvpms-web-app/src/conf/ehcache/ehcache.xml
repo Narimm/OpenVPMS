@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <ehcache updateCheck="false">
@@ -101,6 +101,9 @@
     <cache name="org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
+    <cache name="org.openvpms.component.business.dao.hibernate.im.act.ActIdentityDOImpl"
+           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+
     <cache name="org.openvpms.component.business.dao.hibernate.im.act.ActRelationshipDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
@@ -108,7 +111,7 @@
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
 
     <!-- Document caching is disabled, as individual documents can consume large amounts of memory.    -->
-    <!-- To enable, DocumentDOImpl.hbm.xml must first be changed to add a cache element                -->
+    <!-- To enable, DocumentDOImpl.hbm.xml must first be refreshed to add a cache element                -->
     <!--cache name="org.openvpms.component.business.dao.hibernate.im.document.DocumentDOImpl"
            maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/-->
 

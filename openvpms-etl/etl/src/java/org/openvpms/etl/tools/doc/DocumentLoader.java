@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007-2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.tools.doc;
@@ -72,6 +72,11 @@ public class DocumentLoader {
     private ApplicationContext context;
 
     /**
+     * The listener.
+     */
+    private LoaderListener listener;
+
+    /**
      * The logger.
      */
     static final Log log = LogFactory.getLog(DocumentLoader.class);
@@ -83,21 +88,23 @@ public class DocumentLoader {
 
 
     /**
-     * Creates a new <tt>DocumentLoader</tt>.
+     * Constructs a {@link DocumentLoader}.
      *
-     * @param loader the loader to use
+     * @param loader   the loader to use
+     * @param listener the listener collecting statistics
      */
-    public DocumentLoader(Loader loader) {
+    public DocumentLoader(Loader loader, LoaderListener listener) {
         this.loader = loader;
+        this.listener = listener;
     }
 
     /**
-     * Creates a new <tt>DocumentLoader</tt> from command line arguments.
+     * Constructs a {@link DocumentLoader} from command line arguments.
      *
      * @param args               the arguments to parse
-     * @param service            the achetype service. If <tt>null</tt> it will be bootstrapped from the default
+     * @param service            the achetype service. If {@code null} it will be bootstrapped from the default
      *                           spring context
-     * @param transactionManager the transaction manager. If <tt>null</tt> it will be bootstrapped from the default
+     * @param transactionManager the transaction manager. If {@code null} it will be bootstrapped from the default
      *                           spring context
      * @throws DocumentLoaderException if the arguments are invalid
      */
@@ -106,7 +113,7 @@ public class DocumentLoader {
     }
 
     /**
-     * Creates a new <tt>DocumentLoader</tt> from command line arguments.
+     * Constructs a {@link DocumentLoader} from command line arguments.
      *
      * @param args   the arguments to parse
      * @param parser the argument parser
@@ -117,13 +124,13 @@ public class DocumentLoader {
     }
 
     /**
-     * Creates a new <tt>DocumentLoader</tt> from command line arguments.
+     * Constructs a {@link DocumentLoader} from command line arguments.
      *
      * @param args               the arguments to parse
      * @param parser             the argument parser
-     * @param service            the achetype service. If <tt>null</tt> it will be bootstrapped from the default
+     * @param service            the achetype service. If {@code null} it will be bootstrapped from the default
      *                           spring context
-     * @param transactionManager the transaction manager. If <tt>null</tt> it will be bootstrapped from the default
+     * @param transactionManager the transaction manager. If {@code null} it will be bootstrapped from the default
      *                           spring context
      * @throws DocumentLoaderException if the arguments are invalid
      */
@@ -145,40 +152,47 @@ public class DocumentLoader {
         } else {
             File source = config.getFile("source");
             File target = config.getFile("dest");
-            checkDirs(source, target);
+            File error = config.getFile("err");
+            checkDirs(source, target, error);
+
+            boolean rename = config.getBoolean("rename");
 
             contextPath = config.getString("context");
 
             if (service == null) {
                 service = (IArchetypeService) getContext().getBean("archetypeService");
             }
-            DocumentFactory factory = new DefaultDocumentFactory();
-            LoaderListener listener = (config.getBoolean("verbose")) ? new LoggingLoaderListener(log, target)
-                                                                     : new DefaultLoaderListener(target);
+            DocumentFactory factory = new DefaultDocumentFactory(service);
+            listener = (config.getBoolean("verbose")) ? new LoggingLoaderListener(log) : new DefaultLoaderListener();
 
             String type[] = config.getStringArray("type");
+            boolean recurse = config.getBoolean("recurse");
+            boolean overwrite = config.getBoolean("overwrite");
+
+            if (transactionManager == null) {
+                transactionManager = getContext().getBean(PlatformTransactionManager.class);
+            }
+            FileStrategy fileStrategy = new FileStrategy(target, error, rename);
+            LoadContext context = new DefaultLoadContext(fileStrategy, listener);
+
             if (byId) {
-                boolean recurse = config.getBoolean("recurse");
-                boolean overwrite = config.getBoolean("overwrite");
                 String regexp = config.getString("regexp");
                 Pattern pattern = Pattern.compile(regexp);
-                if (transactionManager == null) {
-                    transactionManager = (PlatformTransactionManager) getContext().getBean("txnManager");
-                }
-                loader = new IdLoader(source, type, service, factory, transactionManager, recurse, overwrite, pattern);
+                loader = new IdLoader(source, type, service, factory, transactionManager, recurse, overwrite, pattern,
+                                      context);
             } else {
-                loader = new NameLoader(source, type, service, factory);
+                loader = new NameLoader(source, type, service, factory, transactionManager, recurse, overwrite,
+                                        context);
             }
-            loader.setListener(listener);
             setFailOnError(config.getBoolean("failOnError"));
         }
     }
 
     /**
      * Determines if generation should fail when an error occurs.
-     * Defaults to <tt>true</tt>.
+     * Defaults to {@code true}.
      *
-     * @param failOnError if <tt>true</tt> fail when an error occurs
+     * @param failOnError if {@code true} fail when an error occurs
      */
     public void setFailOnError(boolean failOnError) {
         this.failOnError = failOnError;
@@ -249,25 +263,47 @@ public class DocumentLoader {
      * Verifies that the source and target directories are valid.
      *
      * @param source the source directory
-     * @param target the target directory. May be <tt>null</tt>
+     * @param target the target directory. May be {@code null}
+     * @param error  the error directory. May be {@code null}
      */
-    private void checkDirs(File source, File target) {
+    private void checkDirs(File source, File target, File error) {
         if (source == null) {
             throw new IllegalArgumentException("Argument 'source' is null");
         }
         if (target != null) {
             if (target.equals(source)) {
                 throw new DocumentLoaderException(DocumentLoaderException.ErrorCode.SourceTargetSame);
-
             }
-            File parent = target.getParentFile();
-            while (parent != null) {
-                if (parent.equals(source)) {
-                    throw new DocumentLoaderException(DocumentLoaderException.ErrorCode.TargetChildOfSource);
-                }
-                parent = parent.getParentFile();
+            if (isSubdir(source, target)) {
+                throw new DocumentLoaderException(DocumentLoaderException.ErrorCode.TargetChildOfSource);
             }
         }
+        if (error != null) {
+            if (error.equals(source)) {
+                throw new DocumentLoaderException(DocumentLoaderException.ErrorCode.SourceErrorSame);
+            }
+            if (isSubdir(source, error)) {
+                throw new DocumentLoaderException(DocumentLoaderException.ErrorCode.ErrorChildOfSource);
+            }
+        }
+    }
+
+    /**
+     * Determines if a directory is a subdirectory of the source.
+     *
+     * @param source the source directory
+     * @param dir    the directory to check
+     * @return {@code true} if the directory is a subdirectory of the source
+     */
+    private boolean isSubdir(File source, File dir) {
+        File parent = dir.getParentFile();
+        while (parent != null) {
+            if (parent.equals(source)) {
+                return true;
+            }
+            parent = parent.getParentFile();
+        }
+        return false;
     }
 
     /**
@@ -280,7 +316,6 @@ public class DocumentLoader {
         log.info("Ending load at: " + end);
 
         double elapsed = (end.getTime() - start.getTime()) / 1000;
-        LoaderListener listener = loader.getListener();
         int total = listener.getProcessed();
         double rate = (elapsed != 0) ? total / elapsed : 0;
         log.info("Loaded: " + listener.getLoaded());
@@ -302,8 +337,8 @@ public class DocumentLoader {
         try {
             parser.registerParameter(
                     new Switch("byid").setShortFlag('i')
-                                             .setLongFlag("byid")
-                                             .setHelp("Load files using the identifiers in their names"));
+                            .setLongFlag("byid")
+                            .setHelp("Load files using the identifiers in their names"));
             parser.registerParameter(new Switch("byname").setShortFlag('n')
                                              .setLongFlag("byname")
                                              .setHelp("Load files by matching their names with document acts"));
@@ -319,7 +354,7 @@ public class DocumentLoader {
             parser.registerParameter(new Switch("overwrite").setShortFlag('o')
                                              .setLongFlag("overwrite")
                                              .setDefault("false")
-                                             .setHelp("Overwrite existing attachments. Ony applies when --byid is used"));
+                                             .setHelp("Overwrite existing attachments"));
             parser.registerParameter(new FlaggedOption("regexp")
                                              .setLongFlag("regexp")
                                              .setDefault(IdLoader.DEFAULT_REGEXP)
@@ -329,9 +364,14 @@ public class DocumentLoader {
                                              .setLongFlag("dest")
                                              .setStringParser(dirParser)
                                              .setHelp("The directory to move files to on successful load."));
+            parser.registerParameter(new FlaggedOption("err")
+                                             .setLongFlag("err")
+                                             .setStringParser(dirParser)
+                                             .setHelp("The directory to move files to on error."));
             parser.registerParameter(new FlaggedOption("type").setShortFlag('t')
                                              .setLongFlag("type")
-                                             .setDefault(new String[]{"act.*Document*", InvestigationArchetypes.PATIENT_INVESTIGATION})
+                                             .setDefault(new String[]{"act.*Document*",
+                                                                      InvestigationArchetypes.PATIENT_INVESTIGATION})
                                              .setAllowMultipleDeclarations(true)
                                              .setHelp("The archetype short name. May contain wildcards."));
             parser.registerParameter(new FlaggedOption("failOnError")
@@ -340,8 +380,12 @@ public class DocumentLoader {
                                              .setDefault("false")
                                              .setStringParser(BooleanStringParser.getParser())
                                              .setHelp("Fail on error"));
+            parser.registerParameter(new Switch("rename")
+                                             .setLongFlag("rename").setDefault("false")
+                                             .setHelp("Rename files on move if a file already exists."));
             parser.registerParameter(new Switch("verbose").setShortFlag('v')
-                                             .setLongFlag("verbose").setDefault("false").setHelp("Displays verbose info to the console."));
+                                             .setLongFlag("verbose").setDefault("false")
+                                             .setHelp("Displays verbose info to the console."));
             parser.registerParameter(new FlaggedOption("context").setShortFlag('c')
                                              .setLongFlag("context")
                                              .setDefault(APPLICATION_CONTEXT)

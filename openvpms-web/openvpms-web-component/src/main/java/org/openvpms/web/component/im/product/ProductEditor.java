@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -24,7 +24,6 @@ import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.product.ProductPriceUpdater;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
@@ -32,19 +31,15 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.EditableIMObjectCollectionEditor;
-import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.relationship.MultipleEntityRelationshipCollectionEditor;
+import org.openvpms.web.component.im.relationship.MultipleEntityLinkCollectionEditor;
 import org.openvpms.web.component.im.relationship.RelationshipCollectionEditor;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.component.property.Modifiable;
-import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
@@ -56,6 +51,7 @@ import org.openvpms.web.system.ServiceHelper;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -99,6 +95,11 @@ public class ProductEditor extends AbstractIMObjectEditor {
     private static final String STOCK_LOCATIONS = "stockLocations";
 
     /**
+     * Locations nodes.
+     */
+    private static final String LOCATIONS = "locations";
+
+    /**
      * Suppliers node.
      */
     private static final String SUPPLIERS = "suppliers";
@@ -107,6 +108,11 @@ public class ProductEditor extends AbstractIMObjectEditor {
      * Pricing groups node.
      */
     private static final String PRICING_GROUPS = "pricingGroups";
+
+    /**
+     * Preferred supplier node.
+     */
+    private static final String PREFERRED = "preferred";
 
     /**
      * Constructs a {@link ProductEditor}.
@@ -119,9 +125,10 @@ public class ProductEditor extends AbstractIMObjectEditor {
         super(object, parent, layoutContext);
         CollectionProperty suppliers = getCollectionProperty(SUPPLIERS);
         CollectionProperty stock = getCollectionProperty(STOCK_LOCATIONS);
+        CollectionProperty locations = getCollectionProperty(LOCATIONS);
         if (suppliers != null && stock != null) {
             RelationshipCollectionEditor stockLocations
-                    = new MultipleEntityRelationshipCollectionEditor(stock, object, getLayoutContext()) {
+                    = new MultipleEntityLinkCollectionEditor(stock, object, getLayoutContext()) {
                 @Override
                 protected IMObjectEditor createEditor(IMObject object, LayoutContext context) {
                     IMObjectEditor editor = super.createEditor(object, context);
@@ -133,9 +140,50 @@ public class ProductEditor extends AbstractIMObjectEditor {
             };
             getEditors().add(stockLocations);
         }
+        if (locations != null) {
+            getEditors().add(new ProductLocationCollectionEditor(locations, object, getLayoutContext()));
+        }
         updater = new ProductPriceUpdater(ServiceHelper.getBean(ProductPriceRules.class),
                                           ServiceHelper.getBean(PracticeRules.class),
                                           ServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Returns the prices editor.
+     *
+     * @return the prices, or {@code null} if the product doesn't support prices, or the component has not been created
+     */
+    public EditableIMObjectCollectionEditor getPricesEditor() {
+        return (EditableIMObjectCollectionEditor) getEditor(PRICES, false);
+    }
+
+    /**
+     * Returns the suppliers editor.
+     *
+     * @return the prices, or {@code null} if the product doesn't support prices, or the component has not been created
+     */
+    public EditableIMObjectCollectionEditor getSuppliersEditor() {
+        return (EditableIMObjectCollectionEditor) getEditor(SUPPLIERS, false);
+    }
+
+    /**
+     * Returns the product supplier references.
+     *
+     * @return the product supplier references
+     */
+    public List<IMObjectReference> getSuppliers() {
+        List<IMObjectReference> result = new ArrayList<>();
+        EditableIMObjectCollectionEditor suppliers = getSuppliersEditor();
+        if (suppliers != null) {
+            for (IMObject object : suppliers.getCurrentObjects()) {
+                IMObjectRelationship relationship = (IMObjectRelationship) object;
+                IMObjectReference target = relationship.getTarget();
+                if (target != null) {
+                    result.add(target);
+                }
+            }
+        }
+        return result;
     }
 
     /**
@@ -148,29 +196,9 @@ public class ProductEditor extends AbstractIMObjectEditor {
     protected boolean doValidation(Validator validator) {
         boolean valid = super.doValidation(validator);
         if (valid) {
-            valid = validateUnitPrices(validator) && validateDoses(validator);
+            valid = validateUnitPrices(validator) && validateDoses(validator) && validateSuppliers(validator);
         }
         return valid;
-    }
-
-    /**
-     * Returns the product supplier references.
-     *
-     * @return the product supplier references
-     */
-    public List<IMObjectReference> getSuppliers() {
-        List<IMObjectReference> result = new ArrayList<>();
-        EditableIMObjectCollectionEditor suppliers = (EditableIMObjectCollectionEditor) getEditor(SUPPLIERS);
-        if (suppliers != null) {
-            for (IMObject object : suppliers.getCurrentObjects()) {
-                IMObjectRelationship relationship = (IMObjectRelationship) object;
-                IMObjectReference target = relationship.getTarget();
-                if (target != null) {
-                    result.add(target);
-                }
-            }
-        }
-        return result;
     }
 
     /**
@@ -185,6 +213,10 @@ public class ProductEditor extends AbstractIMObjectEditor {
         if (stockLocations != null) {
             strategy.addComponent(new ComponentState(stockLocations));
         }
+        ProductLocationCollectionEditor locations = (ProductLocationCollectionEditor) getEditor(LOCATIONS, false);
+        if (locations != null) {
+            strategy.addComponent(new ComponentState(locations));
+        }
         return strategy;
     }
 
@@ -194,13 +226,9 @@ public class ProductEditor extends AbstractIMObjectEditor {
      */
     @Override
     protected void onLayoutCompleted() {
-        IMObjectCollectionEditor editor = (IMObjectCollectionEditor) getEditor(SUPPLIERS);
+        EditableIMObjectCollectionEditor editor = getSuppliersEditor();
         if (editor != null) {
-            editor.addModifiableListener(new ModifiableListener() {
-                public void modified(Modifiable modifiable) {
-                    onSupplierChanged();
-                }
-            });
+            editor.addModifiableListener(modifiable -> onSupplierChanged());
         }
     }
 
@@ -208,19 +236,33 @@ public class ProductEditor extends AbstractIMObjectEditor {
      * Invoked when a product-supplier relationship changes. This recalculates product prices if required.
      */
     private void onSupplierChanged() {
-        EditableIMObjectCollectionEditor suppliers = (EditableIMObjectCollectionEditor) getEditor(SUPPLIERS);
-        EditableIMObjectCollectionEditor prices = (EditableIMObjectCollectionEditor) getEditor(PRICES);
-        Collection<IMObjectEditor> currentPrices = prices.getEditors();
-        Collection<IMObjectEditor> editors = suppliers.getEditors();
-        for (IMObjectEditor editor : editors) {
-            EntityRelationship rel = (EntityRelationship) editor.getObject();
-            ProductSupplier ps = new ProductSupplier(rel);
-            List<ProductPrice> updated = updater.update((Product) getObject(), ps, false);
-            for (ProductPrice price : updated) {
-                updatePriceEditor(price, currentPrices);
+        updateUnitPrices();
+        updatePreferred();
+    }
+
+    /**
+     * Updates unit prices if one or more product-supplier relationships have autoPriceUpdate set {@code true}.
+     */
+    private void updateUnitPrices() {
+        EditableIMObjectCollectionEditor suppliers = getSuppliersEditor();
+        EditableIMObjectCollectionEditor prices = getPricesEditor();
+        if (prices != null) {
+            IMObjectEditor current = prices.getCurrentEditor();
+            if (current != null && !prices.getCollection().getValues().contains(current.getObject())) {
+                prices.add(current.getObject());
             }
+            Collection<IMObjectEditor> currentPrices = prices.getEditors();
+            Collection<IMObjectEditor> editors = suppliers.getEditors();
+            for (IMObjectEditor editor : editors) {
+                IMObjectRelationship rel = (IMObjectRelationship) editor.getObject();
+                ProductSupplier ps = new ProductSupplier(rel, ServiceHelper.getArchetypeService());
+                List<ProductPrice> updated = updater.update((Product) getObject(), ps, false);
+                for (ProductPrice price : updated) {
+                    updatePriceEditor(price, currentPrices);
+                }
+            }
+            prices.refresh();
         }
-        prices.refresh();
     }
 
     /**
@@ -253,8 +295,9 @@ public class ProductEditor extends AbstractIMObjectEditor {
         boolean valid = true;
         Product product = (Product) getObject();
         List<ProductPrice> unitPrices = new ArrayList<>();
-        for (ProductPrice price : product.getProductPrices()) {
-            if (TypeHelper.isA(price, ProductArchetypes.UNIT_PRICE)) {
+        for (org.openvpms.component.model.product.ProductPrice p : product.getProductPrices()) {
+            ProductPrice price = (ProductPrice) p;
+            if (price.isA(ProductArchetypes.UNIT_PRICE)) {
                 unitPrices.add(price);
             }
         }
@@ -264,27 +307,49 @@ public class ProductEditor extends AbstractIMObjectEditor {
             for (ProductPrice other : unitPrices) {
                 if (DateRules.intersects(price.getFromDate(), price.getToDate(), other.getFromDate(),
                                          other.getToDate())) {
-                    IMObjectBean priceBean = new IMObjectBean(price);
-                    IMObjectBean otherBean = new IMObjectBean(other);
-                    List<Lookup> priceGroups = priceBean.getValues(PRICING_GROUPS, Lookup.class);
-                    List<Lookup> otherGroups = otherBean.getValues(PRICING_GROUPS, Lookup.class);
-                    if (priceGroups.isEmpty() && otherGroups.isEmpty()) {
-                        validator.add(getPriceEditor(price), new ValidatorError(
-                                Messages.format("product.price.dateOverlap", formatPrice(price),
-                                                formatPrice(other))));
-                        valid = false;
-                        break;
-                    } else if (priceGroups.removeAll(otherGroups)) {
-                        validator.add(getPriceEditor(price), new ValidatorError(
-                                Messages.format("product.price.groupOverlap", formatPrice(price),
-                                                formatPrice(other))));
-                        valid = false;
-                        break;
+                    if (DateRules.dateEquals(price.getToDate(), other.getFromDate())) {
+                        // intersection is on time only. Make them them so that they don't intersect
+                        setToDate(price, other.getFromDate());
+                    } else if (DateRules.dateEquals(price.getFromDate(), other.getToDate())) {
+                        setToDate(other, price.getFromDate());
+                    } else {
+                        IMObjectBean priceBean = new IMObjectBean(price);
+                        IMObjectBean otherBean = new IMObjectBean(other);
+                        List<Lookup> priceGroups = priceBean.getValues(PRICING_GROUPS, Lookup.class);
+                        List<Lookup> otherGroups = otherBean.getValues(PRICING_GROUPS, Lookup.class);
+                        if (priceGroups.isEmpty() && otherGroups.isEmpty()) {
+                            validator.add(getPriceEditor(price), new ValidatorError(
+                                    Messages.format("product.price.dateOverlap", formatPrice(price),
+                                                    formatPrice(other))));
+                            valid = false;
+                            break;
+                        } else if (priceGroups.removeAll(otherGroups)) {
+                            validator.add(getPriceEditor(price), new ValidatorError(
+                                    Messages.format("product.price.groupOverlap", formatPrice(price),
+                                                    formatPrice(other))));
+                            valid = false;
+                            break;
+                        }
                     }
                 }
             }
         }
         return valid;
+    }
+
+    /**
+     * Sets the to-date of a price.
+     *
+     * @param price the price
+     * @param date  the date
+     */
+    private void setToDate(ProductPrice price, Date date) {
+        IMObjectEditor editor = getPriceEditor(price);
+        if (editor instanceof ProductPriceEditor) {
+            ((ProductPriceEditor) editor).setToDate(date);
+        } else {
+            price.setToDate(date);
+        }
     }
 
     /**
@@ -372,6 +437,64 @@ public class ProductEditor extends AbstractIMObjectEditor {
     }
 
     /**
+     * Invoked when a product-supplier relationship changes to ensure that only one is preferred.
+     */
+    private void updatePreferred() {
+        EditableIMObjectCollectionEditor suppliers = getSuppliersEditor();
+        if (suppliers != null) {
+            IMObjectEditor currentEditor = suppliers.getCurrentEditor();
+            if (currentEditor != null && currentEditor.getProperty(PREFERRED).getBoolean()) {
+                // current relationship is preferred. Ensure other suppliers are not preferred
+                for (IMObject object : suppliers.getCurrentObjects()) {
+                    if (!object.equals(currentEditor.getObject())) {
+                        IMObjectEditor editor = suppliers.getEditor(object);
+                        if (editor != null) {
+                            Property preferred = editor.getProperty(PREFERRED);
+                            if (preferred.getBoolean()) {
+                                preferred.setValue(false);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Ensures that a product has only one preferred supplier.
+     *
+     * @param validator the validator
+     * @return {@code true} if there is at most one preferred supplier, otherwise {@code false}
+     */
+    private boolean validateSuppliers(Validator validator) {
+        boolean valid = true;
+        EditableIMObjectCollectionEditor editor = getSuppliersEditor();
+        if (editor != null) {
+            IMObjectReference preferred = null;
+            for (IMObject object : editor.getCurrentObjects()) {
+                IMObjectRelationship relationship = (IMObjectRelationship) object;
+                IMObjectBean bean = new IMObjectBean(relationship);
+                if (bean.getBoolean(PREFERRED)) {
+                    if (preferred != null) {
+                        IMObject first = getObject(preferred);
+                        IMObject second = getObject(relationship.getTarget());
+                        String firstName = (first != null) ? first.getName() : null;
+                        String secondName = (second != null) ? second.getName() : null;
+                        // shouldn't fail to retrieve suppliers...
+                        String message = Messages.format("product.supplier.multiplepreferred", firstName, secondName);
+                        validator.add(editor.getProperty(), new ValidatorError(editor.getProperty(), message));
+                        valid = false;
+                        break;
+                    } else {
+                        preferred = relationship.getTarget();
+                    }
+                }
+            }
+        }
+        return valid;
+    }
+
+    /**
      * Formats a price for error reporting.
      *
      * @param price the price
@@ -393,7 +516,7 @@ public class ProductEditor extends AbstractIMObjectEditor {
      * @return the price editor
      */
     private IMObjectEditor getPriceEditor(ProductPrice price) {
-        EditableIMObjectCollectionEditor prices = (EditableIMObjectCollectionEditor) getEditor(PRICES);
+        EditableIMObjectCollectionEditor prices = getPricesEditor();
         return prices.getEditor(price);
     }
 

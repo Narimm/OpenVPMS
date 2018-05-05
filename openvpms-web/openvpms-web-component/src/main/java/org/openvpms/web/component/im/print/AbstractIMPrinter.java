@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.print;
 
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.print.AbstractPrinter;
 
@@ -42,8 +43,10 @@ public abstract class AbstractIMPrinter<T>
      * Constructs an {@link AbstractIMPrinter}.
      *
      * @param reporter the reporter
+     * @param service  the archetype service
      */
-    public AbstractIMPrinter(Reporter<T> reporter) {
+    public AbstractIMPrinter(Reporter<T> reporter, IArchetypeService service) {
+        super(service);
         this.reporter = reporter;
     }
 
@@ -54,6 +57,15 @@ public abstract class AbstractIMPrinter<T>
      */
     public Iterable<T> getObjects() {
         return reporter.getObjects();
+    }
+
+    /**
+     * Returns the reporter.
+     *
+     * @return the reporter
+     */
+    public Reporter<T> getReporter() {
+        return reporter;
     }
 
     /**
@@ -70,7 +82,7 @@ public abstract class AbstractIMPrinter<T>
         if (printer == null) {
             throw new PrintException(PrintException.ErrorCode.NoPrinter);
         }
-        reporter.print(getObjects(), getProperties(printer));
+        reporter.print(getProperties(printer));
     }
 
     /**
@@ -127,19 +139,10 @@ public abstract class AbstractIMPrinter<T>
     /**
      * Returns the object being printed.
      *
-     * @return the object being printed, or {@code null} if a collection
-     *         is being printed
+     * @return the object being printed, or {@code null} if a collection is being printed
      */
     protected T getObject() {
         return reporter.getObject();
     }
 
-    /**
-     * Returns the reporter.
-     *
-     * @return the reporter
-     */
-    protected Reporter<T> getReporter() {
-        return reporter;
-    }
 }

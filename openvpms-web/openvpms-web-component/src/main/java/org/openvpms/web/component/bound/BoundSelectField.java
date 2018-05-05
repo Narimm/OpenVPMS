@@ -11,12 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
 
 import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.event.ListDataEvent;
+import nextapp.echo2.app.event.ListDataListener;
 import nextapp.echo2.app.list.ListModel;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.web.component.property.Property;
@@ -47,6 +49,22 @@ public class BoundSelectField extends SelectField implements BoundProperty {
         if (!StringUtils.isEmpty(property.getDescription())) {
             setToolTipText(property.getDescription());
         }
+        model.addListDataListener(new ListDataListener() {
+            @Override
+            public void contentsChanged(ListDataEvent e) {
+                binder.setField();
+            }
+
+            @Override
+            public void intervalAdded(ListDataEvent e) {
+                binder.setField();
+            }
+
+            @Override
+            public void intervalRemoved(ListDataEvent e) {
+                binder.setField();
+            }
+        });
     }
 
     /**

@@ -11,15 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
 
+import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRParameter;
 import net.sf.jasperreports.engine.JRQuery;
 import net.sf.jasperreports.engine.JasperReport;
+import net.sf.jasperreports.engine.SimpleJasperReportsContext;
 import net.sf.jasperreports.engine.design.JasperDesign;
+import net.sf.jasperreports.engine.fill.JREvaluator;
+import net.sf.jasperreports.repo.RepositoryService;
 import org.apache.commons.jxpath.Functions;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -29,7 +33,7 @@ import org.openvpms.report.ParameterType;
 import org.openvpms.report.ReportException;
 
 import java.sql.Connection;
-import java.util.Map;
+import java.util.Collections;
 import java.util.Set;
 
 import static net.sf.jasperreports.engine.query.JRJdbcQueryExecuterFactory.QUERY_LANGUAGE_SQL;
@@ -43,9 +47,14 @@ import static net.sf.jasperreports.engine.query.JRJdbcQueryExecuterFactory.QUERY
 public abstract class AbstractTemplatedJasperIMReport<T> extends AbstractJasperIMReport<T> {
 
     /**
+     * The report name.
+     */
+    private final String name;
+
+    /**
      * The template loader.
      */
-    private JasperTemplateLoader template;
+    private final JasperTemplateLoader loader;
 
 
     /**
@@ -61,7 +70,9 @@ public abstract class AbstractTemplatedJasperIMReport<T> extends AbstractJasperI
     public AbstractTemplatedJasperIMReport(Document template, IArchetypeService service, ILookupService lookups,
                                            DocumentHandlers handlers, Functions functions) {
         super(service, lookups, handlers, functions);
-        this.template = new JasperTemplateLoader(template, service, handlers);
+        SimpleJasperReportsContext context = getJasperReportsContext();
+        loader = init(new JasperTemplateLoader(template, service, handlers, context), context);
+        this.name = template.getName();
     }
 
     /**
@@ -77,7 +88,9 @@ public abstract class AbstractTemplatedJasperIMReport<T> extends AbstractJasperI
     public AbstractTemplatedJasperIMReport(JasperDesign design, IArchetypeService service, ILookupService lookups,
                                            DocumentHandlers handlers, Functions functions) {
         super(service, lookups, handlers, functions);
-        this.template = new JasperTemplateLoader(design, service, handlers);
+        SimpleJasperReportsContext context = getJasperReportsContext();
+        loader = init(new JasperTemplateLoader(design, service, handlers, context), context);
+        this.name = design.getName();
     }
 
     /**
@@ -101,32 +114,55 @@ public abstract class AbstractTemplatedJasperIMReport<T> extends AbstractJasperI
     }
 
     /**
+     * Returns the report name.
+     *
+     * @return the report name.
+     */
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    /**
      * Returns the master report.
      *
      * @return the master report
      */
     public JasperReport getReport() {
-        return template.getReport();
+        return loader.getReport();
     }
 
     /**
-     * Returns the sub-reports.
+     * Returns the expression evaluator.
      *
-     * @return the sub-reports
+     * @return the expression evaluator
+     * @throws JRException if the evaluator can't be loaded
      */
-    public JasperReport[] getSubreports() {
-        return template.getSubReports();
+    @Override
+    protected JREvaluator getEvaluator() throws JRException {
+        return loader.getEvaluator();
     }
 
     /**
-     * Returns the default report parameters to use when filling the report.
+     * Returns the template loader.
      *
-     * @return the report parameters
+     * @return the loader
      */
-    protected Map<String, Object> getDefaultParameters() {
-        Map<String, Object> result = super.getDefaultParameters();
-        result.putAll(template.getParameters());
-        return result;
+    protected JasperTemplateLoader getLoader() {
+        return loader;
+    }
+
+    /**
+     * Initialises the context with the loader, in order to lazily load sub-reports.
+     *
+     * @param loader  the loader
+     * @param context the context
+     * @return the loader
+     */
+    private JasperTemplateLoader init(JasperTemplateLoader loader, SimpleJasperReportsContext context) {
+        // register the loader to lazily load sub-reports
+        context.setExtensions(RepositoryService.class, Collections.singletonList(loader));
+        return loader;
     }
 
 }

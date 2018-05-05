@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -32,7 +32,7 @@ import java.util.Set;
  * @author Jim Alateras
  * @author Tim Anderson
  */
-public class User extends Party implements UserDetails {
+public class User extends Party implements org.openvpms.component.model.user.User, UserDetails {
 
     /**
      * Default UID

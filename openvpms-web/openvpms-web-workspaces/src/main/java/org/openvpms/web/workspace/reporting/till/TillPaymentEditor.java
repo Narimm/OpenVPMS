@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.till;
@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.reporting.till;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.payment.CustomerPaymentEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -32,7 +33,7 @@ import org.openvpms.web.component.property.Validator;
 
 /**
  * An editor for customer payments and refunds that places them directly into an IN_PROGRESS till balance.
- * <p/>
+ * <p>
  * This:
  * <ul>
  * <li>exposes the customer for editing</li>
@@ -64,7 +65,7 @@ public class TillPaymentEditor extends CustomerPaymentEditor {
 
     /**
      * Invoked when layout has completed.
-     * <p/>
+     * <p>
      * This can be used to perform processing that requires all editors to be created.
      */
     @Override
@@ -91,21 +92,16 @@ public class TillPaymentEditor extends CustomerPaymentEditor {
 
     /**
      * Save any edits.
-     * <p/>
+     * <p>
      * This links the adjustment to the <em>act.tillBalance</em> and forces a recalculation, if one is present.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
-        boolean result = updater.prepare();
-        if (result) {
-            result = super.doSave();
-            if (result) {
-                updater.commit();
-            }
-        }
-        return result;
+    protected void doSave() {
+        updater.prepare();
+        super.doSave();
+        updater.commit();
     }
 
     /**
@@ -132,7 +128,7 @@ public class TillPaymentEditor extends CustomerPaymentEditor {
 
         /**
          * Creates a component for a property.
-         * <p/>
+         * <p>
          * If there is a pre-existing component, registered via {@link #addComponent}, this will be returned.
          *
          * @param property the property

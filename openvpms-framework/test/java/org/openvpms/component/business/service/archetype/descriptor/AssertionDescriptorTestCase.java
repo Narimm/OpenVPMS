@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -34,6 +34,7 @@ import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -225,6 +226,37 @@ public class AssertionDescriptorTestCase extends AbstractJUnit4SpringContextTest
     }
 
     /**
+     * Verifies that assertions can be updated.
+     */
+    @Test
+    public void testUpdateAssertion() {
+        ArchetypeDescriptor archetype1 = service.getArchetypeDescriptor("party.personbernief");
+        assertNotNull(archetype1);
+        NodeDescriptor node1 = archetype1.getNodeDescriptor("title");
+        assertNotNull(node1);
+        AssertionDescriptor assertion = (AssertionDescriptor) node1.getAssertionDescriptor("lookup.local");
+        assertNotNull(assertion);
+        NamedProperty entries1 = (NamedProperty) assertion.getPropertyMap().getProperties().get("entries");
+        assertTrue(entries1 instanceof PropertyList);
+        PropertyList list1 = (PropertyList) entries1;
+        NamedProperty[] properties1 = list1.getPropertiesAsArray();
+        assertTrue(properties1.length > 0);
+        int size = properties1.length;
+        list1.removeProperty(properties1[0]);
+        assertEquals(size - 1, list1.getProperties().size());
+        service.save(Arrays.asList(assertion, archetype1));
+
+        ArchetypeDescriptor archetype2 = service.getArchetypeDescriptor("party.personbernief");
+        assertNotNull(archetype2);
+        NodeDescriptor node2 = archetype2.getNodeDescriptor("title");
+        assertNotNull(node2);
+        NamedProperty entries2 = (NamedProperty) assertion.getPropertyMap().getProperties().get("entries");
+        assertTrue(entries2 instanceof PropertyList);
+        PropertyList list2 = (PropertyList) entries2;
+        assertEquals(size - 1, list2.getProperties().size());
+    }
+
+    /**
      * Verifies an {@link AssertionDescriptor} can be written and read, and that the written version is the same
      * as the read.
      *
@@ -367,6 +399,5 @@ public class AssertionDescriptorTestCase extends AbstractJUnit4SpringContextTest
         result.setValue(value);
         return result;
     }
-
 
 }

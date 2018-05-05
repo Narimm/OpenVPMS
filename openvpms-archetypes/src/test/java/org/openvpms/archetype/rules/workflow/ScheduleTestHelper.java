@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -19,13 +19,17 @@ package org.openvpms.archetype.rules.workflow;
 import net.sf.ehcache.Ehcache;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -33,7 +37,10 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.springframework.cache.ehcache.EhCacheFactoryBean;
 
 import java.sql.Time;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -50,8 +57,36 @@ public class ScheduleTestHelper extends TestHelper {
      * @param view     the schedule view
      */
     public static void addScheduleView(Party location, Entity view) {
+        addScheduleView(location, view, false);
+    }
+
+    /**
+     * Helper to a add schedule view to a practice location.
+     *
+     * @param location    the practice location
+     * @param view        the schedule view
+     * @param defaultView determines if the view is the default for the location
+     */
+    public static void addScheduleView(Party location, Entity view, boolean defaultView) {
         EntityBean bean = new EntityBean(location);
-        bean.addNodeRelationship("scheduleViews", view);
+        EntityRelationship relationship = bean.addNodeRelationship("scheduleViews", view);
+        IMObjectBean relBean = new IMObjectBean(relationship);
+        relBean.setValue("default", defaultView);
+        save(location, view);
+    }
+
+    /**
+     * Helper to a add a work list view to a practice location.
+     *
+     * @param location    the practice location
+     * @param view        the work list view
+     * @param defaultView determines if the view is the default for the location
+     */
+    public static void addWorkListView(Party location, Entity view, boolean defaultView) {
+        EntityBean bean = new EntityBean(location);
+        EntityRelationship relationship = bean.addNodeRelationship("workListViews", view);
+        IMObjectBean relBean = new IMObjectBean(relationship);
+        relBean.setValue("default", defaultView);
         save(location, view);
     }
 
@@ -65,12 +100,25 @@ public class ScheduleTestHelper extends TestHelper {
     public static Entity createScheduleView(Entity... schedules) {
         Entity view = (Entity) create("entity.organisationScheduleView");
         view.setName("XScheduleView");
+        addSchedules(view, schedules);
+        return view;
+    }
+
+    /**
+     * Adds schedules to a schedule view.
+     *
+     * @param view      the view
+     * @param schedules the schedules to add
+     */
+    public static void addSchedules(Entity view, Entity... schedules) {
         EntityBean bean = new EntityBean(view);
         for (Entity schedule : schedules) {
             bean.addNodeRelationship("schedules", schedule);
         }
-        bean.save();
-        return view;
+        List<Entity> list = new ArrayList<>();
+        list.add(view);
+        list.addAll(Arrays.asList(schedules));
+        save(list);
     }
 
     /**
@@ -101,10 +149,11 @@ public class ScheduleTestHelper extends TestHelper {
     /**
      * Helper to create and save a <em>party.organisationSchedule</em>.
      *
+     * @param location the practice location
      * @return a new schedule
      */
-    public static Party createSchedule() {
-        return createSchedule(15, "MINUTES", 2, createAppointmentType());
+    public static Party createSchedule(Party location) {
+        return createSchedule(15, "MINUTES", 2, createAppointmentType(), location);
     }
 
     /**
@@ -114,10 +163,11 @@ public class ScheduleTestHelper extends TestHelper {
      * @param slotUnits       the schedule slot units
      * @param noSlots         the appointment no. of slots
      * @param appointmentType the appointment type. May be {@code null}
+     * @param location        the practice location
      * @return a new schedule
      */
     public static Party createSchedule(int slotSize, String slotUnits,
-                                       int noSlots, Entity appointmentType) {
+                                       int noSlots, Entity appointmentType, Party location) {
         Party schedule = (Party) create(ScheduleArchetypes.ORGANISATION_SCHEDULE);
         EntityBean bean = new EntityBean(schedule);
         bean.setValue("name", "XSchedule");
@@ -128,6 +178,24 @@ public class ScheduleTestHelper extends TestHelper {
         if (appointmentType != null) {
             addAppointmentType(schedule, appointmentType, noSlots, true);
         }
+        bean.addNodeTarget("location", location);
+        bean.save();
+        return schedule;
+    }
+
+    /**
+     * Creates a boarding schedule.
+     *
+     * @param location the practice location
+     * @param cageType the cage type
+     * @return a new schedule
+     */
+    public static Party createSchedule(Party location, Entity cageType) {
+        Party schedule = (Party) create(ScheduleArchetypes.ORGANISATION_SCHEDULE);
+        IMObjectBean bean = new IMObjectBean(schedule);
+        bean.setValue("name", "XSchedule");
+        bean.addNodeTarget("location", location);
+        bean.addNodeTarget("cageType", cageType);
         bean.save();
         return schedule;
     }
@@ -141,9 +209,7 @@ public class ScheduleTestHelper extends TestHelper {
      * @param isDefault       determines if the appointment type is the default
      * @return the new <em>entityRelationship.scheduleAppointmentType</em>
      */
-    public static EntityRelationship addAppointmentType(Party schedule,
-                                                        Entity appointmentType,
-                                                        int noSlots,
+    public static EntityRelationship addAppointmentType(Entity schedule, Entity appointmentType, int noSlots,
                                                         boolean isDefault) {
         EntityBean bean = new EntityBean(schedule);
         EntityRelationship relationship = bean.addRelationship(
@@ -164,12 +230,10 @@ public class ScheduleTestHelper extends TestHelper {
      * @param schedule  the schedule
      * @return a new act
      */
-    public static Act createAppointment(Date startTime, Date endTime,
-                                        Party schedule) {
+    public static Act createAppointment(Date startTime, Date endTime, Entity schedule) {
         Party customer = TestHelper.createCustomer();
         Party patient = TestHelper.createPatient();
-        return createAppointment(startTime, endTime, schedule, customer,
-                                 patient);
+        return createAppointment(startTime, endTime, schedule, customer, patient);
     }
 
     /**
@@ -182,12 +246,28 @@ public class ScheduleTestHelper extends TestHelper {
      * @param patient   the patient. May be {@code null}
      * @return a new act
      */
-    public static Act createAppointment(Date startTime, Date endTime,
-                                        Party schedule, Party customer,
-                                        Party patient) {
+    public static Act createAppointment(Date startTime, Date endTime, Entity schedule, Party customer, Party patient) {
         Entity appointmentType = createAppointmentType();
         appointmentType.setName("XAppointmentType");
+        save(appointmentType);
         return createAppointment(startTime, endTime, schedule, appointmentType, customer, patient, null, null);
+    }
+
+    /**
+     * Helper to create a 15 minute appointment.
+     *
+     * @param startTime the appointment start time
+     * @param schedule  the schedule
+     * @param customer  the customer
+     * @param patient   the patient. May be {@code null}
+     * @param status    the appointment status
+     * @return a new appointment
+     */
+    public static Act createAppointment(Date startTime, Entity schedule, Party customer, Party patient, String status) {
+        Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
+        Act appointment = createAppointment(startTime, endTime, schedule, customer, patient);
+        appointment.setStatus(status);
+        return appointment;
     }
 
     /**
@@ -203,9 +283,8 @@ public class ScheduleTestHelper extends TestHelper {
      * @param author          the author. May be {@code null}
      * @return a new act
      */
-    public static Act createAppointment(Date startTime, Date endTime,
-                                        Party schedule, Entity appointmentType, Party customer,
-                                        Party patient, User clinician, User author) {
+    public static Act createAppointment(Date startTime, Date endTime, Entity schedule, Entity appointmentType,
+                                        Party customer, Party patient, User clinician, User author) {
         Act act = (Act) create(ScheduleArchetypes.APPOINTMENT);
         Lookup reason = TestHelper.getLookup(ScheduleArchetypes.VISIT_REASON, "XREASON", "Reason X", true);
 
@@ -214,7 +293,6 @@ public class ScheduleTestHelper extends TestHelper {
         bean.setValue("endTime", endTime);
         bean.setValue("reason", reason.getCode());
         bean.setValue("status", AppointmentStatus.IN_PROGRESS);
-        save(appointmentType);
         bean.setParticipant("participation.customer", customer);
         if (patient != null) {
             bean.setParticipant("participation.patient", patient);
@@ -330,7 +408,7 @@ public class ScheduleTestHelper extends TestHelper {
      * @param workList  the work list
      * @return a new act
      */
-    public static Act createTask(Date startTime, Date endTime, Party workList) {
+    public static Act createTask(Date startTime, Date endTime, Entity workList) {
         Party customer = TestHelper.createCustomer();
         Party patient = TestHelper.createPatient();
         return createTask(startTime, endTime, workList, customer, patient);
@@ -341,14 +419,13 @@ public class ScheduleTestHelper extends TestHelper {
      *
      * @param startTime the act start time
      * @param endTime   the act end time
-     * @param schedule  the schedule
+     * @param workList  the work list
      * @param customer  the customer
      * @param patient   the patient. May be {@code null}
      * @return a new act
      */
-    public static Act createTask(Date startTime, Date endTime, Party schedule,
-                                 Party customer, Party patient) {
-        return createTask(startTime, endTime, schedule, customer, patient, null, null);
+    public static Act createTask(Date startTime, Date endTime, Entity workList, Party customer, Party patient) {
+        return createTask(startTime, endTime, workList, customer, patient, null, null);
     }
 
     /**
@@ -363,7 +440,7 @@ public class ScheduleTestHelper extends TestHelper {
      * @param author    the author. May be {@code null}
      * @return a new act
      */
-    public static Act createTask(Date startTime, Date endTime, Party worklist, Party customer, Party patient,
+    public static Act createTask(Date startTime, Date endTime, Entity worklist, Party customer, Party patient,
                                  User clinician, User author) {
         return createTask(startTime, endTime, worklist, customer, patient, createTaskType(), clinician, author);
     }
@@ -381,7 +458,7 @@ public class ScheduleTestHelper extends TestHelper {
      * @param author    the author. May be {@code null}
      * @return a new act
      */
-    public static Act createTask(Date startTime, Date endTime, Party worklist, Party customer, Party patient,
+    public static Act createTask(Date startTime, Date endTime, Entity worklist, Party customer, Party patient,
                                  Entity taskType, User clinician, User author) {
         Act act = (Act) create(ScheduleArchetypes.TASK);
 
@@ -421,4 +498,116 @@ public class ScheduleTestHelper extends TestHelper {
         bean.afterPropertiesSet();
         return bean.getObject();
     }
+
+    /**
+     * Creates a new cage type.
+     *
+     * @param name the cage type name
+     * @return a new cage type
+     */
+    public static Entity createCageType(String name) {
+        Product product = TestHelper.createProduct(ProductArchetypes.SERVICE, null);
+        return createCageType(name, product, null, null, null);
+    }
+
+    /**
+     * Creates a new cage type.
+     *
+     * @param name                  the cage type name
+     * @param firstPetProductDay    the first pet product, day rate
+     * @param firstPetProductNight  the first pet product, overnight rate. May be {@code null}
+     * @param secondPetProductDay   the second pet product, day rate
+     * @param secondPetProductNight the second pet product, overnight rate. May be {@code null}
+     * @return a new cage type
+     */
+    public static Entity createCageType(String name, Product firstPetProductDay, Product firstPetProductNight,
+                                        Product secondPetProductDay, Product secondPetProductNight) {
+        return createCageType(name, firstPetProductDay, firstPetProductNight, secondPetProductDay,
+                              secondPetProductNight, null, null);
+    }
+
+    /**
+     * Creates a new cage type.
+     *
+     * @param name                  the cage type name
+     * @param firstPetProductDay    the first pet product, day rate
+     * @param firstPetProductNight  the first pet product, overnight rate. May be {@code null}
+     * @param secondPetProductDay   the second pet product, day rate
+     * @param secondPetProductNight the second pet product, overnight rate. May be {@code null}
+     * @param lateCheckoutTime      the late checkout time. May be {@code null}
+     * @param lateCheckoutProduct   the late checkout product. May be {@code null}
+     * @return a new cage type
+     */
+    public static Entity createCageType(String name, Product firstPetProductDay, Product firstPetProductNight,
+                                        Product secondPetProductDay, Product secondPetProductNight,
+                                        Time lateCheckoutTime, Product lateCheckoutProduct) {
+        Entity entity = (Entity) create(ScheduleArchetypes.CAGE_TYPE);
+        entity.setName(name);
+        IMObjectBean bean = new IMObjectBean(entity);
+        bean.addNodeTarget("firstPetProductDay", firstPetProductDay);
+        if (firstPetProductNight != null) {
+            bean.addNodeTarget("firstPetProductNight", firstPetProductNight);
+        }
+        if (secondPetProductDay != null) {
+            bean.addNodeTarget("secondPetProductDay", secondPetProductDay);
+        }
+        if (secondPetProductNight != null) {
+            bean.addNodeTarget("secondPetProductNight", secondPetProductNight);
+        }
+        if (lateCheckoutTime != null) {
+            bean.setValue("lateCheckoutTime", lateCheckoutTime);
+        }
+        if (lateCheckoutProduct != null) {
+            bean.addNodeTarget("lateCheckoutProduct", lateCheckoutProduct);
+        }
+        save(entity);
+        return entity;
+    }
+
+    /**
+     * Helper to create and save a new <em>entity.calendarBlockType</em>.
+     *
+     * @return a new calendar block type
+     */
+    public static Entity createCalendarBlockType() {
+        return createCalendarBlockType("XCalendarBlockType");
+    }
+
+    /**
+     * Helper to create and save a new <em>entity.calendarBlockType</em>.
+     *
+     * @param name the block type name
+     * @return a new block type
+     */
+    public static Entity createCalendarBlockType(String name) {
+        Entity blockType = (Entity) create(ScheduleArchetypes.CALENDAR_BLOCK_TYPE);
+        blockType.setName(name);
+        save(blockType);
+        return blockType;
+    }
+
+    /**
+     * Helper to create an <em>act.calendarBlock</em>.
+     *
+     * @param startTime the act start time
+     * @param endTime   the act end time
+     * @param schedule  the schedule
+     * @param blockType the calendar block type
+     * @param author    the author. May be {@code null}
+     * @return a new act
+     */
+    public static Act createCalendarBlock(Date startTime, Date endTime, Entity schedule, Entity blockType,
+                                          User author) {
+        Act act = (Act) create(ScheduleArchetypes.CALENDAR_BLOCK);
+        ActBean bean = new ActBean(act);
+        bean.setValue("startTime", startTime);
+        bean.setValue("endTime", endTime);
+        bean.addNodeParticipation("schedule", schedule);
+        bean.addNodeParticipation("type", blockType);
+        if (author != null) {
+            bean.addNodeParticipation("author", author);
+        }
+        return act;
+    }
+
 }

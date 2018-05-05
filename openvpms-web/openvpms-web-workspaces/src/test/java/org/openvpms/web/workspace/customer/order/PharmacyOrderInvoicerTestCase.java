@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.order;
@@ -20,11 +20,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
-import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
+import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -33,6 +35,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
@@ -52,15 +55,17 @@ import org.openvpms.web.workspace.customer.charge.TestChargeEditor;
 import org.openvpms.web.workspace.customer.charge.TestPharmacyOrderService;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.web.workspace.customer.order.PharmacyTestHelper.createOrder;
+import static org.openvpms.web.workspace.customer.order.PharmacyTestHelper.createReturn;
 
 /**
  * Tests the {@link PharmacyOrderInvoicer}.
@@ -105,15 +110,14 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
     private Product product;
 
     /**
-     * The product fixed price.
+     * The fixed price, including tax.
      */
-    private BigDecimal fixedPrice;
+    private BigDecimal fixedPriceIncTax;
 
     /**
-     * The product unit price.
+     * The unit price, including tax.
      */
-    private BigDecimal unitPrice;
-
+    private BigDecimal unitPriceIncTax;
 
     /**
      * Sets up the test case.
@@ -122,18 +126,30 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
     @Before
     public void setUp() {
         super.setUp();
-        fixedPrice = BigDecimal.valueOf(2);
-        unitPrice = TEN;
+        BigDecimal fixedPrice = new BigDecimal("1.82");
+        BigDecimal unitPrice = new BigDecimal("9.09");
+        fixedPriceIncTax = BigDecimal.valueOf(2);
+        unitPriceIncTax = BigDecimal.TEN;
 
         // create a product linked to a pharmacy
         Party location = TestHelper.createLocation();
         Entity pharmacy = CustomerChargeTestHelper.createPharmacy(location);
         product = createProduct(ProductArchetypes.MEDICATION, fixedPrice, unitPrice);
+        IMObjectBean productBean = new IMObjectBean(product);
+        productBean.setValue("concentration", ONE);
+
         ProductTestHelper.addPharmacy(product, pharmacy);
+
+        // add a dose to the product. This should always be overridden
+        Entity dose = ProductTestHelper.createDose(null, BigDecimal.ZERO, BigDecimal.TEN, BigDecimal.TEN,
+                                                   BigDecimal.ONE);
+        ProductTestHelper.addDose(product, dose);
 
         clinician = TestHelper.createClinician();
         customer = TestHelper.createCustomer();
         patient = TestHelper.createPatient(customer);
+        PatientTestHelper.createWeight(patient, BigDecimal.ONE, WeightUnits.KILOGRAMS);
+
         context = new LocalContext();
         context.setPractice(getPractice());
 
@@ -156,21 +172,28 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal tax = BigDecimal.valueOf(2);
         BigDecimal total = new BigDecimal("22");
-        FinancialAct order = createOrder(customer, patient, product, quantity, null);
+        Date startTime = TestHelper.getDate("2017-07-01");
+        setProductPriceDates(startTime);
+
+        FinancialAct order = createOrder(startTime, customer, patient, product, quantity, null);
         PharmacyOrderInvoicer charger = new TestPharmacyOrderInvoicer(order, rules);
         assertTrue(charger.isValid());
         assertTrue(charger.canInvoice());
         assertFalse(charger.canCredit());
 
+        Date now = new Date();
         DefaultLayoutContext layoutContext = new DefaultLayoutContext(context, new HelpContext("foo", null));
         CustomerChargeActEditDialog dialog = charger.charge(null, null, layoutContext);
         TestChargeEditor editor = (TestChargeEditor) dialog.getEditor();
         CustomerChargeTestHelper.checkSavePopup(editor.getQueue(), PatientArchetypes.PATIENT_MEDICATION, false);
         assertTrue(SaveHelper.save(editor));
-        FinancialAct charge = (FinancialAct) get(editor.getObject());
+        FinancialAct charge = get(editor.getObject());
         assertTrue(TypeHelper.isA(charge, CustomerAccountArchetypes.INVOICE));
-        checkItem(charge, patient, product, quantity, unitPrice, fixedPrice, tax, total, quantity, null);
+        ActBean item = checkItem(charge, patient, product, quantity, unitPriceIncTax, fixedPriceIncTax, tax, total,
+                                 quantity, null);
+        assertEquals(startTime, item.getDate("startTime")); // charge item should have same date as the order
         checkCharge(charge, customer, author, clinician, tax, total);
+        assertTrue(DateRules.compareTo(charge.getActivityStartTime(), now, true) >= 0);
     }
 
     /**
@@ -183,20 +206,28 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal tax = BigDecimal.valueOf(2);
         BigDecimal total = new BigDecimal("22");
-        FinancialAct orderReturn = createReturn(customer, patient, product, quantity, null);
+
+        Date startTime = TestHelper.getDate("2017-07-01");
+        setProductPriceDates(startTime);
+
+        FinancialAct orderReturn = createReturn(startTime, customer, patient, product, quantity, null);
         PharmacyOrderInvoicer charger = new TestPharmacyOrderInvoicer(orderReturn, rules);
         assertTrue(charger.isValid());
         assertTrue(charger.canCredit());
         assertFalse(charger.canInvoice());
 
+        Date now = new Date();
         DefaultLayoutContext layoutContext = new DefaultLayoutContext(context, new HelpContext("foo", null));
         CustomerChargeActEditDialog dialog = charger.charge(null, null, layoutContext);
         TestChargeEditor editor = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor));
-        FinancialAct charge = (FinancialAct) get(editor.getObject());
+        FinancialAct charge = get(editor.getObject());
         assertTrue(TypeHelper.isA(charge, CustomerAccountArchetypes.CREDIT));
-        checkItem(charge, patient, product, quantity, unitPrice, fixedPrice, tax, total, null, null);
+        ActBean item = checkItem(charge, patient, product, quantity, unitPriceIncTax, fixedPriceIncTax, tax, total,
+                                 null, null);
+        assertEquals(startTime, item.getDate("startTime")); // charge item should have same date as the order
         checkCharge(charge, customer, author, clinician, tax, total);
+        assertTrue(DateRules.compareTo(charge.getActivityStartTime(), now, true) >= 0);
     }
 
     /**
@@ -213,7 +244,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         editor1.setStatus(ActStatus.IN_PROGRESS);
         assertTrue(SaveHelper.save(editor1));
 
-        FinancialAct invoice = (FinancialAct) editor1.getObject();
+        FinancialAct invoice = editor1.getObject();
         FinancialAct invoiceItem = getInvoiceItem(editor1);
 
         FinancialAct order = createOrder(customer, patient, product, quantity, invoiceItem);
@@ -226,9 +257,9 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         CustomerChargeActEditDialog dialog = charger.charge(invoice, null, layoutContext);
         TestChargeEditor editor2 = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor2));
-        FinancialAct charge = (FinancialAct) get(editor2.getObject());
+        FinancialAct charge = get(editor2.getObject());
         assertEquals(invoice, charge);
-        checkItem(charge, patient, product, quantity, unitPrice, fixedPrice, tax, total, quantity, null);
+        checkItem(charge, patient, product, quantity, unitPriceIncTax, fixedPriceIncTax, tax, total, quantity, null);
         checkCharge(charge, customer, author, clinician, tax, total);
     }
 
@@ -250,7 +281,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         editor1.setStatus(ActStatus.IN_PROGRESS);
         assertTrue(SaveHelper.save(editor1));
 
-        FinancialAct invoice = (FinancialAct) editor1.getObject();
+        FinancialAct invoice = editor1.getObject();
         FinancialAct invoiceItem = getInvoiceItem(editor1);
 
         FinancialAct order = createOrder(customer, patient, product, newQty, invoiceItem);
@@ -263,9 +294,9 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         CustomerChargeActEditDialog dialog = charger.charge(invoice, null, layoutContext);
         TestChargeEditor editor2 = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor2));
-        FinancialAct charge = (FinancialAct) get(editor2.getObject());
+        FinancialAct charge = get(editor2.getObject());
         assertEquals(invoice, charge);
-        checkItem(charge, patient, product, newQty, unitPrice, fixedPrice, newTax, newTotal, newQty, null);
+        checkItem(charge, patient, product, newQty, unitPriceIncTax, fixedPriceIncTax, newTax, newTotal, newQty, null);
         checkCharge(charge, customer, author, clinician, newTax, newTotal);
     }
 
@@ -288,7 +319,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         editor1.setStatus(ActStatus.POSTED);
         assertTrue(SaveHelper.save(editor1));
 
-        FinancialAct invoice = (FinancialAct) editor1.getObject();
+        FinancialAct invoice = editor1.getObject();
         FinancialAct invoiceItem = getInvoiceItem(editor1);
 
         FinancialAct order = createOrder(customer, patient, product, newOrderQty, invoiceItem);
@@ -303,12 +334,12 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         CustomerChargeTestHelper.checkSavePopup(editor.getQueue(), PatientArchetypes.PATIENT_MEDICATION, false);
         TestChargeEditor editor2 = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor2));
-        FinancialAct charge = (FinancialAct) get(editor2.getObject());
+        FinancialAct charge = get(editor2.getObject());
         assertNotEquals(invoice, charge);
 
         // NOTE: item tax not rounded.
-        checkItem(charge, patient, product, newQty, unitPrice, fixedPrice, new BigDecimal("1.091"), newTotal,
-                  newOrderQty, null);
+        checkItem(charge, patient, product, newQty, unitPriceIncTax, fixedPriceIncTax, new BigDecimal("1.091"),
+                  newTotal, newOrderQty, null);
         checkCharge(charge, customer, author, clinician, newTax, newTotal);
     }
 
@@ -330,7 +361,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         editor1.setStatus(ActStatus.IN_PROGRESS);
         assertTrue(SaveHelper.save(editor1));
 
-        FinancialAct invoice = (FinancialAct) editor1.getObject();
+        FinancialAct invoice = editor1.getObject();
         FinancialAct invoiceItem = getInvoiceItem(editor1);
 
         FinancialAct order = createOrder(customer, patient, product, newQty, invoiceItem);
@@ -343,11 +374,11 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         CustomerChargeActEditDialog dialog = charger.charge(invoice, null, layoutContext);
         TestChargeEditor editor2 = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor2));
-        FinancialAct charge = (FinancialAct) get(editor2.getObject());
+        FinancialAct charge = get(editor2.getObject());
         assertTrue(TypeHelper.isA(charge, CustomerAccountArchetypes.INVOICE));
 
         // NOTE: item tax not rounded.
-        checkItem(charge, patient, product, newQty, unitPrice, fixedPrice, new BigDecimal("1.091"), newTotal,
+        checkItem(charge, patient, product, newQty, unitPriceIncTax, fixedPriceIncTax, new BigDecimal("1.091"), newTotal,
                   newQty, null);
         checkCharge(charge, customer, author, clinician, newTax, newTotal);
     }
@@ -380,12 +411,12 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         CustomerChargeActEditDialog dialog = charger.charge(null, null, layoutContext);
         TestChargeEditor editor2 = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor2));
-        FinancialAct charge = (FinancialAct) get(editor2.getObject());
+        FinancialAct charge = get(editor2.getObject());
         assertTrue(TypeHelper.isA(charge, CustomerAccountArchetypes.CREDIT));
 
         // NOTE: item tax not rounded.
-        checkItem(charge, patient, product, newQty, unitPrice, fixedPrice, new BigDecimal("1.091"), newTotal,
-                  newQty, null);
+        checkItem(charge, patient, product, newQty, unitPriceIncTax, fixedPriceIncTax, new BigDecimal("1.091"),
+                  newTotal, newQty, null);
         checkCharge(charge, customer, author, clinician, newTax, newTotal);
     }
 
@@ -402,7 +433,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         editor.setStatus(ActStatus.IN_PROGRESS);
         assertTrue(SaveHelper.save(editor));
 
-        FinancialAct invoice = (FinancialAct) editor.getObject();
+        FinancialAct invoice = editor.getObject();
         FinancialAct invoiceItem = getInvoiceItem(editor);
 
         // charge two orders
@@ -417,7 +448,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         charger2.charge(editor);
 
         assertTrue(SaveHelper.save(editor));
-        checkItem(invoice, patient, product, quantity, unitPrice, fixedPrice, tax, total, quantity, null);
+        checkItem(invoice, patient, product, quantity, unitPriceIncTax, fixedPriceIncTax, tax, total, quantity, null);
         checkCharge(invoice, customer, author, clinician, tax, total);
     }
 
@@ -432,7 +463,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         editor.setStatus(ActStatus.IN_PROGRESS);
         assertTrue(SaveHelper.save(editor));
 
-        FinancialAct invoice = (FinancialAct) editor.getObject();
+        FinancialAct invoice = editor.getObject();
         FinancialAct invoiceItem = getInvoiceItem(editor);
 
         FinancialAct order = createOrder(customer, patient, product, ONE, invoiceItem);
@@ -446,9 +477,58 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         charger2.charge(editor);
 
         assertTrue(SaveHelper.save(editor));
-        checkItem(invoice, patient, product, ZERO, unitPrice, fixedPrice, new BigDecimal("0.182"), fixedPrice, ONE,
-                  ONE);
-        checkCharge(invoice, customer, author, clinician, new BigDecimal("0.18"), fixedPrice);
+        checkItem(invoice, patient, product, ZERO, unitPriceIncTax, fixedPriceIncTax, new BigDecimal("0.182"),
+                  fixedPriceIncTax, ONE, ONE);
+        checkCharge(invoice, customer, author, clinician, new BigDecimal("0.18"), fixedPriceIncTax);
+    }
+
+    /**
+     * Tests charging an order that is linked to an existing POSTED invoice, with a the same quantity that was
+     * invoiced.
+     * <p/>
+     * No new invoice should be created.
+     */
+    @Test
+    public void testOrderToPostedInvoice() {
+        BigDecimal quantity = BigDecimal.valueOf(2);
+        BigDecimal tax = BigDecimal.valueOf(2);
+        BigDecimal total = new BigDecimal("22");
+
+        TestChargeEditor editor = createInvoice(product, quantity);
+        editor.setStatus(ActStatus.POSTED);
+        assertTrue(SaveHelper.save(editor));
+        FinancialAct invoiceItem = getInvoiceItem(editor);
+
+        checkItem(editor.getObject(), patient, product, quantity, unitPriceIncTax, fixedPriceIncTax, tax, total, null,
+                  null);
+
+        FinancialAct order1 = createOrder(customer, patient, product, quantity, invoiceItem);
+        PharmacyOrderInvoicer charger1 = new TestPharmacyOrderInvoicer(order1, rules);
+        assertTrue(charger1.isValid());
+        assertTrue(charger1.canInvoice());
+        assertFalse(charger1.canCredit());
+        assertFalse(charger1.requiresEdit());
+        charger1.charge();
+
+        checkItem(editor.getObject(), patient, product, quantity, unitPriceIncTax, fixedPriceIncTax, tax, total,
+                  quantity, null);
+
+        // verify that if another order for the same item is created, editing is required, as it would exceed the
+        // original order quantity.
+        FinancialAct order2 = createOrder(customer, patient, product, quantity, invoiceItem);
+        PharmacyOrderInvoicer charger2 = new TestPharmacyOrderInvoicer(order2, rules);
+        assertTrue(charger2.isValid());
+        assertTrue(charger2.canInvoice());
+        assertFalse(charger2.canCredit());
+        assertTrue(charger2.requiresEdit());
+
+        // verify that a return requires editing
+        FinancialAct return1 = createReturn(customer, patient, product, quantity, invoiceItem);
+        PharmacyOrderInvoicer charger3 = new TestPharmacyOrderInvoicer(return1, rules);
+        assertTrue(charger3.isValid());
+        assertFalse(charger3.canInvoice());
+        assertTrue(charger3.canCredit());
+        assertTrue(charger3.requiresEdit());
     }
 
     /**
@@ -482,9 +562,9 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         CustomerChargeActEditDialog dialog = charger2.charge(null, null, layoutContext);
         TestChargeEditor editor2 = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor2));
-        FinancialAct charge = (FinancialAct) get(editor2.getObject());
+        FinancialAct charge = get(editor2.getObject());
         assertTrue(TypeHelper.isA(charge, CustomerAccountArchetypes.CREDIT));
-        checkItem(charge, patient, product, quantity, unitPrice, fixedPrice, tax, total, null, null);
+        checkItem(charge, patient, product, quantity, unitPriceIncTax, fixedPriceIncTax, tax, total, null, null);
         checkCharge(charge, customer, author, clinician, tax, total);
     }
 
@@ -563,6 +643,20 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
     }
 
     /**
+     * Verifies a validation error is produced if an order or return has an invalid product.
+     */
+    @Test
+    public void testInvalidProduct() {
+        String expected = "Product is not valid for this field";
+        Product template = ProductTestHelper.createTemplate("ZTemplate");
+        FinancialAct act1 = createOrder(customer, patient, template, ONE, null);
+        checkRequired(act1, expected);
+
+        FinancialAct act2 = createReturn(customer, patient, template, ONE, null);
+        checkRequired(act2, expected);
+    }
+
+    /**
      * Verifies that a validation error is raised if a required field is missing.
      * <p/>
      * Validation cannot occur using the archetype as as the delivery processor must be able to save incomplete/invalid
@@ -610,74 +704,6 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
     }
 
     /**
-     * Creates a pharmacy order.
-     *
-     * @param customer    the customer. May be {@code null}
-     * @param patient     the patient. May be {@code null}
-     * @param product     the product. May be {@code null}
-     * @param quantity    the order quantity
-     * @param invoiceItem the related invoice item. May be {@code null}
-     * @return a new order
-     */
-    private FinancialAct createOrder(Party customer, Party patient, Product product, BigDecimal quantity,
-                                     FinancialAct invoiceItem) {
-        return createOrderReturn(true, customer, patient, product, quantity, invoiceItem);
-    }
-
-    /**
-     * Creates a pharmacy return.
-     *
-     * @param customer    the customer. May be {@code null}
-     * @param patient     the patient. May be {@code null}
-     * @param product     the product. May be {@code null}
-     * @param quantity    the order quantity
-     * @param invoiceItem the related invoice item. May be {@code null}
-     * @return a new return
-     */
-    private FinancialAct createReturn(Party customer, Party patient, Product product, BigDecimal quantity,
-                                      FinancialAct invoiceItem) {
-        return createOrderReturn(false, customer, patient, product, quantity, invoiceItem);
-    }
-
-    /**
-     * Creates a pharmacy order/return.
-     *
-     * @param isOrder     if {@code true}, create an order, else create a return
-     * @param customer    the customer. May be {@code null}
-     * @param patient     the patient. May be {@code null}
-     * @param product     the product. May be {@code null}
-     * @param quantity    the order quantity
-     * @param invoiceItem the related invoice item. May be {@code null}
-     * @return a new order
-     */
-    private FinancialAct createOrderReturn(boolean isOrder, Party customer, Party patient, Product product,
-                                           BigDecimal quantity, FinancialAct invoiceItem) {
-        FinancialAct act = (FinancialAct) create(isOrder ? OrderArchetypes.PHARMACY_ORDER
-                                                         : OrderArchetypes.PHARMACY_RETURN);
-        FinancialAct item = (FinancialAct) create(isOrder ? OrderArchetypes.PHARMACY_ORDER_ITEM
-                                                          : OrderArchetypes.PHARMACY_RETURN_ITEM);
-        ActBean bean = new ActBean(act);
-        if (customer != null) {
-            bean.addNodeParticipation("customer", customer);
-        }
-        bean.addNodeRelationship("items", item);
-
-        ActBean itemBean = new ActBean(item);
-        if (patient != null) {
-            itemBean.addNodeParticipation("patient", patient);
-        }
-        if (product != null) {
-            itemBean.addNodeParticipation("product", product);
-        }
-        if (invoiceItem != null) {
-            itemBean.setValue("sourceInvoiceItem", invoiceItem.getObjectReference());
-        }
-        item.setQuantity(quantity);
-        save(act, item);
-        return act;
-    }
-
-    /**
      * Returns the invoice item from an invoice editor.
      *
      * @param editor the editor
@@ -702,10 +728,11 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
      * @param total            the expected total
      * @param receivedQuantity the expected received quantity
      * @param returnedQuantity the expected returned quantity. May be {@code null}
+     * @return the item
      */
-    private void checkItem(FinancialAct charge, Party patient, Product product, BigDecimal quantity,
-                           BigDecimal unitPrice, BigDecimal fixedPrice, BigDecimal tax, BigDecimal total,
-                           BigDecimal receivedQuantity, BigDecimal returnedQuantity) {
+    private ActBean checkItem(FinancialAct charge, Party patient, Product product, BigDecimal quantity,
+                              BigDecimal unitPrice, BigDecimal fixedPrice, BigDecimal tax, BigDecimal total,
+                              BigDecimal receivedQuantity, BigDecimal returnedQuantity) {
         ActBean bean = new ActBean(charge);
         List<FinancialAct> items = bean.getNodeActs("items", FinancialAct.class);
         assertEquals(1, items.size());
@@ -713,13 +740,12 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         int childActs = TypeHelper.isA(charge, CustomerAccountArchetypes.INVOICE) ? 1 : 0;
         // for invoices, there should be a medication act
 
-        checkItem(items, patient, product, quantity, unitPrice, fixedPrice, tax, total, childActs);
+        ActBean itemBean = checkItem(items, patient, product, quantity, unitPrice, fixedPrice, tax, total, childActs);
         if (bean.isA(CustomerAccountArchetypes.INVOICE)) {
-            FinancialAct item = items.get(0);
-            ActBean itemBean = new ActBean(item);
             checkEquals(receivedQuantity, itemBean.getBigDecimal("receivedQuantity"));
             checkEquals(returnedQuantity, itemBean.getBigDecimal("returnedQuantity"));
         }
+        return itemBean;
     }
 
     /**
@@ -734,12 +760,26 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
      * @param tax        the expected tax
      * @param total      the expected total
      * @param childActs  the expected no. of child acts
+     * @return the item
      */
-    private void checkItem(List<FinancialAct> items, Party patient, Product product, BigDecimal quantity,
-                           BigDecimal unitPrice, BigDecimal fixedPrice, BigDecimal tax, BigDecimal total,
-                           int childActs) {
-        checkItem(items, patient, product, null, author, clinician, quantity, ZERO, unitPrice, ZERO, fixedPrice, ZERO,
-                  tax, total, null, childActs);
+    private ActBean checkItem(List<FinancialAct> items, Party patient, Product product, BigDecimal quantity,
+                              BigDecimal unitPrice, BigDecimal fixedPrice, BigDecimal tax, BigDecimal total,
+                              int childActs) {
+        return checkItem(items, patient, product, null, author, clinician, ZERO, quantity, ZERO, unitPrice, ZERO,
+                         fixedPrice, ZERO, tax, total, null, childActs);
+    }
+
+    /**
+     * Sets the product price dates.
+     *
+     * @param startTime the start time
+     */
+    private void setProductPriceDates(Date startTime) {
+        // back-date the product price from dates so that they will be charged.
+        for (org.openvpms.component.model.product.ProductPrice prices : product.getProductPrices()) {
+            prices.setFromDate(startTime);
+        }
+        save(product);
     }
 
     private static class TestPharmacyOrderInvoicer extends PharmacyOrderInvoicer {

@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -24,7 +24,7 @@
     <artifactId>openvpms</artifactId>
     <packaging>pom</packaging>
     <name>OpenVPMS</name>
-    <version>1.9-SNAPSHOT</version>
+    <version>2.0-beta-2-SNAPSHOT</version>
     <inceptionYear>2005</inceptionYear>
     <url>http://www.openvpms.org</url>
 
@@ -33,7 +33,7 @@
     </description>
 
     <prerequisites>
-        <maven>2.2.1</maven>
+        <maven>3.3.9</maven>
     </prerequisites>
 
     <scm>
@@ -110,7 +110,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.14.1</version>
+                <version>2.20</version>
                 <configuration>
                     <includes>
                         <include>**/*TestCase.java</include>
@@ -127,7 +127,7 @@
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <version>2.5.3</version>
+                <version>3.3.0</version>
                 <extensions>true</extensions>
                 <configuration>
                     <obrRepository>NONE</obrRepository>
@@ -160,7 +160,6 @@
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>2.2-beta-2</version>
                 <inherited>false</inherited>
                 <configuration>
                     <descriptors>
@@ -181,11 +180,15 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>2.6</version>
+                </plugin>
+                <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <version>2.3.2</version>
                     <configuration>
-                        <source>1.7</source>
-                        <target>1.7</target>
+                        <source>1.8</source>
+                        <target>1.8</target>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -200,8 +203,19 @@
                     </configuration>
                 </plugin>
                 <plugin>
+                    <artifactId>maven-jarsigner-plugin</artifactId>
+                    <version>1.3.2</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.codehaus.plexus</groupId>
+                            <artifactId>plexus-utils</artifactId>
+                            <version>3.0.21</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
                     <artifactId>maven-war-plugin</artifactId>
-                    <version>2.3</version>
+                    <version>2.6</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-source-plugin</artifactId>
@@ -218,7 +232,7 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
-                    <version>2.2-beta-2</version>
+                    <version>2.5.3</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-release-plugin</artifactId>
@@ -241,6 +255,20 @@
                         <updateReleaseInfo>true</updateReleaseInfo>
                     </configuration>
                 </plugin-->
+                <plugin>
+                    <!-- required to deploy to AWS. Note that for the purposes of deployment, maven 3.x must be used  -->
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.8.2</version>
+                    <!-- See https://jira.codehaus.org/browse/WAGON-393 -->
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.apache.maven.wagon</groupId>
+                            <artifactId>wagon-ssh</artifactId>
+                            <version>2.12</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>castor-maven-plugin</artifactId>
@@ -279,19 +307,18 @@
         <repository>
             <id>openvpms-releases</id>
             <name>OpenVPMS Release Repository</name>
-            <url>scp://repository.openvpms.org:22333/home/admin/public_html/repository.openvpms.org/public/releases
+            <url>scp://repository.openvpms.org:/srv/www/repository.openvpms.org/public/releases
             </url>
         </repository>
-        <site>
+        <!--site>
             <id>openvpms-site</id>
             <name>OpenVPMS Maven Site</name>
             <url>scp://dev.openvpms.org:22333/home/admin/public_html/dev.openvpms.org/public/</url>
-        </site>
+        </site-->
         <snapshotRepository>
             <id>openvpms-snapshots</id>
             <name>OpenVPMS Snapshot Repository</name>
-            <url>scp://repository.openvpms.org:22333/home/admin/public_html/repository.openvpms.org/public/snapshots
-            </url>
+            <url>scp://repository.openvpms.org:/srv/www/repository.openvpms.org/public/snapshots</url>
         </snapshotRepository>
     </distributionManagement>
 
@@ -300,6 +327,11 @@
             <dependency>
                 <groupId>org.openvpms</groupId>
                 <artifactId>openvpms-archetypes</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.openvpms</groupId>
+                <artifactId>openvpms-framework-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
@@ -318,14 +350,22 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.sun.xml.bind</groupId>
-                <artifactId>jaxb-impl</artifactId>
-                <version>2.1.10</version>
+                <!--  replaces com.sun.xml.bind:jaxb-impl -->
+                <groupId>org.apache.servicemix.bundles</groupId>
+                <artifactId>org.apache.servicemix.bundles.jaxb-impl</artifactId>
+                <version>2.2.11_1</version>
             </dependency>
             <dependency>
-                <groupId>com.sun.xml.ws</groupId>
-                <artifactId>jaxws-rt</artifactId>
-                <version>2.1.7</version>
+                <!-- replaces javax.xml.bind:jaxb-api -->
+                <groupId>org.apache.servicemix.specs</groupId>
+                <artifactId>org.apache.servicemix.specs.jaxb-api-2.2</artifactId>
+                <version>2.8.0</version>
+            </dependency>
+            <dependency>
+                <!-- replaces javax.xml.ws:jaxws-api -->
+                <groupId>org.apache.servicemix.specs</groupId>
+                <artifactId>org.apache.servicemix.specs.jaxws-api-2.2</artifactId>
+                <version>2.9.0</version>
             </dependency>
             <dependency>
                 <groupId>com.thoughtworks.xstream</groupId>
@@ -364,6 +404,10 @@
                     <exclusion>
                         <groupId>javax.servlet</groupId>
                         <artifactId>servlet-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.xml.ws</groupId>
+                        <artifactId>jaxws-api</artifactId>
                     </exclusion>
                 </exclusions>
             </dependency>
@@ -443,6 +487,17 @@
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-context</artifactId>
                 <version>${spring.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-simple</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-core</artifactId>
+                <version>${spring.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -458,6 +513,29 @@
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-core</artifactId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.springframework</groupId>
+                        <artifactId>spring-expression</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-config</artifactId>
+                <version>${spring.security.version}</version>
+                <scope>runtime</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.springframework</groupId>
+                        <artifactId>spring-core</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-web</artifactId>
+                <version>${spring.security.version}</version>
+                <exclusions>
                     <exclusion>
                         <groupId>org.springframework</groupId>
                         <artifactId>spring-expression</artifactId>
@@ -484,6 +562,24 @@
                 </exclusions>
             </dependency>
             <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-validator</artifactId>
+                <version>4.3.1.Final</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>javax.el</groupId>
+                <artifactId>javax.el-api</artifactId>
+                <version>2.2.4</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.web</groupId>
+                <artifactId>javax.el</artifactId>
+                <version>2.2.4</version>
+                <scope>runtime</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.version}</version>
@@ -498,6 +594,22 @@
                 <artifactId>org.apache.servicemix.bundles.xerces</artifactId>
                 <version>${xerces.version}</version>
             </dependency>
+            <!-- used by jersey, older versions included by jasperreports -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>2.8.4</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.8.4</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>2.8.4</version>
+            </dependency>
             <dependency>
                 <groupId>p6spy</groupId>
                 <artifactId>p6spy</artifactId>
@@ -511,7 +623,7 @@
             <dependency>
                 <groupId>org.quartz-scheduler</groupId>
                 <artifactId>quartz</artifactId>
-                <version>1.8.4</version>
+                <version>2.2.1</version>
             </dependency>
             <dependency>
                 <groupId>net.sf.ehcache</groupId>
@@ -525,7 +637,7 @@
             </dependency>
             <dependency>
                 <groupId>javax.servlet</groupId>
-                <artifactId>servlet-api</artifactId>
+                <artifactId>javax.servlet-api</artifactId>
                 <version>${javax.servlet.version}</version>
                 <scope>provided</scope>
             </dependency>
@@ -568,6 +680,8 @@
                 <build.jdbc.db>openvpms-1_8</build.jdbc.db>
                 <build.jdbc.server>jdbc:mysql://localhost:3306/</build.jdbc.server>
                 <build.jdbc.url>${build.jdbc.server}${build.jdbc.db}</build.jdbc.url>
+                <jdbc.admin.username>root</jdbc.admin.username>
+                <jdbc.admin.password>root</jdbc.admin.password>
                 <build.jdbc.username>openvpms</build.jdbc.username>
                 <build.jdbc.password>openvpms</build.jdbc.password>
                 <release.hibernate.dialect>${build.hibernate.dialect}</release.hibernate.dialect>
@@ -575,23 +689,33 @@
                 <release.jdbc.url>${build.jdbc.url}</release.jdbc.url>
                 <release.jdbc.username>${build.jdbc.username}</release.jdbc.username>
                 <release.jdbc.password>${build.jdbc.password}</release.jdbc.password>
+                <smartflow.url>https://sandbox.smartflowsheet.com/api/v3</smartflow.url>
+                <smartflow.emrApiKey>873af17b2163255a3eb70a7d7413be152657bfab</smartflow.emrApiKey>
             </properties>
         </profile>
         <profile>
             <id>release</id>
             <properties>
                 <release.jdbc.url>jdbc:mysql://localhost:3306/openvpms</release.jdbc.url>
+                <smartflow.url>https://www.smartflowsheet.com/api/v3</smartflow.url>
+                <smartflow.emrApiKey>7d6e3ef29d9f4be3bf08aab328f89483894d6e3a</smartflow.emrApiKey>
             </properties>
         </profile>
     </profiles>
 
     <modules>
+        <module>openvpms-framework-api</module>
         <module>openvpms-framework</module>
         <module>maven-plugins</module>
         <module>openvpms-archetypes</module>
         <module>openvpms-reports</module>
         <module>openvpms-sms</module>
         <module>openvpms-esci-adapter</module>
+        <module>openvpms-db</module>
+        <module>openvpms-version</module>
+        <module>openvpms-plugins</module>
+        <module>openvpms-booking</module>
+        <module>openvpms-insurance</module>
         <module>openvpms-web</module>
         <module>openvpms-etl</module>
         <module>openvpms-release</module>
@@ -621,7 +745,7 @@
                 <checksumPolicy>fail</checksumPolicy>
             </releases>
             <snapshots>
-                <enabled>true</enabled>
+                <enabled>false</enabled>
                 <checksumPolicy>fail</checksumPolicy>
                 <updatePolicy>daily</updatePolicy>
             </snapshots>
@@ -651,9 +775,9 @@
             </snapshots>
         </repository>
         <repository>
-            <id>ibiblio</id>
-            <name>ibiblio</name>
-            <url>http://mirrors.ibiblio.org/pub/mirrors/maven2</url>
+            <id>maven-central</id>
+            <name>Maven Central Repository</name>
+            <url>https://repo1.maven.org/maven2</url>
             <snapshots>
                 <enabled>false</enabled>
                 <checksumPolicy>fail</checksumPolicy>
@@ -677,7 +801,7 @@
             <id>openvpms-snapshots</id>
             <url>http://repository.openvpms.org/snapshots</url>
             <snapshots>
-                <enabled>true</enabled>
+                <enabled>false</enabled>
             </snapshots>
         </pluginRepository>
     </pluginRepositories>
@@ -735,8 +859,8 @@
         <commons.dbcp.version>2.1</commons.dbcp.version>
         <commons.io.version>2.4</commons.io.version>
         <commons.jxpath.version>1.3</commons.jxpath.version>
-        <commons.lang.version>2.1</commons.lang.version>
-        <commons.logging.version>1.1.1</commons.logging.version>
+        <commons.lang.version>2.6</commons.lang.version>
+        <commons.logging.version>1.2</commons.logging.version>
         <commons.pool.version>2.3</commons.pool.version>
         <commons.resources.version>1.0-dev</commons.resources.version>
         <dom4j.version>1.6.1</dom4j.version>
@@ -745,28 +869,33 @@
         <ehcache.version>2.5.0</ehcache.version>
         <hibernate.version>4.3.10.Final</hibernate.version>
         <janino.version>2.3.8</janino.version>
-        <jasperreports.version>5.6.1</jasperreports.version>
+        <jasperreports.version>6.2.0</jasperreports.version>
         <poi.version>3.7</poi.version>
-        <javassist.version>3.4.GA</javassist.version>
+        <javassist.version>:3.18.1-GA</javassist.version>
+        <!-- NOTE: needs to track the version used by hibernate-core -->
         <javax.mail.version>1.4.4</javax.mail.version>
-        <javax.servlet.version>2.4</javax.servlet.version>
+        <javax.servlet.version>3.0.1</javax.servlet.version>
+        <!--javax.servlet.version>3.1.0</javax.servlet.version--> <!-- Requires Tomcat 8 -->
+        <jersey.version>2.25.1</jersey.version>
         <joda.time.version>1.6.2</joda.time.version>
         <jdom.version>1.0</jdom.version>
         <jsap.version>2.0a</jsap.version>
         <jta.version>1.1</jta.version>
         <jug.version>2.0rc4</jug.version>
         <junit.version>4.11</junit.version>
-        <log4j.version>1.2.15</log4j.version>
+        <log4j.version>1.2.17</log4j.version>
         <oro.version>2.0.8</oro.version>
         <stax.api.version>1.0</stax.api.version>
         <stax.version>1.1.2-dev</stax.version>
-        <slf4j.version>1.6.0</slf4j.version>
-        <spring.version>4.2.1.RELEASE</spring.version>
+        <slf4j.version>1.7.25</slf4j.version>
+        <spring.version>4.2.2.RELEASE</spring.version>
         <spring.security.version>4.0.2.RELEASE</spring.security.version>
+        <servicemix.spring.version>4.2.2.RELEASE_1</servicemix.spring.version>
         <springmodules.version>0.2</springmodules.version>
         <xerces.version>2.11.0_1</xerces.version>
         <xmlapis.version>1.4.01</xmlapis.version>
         <xstream.version>1.3.1</xstream.version>
+        <webdav.launcher.version>1.9.2</webdav.launcher.version>
     </properties>
 
 </project>

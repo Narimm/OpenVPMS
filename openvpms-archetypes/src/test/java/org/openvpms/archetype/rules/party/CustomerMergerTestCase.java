@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.finance.statement.EndOfPeriodProcessor;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -331,7 +332,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
         template = new TransactionTemplate(mgr);
 
         customerRules = new CustomerRules(getArchetypeService(), getLookupService());
-        practice = (Party) create("party.organisationPractice");
+        practice = (Party) create(PracticeArchetypes.PRACTICE);
     }
 
     /**
@@ -342,7 +343,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
      */
     private void runEOP(Party customer, Date statementDate) {
         EndOfPeriodProcessor eop = new EndOfPeriodProcessor(statementDate, true, practice, getArchetypeService(),
-                                                            getLookupService(), customerAccountRules);
+                                                            customerAccountRules);
         eop.process(customer);
     }
 

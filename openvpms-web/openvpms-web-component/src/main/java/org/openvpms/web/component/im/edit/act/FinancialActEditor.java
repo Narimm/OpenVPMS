@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -57,6 +57,8 @@ public class FinancialActEditor extends ActEditor {
 
     /**
      * Constructs a {@link FinancialActEditor}.
+     * <p/>
+     * Subclasses should invoke {@link #initialise()}.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be {@code null}
@@ -64,13 +66,16 @@ public class FinancialActEditor extends ActEditor {
      */
     protected FinancialActEditor(FinancialAct act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
-        if (!isSavedPosted(act)) {
-            // If the act hasn't been POSTED, calculate the tax and amount as the tax rate may have changed.
-            // For tax-ex acts, this will affect the act total.
-            // If the act has been POSTED, amounts shouldn't change. If they do, it will be picked up at validation.
-            recalculateTax();
-            calculateAmount();
-        }
+    }
+
+    /**
+     * Returns the object being edited.
+     *
+     * @return the object being edited
+     */
+    @Override
+    public FinancialAct getObject() {
+        return (FinancialAct) super.getObject();
     }
 
     /**
@@ -80,8 +85,23 @@ public class FinancialActEditor extends ActEditor {
         Property taxAmount = getProperty("tax");
         if (taxAmount != null) {
             List<Act> acts = getItems().getActs();
-            BigDecimal tax = ActHelper.sum((Act) getObject(), acts, "tax");
+            BigDecimal tax = ActHelper.sum(getObject(), acts, "tax");
             taxAmount.setValue(tax);
+        }
+    }
+
+    /**
+     * Initialises the act.
+     * <p/>
+     * If the act hasn't been POSTED, calculate the tax and amount as the tax rate may have changed.
+     * For tax-ex acts, this will affect the act total.
+     * If the act has been POSTED, amounts shouldn't change. If they do, it will be picked up at validation.
+     */
+    protected void initialise() {
+        FinancialAct act = getObject();
+        if (!isSavedPosted(act)) {
+            recalculateTax();
+            calculateAmount();
         }
     }
 
@@ -109,7 +129,7 @@ public class FinancialActEditor extends ActEditor {
     protected boolean validateAmounts(Validator validator) {
         boolean result;
         ActCalculator calc = new ActCalculator(ServiceHelper.getArchetypeService());
-        FinancialAct act = (FinancialAct) getObject();
+        FinancialAct act = getObject();
         BigDecimal total = calc.getTotal(act);
 
         List<Act> acts = getItems().getActs();
@@ -156,7 +176,7 @@ public class FinancialActEditor extends ActEditor {
      */
     private void calculateAmount() {
         Property amount = getProperty("amount");
-        BigDecimal value = ActHelper.sum((Act) getObject(), getItems().getCurrentActs(), "total");
+        BigDecimal value = ActHelper.sum(getObject(), getItems().getCurrentActs(), "total");
         amount.setValue(value);
     }
 
@@ -174,7 +194,7 @@ public class FinancialActEditor extends ActEditor {
                 items.getEditor(act);
             }
             BigDecimal previousTax = (BigDecimal) taxAmount.getValue();
-            BigDecimal tax = ActHelper.sum((Act) getObject(), acts, "tax");
+            BigDecimal tax = ActHelper.sum(getObject(), acts, "tax");
             if (tax.compareTo(previousTax) != 0) {
                 taxAmount.setValue(tax);
             }

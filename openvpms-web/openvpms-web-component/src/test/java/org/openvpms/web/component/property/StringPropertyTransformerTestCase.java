@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -32,7 +32,6 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
-import org.openvpms.macro.Macros;
 import org.openvpms.macro.impl.LookupMacros;
 import org.openvpms.report.ReportFactory;
 
@@ -96,8 +95,10 @@ public class StringPropertyTransformerTestCase extends ArchetypeServiceTest {
         Property property = new IMObjectProperty(person, descriptor);
         ILookupService lookups = getLookupService();
         ArchetypeFunctionsFactory functions = applicationContext.getBean(ArchetypeFunctionsFactory.class);
-        ReportFactory factory = new ReportFactory(getArchetypeService(), lookups, new DocumentHandlers(), functions);
-        Macros macros = new LookupMacros(lookups, getArchetypeService(), factory);
+        ReportFactory factory = new ReportFactory(getArchetypeService(), lookups,
+                                                  new DocumentHandlers(getArchetypeService()), functions);
+        LookupMacros macros = new LookupMacros(lookups, getArchetypeService(), factory, functions);
+        macros.afterPropertiesSet();
         StringPropertyTransformer handler = new StringPropertyTransformer(property, macros);
 
         Object text1 = handler.apply("macro1");

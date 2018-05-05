@@ -11,42 +11,29 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
 
-import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
+import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectCreator;
-import org.openvpms.web.component.property.Modifiable;
-import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.system.ServiceHelper;
 
 
 /**
- * Editor for <em>entity.documentTemplate</em>s.
- * This archetype has an implicit participation of type
- * <em>participation.document</em> which cannot be represented using archetypes,
- * as participations are typically navigated from an Act, not an Entity.
+ * Editor for <em>entity.documentTemplate</em>s entities.
+ * <p/>
+ * This supports associating a single mandatory <em>act.documentTemplate</em> with the template, representing the
+ * template content.
  *
  * @author Tim Anderson
  */
-public class DocumentTemplateEditor extends AbstractIMObjectEditor {
-
-    /**
-     * The participation editor.
-     */
-    private IMObjectEditor participationEditor;
-
+public class DocumentTemplateEditor extends AbstractDocumentTemplateEditor {
 
     /**
      * Constructs a {@link DocumentTemplateEditor}.
@@ -56,29 +43,8 @@ public class DocumentTemplateEditor extends AbstractIMObjectEditor {
      * @param context  the layout context. May be {@code null}
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public DocumentTemplateEditor(Entity template, IMObject parent,
-                                  LayoutContext context) {
-        super(template, parent, context);
-        TemplateHelper helper = new TemplateHelper(ServiceHelper.getArchetypeService());
-        Participation participation = helper.getDocumentParticipation(template);
-        if (participation == null) {
-            participation = (Participation) IMObjectCreator.create("participation.document");
-        }
-        participationEditor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(
-                participation, template, context);
-        getEditors().add(participationEditor);
-
-        if (participationEditor instanceof DocumentParticipationEditor) {
-            getProperty("name").addModifiableListener(new ModifiableListener() {
-                public void modified(Modifiable modifiable) {
-                    onNameUpdated();
-                }
-            });
-
-            // get the participation editor to delete the associated act
-            // when the template is deleted
-            ((DocumentParticipationEditor) participationEditor).setDeleteAct(true);
-        }
+    public DocumentTemplateEditor(Entity template, IMObject parent, LayoutContext context) {
+        super(template, parent, false, new DocumentTemplateHandler(), context);
     }
 
     /**
@@ -88,19 +54,20 @@ public class DocumentTemplateEditor extends AbstractIMObjectEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return new DocumentTemplateLayoutStrategy(
-                participationEditor.getComponent(),
-                participationEditor.getFocusGroup());
+        return new DocumentTemplateLayoutStrategy(getSelector());
     }
 
-    /**
-     * Invoked when the name is updated. Propagates the value to the associated
-     * editor's {@link DocumentParticipationEditor#setDescription(String)}.
-     */
-    private void onNameUpdated() {
-        String name = (String) getProperty("name").getValue();
-        DocumentParticipationEditor editor
-                = ((DocumentParticipationEditor) participationEditor);
-        editor.setDescription(name);
+    private static class DocumentTemplateHandler extends SupportedContentDocumentHandler {
+
+        private static final String[] SUPPORTED_EXTENSIONS = {DocFormats.ODT_EXT, DocFormats.DOC_EXT,
+                                                              DocFormats.JRXML_EXT, DocFormats.RTF_EXT};
+
+        private static final String[] SUPPORTED_MIME_TYPES = {DocFormats.ODT_TYPE, DocFormats.DOC_TYPE,
+                                                              DocFormats.RTF_TYPE};
+
+        public DocumentTemplateHandler() {
+            super(SUPPORTED_EXTENSIONS, SUPPORTED_MIME_TYPES, ServiceHelper.getArchetypeService());
+        }
     }
+
 }

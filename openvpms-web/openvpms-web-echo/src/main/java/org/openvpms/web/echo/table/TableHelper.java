@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.table;
 
+import echopointng.LabelEx;
 import echopointng.layout.TableLayoutDataEx;
 import echopointng.xhtml.XhtmlFragment;
 import nextapp.echo2.app.Alignment;
@@ -26,6 +27,8 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.LayoutData;
 import nextapp.echo2.app.Style;
 import nextapp.echo2.app.layout.TableLayoutData;
+import nextapp.echo2.app.table.TableColumn;
+import nextapp.echo2.app.table.TableColumnModel;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -48,8 +51,59 @@ public class TableHelper {
     public static final String SPACER = "<div>&#160;</div>";
 
     /**
+     * Helper to determine the next available model index.
+     *
+     * @param model the column model
+     * @return the next available model index.
+     */
+    public static int getNextModelIndex(TableColumnModel model) {
+        return getNextModelIndex(model, 0);
+    }
+
+    /**
+     * Helper to determine the next available model index.
+     *
+     * @param model the column model
+     * @param from    the index to start searching from
+     * @return the next available model index.
+     */
+    public static int getNextModelIndex(TableColumnModel model, int from) {
+        int index = from + 1;
+        Iterator iterator = model.getColumns();
+        while (iterator.hasNext()) {
+            TableColumn col = (TableColumn) iterator.next();
+            if (col.getModelIndex() >= index) {
+                index = col.getModelIndex() + 1;
+            }
+        }
+        return index;
+    }
+
+    /**
+     * Returns a column offset given its model index.
+     *
+     * @param model  the model
+     * @param column the column index
+     * @return the column offset, or {@code -1} if a column with the specified index doesn't exist
+     */
+    public static int getColumnOffset(TableColumnModel model, int column) {
+        int result = -1;
+        int offset = 0;
+        Iterator iterator = model.getColumns();
+        while (iterator.hasNext()) {
+            TableColumn col = (TableColumn) iterator.next();
+            if (col.getModelIndex() == column) {
+                result = offset;
+                break;
+            }
+            ++offset;
+        }
+        return result;
+    }
+
+    /**
      * Helper to return an {@code XhtmlFragment} for text.
-     * <p/>
+     * <p>
      * Any XML characters are escaped.
      *
      * @param text the text. May be {@code null}
@@ -66,7 +120,7 @@ public class TableHelper {
 
     /**
      * Helper to return an {@code XhtmlFragment} for an object, using its {@code toString()} method.
-     * <p/>
+     * <p>
      * Any XML characters are escaped.
      *
      * @param object the object. May be {@code null}
@@ -74,6 +128,15 @@ public class TableHelper {
      */
     public static XhtmlFragment createFragment(Object object) {
         return createFragment(object != null ? object.toString() : null);
+    }
+
+    /**
+     * Creates an empty label to act as spacer.
+     *
+     * @return a new label
+     */
+    public static Label createSpacer() {
+        return new LabelEx(createFragment(null));
     }
 
     /**

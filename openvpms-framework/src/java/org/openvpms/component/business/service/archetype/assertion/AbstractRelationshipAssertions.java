@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.assertion;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,8 +41,8 @@ public class AbstractRelationshipAssertions {
      * @return {@code true} if the relationship was present, {@code false} otherwise
      */
     protected <T extends IMObjectRelationship> boolean contains(T relationship, List<T> active) {
-        IMObjectReference source = relationship.getSource();
-        IMObjectReference target = relationship.getTarget();
+        Reference source = relationship.getSource();
+        Reference target = relationship.getTarget();
         for (T other : active) {
             if (ObjectUtils.equals(source, other.getSource()) && ObjectUtils.equals(target, other.getTarget())) {
                 return true;

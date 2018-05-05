@@ -68,7 +68,6 @@
             <map>
                 <entry key="tf" value="org.openvpms.component.system.service.jxpath.TestFunctions"/>
                 <entry key="openvpms" value-ref="archetypeServiceFunctions"/>
-                <entry key="date" value="org.openvpms.component.system.common.jxpath.DateFunctions"/>
             </map>
         </constructor-arg>
     </bean>

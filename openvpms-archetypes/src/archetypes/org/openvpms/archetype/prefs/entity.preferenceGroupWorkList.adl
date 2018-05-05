@@ -1,0 +1,53 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="entity.preferenceGroupWorkList.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.common.Entity" displayName="Work Lists">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="0" maxLength="100" hidden="true"
+              defaultValue="'Work List Preferences'"/>
+        <node name="description" type="java.lang.String" path="/description" hidden="true" minCardinality="0"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" hidden="true"/>
+        <node name="view" displayName="Work List View" path="/details/view"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference"
+              minCardinality="0" maxCardinality="1" filter="entity.organisationWorkListView"/>
+        <node name="schedule" displayName="Work List" path="/details/schedule"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference"
+              minCardinality="0" maxCardinality="1" filter="party.organisationWorkList"/>
+        <node name="clinician" path="/details/clinician"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference"
+              minCardinality="0" maxCardinality="1" filter="security.user"/>
+        <node name="highlight" path="/details/highlight" type="java.lang.String">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="EVENT_TYPE" value="Event Type"/>
+                    <property name="CLINICIAN" value="Clinician"/>
+                    <property name="STATUS" value="Status"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="status" path="/details/status" type="java.lang.String" defaultValue="'INCOMPLETE'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="ALL" value="All"/>
+                    <property name="INCOMPLETE" value="Incomplete"/>
+                    <property name="COMPLETE" value="Complete"/>
+                </propertyList>
+            </assertion>
+        </node>
+    </archetype>
+</archetypes>

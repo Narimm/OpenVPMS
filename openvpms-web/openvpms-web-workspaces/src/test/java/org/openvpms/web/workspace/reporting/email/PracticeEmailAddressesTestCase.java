@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.email;
@@ -24,10 +24,9 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.mail.EmailAddress;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
@@ -44,24 +43,31 @@ public class PracticeEmailAddressesTestCase extends ArchetypeServiceTest {
     @Test
     public void testGetAddress() {
         Party practice = TestHelper.getPractice();
-        List<Contact> contacts = new ArrayList<Contact>(practice.getContacts());
-        for (Contact contact : contacts) {
-            if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
+        for (org.openvpms.component.model.party.Contact contact : new ArrayList<>(practice.getContacts())) {
+            if (contact.isA(ContactArchetypes.EMAIL)) {
                 practice.removeContact(contact);
             }
         }
         Party location1 = TestHelper.createLocation();
         Party location2 = TestHelper.createLocation();
+        Party location3 = TestHelper.createLocation();
+        location1.setName("X Location 1");
+        location2.setName("X Location 2");
+        location2.setName("X Location 3");
+        save(location1, location2, location3);
         EntityBean bean = new EntityBean(practice);
+        practice.setName("OpenVPMS Practice");
         bean.addNodeTarget("locations", location1);
         bean.addNodeTarget("locations", location2);
+        bean.addNodeTarget("locations", location3);
 
-        practice.addContact(TestHelper.createEmailContact("mainreminder@practice.com", false, "REMINDER"));
-        practice.addContact(TestHelper.createEmailContact("mainbilling@practice.com", false, "BILLING"));
-        location1.addContact(TestHelper.createEmailContact("branch1reminder@practice.com", false, "REMINDER"));
-        location1.addContact(TestHelper.createEmailContact("branch1billing@practice.com", false, "BILLING"));
-        location2.addContact(TestHelper.createEmailContact("branch2billing@practice.com", false, "BILLING"));
-        save(practice, location1, location2);
+        practice.addContact(createEmailContact("mainreminder@practice.com", "REMINDER"));
+        practice.addContact(createEmailContact("mainbilling@practice.com", "BILLING"));
+        location1.addContact(createEmailContact("branch1reminder@practice.com", "REMINDER"));
+        location1.addContact(createEmailContact("branch1billing@practice.com", "BILLING"));
+        location2.addContact(createEmailContact("branch2billing@practice.com", "BILLING"));
+        location3.addContact(createEmailContact("branch3billing@practice.com", "Name Override", "REMINDER"));
+        save(practice, location1, location2, location3);
 
         // customer1 has a link to location1, so should get the location1 reminder address
         Party customer1 = createCustomer(location1);
@@ -71,16 +77,57 @@ public class PracticeEmailAddressesTestCase extends ArchetypeServiceTest {
         // customer 2 has a link to location 2
         Party customer2 = createCustomer(location2);
 
-        // customer 3 has no link, so should get the practice reminder address
-        Party customer3 = createCustomer(null);
+        // customer 3 has a link to location 3
+        Party customer3 = createCustomer(location3);
+
+        // customer 4 has no location, so should get the practice reminder address
+        Party customer4 = createCustomer(null);
 
         PracticeRules rules = new PracticeRules(getArchetypeService(), null);
         PracticeEmailAddresses addresses = new PracticeEmailAddresses(practice, "REMINDER", rules,
                                                                       getArchetypeService());
 
-        assertEquals("branch1reminder@practice.com", addresses.getAddress(customer1).getAddress());
-        assertEquals("mainreminder@practice.com", addresses.getAddress(customer2).getAddress());
-        assertEquals("mainreminder@practice.com", addresses.getAddress(customer3).getAddress());
+        checkAddress(addresses.getAddress(customer1), "branch1reminder@practice.com", "X Location 1");
+        checkAddress(addresses.getAddress(customer2), "mainreminder@practice.com", "OpenVPMS Practice");
+        checkAddress(addresses.getAddress(customer3), "branch3billing@practice.com", "Name Override");
+        checkAddress(addresses.getAddress(customer4), "mainreminder@practice.com", "OpenVPMS Practice");
+    }
+
+    /**
+     * Creates a new email contact.
+     *
+     * @param address the email address
+     * @param purpose the contact purpose
+     * @return a new contact
+     */
+    protected Contact createEmailContact(String address, String purpose) {
+        return TestHelper.createEmailContact(address, false, purpose);
+    }
+
+    /**
+     * Creates a new email contact.
+     *
+     * @param address the email address
+     * @param name    the contact name
+     * @param purpose the contact purpose
+     * @return a new contact
+     */
+    protected Contact createEmailContact(String address, String name, String purpose) {
+        Contact emailContact = TestHelper.createEmailContact(address, false, purpose);
+        emailContact.setName(name);
+        return emailContact;
+    }
+
+    /**
+     * Verifies an address matches that expected.
+     *
+     * @param emailAddress the address
+     * @param address      the expected address
+     * @param name         the expected name
+     */
+    private void checkAddress(EmailAddress emailAddress, String address, String name) {
+        assertEquals(address, emailAddress.getAddress());
+        assertEquals(name, emailAddress.getName());
     }
 
     /**

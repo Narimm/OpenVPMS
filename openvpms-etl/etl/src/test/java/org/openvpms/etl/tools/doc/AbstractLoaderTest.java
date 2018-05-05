@@ -1,34 +1,33 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.etl.tools.doc;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
+import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.AbstractJUnit4SpringContextTests;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.io.File;
@@ -49,18 +48,13 @@ import static org.junit.Assert.fail;
 /**
  * Base class for {@link Loader} test cases.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 @ContextConfiguration("/applicationContext.xml")
-public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
+public abstract class AbstractLoaderTest extends ArchetypeServiceTest {
 
-    /**
-     * The archetype service.
-     */
-    @Autowired
-    @Qualifier("archetypeService")
-    protected IArchetypeService service;
+    @Rule
+    public TemporaryFolder folder = new TemporaryFolder();
 
     /**
      * The transaction manager.
@@ -77,7 +71,7 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
      */
     @SuppressWarnings("unchecked")
     protected Set<File> getFiles(File dir) {
-        return new HashSet<File>(FileUtils.listFiles(dir, null, true));
+        return new HashSet<>(FileUtils.listFiles(dir, null, true));
     }
 
     /**
@@ -97,7 +91,7 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
      *
      * @param act    the act
      * @param dir    the parent directory
-     * @param prefix the file name prefix. May be <tt>null</tt>
+     * @param prefix the file name prefix. May be {@code null}
      * @return a new file
      * @throws java.io.IOException for any I/O error
      */
@@ -110,8 +104,8 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
      *
      * @param act    the act
      * @param dir    the parent directory
-     * @param prefix the file name prefix. May be <tt>null</tt>
-     * @param suffix the file name suffix (pre extension). May be <tt>null</tt>
+     * @param prefix the file name prefix. May be {@code null}
+     * @param suffix the file name suffix (pre extension). May be {@code null}
      * @return a new file
      * @throws java.io.IOException for any I/O error
      */
@@ -124,9 +118,9 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
      *
      * @param act     the act
      * @param dir     the parent directory
-     * @param prefix  the file name prefix. May be <tt>null</tt>
-     * @param suffix  the file name suffix (pre extension). May be <tt>null</tt>
-     * @param content the file content. May be <tt>null</tt>
+     * @param prefix  the file name prefix. May be {@code null}
+     * @param suffix  the file name suffix (pre extension). May be {@code null}
+     * @param content the file content. May be {@code null}
      * @return a new file
      * @throws java.io.IOException for any I/O error
      */
@@ -140,9 +134,9 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
      *
      * @param act       the act
      * @param dir       the parent directory
-     * @param prefix    the file name prefix. May be <tt>null</tt>
-     * @param suffix    the file name suffix (pre extension). May be <tt>null</tt>
-     * @param content   the file content. May be <tt>null</tt>
+     * @param prefix    the file name prefix. May be {@code null}
+     * @param suffix    the file name suffix (pre extension). May be {@code null}
+     * @param content   the file content. May be {@code null}
      * @param extension the file name extension
      * @return a new file
      * @throws java.io.IOException for any I/O error
@@ -166,7 +160,7 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
      *
      * @param dir     the parent directory
      * @param name    the file name
-     * @param content the file content. May be <tt>null</tt>
+     * @param content the file content. May be {@code null}
      * @return a new file
      * @throws IOException for any I/O error
      */
@@ -194,7 +188,7 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
     /**
      * Creates a new <em>act.patientDocumentAttachment</em>.
      *
-     * @param fileName the file name. May be <tt>null</tt>
+     * @param fileName the file name. May be {@code null}
      * @return a new <em>act.patientDocumentAttachment</em>
      */
     protected DocumentAct createPatientDocAct(String fileName) {
@@ -205,35 +199,22 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
      * Creates a new document act.
      *
      * @param shortName the archetype short name
-     * @param fileName  the file name. May be <tt>null</tt>
+     * @param fileName  the file name. May be {@code null}
      * @return a new <em>act.patientDocumentAttachment</em>
      */
     protected DocumentAct createPatientDocAct(String shortName, String fileName) {
-        Party patient = (Party) service.create("party.patientpet");
+        Party patient = (Party) create("party.patientpet");
         patient.setName("ZTestPet-" + System.currentTimeMillis());
         IMObjectBean bean = new IMObjectBean(patient);
         bean.setValue("species", "CANINE");
         bean.save();
-        DocumentAct act = (DocumentAct) service.create(shortName);
+        DocumentAct act = (DocumentAct) create(shortName);
         assertNotNull(act);
         act.setFileName(fileName);
         ActBean actBean = new ActBean(act);
         actBean.addParticipation("participation.patient", patient);
         actBean.save();
         return act;
-    }
-
-    /**
-     * Loads documents.
-     *
-     * @param loader   the loader
-     * @param listener the load listener to notify
-     */
-    protected void load(Loader loader, LoaderListener listener) {
-        loader.setListener(listener);
-        DocumentLoader docLoader = new DocumentLoader(loader);
-        docLoader.setFailOnError(false);
-        docLoader.load();
     }
 
     /**
@@ -253,10 +234,10 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
      * @return the document
      */
     protected Document checkAct(DocumentAct act, String name) {
-        act = (DocumentAct) service.get(act.getObjectReference());
+        act = get(act);
         assertNotNull(act);
         assertNotNull(act.getDocument());
-        Document doc = (Document) service.get(act.getDocument());
+        Document doc = (Document) get(act.getDocument());
         assertNotNull(doc);
         assertEquals(name, act.getFileName());
         assertEquals(name, doc.getName());
@@ -270,7 +251,7 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
      * @param act the act to check
      */
     protected void checkNoDocument(DocumentAct act) {
-        act = (DocumentAct) service.get(act.getObjectReference());
+        act = get(act);
         assertNotNull(act);
         assertNull(act.getDocument());
     }
@@ -284,7 +265,7 @@ public class AbstractLoaderTest extends AbstractJUnit4SpringContextTests {
         checkMimeType(act.getFileName(), act.getMimeType());
         IMObjectReference docRef = act.getDocument();
         if (docRef != null) {
-            Document doc = (Document) service.get(docRef);
+            Document doc = (Document) get(docRef);
             assertNotNull(doc);
             checkMimeType(doc.getName(), doc.getMimeType());
         }

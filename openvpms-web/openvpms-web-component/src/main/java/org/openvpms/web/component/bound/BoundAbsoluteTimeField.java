@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
@@ -41,16 +41,28 @@ public class BoundAbsoluteTimeField extends TextField implements BoundProperty {
 
     /**
      * Constructs a {@link BoundAbsoluteTimeField}.
+     * <p/>
+     * The value will be restricted to {@code >= 0:00} and {@code < 24:00}
      *
      * @param property the property to bind
      */
     public BoundAbsoluteTimeField(Property property) {
+        this(property, true);
+    }
+
+    /**
+     * Constructs a {@link BoundAbsoluteTimeField}.
+     *
+     * @param property         the property to bind
+     * @param lessThanMidnight if {@code true} the value must be {@code  < 24:00}, otherwise it may be 24:00
+     */
+    public BoundAbsoluteTimeField(Property property, boolean lessThanMidnight) {
         super(new TextDocument());
         setStyleName("default");
         binder = new FormattingBinder(this, property);
         if (!(property.getTransformer() instanceof TimePropertyTransformer)) {
             property.setTransformer(new TimePropertyTransformer(property, TimePropertyTransformer.MIN_DATE,
-                                                                TimePropertyTransformer.MAX_DATE));
+                                                                TimePropertyTransformer.MAX_DATE, lessThanMidnight));
         }
         setAlignment(Alignment.ALIGN_RIGHT);
         setWidth(new Extent(5, Extent.EX));

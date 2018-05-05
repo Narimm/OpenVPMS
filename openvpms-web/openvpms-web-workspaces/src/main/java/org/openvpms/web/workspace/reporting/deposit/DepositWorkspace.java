@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.deposit;
@@ -25,8 +25,8 @@ import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DefaultActQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.mail.MailContext;
-import org.openvpms.web.component.workspace.BrowserCRUDWorkspace;
 import org.openvpms.web.component.workspace.CRUDWindow;
+import org.openvpms.web.component.workspace.QueryBrowserCRUDWorkspace;
 
 
 /**
@@ -34,7 +34,7 @@ import org.openvpms.web.component.workspace.CRUDWindow;
  *
  * @author Tim Anderson
  */
-public class DepositWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> {
+public class DepositWorkspace extends QueryBrowserCRUDWorkspace<Party, FinancialAct> {
 
     /**
      * The act statuses to query.
@@ -43,13 +43,13 @@ public class DepositWorkspace extends BrowserCRUDWorkspace<Party, FinancialAct> 
 
 
     /**
-     * Constructs a {@code DepositWorkspace}.
+     * Constructs a {@link DepositWorkspace}.
      *
      * @param context     the context
      * @param mailContext the mail context
      */
     public DepositWorkspace(Context context, MailContext mailContext) {
-        super("reporting", "deposit", context);
+        super("reporting.deposit", context);
         setArchetypes(Party.class, "party.organisationDeposit");
         setChildArchetypes(FinancialAct.class, "act.bankDeposit");
         setMailContext(mailContext);

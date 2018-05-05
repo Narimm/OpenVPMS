@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow;
@@ -50,7 +50,7 @@ public class DelegatingEditorQueue implements EditorQueue {
      * @param listener the listener to notify on completion
      */
     public void queue(IMObjectEditor editor, boolean skip, boolean cancel, Listener listener) {
-        queue.getEditorQueue().queue(editor, skip, cancel, listener);
+        queue.getQueue().queue(editor, skip, cancel, listener);
     }
 
     /**
@@ -60,7 +60,17 @@ public class DelegatingEditorQueue implements EditorQueue {
      */
     @Override
     public void queue(PopupDialog dialog) {
-        queue.getEditorQueue().queue(dialog);
+        queue.getQueue().queue(dialog);
+    }
+
+    /**
+     * Returns the current popup dialog.
+     *
+     * @return the current popup dialog. May be {@code null}
+     */
+    @Override
+    public PopupDialog getCurrent() {
+        return queue.getQueue().getCurrent();
     }
 
     /**
@@ -69,6 +79,22 @@ public class DelegatingEditorQueue implements EditorQueue {
      * @return {@code true} if there are no more editors
      */
     public boolean isComplete() {
-        return queue.getEditorQueue().isComplete();
+        return queue.getQueue().isComplete();
+    }
+
+    /**
+     * Queues a callback.
+     * <p/>
+     * These must execute synchronously.
+     * <p/>
+     * Note that calls to {@link #isComplete()} return {@code true} if the queue is empty but a callback is in progress.
+     * <p/>
+     * This is required so that callbacks can trigger automatic saves without affecting the valid status of editors.
+     *
+     * @param runnable the callback
+     */
+    @Override
+    public void queue(Runnable runnable) {
+        queue.getQueue().queue(runnable);
     }
 }

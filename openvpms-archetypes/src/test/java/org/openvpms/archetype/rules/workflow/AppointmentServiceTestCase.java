@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -62,6 +62,11 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
      * The schedule.
      */
     private Party schedule;
+
+    /**
+     * The practice location.
+     */
+    private Party location;
 
 
     /**
@@ -141,12 +146,11 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     @Test
     public void testGetEvents() {
         final int count = 10;
-        Party schedule = ScheduleTestHelper.createSchedule();
+        Party schedule = ScheduleTestHelper.createSchedule(location);
         Act[] appointments = new Act[count];
         Date date = getDate("2007-01-01");
         for (int i = 0; i < count; ++i) {
-            Date startTime = DateRules.getDate(date, 15 * count,
-                                               DateUnits.MINUTES);
+            Date startTime = DateRules.getDate(date, 15 * count, DateUnits.MINUTES);
             Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
             Date arrivalTime = (i % 2 == 0) ? new Date() : null;
             Party customer = TestHelper.createCustomer();
@@ -355,7 +359,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
 
         // create some appointments
         for (int i = 0; i < 10; ++i) {
-            Set<Long> appointments = new HashSet<Long>();
+            Set<Long> appointments = new HashSet<>();
             Date date = DateRules.getDate(start, i, DateUnits.DAYS);
             for (int j = 0; j < 100; ++j) {
                 Act appointment = createAppointment(date, schedule, patient, true);
@@ -377,60 +381,60 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     }
 
     /**
-     * Tests the behaviour of {@link AppointmentService#getOverlappingAppointment(Act)} method.
+     * Tests the behaviour of {@link AppointmentService#getOverlappingEvent(Act)} method.
      */
     @Test
-    public void testGetOverlappingAppointment() {
+    public void testGetOverlappingEvent() {
         service = createScheduleService(1);
         Date start = getDatetime("2015-05-14 09:00:00");
         Date end = getDatetime("2015-05-14 09:15:00");
 
         Entity appointmentType = ScheduleTestHelper.createAppointmentType();
-        Party schedule1 = ScheduleTestHelper.createSchedule(15, "MINUTES", 2, appointmentType);
-        Party schedule2 = ScheduleTestHelper.createSchedule(15, "MINUTES", 2, appointmentType);
+        Party schedule1 = ScheduleTestHelper.createSchedule(15, "MINUTES", 2, appointmentType, location);
+        Party schedule2 = ScheduleTestHelper.createSchedule(15, "MINUTES", 2, appointmentType, location);
         save(schedule1);
         save(schedule2);
 
         Act appointment = createAppointment(start, end, schedule1, false);
-        assertNull(service.getOverlappingAppointment(appointment));
+        assertNull(service.getOverlappingEvent(appointment));
         save(appointment);
-        assertNull(service.getOverlappingAppointment(appointment));
+        assertNull(service.getOverlappingEvent(appointment));
 
         Act exactOverlap = createAppointment(start, end, schedule1, false);
         Times expected = Times.create(appointment);
-        assertEquals(expected, service.getOverlappingAppointment(exactOverlap));
+        assertEquals(expected, service.getOverlappingEvent(exactOverlap));
 
         Act overlap = createAppointment(getDatetime("2015-05-14 09:05:00"), getDatetime("2015-05-14 09:10:00"),
                                         schedule1, true);
-        assertEquals(expected, service.getOverlappingAppointment(overlap));
+        assertEquals(expected, service.getOverlappingEvent(overlap));
 
         Act after = createAppointment(getDatetime("2015-05-14 09:15:00"), getDatetime("2015-05-14 09:30:00"),
                                       schedule1, false);
-        assertNull(service.getOverlappingAppointment(after));
+        assertNull(service.getOverlappingEvent(after));
 
         Act before = createAppointment(getDatetime("2015-05-14 08:45:00"), getDatetime("2015-05-14 09:00:00"),
                                        schedule1, false);
-        assertNull(service.getOverlappingAppointment(before));
+        assertNull(service.getOverlappingEvent(before));
 
         // now verify there are no overlaps for the same time but different schedule
         Act appointment2 = createAppointment(start, end, schedule2, false);
-        assertNull(service.getOverlappingAppointment(appointment2));
+        assertNull(service.getOverlappingEvent(appointment2));
         save(appointment2);
-        assertNull(service.getOverlappingAppointment(appointment2));
+        assertNull(service.getOverlappingEvent(appointment2));
 
         // verify there are no overlaps for an unpopulated act
         Act appointment3 = (Act) create(ScheduleArchetypes.APPOINTMENT);
-        assertNull(service.getOverlappingAppointment(appointment3));
+        assertNull(service.getOverlappingEvent(appointment3));
         appointment3.setActivityStartTime(null);
         appointment3.setActivityEndTime(null);
-        assertNull(service.getOverlappingAppointment(appointment3));
+        assertNull(service.getOverlappingEvent(appointment3));
     }
 
     /**
-     * Tests the {@link AppointmentService#getOverlappingAppointment(List, Entity)} method.
+     * Tests the {@link AppointmentService#getOverlappingEvent(List, Entity)} method.
      */
     @Test
-    public void testGetOverlappingAppointmentTimes() {
+    public void getOverlappingEventTimes() {
         service = createScheduleService(1);
         Date start1 = getDatetime("2015-05-14 09:00:00");
         Date end1 = getDatetime("2015-05-14 09:15:00");
@@ -448,34 +452,34 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         Times times1 = new Times(start1, end1);
         Times times2 = new Times(start2, end2);
         List<Times> list = Arrays.asList(times1, times2);
-        assertNull(service.getOverlappingAppointment(list, schedule));
+        assertNull(service.getOverlappingEvent(list, schedule));
 
         // overlaps time1 exactly
         Act appointment1 = createAppointment(start1, end1, schedule, true);
-        assertEquals(Times.create(appointment1), service.getOverlappingAppointment(list, schedule));
+        assertEquals(Times.create(appointment1), service.getOverlappingEvent(list, schedule));
         remove(appointment1);
 
         // overlaps time2 exactly
         Act appointment2 = createAppointment(start2, end2, schedule, true);
-        assertEquals(Times.create(appointment2), service.getOverlappingAppointment(list, schedule));
+        assertEquals(Times.create(appointment2), service.getOverlappingEvent(list, schedule));
         remove(appointment2);
 
         // before time2
         createAppointment(beforeStart, beforeEnd, schedule, true);
-        assertNull(service.getOverlappingAppointment(list, schedule));
+        assertNull(service.getOverlappingEvent(list, schedule));
 
         // after time2
         createAppointment(afterStart, afterEnd, schedule, true);
-        assertNull(service.getOverlappingAppointment(list, schedule));
+        assertNull(service.getOverlappingEvent(list, schedule));
 
         // intersects start of time2
         Act appointment5 = createAppointment(overlap1Start, overlap1End, schedule, true);
-        assertEquals(Times.create(appointment5), service.getOverlappingAppointment(list, schedule));
+        assertEquals(Times.create(appointment5), service.getOverlappingEvent(list, schedule));
         remove(appointment5);
 
         // intersects end of time2
         Act appointment6 = createAppointment(overlap2Start, overlap2End, schedule, true);
-        assertEquals(Times.create(appointment6), service.getOverlappingAppointment(list, schedule));
+        assertEquals(Times.create(appointment6), service.getOverlappingEvent(list, schedule));
     }
 
     /**
@@ -483,7 +487,8 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
      */
     @Before
     public void setUp() {
-        schedule = ScheduleTestHelper.createSchedule();
+        location = TestHelper.createLocation();
+        schedule = ScheduleTestHelper.createSchedule(location);
     }
 
     /**
@@ -519,7 +524,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
      */
     @Override
     protected Entity createSchedule() {
-        return ScheduleTestHelper.createSchedule();
+        return ScheduleTestHelper.createSchedule(location);
     }
 
     /**

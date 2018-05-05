@@ -11,13 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
 
+import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -26,7 +28,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
@@ -37,6 +39,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
@@ -119,11 +122,27 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
      */
     @Override
     protected Component formatParent(ActBean bean) {
+        Component result;
         String date = formatDateRange(bean);
         String text = formatEventText(bean);
         Label summary = LabelFactory.create(null, Styles.BOLD);
         summary.setText(Messages.format("patient.record.summary.datedTitle", date, text));
-        return summary;
+
+        String detail = getText(bean.getAct(), false);
+        if (detail != null) {
+            Label detailLabel = getTextDetail(detail);
+
+            // create some padding, to indent the detail to the same level as the type.
+            Row padding = RowFactory.create(Styles.INSET, new Label(""));
+            Component dateSpacer = getDateSpacer();
+
+            result = new Column();
+            result.add(summary);
+            result.add(RowFactory.create(Styles.CELL_SPACING, padding, dateSpacer, detailLabel));
+        } else {
+            result = summary;
+        }
+        return result;
     }
 
     /**
@@ -135,9 +154,7 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
     @Override
     protected Component formatItem(ActBean bean) {
         Component detail;
-        if (bean.isA(PatientArchetypes.PATIENT_MEDICATION)) {
-            detail = getMedicationDetail(bean);
-        } else if (bean.isA(CustomerAccountArchetypes.INVOICE_ITEM)) {
+        if (bean.isA(CustomerAccountArchetypes.INVOICE_ITEM)) {
             detail = getInvoiceItemDetail(bean);
         } else if (bean.isA(PatientArchetypes.CLINICAL_PROBLEM)) {
             detail = getProblemDetail(bean);
@@ -145,6 +162,35 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
             detail = super.formatItem(bean);
         }
         return detail;
+    }
+
+    /**
+     * Returns a component for the detail of an <em>act.patientMedication</em>.
+     *
+     * @param bean        the act bean
+     * @param showBatches if (@code true}, include any batch number
+     */
+    @Override
+    protected Component getMedicationDetail(ActBean bean, boolean showBatches) {
+        String text = getText(bean.getAct(), true);
+        List<IMObjectReference> refs = bean.getNodeSourceObjectRefs("invoiceItem");
+        if (!refs.isEmpty()) {
+            ArchetypeQuery query = new ArchetypeQuery(refs.get(0));
+            query.getArchetypeConstraint().setAlias("act");
+            query.add(new NodeSelectConstraint("total"));
+            query.setMaxResults(1);
+            ObjectSetQueryIterator iter = new ObjectSetQueryIterator(query);
+            if (iter.hasNext()) {
+                ObjectSet set = iter.next();
+                text = Messages.format("patient.record.summary.medication", text,
+                                       NumberFormatter.formatCurrency(set.getBigDecimal("act.total")));
+            }
+        }
+        Component component = getTextDetail(text);
+        if (showBatches) {
+            component = addBatch(bean, component);
+        }
+        return component;
     }
 
     /**
@@ -161,30 +207,6 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
         FinancialAct act = (FinancialAct) bean.getAct();
         String text = Messages.format("patient.record.summary.invoiceitem", name, act.getQuantity(),
                                       NumberFormatter.formatCurrency(act.getTotal()));
-        return getTextDetail(text);
-    }
-
-    /**
-     * Returns a component for the detail of an act.patientMedication.
-     *
-     * @param act the act
-     * @return a new component
-     */
-    private Component getMedicationDetail(ActBean act) {
-        String text = getText(act.getAct());
-        List<IMObjectReference> refs = act.getNodeSourceObjectRefs("invoiceItem");
-        if (!refs.isEmpty()) {
-            ArchetypeQuery query = new ArchetypeQuery(refs.get(0));
-            query.getArchetypeConstraint().setAlias("act");
-            query.add(new NodeSelectConstraint("total"));
-            query.setMaxResults(1);
-            ObjectSetQueryIterator iter = new ObjectSetQueryIterator(query);
-            if (iter.hasNext()) {
-                ObjectSet set = iter.next();
-                text = Messages.format("patient.record.summary.medication", text,
-                                       NumberFormatter.formatCurrency(set.getBigDecimal("act.total")));
-            }
-        }
         return getTextDetail(text);
     }
 
@@ -233,7 +255,7 @@ public class PatientHistoryTableModel extends AbstractPatientHistoryTableModel {
      */
     private boolean isEarliestEvent(Act event, List<IMObjectReference> references) {
         boolean result = false;
-        List<Long> dates = new ArrayList<Long>();
+        List<Long> dates = new ArrayList<>();
         // try and find all of the events in the list of objects first.
         for (Act object : getObjects()) {
             if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_EVENT)

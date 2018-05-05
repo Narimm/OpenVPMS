@@ -11,13 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.system.common.cache;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.object.Reference;
 
 /**
  * Implementation of {@link IMObjectCache} that delegating to another.
@@ -69,8 +69,19 @@ public class DelegatingIMObjectCache implements IMObjectCache {
      * @return the object corresponding to {@code reference} or {@code null} if none exists
      */
     @Override
-    public IMObject get(IMObjectReference reference) {
+    public IMObject get(Reference reference) {
         return cache.get(reference);
+    }
+
+    /**
+     * Determines if an object is cached.
+     *
+     * @param reference the object reference. May be {@code null}
+     * @return {@code true} if the object is cached
+     */
+    @Override
+    public boolean exists(Reference reference) {
+        return cache.exists(reference);
     }
 
     /**

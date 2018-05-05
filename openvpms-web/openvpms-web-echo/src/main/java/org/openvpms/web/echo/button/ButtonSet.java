@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.button;
@@ -201,7 +201,7 @@ public class ButtonSet implements KeyStrokeHandler {
 
     /**
      * Adds a button.
-     * <p/>
+     * <p>
      * Note that for {@link ShortcutButton} instances, the {@link ShortcutButton#getActionCommand()} must
      * return non-null in order for keystroke events to be triggered on the appropriate button.
      *
@@ -222,7 +222,7 @@ public class ButtonSet implements KeyStrokeHandler {
 
     /**
      * Adds a button at the specified position.
-     * <p/>
+     * <p>
      * Note that for {@link ShortcutButton} instances, the {@link ShortcutButton#getActionCommand()} must
      * return non-null in order for keystroke events to be triggered on the appropriate button.
      *
@@ -394,6 +394,15 @@ public class ButtonSet implements KeyStrokeHandler {
     }
 
     /**
+     * Returns the focus group.
+     *
+     * @return the focus group. May be {@code null}
+     */
+    public FocusGroup getFocusGroup() {
+        return focusGroup;
+    }
+
+    /**
      * Re-registers keystroke listeners.
      * This is a workaround for Firefox which appears to deregister listeners
      * on the parent component when a child contains listeners.
@@ -402,4 +411,12 @@ public class ButtonSet implements KeyStrokeHandler {
         buttons.reregisterKeyStrokeListeners();
     }
 
+    /**
+     * Returns the buttons.
+     *
+     * @return the buttons
+     */
+    public ShortcutButtons getButtons() {
+        return buttons;
+    }
 }

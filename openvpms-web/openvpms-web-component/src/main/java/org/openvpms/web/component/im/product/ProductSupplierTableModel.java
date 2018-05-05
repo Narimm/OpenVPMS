@@ -11,32 +11,31 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
 
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.RelationshipDescriptorTableModel;
 
 
 /**
- * Table model for <em>entityRelationship.productSupplier</em> objects.
+ * Table model for <em>entityLink.productSupplier</em> objects.
  *
  * @author Tim Anderson
  */
-public class ProductSupplierTableModel extends RelationshipDescriptorTableModel<EntityRelationship> {
+public class ProductSupplierTableModel extends RelationshipDescriptorTableModel<EntityLink> {
 
     /**
      * The nodes to include in the table.
      */
-    private static final String[] NODES = {"description", "preferred",
-                                           "packageSize", "packageUnits",
-                                           "listPrice", "nettPrice"};
+    private static final String[] NODES = {"description", "preferred", "packageSize", "packageUnits", "listPrice",
+                                           "nettPrice"};
 
     /**
-     * Constructs a {@code ProductSupplierTableModel}.
+     * Constructs a {@link ProductSupplierTableModel}.
      * <p/>
      * Enables selection if the context is in edit mode.
      *

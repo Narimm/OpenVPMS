@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -20,7 +20,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -61,7 +61,7 @@ public interface Property extends Modifiable {
      *
      * @param value the property value
      * @return {@code true} if the value was set, {@code false} if it
-     *         cannot be set due to error, or is the same as the existing value
+     * cannot be set due to error, or is the same as the existing value
      */
     boolean setValue(Object value);
 
@@ -270,6 +270,13 @@ public interface Property extends Modifiable {
     boolean isLookup();
 
     /**
+     * Determines if the property is a password.
+     *
+     * @return {@code true} if it is a password
+     */
+    boolean isPassword();
+
+    /**
      * Determines if the property is a collection.
      *
      * @return {@code true} if it is a collection
@@ -278,7 +285,7 @@ public interface Property extends Modifiable {
 
     /**
      * Returns the archetype short names that this property may support.
-     * <p/>
+     * <p>
      * Wildcards are expanded.
      *
      * @return the archetype short names
@@ -311,9 +318,16 @@ public interface Property extends Modifiable {
      * Determines if the property is required.
      *
      * @return {@code true} if the property is required; otherwise
-     *         {@code false}
+     * {@code false}
      */
     boolean isRequired();
+
+    /**
+     * Determines if the property is empty.
+     *
+     * @return {@code true} if the value is {@code null}, an empty string or collection; otherwise {@code false}
+     */
+    boolean isEmpty();
 
     /**
      * Sets the property transformer.

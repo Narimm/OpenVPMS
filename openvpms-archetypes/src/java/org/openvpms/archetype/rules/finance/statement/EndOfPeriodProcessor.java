@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.statement;
@@ -27,8 +27,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -60,8 +59,7 @@ import static org.openvpms.archetype.rules.finance.statement.StatementProcessorE
  * the last opening balance</li>
  * </ul>
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class EndOfPeriodProcessor implements Processor<Party> {
 
@@ -71,7 +69,7 @@ public class EndOfPeriodProcessor implements Processor<Party> {
     private final Date timestamp;
 
     /**
-     * If <tt>true</tt>, post completed charges.
+     * If {@code true}, post completed charges.
      */
     private final boolean postCompletedCharges;
 
@@ -97,19 +95,17 @@ public class EndOfPeriodProcessor implements Processor<Party> {
 
 
     /**
-     * Creates a new <tt>EndOfPeriodProcessor</tt>.
+     * Constructs a {@link EndOfPeriodProcessor}.
      *
-     * @param statementDate        the statement date. Must be a date prior to
-     *                             today.
-     * @param postCompletedCharges if <tt>true</tt>, post completed charges
+     * @param statementDate        the statement date. Must be a date prior today.
+     * @param postCompletedCharges if {@code true}, post completed charges
      * @param practice             the practice
      * @param service              the archetype service
-     * @param lookups              the lookup service
      * @param rules                the customer account rules
      * @throws StatementProcessorException if the statement date is invalid
      */
     public EndOfPeriodProcessor(Date statementDate, boolean postCompletedCharges, Party practice,
-                                IArchetypeService service, ILookupService lookups, CustomerAccountRules rules) {
+                                IArchetypeService service, CustomerAccountRules rules) {
         this.service = service;
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.DATE, -1);
@@ -119,7 +115,7 @@ public class EndOfPeriodProcessor implements Processor<Party> {
         }
         acts = new StatementActHelper(service);
         account = rules;
-        statement = new StatementRules(practice, service, lookups, rules);
+        statement = new StatementRules(practice, service, rules);
         timestamp = acts.getStatementTimestamp(statementDate);
         this.postCompletedCharges = postCompletedCharges;
     }
@@ -131,8 +127,7 @@ public class EndOfPeriodProcessor implements Processor<Party> {
      * @throws OpenVPMSException for any error
      */
     public void process(Party customer) {
-        StatementPeriod period = new StatementPeriod(customer, timestamp,
-                                                     acts);
+        StatementPeriod period = new StatementPeriod(customer, timestamp, acts);
         if (!period.hasStatement()) {
             boolean needStatement = false;
             Date open = period.getOpeningBalanceTimestamp();
@@ -175,8 +170,7 @@ public class EndOfPeriodProcessor implements Processor<Party> {
      * @param balance  the closing balance
      * @throws ArchetypeServiceException for any error
      */
-    public void createPeriodEnd(Party customer, StatementPeriod period,
-                                BigDecimal balance) {
+    public void createPeriodEnd(Party customer, StatementPeriod period, BigDecimal balance) {
         BigDecimal overdue = BigDecimal.ZERO;
         FinancialAct fee = null;
         if (balance.compareTo(BigDecimal.ZERO) != 0) {
@@ -188,9 +182,7 @@ public class EndOfPeriodProcessor implements Processor<Party> {
                         customer, timestamp);
                 if (accountFee.compareTo(BigDecimal.ZERO) != 0) {
                     Date feeStartTime = period.getFeeTimestamp();
-                    fee = statement.createAccountingFeeAdjustment(customer,
-                                                                  accountFee,
-                                                                  feeStartTime);
+                    fee = statement.createAccountingFeeAdjustment(customer, accountFee, feeStartTime);
                     balance = balance.add(accountFee);
                 }
             }
@@ -227,7 +219,7 @@ public class EndOfPeriodProcessor implements Processor<Party> {
     }
 
     /**
-     * Posts a completed charge act. This sets the status to <tt>POSTED<tt>,
+     * Posts a completed charge act. This sets the status to {@code POSTED},
      * and the startTime to 1 second less than the statement timestamp.
      *
      * @param act    the act to post
@@ -248,8 +240,7 @@ public class EndOfPeriodProcessor implements Processor<Party> {
      * @param total     the act total
      * @return a new act
      */
-    private FinancialAct createAct(String shortName, Party customer,
-                                   BigDecimal total) {
+    private FinancialAct createAct(String shortName, Party customer, BigDecimal total) {
         FinancialAct act = (FinancialAct) service.create(shortName);
         Date startTime = new Date();
         act.setActivityStartTime(startTime);

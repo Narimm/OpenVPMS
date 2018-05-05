@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.sms.mail.template;
@@ -86,7 +86,7 @@ public class TemplatedMailMessageFactory implements MailMessageFactory {
         variables.declareVariable("subject", template.getSubject());
         variables.declareVariable("text", template.getText());
         variables.declareVariable("nl", "\n");     // to make expressions with newlines simpler
-        for (Map.Entry<String, String> variable : template.getVariables().entrySet()) {
+        for (Map.Entry<String, Object> variable : template.getVariables().entrySet()) {
             variables.declareVariable(variable.getKey(), variable.getValue());
         }
 
@@ -119,6 +119,23 @@ public class TemplatedMailMessageFactory implements MailMessageFactory {
     }
 
     /**
+     * Returns the maximum number of message parts supported by the SMS provider.
+     *
+     * @return the maximum number of message parts
+     */
+    @Override
+    public int getMaxParts() {
+        int maxParts = 1;
+        try {
+            MailTemplate template = config.getTemplate();
+            maxParts = template.getMaxParts();
+        } catch (Exception ignore) {
+            // SMS template not configured.
+        }
+        return maxParts;
+    }
+
+    /**
      * Massages the phone number to:
      * <ul>
      * <li>remove any spaces
@@ -127,23 +144,25 @@ public class TemplatedMailMessageFactory implements MailMessageFactory {
      * first
      * </ul>
      *
-     * @param phone    the phone number
+     * @param phone    the phone number. May be {@code null}
      * @param template the template
-     * @return the updated number
+     * @return the updated number. May be {@code null}
      */
     protected String getPhone(String phone, MailTemplate template) {
-        phone = StringUtils.remove(phone, ' ');
-        if (phone.startsWith("+")) {
-            phone = phone.substring(1);
-        } else {
-            String prefix = template.getCountryPrefix();
-            if (prefix != null && !phone.startsWith(prefix)) {
-                String areaPrefix = template.getAreaPrefix();
-                if (areaPrefix != null && phone.startsWith(areaPrefix)) {
-                    // strip off the area prefix before adding the country prefix
-                    phone = phone.substring(areaPrefix.length());
+        if (phone != null) {
+            phone = StringUtils.remove(phone, ' ');
+            if (phone.startsWith("+")) {
+                phone = phone.substring(1);
+            } else {
+                String prefix = template.getCountryPrefix();
+                if (prefix != null && !phone.startsWith(prefix)) {
+                    String areaPrefix = template.getAreaPrefix();
+                    if (areaPrefix != null && phone.startsWith(areaPrefix)) {
+                        // strip off the area prefix before adding the country prefix
+                        phone = phone.substring(areaPrefix.length());
+                    }
+                    phone = prefix + phone;
                 }
-                phone = prefix + phone;
             }
         }
         return phone;

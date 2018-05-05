@@ -34,6 +34,7 @@ import org.openvpms.web.component.print.PrintHelper;
 import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -135,7 +136,7 @@ public class TillEditor extends AbstractIMObjectEditor {
     private void onTest() {
         Validator validator = new DefaultValidator();
         if (!validate(validator)) {
-            showErrors(validator);
+            ValidationHelper.showError(validator);
         } else {
             String printer = getProperty("printerName").getString();
             String command = getProperty("drawerCommand").getString();
@@ -156,7 +157,7 @@ public class TillEditor extends AbstractIMObjectEditor {
 
         /**
          * Apply the layout strategy.
-         * <p/>
+         * <p>
          * This renders an object in a {@code Component}, using a factory to create the child components.
          *
          * @param object     the object to apply

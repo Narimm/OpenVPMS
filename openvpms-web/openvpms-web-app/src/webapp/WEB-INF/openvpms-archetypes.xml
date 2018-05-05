@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -76,9 +76,29 @@
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
-    <bean id="discountRules" class="org.openvpms.archetype.rules.finance.discount.DiscountRules">
+    <bean id="practiceService" class="org.openvpms.archetype.rules.practice.PracticeService">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="practiceRules"/>
+        <constructor-arg>
+            <!-- register a pool for asynchronous notification -->
+            <!-- this is required for audit messaging; notification has to happen outside of the transaction -->
+            <!-- synchronisation                                                                             -->
+            <bean class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+                <property name="threadGroupName" value="PracticeService"/>
+                <property name="corePoolSize" value="1"/>
+                <property name="maxPoolSize" value="1"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="addressFormatter" class="org.openvpms.archetype.rules.contact.PracticeAddressFormatter">
+        <constructor-arg ref="practiceService"/>
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="lookupService"/>
+    </bean>
+
+    <bean id="discountRules" class="org.openvpms.archetype.rules.finance.discount.DiscountRules">
+        <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
     <bean id="locationRules" class="org.openvpms.archetype.rules.practice.LocationRules">
@@ -100,6 +120,11 @@
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
+    <bean id="insuranceRules" class="org.openvpms.archetype.rules.patient.insurance.InsuranceRules">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="txnManager"/>
+    </bean>
+
     <bean id="partyRules" class="org.openvpms.archetype.rules.party.PartyRules">
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="lookupService"/>
@@ -107,11 +132,11 @@
 
     <bean id="productRules" class="org.openvpms.archetype.rules.product.ProductRules">
         <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="lookupService"/>
     </bean>
 
     <bean id="productPriceRules" class="org.openvpms.archetype.rules.product.ProductPriceRules">
         <constructor-arg ref="archetypeRuleService"/>
-        <constructor-arg ref="lookupService"/>
     </bean>
 
     <bean name="reminderRules" class="org.openvpms.archetype.rules.patient.reminder.ReminderRules">
@@ -159,7 +184,7 @@
     </bean>
 
     <bean id="reminderExporter" class="org.openvpms.archetype.rules.patient.reminder.ReminderCSVExporter">
-        <constructor-arg ref="practiceRules"/>
+        <constructor-arg ref="practiceService"/>
         <constructor-arg ref="partyRules"/>
         <constructor-arg ref="patientRules"/>
         <constructor-arg ref="archetypeRuleService"/>
@@ -180,6 +205,11 @@
         <constructor-arg ref="txnManager"/>
     </bean>
 
+    <bean id="preferenceService" class="org.openvpms.archetype.rules.prefs.PreferenceServiceImpl">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="txnManager"/>
+    </bean>
+
     <!-- ================================================================== -->
     <!--                    DOCUMENT HANDLERS                               -->
     <!-- ================================================================== -->
@@ -189,14 +219,15 @@
     </bean>
 
     <bean id="documentHandlers" class="org.openvpms.archetype.rules.doc.DocumentHandlers">
-        <property name="documentHandlers">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg>
             <list>
                 <ref bean="imageDocumentHandler"/>
                 <bean class="org.openvpms.report.jasper.JRXMLDocumentHandler">
                     <constructor-arg ref="archetypeRuleService"/>
                 </bean>
             </list>
-        </property>
+        </constructor-arg>
     </bean>
 
 </beans>

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -51,14 +51,13 @@ public abstract class AbstractStatementProcessorListener
 
 
     /**
-     * Creates a new {@code AbstractStatementProcessorListener}.
+     * Constructs a {@link AbstractStatementProcessorListener}.
      *
      * @param practice the practice
      */
     public AbstractStatementProcessorListener(Party practice) {
         account = ServiceHelper.getBean(CustomerAccountRules.class);
-        rules = new StatementRules(practice, ServiceHelper.getArchetypeService(), ServiceHelper.getLookupService(),
-                                   account);
+        rules = new StatementRules(practice, ServiceHelper.getArchetypeService(), account);
     }
 
     /**
@@ -70,7 +69,7 @@ public abstract class AbstractStatementProcessorListener
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected Map<String, Object> getParameters(Statement statement) {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
         Date date = statement.getStatementDate();
         BigDecimal overdueBalance = account.getOverdueBalance(statement.getCustomer(), date);
         result.put("statementDate", date);

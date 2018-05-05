@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.stock;
@@ -21,8 +21,8 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.workspace.BrowserCRUDWorkspace;
 import org.openvpms.web.component.workspace.CRUDWindow;
+import org.openvpms.web.component.workspace.QueryBrowserCRUDWorkspace;
 
 
 /**
@@ -30,7 +30,7 @@ import org.openvpms.web.component.workspace.CRUDWindow;
  *
  * @author Tim Anderson
  */
-public class StockWorkspace extends BrowserCRUDWorkspace<Party, Act> {
+public class StockWorkspace extends QueryBrowserCRUDWorkspace<Party, Act> {
 
     /**
      * Constructs a {@code StockWorkspace}.
@@ -38,10 +38,9 @@ public class StockWorkspace extends BrowserCRUDWorkspace<Party, Act> {
      * @param context the context
      */
     public StockWorkspace(Context context) {
-        super("product", "stock", context, false);
+        super("product.stock", context, false);
         setArchetypes(Party.class, StockArchetypes.STOCK_LOCATION);
-        setChildArchetypes(Act.class, StockArchetypes.STOCK_TRANSFER,
-                           StockArchetypes.STOCK_ADJUST);
+        setChildArchetypes(Act.class, StockArchetypes.STOCK_TRANSFER, StockArchetypes.STOCK_ADJUST);
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -19,17 +19,16 @@ package org.openvpms.web.workspace.patient.mr;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Row;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
@@ -41,17 +40,16 @@ import org.openvpms.web.component.im.product.BatchParticipationEditor;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.charge.Quantity;
+import org.openvpms.web.workspace.patient.history.PatientHistoryDatingPolicy;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -70,6 +68,16 @@ import static org.openvpms.web.workspace.patient.mr.PatientMedicationActLayoutSt
 public class PatientMedicationActEditor extends PatientActEditor {
 
     /**
+     * Listener for batch update events.
+     */
+    private final ModifiableListener batchListener;
+
+    /**
+     * The usage notes.
+     */
+    private final DispensingNotes dispensingNotes;
+
+    /**
      * The medication quantity.
      */
     private Quantity quantity;
@@ -78,11 +86,6 @@ public class PatientMedicationActEditor extends PatientActEditor {
      * Dispensing units label.
      */
     private Label dispensingUnits;
-
-    /**
-     * Usage notes text.
-     */
-    private SimpleProperty usageNotes;
 
     /**
      * Determines if the product node should be displayed read-only.
@@ -96,24 +99,14 @@ public class PatientMedicationActEditor extends PatientActEditor {
     private boolean prescription = false;
 
     /**
+     * The prescriptions, if this medication is being edited in an invoice.
+     */
+    private Prescriptions prescriptions;
+
+    /**
      * The expiry date component. Cached as it needs to be disabled if a batch is selected.
      */
     private ComponentState expiryDate;
-
-    /**
-     * Component to display the usage notes.
-     */
-    private ComponentState usageComponent;
-
-    /**
-     * Listener for batch update events.
-     */
-    private final ModifiableListener batchListener;
-
-    /**
-     * Medication product usage notes node name.
-     */
-    private static final String USAGE_NOTES = "usageNotes";
 
     /**
      * Dispensing instructions node name.
@@ -140,26 +133,15 @@ public class PatientMedicationActEditor extends PatientActEditor {
 
         quantity = new Quantity(getProperty(QUANTITY), act, getLayoutContext());
 
-        // create a property to hold the medication usage notes, if any.
-        NodeDescriptor node = DescriptorHelper.getNode(ProductArchetypes.MEDICATION, USAGE_NOTES,
-                                                       ServiceHelper.getArchetypeService());
-        usageNotes = new SimpleProperty(node.getName(), null, String.class, node.getDisplayName());
-        usageNotes.setMaxLength(node.getMaxLength());
-        usageNotes.setReadOnly(true);
-
+        dispensingNotes = new DispensingNotes();
         dispensingUnits = LabelFactory.create();
         expiryDate = getLayoutContext().getComponentFactory().create(getProperty("endTime"), act);
 
-
         ActBean medBean = new ActBean(act);
+        showProductReadOnly = medBean.hasRelationship(CustomerAccountArchetypes.DISPENSING_ITEM_RELATIONSHIP);
         prescription = medBean.hasRelationship(PatientArchetypes.PRESCRIPTION_MEDICATION);
 
-        batchListener = new ModifiableListener() {
-            @Override
-            public void modified(Modifiable modifiable) {
-                onBatchChanged();
-            }
-        };
+        batchListener = modifiable -> onBatchChanged();
 
         boolean updated = false;
         if (parent != null) {
@@ -178,7 +160,7 @@ public class PatientMedicationActEditor extends PatientActEditor {
         if (!updated) {
             Product product = getProduct();
             updateDispensingUnits(product);
-            updateUsageNotes(product);
+            dispensingNotes.setProduct(product);
         }
     }
 
@@ -294,6 +276,15 @@ public class PatientMedicationActEditor extends PatientActEditor {
     }
 
     /**
+     * Registers the prescriptions.
+     *
+     * @param prescriptions the prescriptions. May be {@code null}
+     */
+    public void setPrescriptions(Prescriptions prescriptions) {
+        this.prescriptions = prescriptions;
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy
@@ -314,7 +305,12 @@ public class PatientMedicationActEditor extends PatientActEditor {
              * @return the component containing the rendered {@code object}
              */
             @Override
-            public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
+            public ComponentState apply(IMObject object, PropertySet properties, IMObject parent,
+                                        LayoutContext context) {
+                PatientHistoryDatingPolicy policy = ServiceHelper.getBean(PatientHistoryDatingPolicy.class);
+                if (!policy.canEditStartTime((Act) object)) {
+                    addComponent(createComponent(createReadOnly(properties.get("startTime")), object, context));
+                }
                 Row row = RowFactory.create(Styles.CELL_SPACING, quantity.getComponent(), dispensingUnits);
                 addComponent(new ComponentState(row, quantity.getProperty()));
                 return super.apply(object, properties, parent, context);
@@ -332,17 +328,17 @@ public class PatientMedicationActEditor extends PatientActEditor {
             protected ComponentGrid createGrid(IMObject object, List<Property> properties, LayoutContext context,
                                                int columns) {
                 ComponentGrid grid = super.createGrid(object, properties, context, columns);
-                usageComponent = createNotes(object, usageNotes, context);
-                Component label = ColumnFactory.create(usageComponent.getLabel());
-                Component text = ColumnFactory.create(usageComponent.getComponent());
+                ComponentState usage = dispensingNotes.getComponent(context);
+                Component label = ColumnFactory.create(usage.getLabel());
+                Component text = ColumnFactory.create(usage.getComponent());
                 text.setLayoutData(ComponentGrid.layout(1, columns * 2 - 1));
-                usageComponent.setVisible(usageNotes.getValue() != null);
                 grid.add(label, text);
                 return grid;
             }
         };
         strategy.setProductReadOnly(showProductReadOnly);
         strategy.setDispensedFromPrescription(prescription);
+        strategy.setPrescriptions(prescriptions);
         strategy.addComponent(expiryDate);
         return strategy;
     }
@@ -353,13 +349,10 @@ public class PatientMedicationActEditor extends PatientActEditor {
      */
     @Override
     protected void onLayoutCompleted() {
-        final ProductParticipationEditor product = getProductEditor();
+        ProductParticipationEditor product = getProductEditor();
         if (product != null) {
-            product.addModifiableListener(new ModifiableListener() {
-                public void modified(Modifiable modifiable) {
-                    productModified(product.getEntity());
-                }
-            });
+            product.setPatient(getPatient());
+            product.addModifiableListener(modifiable -> productModified(product.getEntity()));
         }
         updateBatch(getProduct());
         super.onLayoutCompleted();
@@ -379,8 +372,28 @@ public class PatientMedicationActEditor extends PatientActEditor {
             }
         }
         updateDispensingUnits(product);
-        updateUsageNotes(product);
+        dispensingNotes.setProduct(product);
         updateBatch(product);
+    }
+
+    /**
+     * Returns the product editor.
+     *
+     * @return the product editor, or {@code null} if none exists
+     */
+    protected ProductParticipationEditor getProductEditor() {
+        ParticipationEditor<Product> editor = getParticipationEditor(PRODUCT, false);
+        return (ProductParticipationEditor) editor;
+    }
+
+    /**
+     * Returns the product batch participation editor.
+     *
+     * @return the product batch participation, or {@code null} if none exists
+     */
+    protected BatchParticipationEditor getBatchEditor() {
+        ParticipationEditor<Entity> editor = getParticipationEditor(BATCH, false);
+        return (BatchParticipationEditor) editor;
     }
 
     /**
@@ -394,23 +407,6 @@ public class PatientMedicationActEditor extends PatientActEditor {
             units = LookupNameHelper.getName(product, "dispensingUnits");
         }
         dispensingUnits.setText(units);
-    }
-
-    /**
-     * Updates the usage notes.
-     *
-     * @param product the product. May be {@code null}
-     */
-    private void updateUsageNotes(Product product) {
-        String notes = "";
-        if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
-            IMObjectBean bean = new IMObjectBean(product);
-            notes = bean.getString(USAGE_NOTES);
-        }
-        usageNotes.setValue(notes);
-        if (usageComponent != null) {
-            usageComponent.setVisible(notes != null);
-        }
     }
 
     /**
@@ -429,26 +425,6 @@ public class PatientMedicationActEditor extends PatientActEditor {
             }
             onBatchChanged();
         }
-    }
-
-    /**
-     * Returns the product editor.
-     *
-     * @return the product editor, or {@code null} if none exists
-     */
-    private ProductParticipationEditor getProductEditor() {
-        ParticipationEditor<Product> editor = getParticipationEditor(PRODUCT, false);
-        return (ProductParticipationEditor) editor;
-    }
-
-    /**
-     * Returns the product batch participation editor.
-     *
-     * @return the product batch participation, or {@code null} if none exists
-     */
-    protected BatchParticipationEditor getBatchEditor() {
-        ParticipationEditor<Entity> editor = getParticipationEditor(BATCH, false);
-        return (BatchParticipationEditor) editor;
     }
 
     /**

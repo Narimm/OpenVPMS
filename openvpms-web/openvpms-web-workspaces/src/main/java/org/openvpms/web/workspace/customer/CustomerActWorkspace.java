@@ -1,22 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
@@ -24,7 +25,9 @@ import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.customer.CustomerBrowser;
 import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.component.workspace.BrowserCRUDWorkspace;
+import org.openvpms.web.component.workspace.QueryBrowserCRUDWorkspace;
+import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 
 
 /**
@@ -32,49 +35,37 @@ import org.openvpms.web.component.workspace.BrowserCRUDWorkspace;
  *
  * @author Tim Anderson
  */
-public abstract class CustomerActWorkspace<T extends Act>
-    extends BrowserCRUDWorkspace<Party, T> {
+public abstract class CustomerActWorkspace<T extends Act> extends QueryBrowserCRUDWorkspace<Party, T> {
 
     /**
-     * Constructs a new {@code CustomerActWorkspace}.
-     *
-     * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId the workspace localisation identifier
-     * @param context     the context
+     * User preferences.
      */
-    public CustomerActWorkspace(String workspacesId, String workspaceId, Context context) {
-        this(workspacesId, workspaceId, null, context);
+    private final Preferences preferences;
+
+    /**
+     * Constructs a {@link CustomerActWorkspace}.
+     *
+     * @param id          the workspace id
+     * @param context     the context
+     * @param preferences user preferences
+     */
+    public CustomerActWorkspace(String id, Context context, Preferences preferences) {
+        this(id, null, context, preferences);
     }
 
-
     /**
-     * Constructs a {@code CustomerActWorkspace}.
+     * Constructs a {@link CustomerActWorkspace}.
      *
-     * @param workspacesId   the workspaces localisation identifier
-     * @param workspaceId   the workspace localisation identifier
+     * @param id            the workspace id
      * @param actArchetypes the act archetypes that this operates on
      * @param context       the context
+     * @param preferences   user preferences
      */
-    public CustomerActWorkspace(String workspacesId, String workspaceId,
-                                Archetypes<T> actArchetypes, Context context) {
-        super(workspacesId, workspaceId, null, actArchetypes, context);
+    public CustomerActWorkspace(String id, Archetypes<T> actArchetypes, Context context, Preferences preferences) {
+        super(id, null, actArchetypes, context);
         setArchetypes(Party.class, "party.customer*");
         setMailContext(new CustomerMailContext(context, getHelpContext()));
-    }
-
-    /**
-     * Constructs a {@code CustomerActWorkspace}.
-     *
-     * @param workspacesId     the workspaces localisation identifier
-     * @param workspaceId     the workspace localisation identifier
-     * @param partyArchetypes the party archetypes that this operates on
-     * @param actArchetypes   the act archetypes that this operates on
-     * @param context         the context
-     */
-    public CustomerActWorkspace(String workspacesId, String workspaceId,
-                                Archetypes<Party> partyArchetypes, Archetypes<T> actArchetypes, Context context) {
-        super(workspacesId, workspaceId, partyArchetypes, actArchetypes, context);
-        setMailContext(new CustomerMailContext(context, getHelpContext()));
+        this.preferences = preferences;
     }
 
     /**
@@ -96,7 +87,8 @@ public abstract class CustomerActWorkspace<T extends Act>
      */
     @Override
     public Component getSummary() {
-        CustomerSummary summarizer = new CustomerSummary(getContext(), getHelpContext());
+        CustomerPatientSummaryFactory factory = ServiceHelper.getBean(CustomerPatientSummaryFactory.class);
+        CustomerSummary summarizer = factory.createCustomerSummary(getContext(), getHelpContext(), preferences);
         return summarizer.getSummary(getObject());
     }
 

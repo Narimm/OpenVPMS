@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -89,7 +90,7 @@ public abstract class ActEditor extends AbstractActEditor {
         if (editor == null && editItems) {
             CollectionProperty items = (CollectionProperty) getProperty("items");
             if (items != null && !items.isHidden()) {
-                editor = createItemsEditor((Act) getObject(), items);
+                editor = createItemsEditor(getObject(), items);
                 editor.addModifiableListener(new ModifiableListener() {
                     public void modified(Modifiable modifiable) {
                         onItemsChanged();
@@ -103,22 +104,17 @@ public abstract class ActEditor extends AbstractActEditor {
 
     /**
      * Save any edits.
-     * <p/>
-     * This uses {@link #saveObject()} to save the object prior to saving
-     * any children with {@link #saveChildren()}.
-     * <p/>
-     * This is necessary to avoid stale object exceptions when related acts
-     * are deleted.
+     * <p>
+     * This uses {@link #saveObject()} to save the object prior to saving any children with {@link #saveChildren()}.
+     * <p>
+     * This is necessary to avoid stale object exceptions when related acts are deleted.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
-        boolean saved = saveObject();
-        if (saved) {
-            saved = saveChildren();
-        }
-        return saved;
+    protected void doSave() {
+        saveObject();
+        saveChildren();
     }
 
     /**
@@ -140,7 +136,7 @@ public abstract class ActEditor extends AbstractActEditor {
 
     /**
      * Invoked when an act item changes.
-     * <p/>
+     * <p>
      * This implementation is a no-op.
      */
     protected void onItemsChanged() {

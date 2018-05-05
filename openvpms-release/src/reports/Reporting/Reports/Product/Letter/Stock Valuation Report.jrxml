@@ -1,0 +1,956 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Stock Valuation Report" pageWidth="612" pageHeight="792" whenNoDataType="AllSectionsNoDetail" columnWidth="550" leftMargin="31" rightMargin="31" topMargin="19" bottomMargin="19" uuid="f4de84ea-a58e-461d-875b-98506f32bff6">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS.xml"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
+	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Stock Location" class="java.lang.String">
+		<parameterDescription><![CDATA[Stock Location]]></parameterDescription>
+	</parameter>
+	<parameter name="asatDate" class="java.util.Date">
+		<parameterDescription><![CDATA[As At Date]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new Date()]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Product Type" class="java.lang.String">
+		<parameterDescription><![CDATA[Product Type]]></parameterDescription>
+	</parameter>
+	<parameter name="Classification" class="java.lang.String">
+		<parameterDescription><![CDATA[Classification]]></parameterDescription>
+	</parameter>
+	<parameter name="Product Name" class="java.lang.String">
+		<parameterDescription><![CDATA[Product Name]]></parameterDescription>
+	</parameter>
+	<parameter name="IgnoreProdGroup" class="java.lang.String">
+		<parameterDescription><![CDATA[Ignore Product Group]]></parameterDescription>
+		<defaultValueExpression><![CDATA["Stock Value – Omit"]]></defaultValueExpression>
+	</parameter>
+	<parameter name="IncMedications" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Include Medication]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new Boolean("true")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="IncMerchandise" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Include Merchandise]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new Boolean("true")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="printDetail" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Show Details]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<parameter name="showNoCostItems" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Show Items with zero/no cost]]></parameterDescription>
+		<defaultValueExpression><![CDATA[new Boolean("true")]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Explain" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Display explanation]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<queryString language="SQL">
+		<![CDATA[select prod.entity_id as pid, prod.name as product,
+	ifnull(producttype.name,'--None--') as ptname,
+	sl.name as stockLocation, 
+	l.name as uom,
+	cost.cost as cost,
+     /* cast(erd.value as decimal(18,3)) as qtyStock,
+    xferFrom.qty as xferFromQty,xferTo.qty as xferToQty,stkAdj.qty as stkAdjQty,
+    supRet.qty as supRetQty,supDel.qty as supDelQty,sales.qty as salesQty,
+    ifnull(xferFrom.qty,0)+ifnull(xferTo.qty,0)+ifnull(stkAdj.qty,0)
+        +ifnull(supRet.qty,0)+ifnull(supDel.qty,0)+ifnull(sales.qty,0) as qtyChange, */
+    ifnull(xferFrom.qty,0)+ifnull(xferTo.qty,0)+ifnull(stkAdj.qty,0)
+        +ifnull(supRet.qty,0)+ifnull(supDel.qty,0)+ifnull(sales.qty,0)
+        + cast(ifnull(erd.value,0) as decimal(18,3)) as qtyStock
+    
+from entities prod
+    left join entity_links rpt on rpt.source_id = prod.entity_id and rpt.arch_short_name = 'entityLink.productType'
+    left join entities producttype on producttype.entity_id = rpt.target_id
+    join entity_links rsl on rsl.source_id = prod.entity_id and rsl.arch_short_name = 'entityLink.productStockLocation'
+    join entities sl on sl.entity_id = rsl.target_id
+    join entity_link_details erd on erd.id = rsl.id
+        and erd.name = 'quantity'
+	left join entity_details pd on pd.entity_id = prod.entity_id	and pd.name = "sellingUnits"
+	left join lookups l on l.code = pd.value and l.arch_short_name = "lookup.uom"
+	left  join entity_classifications productgroup on productgroup.entity_id = prod.entity_id
+	left  join lookups grouplookup on grouplookup.lookup_id = productgroup.lookup_id
+			and grouplookup.arch_short_name in ('lookup.productGroup','lookup.productIncomeGroup')
+
+	left join # get pricing
+		(select prod.entity_id as pid,sl.entity_id as slid,min(cast(ppd.value as decimal(18,3))) as cost
+		    from entities prod
+		    join entity_links rsl on rsl.source_id = prod.entity_id and rsl.arch_short_name = 'entityLink.productStockLocation'
+		    join entities sl on sl.entity_id = rsl.target_id
+			left join entity_classifications plc on prod.entity_id = plc.entity_id
+			left join lookups locationPricingGroup on plc.lookup_id = locationPricingGroup.lookup_id
+				and locationPricingGroup.arch_short_name = "lookup.pricingGroup"
+			join product_prices pp on pp.product_id = prod.entity_id
+				and pp.arch_short_name = "productPrice.unitPrice"
+			left join product_price_classifications ppc on pp.product_price_id = ppc.product_price_id
+			left join product_price_details ppd on ppd.product_price_id = pp.product_price_id 	and ppd.name = "cost"
+		    where ((prod.arch_short_name = "product.medication" and $P{IncMedications})
+							or (prod.arch_short_name = "product.merchandise" and $P{IncMerchandise}))
+		     	and (locationPricingGroup.lookup_id is null # no pricing group
+					or locationPricingGroup.lookup_id = ppc.lookup_id # or have pricing group
+		            or not exists ( # or have pricing group but not for the current product price
+						select *
+						from product_price_classifications ppc
+						join lookups l on ppc.lookup_id = l.lookup_id and l.arch_short_name = "lookup.pricingGroup"
+						where ppc.product_price_id = pp.product_price_id))
+				and ( pp.product_id is null or (pp.product_id is not null 
+					and ((pp.start_time <=$P{asatDate})
+						and ((pp.end_time is null) or (pp.end_time > $P{asatDate})))))
+		    group by prod.entity_id,sl.entity_id) as cost
+				on prod.entity_id = cost.pid and sl.entity_id = cost.slid
+	
+	
+	left join	# stock transfer from
+		(select prod.entity_id as pid,sum((-1)*cast(aid.value as decimal(18,3))) as qty,sl.entity_id as slid
+		from acts a
+		join participations p on p.act_id = a.act_id and p.arch_short_name = 'participation.stockLocation'
+		join entities sl on sl.entity_id = p.entity_id
+		join act_relationships ar on ar.source_id = a.act_id
+		join acts ai on ai.act_id = ar.target_id
+		join act_details aid on aid.act_id = ai.act_id and aid.name = 'quantity'
+		join participations pp on pp.act_id = ai.act_id and pp.arch_short_name = 'participation.stock'
+		join entities prod on prod.entity_id = pp.entity_id
+		where
+		  a.arch_short_name = 'act.stockTransfer'
+		  and (a.activity_start_time > date_add($P{asatDate} , INTERVAL "23:59:59" HOUR_SECOND))
+		  and a.status = 'POSTED'
+		group by prod.entity_id,sl.entity_id) as xferFrom 
+				on prod.entity_id = xferFrom.pid and sl.entity_id = xferFrom.slid
+		  
+
+
+	left join	# stock transfer to
+		(select prod.entity_id as pid,sum(cast(aid.value as decimal(18,3))) as qty,sl.entity_id as slid 
+		from acts a
+		join participations p on p.act_id = a.act_id and p.arch_short_name = 'participation.stockTransferLocation'
+		join entities sl on sl.entity_id = p.entity_id
+		join act_relationships ar on ar.source_id = a.act_id
+		join acts ai on ai.act_id = ar.target_id
+		join act_details aid on aid.act_id = ai.act_id and aid.name = 'quantity'
+		join participations pp on pp.act_id = ai.act_id and pp.arch_short_name = 'participation.stock'
+		join entities prod on prod.entity_id = pp.entity_id
+		where
+		  a.arch_short_name = 'act.stockTransfer'
+		  and (a.activity_start_time > date_add($P{asatDate} , INTERVAL "23:59:59" HOUR_SECOND))
+		  and a.status = 'POSTED'
+		group by prod.entity_id,sl.entity_id) as xferTo  
+				on prod.entity_id = xferTo.pid and sl.entity_id = xferTo.slid
+		  
+		  
+	left join	# stock adjustment
+		(select prod.entity_id as pid,sum(cast(aid.value as decimal(18,3))) as qty,sl.entity_id as slid 
+		from acts a
+		join participations p on p.act_id = a.act_id and p.arch_short_name = 'participation.stockLocation'
+		join entities sl on sl.entity_id = p.entity_id
+		join act_relationships ar on ar.source_id = a.act_id
+		join acts ai on ai.act_id = ar.target_id
+		join act_details aid on aid.act_id = ai.act_id and aid.name = 'quantity'
+		join participations pp on pp.act_id = ai.act_id and pp.arch_short_name = 'participation.stock'
+		join entities prod on prod.entity_id = pp.entity_id
+		where
+		  a.arch_short_name = 'act.stockAdjust'
+		  and (a.activity_start_time > date_add($P{asatDate} , INTERVAL "23:59:59" HOUR_SECOND))
+		  and a.status = 'POSTED'
+		group by prod.entity_id,sl.entity_id) as stkAdj  
+				on prod.entity_id = stkAdj.pid and sl.entity_id = stkAdj.slid
+		  
+		  
+	left join	# supplier return
+		(select prod.entity_id as pid, sum(cast(aid.value as decimal(18,3))*if(fa.credit,-fa.quantity,fa.quantity)) as qty,
+		sl.entity_id as slid
+		from acts a
+		join participations p on p.act_id = a.act_id and p.arch_short_name = 'participation.stockLocation'
+		join entities sl on sl.entity_id = p.entity_id
+		join act_relationships ar on ar.source_id = a.act_id and ar.arch_short_name = 'actRelationship.supplierReturnItem'
+		join acts ai on ai.act_id = ar.target_id
+		join act_details aid on aid.act_id = ai.act_id and aid.name = 'packageSize'
+		join financial_acts fa on fa.financial_act_id = ai.act_id
+		join participations pp on pp.act_id = ai.act_id and pp.arch_short_name = 'participation.stock'
+		join entities prod on prod.entity_id = pp.entity_id
+		where
+		  a.arch_short_name = 'act.supplierReturn'
+		  and (a.activity_start_time > date_add($P{asatDate} , INTERVAL "23:59:59" HOUR_SECOND))
+		  and a.status = 'POSTED'
+		group by prod.entity_id,sl.entity_id) as supRet 
+				on prod.entity_id = supRet.pid and sl.entity_id = supRet.slid
+		  
+	left join	# supplier delivery
+		(select prod.entity_id as pid, sum(cast(aid.value as decimal(18,3))*if(fa.credit,-fa.quantity,fa.quantity)) as qty,
+		sl.entity_id as slid
+		from acts a
+		join participations p on p.act_id = a.act_id and p.arch_short_name = 'participation.stockLocation'
+		join entities sl on sl.entity_id = p.entity_id
+		join act_relationships ar on ar.source_id = a.act_id and ar.arch_short_name = 'actRelationship.supplierDeliveryItem'
+		join acts ai on ai.act_id = ar.target_id
+		join act_details aid on aid.act_id = ai.act_id and aid.name = 'packageSize'
+		join financial_acts fa on fa.financial_act_id = ai.act_id
+		join participations pp on pp.act_id = ai.act_id and pp.arch_short_name = 'participation.stock'
+		join entities prod on prod.entity_id = pp.entity_id
+		where
+		  a.arch_short_name = 'act.supplierDelivery'
+		  and (a.activity_start_time > date_add($P{asatDate} , INTERVAL "23:59:59" HOUR_SECOND))
+		  and a.status = 'POSTED'
+		group by prod.entity_id,sl.entity_id) as supDel
+				on prod.entity_id = supDel.pid and sl.entity_id = supDel.slid
+
+
+	left join	# invoice, counter sale, credit
+		(select prod.entity_id as pid, sum(if(fa.credit,-fa.quantity,fa.quantity)) as qty,
+		sl.entity_id as slid
+		from acts a
+		join act_relationships ar on ar.source_id = a.act_id #and ar.arch_short_name like 'actRelationship.customerAccount%Item'
+		join acts ai on ai.act_id = ar.target_id
+		join participations p on p.act_id = ai.act_id and p.arch_short_name = 'participation.stockLocation'
+		join entities sl on sl.entity_id = p.entity_id
+		join financial_acts fa on fa.financial_act_id = ai.act_id
+		join participations pp on pp.act_id = ai.act_id and pp.arch_short_name = 'participation.product'
+		join entities prod on prod.entity_id = pp.entity_id
+		where
+		  a.arch_short_name like 'act.customerAccountCharges%'
+		  and (a.activity_start_time > date_add($P{asatDate} , INTERVAL "23:59:59" HOUR_SECOND))
+		  and a.status = 'POSTED'
+		group by prod.entity_id,sl.entity_id) as sales
+				on prod.entity_id = sales.pid and sl.entity_id = sales.slid
+    
+where prod.name like concat(ifnull( $P{Product Name},""),"%")
+	and prod.active = 1
+	and sl.name like concat(ifnull( $P{Stock Location},""),"%")
+	and ifnull(grouplookup.name,'-') like concat(ifnull($P{Classification},""),"%")
+	and ifnull(producttype.name,"-") like concat(ifnull( $P{Product Type},""),"%")
+	and ((prod.arch_short_name = "product.medication" and $P{IncMedications})
+		or (prod.arch_short_name = "product.merchandise" and $P{IncMerchandise}))
+	and (    ifnull(xferFrom.qty,0)+ifnull(xferTo.qty,0)+ifnull(stkAdj.qty,0)
+        +ifnull(supRet.qty,0)+ifnull(supDel.qty,0)+ifnull(sales.qty,0)
+        + cast(ifnull(erd.value,0) as decimal(18,3)) ) > 0
+    and (( $P{IgnoreProdGroup}  is null)  or (
+    	    not exists (select * from entity_classifications productgroup
+		join lookups grouplookup on grouplookup.lookup_id = productgroup.lookup_id
+				and grouplookup.arch_short_name = 'lookup.productGroup'
+                and grouplookup.name like concat(ifnull( $P{IgnoreProdGroup},""),"%")
+		where  productgroup.entity_id = prod.entity_id)))
+group by sl.entity_id, prod.entity_id		
+order by sl.name, producttype.name, prod.name, prod.entity_id]]>
+	</queryString>
+	<field name="pid" class="java.lang.Long"/>
+	<field name="product" class="java.lang.String"/>
+	<field name="ptname" class="java.lang.String"/>
+	<field name="stockLocation" class="java.lang.String"/>
+	<field name="uom" class="java.lang.String"/>
+	<field name="cost" class="java.math.BigDecimal"/>
+	<field name="qtyStock" class="java.math.BigDecimal"/>
+	<variable name="StockValue" class="java.math.BigDecimal" resetType="None">
+		<variableExpression><![CDATA[$F{qtyStock}.compareTo(BigDecimal.ZERO)<1?BigDecimal.ZERO:$F{qtyStock}.multiply($F{cost})]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal("0.00")]]></initialValueExpression>
+	</variable>
+	<variable name="TOTAL_STOCKVALUE" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$V{StockValue}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal("0.00")]]></initialValueExpression>
+	</variable>
+	<variable name="TOTAL_STOCKLOCATION" class="java.math.BigDecimal" resetType="Group" resetGroup="StockLocation" calculation="Sum">
+		<variableExpression><![CDATA[$V{StockValue}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal("0.00")]]></initialValueExpression>
+	</variable>
+	<variable name="StockLocnPrintCount" class="java.lang.Integer" resetType="Group" resetGroup="StockLocation">
+		<variableExpression><![CDATA[($P{printDetail}.booleanValue()&&($F{qtyStock}.compareTo(BigDecimal.ZERO)>0))
+||($F{cost}==null)||($F{cost}.compareTo(BigDecimal.ZERO)==0)?$V{StockLocnPrintCount}+1:$V{StockLocnPrintCount}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="ProdTypePrintCount" class="java.lang.Integer" resetType="Group" resetGroup="ProdType">
+		<variableExpression><![CDATA[($P{printDetail}.booleanValue()&&($F{qtyStock}.compareTo(BigDecimal.ZERO)>0))
+||($F{cost}==null)||($F{cost}.compareTo(BigDecimal.ZERO)==0)?$V{ProdTypePrintCount}+1:$V{ProdTypePrintCount}]]></variableExpression>
+		<initialValueExpression><![CDATA[0]]></initialValueExpression>
+	</variable>
+	<variable name="TOTAL_ProdType" class="java.math.BigDecimal" resetType="Group" resetGroup="ProdType" calculation="Sum">
+		<variableExpression><![CDATA[$V{StockValue}]]></variableExpression>
+		<initialValueExpression><![CDATA[new BigDecimal("0.00")]]></initialValueExpression>
+	</variable>
+	<group name="StockLocation" isStartNewPage="true" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{stockLocation}]]></groupExpression>
+		<groupHeader>
+			<band height="17" splitType="Stretch">
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField" x="0" y="0" width="351" height="17" uuid="5a21bbcb-fb25-4756-9631-df93718668ef">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="11" isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{stockLocation}+" "+(new String (($V{StockLocnPrintCount}>0)?"(cont)":""))]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="19" splitType="Stretch">
+				<textField pattern="¤#,##0.00;¤-#,##0.00" isBlankWhenNull="false">
+					<reportElement key="textField" x="458" y="3" width="83" height="16" uuid="a37c74c3-1684-4615-88a4-d3b5232c9c80"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="11" isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{TOTAL_STOCKLOCATION}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement key="staticText-43" x="123" y="3" width="334" height="16" uuid="94f98c9c-66e0-48f8-836a-a59b5ec78ae9"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="11" isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{stockLocation}+" - Location Total: "]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="ProdType" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{ptname}]]></groupExpression>
+		<groupHeader>
+			<band height="16">
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField" x="16" y="0" width="351" height="15" uuid="5e7fbf02-2de9-4d2d-89fa-d2cea1c3e057"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="11" isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{ptname}+" "+(new String (($V{ProdTypePrintCount}>0)?"(cont)":""))]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="ProdType" pattern="¤#,##0.00;¤-#,##0.00" isBlankWhenNull="false">
+					<reportElement key="textField" x="458" y="0" width="83" height="15" uuid="207fa9ab-556c-433e-8288-906fa49aaa03">
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{ProdTypePrintCount}==0]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="11" isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{TOTAL_ProdType}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="104" splitType="Stretch">
+			<staticText>
+				<reportElement key="staticText-1" x="0" y="0" width="298" height="23" uuid="aa1c5a4b-a3bb-4eed-8ba3-cbfd5dca182c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="16" isBold="true" isUnderline="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Stock Valuation]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-35" x="0" y="50" width="98" height="16" uuid="20171097-33f5-44f4-93bd-94b923aa645e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Product Name: ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-36" x="237" y="34" width="85" height="16" uuid="d784dbcf-2f35-427c-9a1e-54a79ea750db">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Product Type: ]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="98" y="50" width="103" height="16" uuid="7481abb2-fcea-44ec-87df-b8cd92ea0874">
+					<property name="local_mesure_unity" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($P{Product Name}==null)?"%":$P{Product Name}+"%"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-9" x="322" y="34" width="103" height="16" uuid="46df99fc-3779-44b1-a9b7-fc6068ccb5bc">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($P{Product Type}==null)?"%":$P{Product Type}+"%"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-41" x="0" y="34" width="98" height="16" uuid="a3b0f272-1dec-4035-ae9d-da5b30ffaeb5">
+					<property name="local_mesure_unitx" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Stock Location: ]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-10" x="98" y="34" width="103" height="16" uuid="312a6a21-0c2a-4932-841d-4912b8392e88">
+					<property name="local_mesure_unity" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($P{Stock Location}==null)?"%":$P{Stock Location}+"%"]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy h.mm a">
+				<reportElement x="447" y="0" width="103" height="10" uuid="49c082a6-6f0c-42c0-83ac-0e0c9226c127"/>
+				<textElement textAlignment="Right">
+					<font size="7"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-1" x="440" y="34" width="60" height="16" uuid="28049b67-9dbb-494e-83c9-422667914c17"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField-2" x="504" y="34" width="43" height="16" uuid="ecff863c-9e57-4c6a-8b5d-0da9a2ca81f9"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+			</textField>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField" x="98" y="66" width="411" height="16" uuid="5480a613-14fe-4280-b1c5-69d44265b575">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[" "+($P{IncMedications}.booleanValue()?" Medication":"")
++($P{IncMerchandise}.booleanValue()?" Merchandise":"")]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-10" x="1" y="66" width="97" height="16" uuid="58c8cdbd-6dc9-483a-a912-e0e41bae86f6">
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Includes: ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-32" x="237" y="50" width="85" height="16" uuid="63cc1ab5-ff02-4490-9101-3fcae634d982">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="local_mesure_unity" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="local_mesure_unitx" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="local_mesure_unitwidth" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Classification: ]]></text>
+			</staticText>
+			<textField pattern="MM/dd/yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-4" x="322" y="50" width="103" height="16" uuid="19d9c5ac-3a5b-4a62-814d-efaeff48c6e9">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($P{Classification}==null)?"%":$P{Classification}+"%"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-9" x="303" y="10" width="36" height="16" uuid="392686de-03c3-48a5-b8ae-15c182ac485e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[As At:]]></text>
+			</staticText>
+			<textField pattern="MM/dd/yyyy" isBlankWhenNull="false">
+				<reportElement key="textField" x="339" y="10" width="103" height="16" uuid="5b45b792-6eb9-482d-aa41-315fbd977d6b">
+					<property name="local_mesure_unitheight" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="local_mesure_unity" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{asatDate})]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-4" x="322" y="82" width="190" height="16" uuid="9e0f95ae-9eeb-4863-b1ba-9bb987929d6a">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($P{IgnoreProdGroup}==null)?"-":$P{IgnoreProdGroup}+"%"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-32" x="185" y="82" width="137" height="16" uuid="379be74b-3a93-4ccf-b0ca-505a74b6ce75">
+					<property name="com.jaspersoft.studio.unit.height" value="px"/>
+					<property name="local_mesure_unity" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+					<property name="local_mesure_unitx" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<property name="local_mesure_unitwidth" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Ignore Product Group: ]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-35" x="0" y="82" width="98" height="16" uuid="7ef0ef16-c1fd-4815-b885-2061e197d8fc"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Show if no cost: ]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="98" y="82" width="72" height="16" uuid="d129a8f0-05b0-4122-a5d4-ed9a99a790b2">
+					<property name="local_mesure_unity" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{showNoCostItems}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="20" splitType="Stretch">
+			<staticText>
+				<reportElement key="staticText-14" x="362" y="0" width="56" height="16" uuid="2b5a9c54-0731-4b36-8144-46815719f677"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Quantity]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-1" x="0" y="16" width="550" height="1" uuid="49fd1773-a9e1-42bd-b445-25efbe077439">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+			</line>
+			<staticText>
+				<reportElement key="staticText-27" x="298" y="0" width="61" height="16" uuid="edbb5a04-1fd5-48f2-a997-68021da72190"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Units]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-34" x="418" y="0" width="57" height="16" uuid="e9068ce8-bb2e-48a9-9389-32730a91c75d"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Cost]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-42" x="484" y="0" width="58" height="16" uuid="d61fb21c-5f6b-402a-8f1c-e319176e0012"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Total]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-11" x="1" y="0" width="266" height="16" uuid="d512122c-4f88-436e-bb9e-74f3bd78bc0a"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Stock Location/Product Type/Product]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15" splitType="Stretch">
+			<printWhenExpression><![CDATA[($P{printDetail}.booleanValue()&&($F{qtyStock}.compareTo(BigDecimal.ZERO)>0))
+||($P{showNoCostItems}.booleanValue()&&(($F{cost}==null)||($F{cost}.compareTo(BigDecimal.ZERO)==0)))]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField" x="296" y="1" width="62" height="13" uuid="8869b255-23a9-430a-9e00-6437795ac7ca"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{uom}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" pattern="###0.##" isBlankWhenNull="true">
+				<reportElement key="textField-8" x="361" y="1" width="56" height="13" uuid="307a583d-f339-44ba-b801-9b69eabc9732"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{qtyStock}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField" x="9" y="1" width="53" height="13" uuid="a79244e7-cb18-4574-9d7a-9b9c309f19e0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{pid}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement key="textField" x="69" y="1" width="227" height="13" uuid="ca0fb904-c66f-4074-af69-8689b63b411e"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{product}]]></textFieldExpression>
+			</textField>
+			<textField pattern="##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="418" y="1" width="55" height="13" uuid="2f16c5d2-0a91-48d4-a201-e7c198a562f5"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cost}]]></textFieldExpression>
+			</textField>
+			<textField pattern="##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="485" y="1" width="56" height="13" uuid="38218cfc-32bb-48da-9e8d-13111dbbecc1"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="9"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{StockValue}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band height="273" splitType="Stretch">
+			<staticText>
+				<reportElement key="staticText-39" x="0" y="2" width="113" height="16" uuid="7408fab4-4e59-4ad8-8b71-bbba88ea4d09"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Product Count: ]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="113" y="2" width="160" height="16" uuid="59e99c56-2b96-46d3-9d4f-b88ffcec0265">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="11"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{REPORT_COUNT}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-44" x="352" y="2" width="106" height="16" uuid="a00173a7-46d8-400c-b657-949835e44b1b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Grand Total: ]]></text>
+			</staticText>
+			<textField pattern="¤#,##0.00;¤-#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-11" x="457" y="2" width="84" height="16" uuid="a01e9606-2ec9-43c2-9ce8-4895f49d2532"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{TOTAL_STOCKVALUE}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="123" y="21" width="304" height="19" isRemoveLineWhenBlank="true" uuid="000ae7b6-d70f-43d3-9f55-4542292eb691">
+					<printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font size="13" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[No Data Found - Check Parameters]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="1" y="47" width="548" height="226" isRemoveLineWhenBlank="true" uuid="c712ab89-4265-4d48-87ec-ef3408c914c2">
+					<property name="local_mesure_unitx" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="px"/>
+					<printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[This report shows the stock valuation as at 23:59 on the specified date for each selected location with subtotals for each product type.  
+The stock quantity is calculated from the current holding and adding/subtracting all stock movements (including sales, credits, deliveries, returns, adjustments and transfers) after 23:59 on the as at date. 
+The cost is that applicable at 23:59 on the as at date.  If there are multiple applicable costs (as can be the case if Pricing Groups are used, then the minimum cost is used.
+The selection fields entered have % added so that leaving them blank will find all, and entering say product type 'n' will include all product types with names starting 'n' or 'N', and entering product name '%vacc' will find all products with names containing 'vacc'. The selection is case insensitive. 
+For Product Type and Classification (Product Group and Product Income Type) selection, omitting the selection will include products with no product type or classification respectively. Using the selection '-' will find only those with no product type or classification.
+Only active products are included.
+All negative and zero stock holdings are ignored.
+By default products with zero or null costs are displayed (even if Print Details is off), because this indicates a possible error, but this can be suppressed if the 'Show zero cost items' option is unticked.
+The 'Ignore Product Group' selection can be used to specify that products in this group should be ignored. [This facility allows products to be ignored when valuing the stock.]
+The data is ordered by Stock Location then Product Type then Product Name.
+]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

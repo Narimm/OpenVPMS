@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<jnlp spec="1.6+" codebase="$$codebase">
+    <information>
+        <title>OpenVPMS Editor Launcher</title>
+        <vendor>OpenVPMS Pty Ltd</vendor>
+        <homepage href="http://openvpms.org"/>
+        <description>Launches editors for documents in OpenVPMS</description>
+        <offline-allowed/>
+    </information>
+    <security>
+        <all-permissions/>
+    </security>
+    <resources>
+        <java version="1.6+"/>
+        <property name="jnlp.packEnabled" value="true"/>
+
+        <jar href="openvpms-webdav-launcher-${webdav.launcher.version}.jar" main="true"/>
+    </resources>
+
+    <application-desc main-class="org.openvpms.web.webdav.launch.EditorLauncher">
+        <argument>$$doc</argument>
+    </application-desc>
+</jnlp>
+

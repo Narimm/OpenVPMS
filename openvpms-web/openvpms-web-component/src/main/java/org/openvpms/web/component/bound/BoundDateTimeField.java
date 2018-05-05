@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
@@ -64,7 +64,7 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
 
     /**
      * Constructs a {@link BoundDateTimeField}.
-     * <p/>
+     * <p>
      * If the property doesn't already have a {@link PropertyTransformer} registered, one will be added that
      * restricts entered dates to the range {@code {@link BoundDateField#MIN_DATE}..now + 100 years}.
      * This a workaround for OVPMS-1006.
@@ -201,6 +201,17 @@ public class BoundDateTimeField extends AbstractPropertyEditor {
      */
     public FocusGroup getFocusGroup() {
         return group;
+    }
+
+    /**
+     * Sets the component style name.
+     *
+     * @param styleName the style name
+     */
+    public void setStyleName(String styleName) {
+        date.getDateChooser().setStyleName(styleName);
+        date.getTextField().setStyleName(styleName);
+        time.setStyleName(styleName);
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -63,12 +63,12 @@ public class PrescriptionMedicationActEditor extends PatientMedicationActEditor 
         boolean changeLayout = (prescription != null && act == null) || (prescription == null && act != null);
         boolean readOnly = act != null;
         if (prescription != null) {
-            prescription.removeMedication((Act) getObject());
+            prescription.removeMedication(getObject());
             prescription = null;
         }
         if (act != null) {
             Prescription prescription = prescriptions.create(act);
-            prescription.addMedication((Act) getObject());
+            prescription.addMedication(getObject());
             setProduct((Product) getObject(prescription.getProduct()));
             setQuantity(prescription.getQuantity());
             this.prescription = prescription;

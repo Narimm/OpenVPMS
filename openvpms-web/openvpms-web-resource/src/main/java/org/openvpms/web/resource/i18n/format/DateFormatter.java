@@ -115,7 +115,7 @@ public class DateFormatter {
 
     /**
      * Returns the full date format for the current locale.
-     * <p/>
+     * <p>
      * This can be overridden by specifying the <em>date.format.full</em>
      * property in {@code messages.properties}.
      *
@@ -131,10 +131,10 @@ public class DateFormatter {
 
     /**
      * Returns the day/month date format for the current locale.
-     * <p/>
+     * <p>
      * This can be overridden by specifying the <em>date.format.dayMonth</em>
      * property in {@code messages.properties}.
-     * <p/>
+     * <p>
      * If unspecified, returns {@link #getFullDateFormat()}.
      *
      * @return the day/month date format
@@ -160,7 +160,7 @@ public class DateFormatter {
 
     /**
      * Returns a time format.
-     * <p/>
+     * <p>
      * This will use the <em>time.format.edit</em> and <em>time.format.view</em> properties if specified in
      * <em>messages.properties</em>, else it will fall back to those provided by the locale.
      *
@@ -199,8 +199,8 @@ public class DateFormatter {
     /**
      * Returns a date-time format.
      *
-     * @param edit if {@code true} return a format for editing otherwise
-     * @return a format for viewing date-times.
+     * @param edit if {@code true} return a format for editing otherwise returns a format for viewing date-times.
+     * @return a date-time format
      */
     public static DateFormat getDateTimeFormat(boolean edit) {
         DateFormat format;
@@ -215,6 +215,16 @@ public class DateFormatter {
             format = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, locale);
         }
         return format;
+    }
+
+    /**
+     * Format a date-time, using the view format.
+     *
+     * @param dateTime the date-time to format
+     * @return the formatted date
+     */
+    public static String formatDateTime(Date dateTime) {
+        return formatDateTime(dateTime, false);
     }
 
     /**
@@ -248,9 +258,9 @@ public class DateFormatter {
     public static String formatDateTimeAbbrev(Date dateTime, Date date) {
         String result;
         if (DateRules.dateEquals(dateTime, date)) {
-            result = DateFormatter.formatTime(dateTime, false);
+            result = formatTime(dateTime, false);
         } else {
-            result = DateFormatter.formatDateTime(dateTime, false);
+            result = formatDateTime(dateTime);
         }
         return result;
     }
@@ -260,7 +270,7 @@ public class DateFormatter {
      *
      * @param format the format
      * @return the (approximate) no. of characters required to display a date
-     *         in the format
+     * in the format
      */
     public static int getLength(DateFormat format) {
         return format.format(WIDE_DATE).length();

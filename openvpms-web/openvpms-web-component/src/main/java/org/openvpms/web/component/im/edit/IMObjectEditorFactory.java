@@ -11,16 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.im.archetype.ArchetypeHandler;
-import org.openvpms.web.component.im.archetype.ShortNamePairArchetypeHandlers;
+import org.openvpms.web.component.im.archetype.ArchetypeHandlers;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 import java.lang.reflect.Constructor;
@@ -34,39 +33,55 @@ import java.lang.reflect.Constructor;
 public class IMObjectEditorFactory {
 
     /**
+     * The resource name.
+     */
+    private final String name;
+
+    /**
+     * The fallback resource name.
+     */
+    private final String fallbackName;
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
      * Editor implementations.
      */
-    private ShortNamePairArchetypeHandlers editors;
+    private ArchetypeHandlers<IMObjectEditor> editors;
 
     /**
-     * The resource path.
+     * The default resource name.
      */
-    private final String path;
+    private static final String NAME = "IMObjectEditorFactory.properties";
 
     /**
-     * The logger.
+     * The default fallback resource name.
      */
-    private static final Log log = LogFactory.getLog(IMObjectEditorFactory.class);
-
-    /**
-     * The default resource path.
-     */
-    private static final String DEFAULT_PATH = "IMObjectEditorFactory.properties";
+    private static final String FALLBACK_NAME = "DefaultIMObjectEditorFactory.properties";
 
     /**
      * Constructs an {@link IMObjectEditorFactory}.
+     *
+     * @param service the archetype service
      */
-    public IMObjectEditorFactory() {
-        this(DEFAULT_PATH);
+    public IMObjectEditorFactory(IArchetypeService service) {
+        this(NAME, FALLBACK_NAME, service);
     }
 
     /**
      * Constructs an {@link IMObjectEditorFactory}.
      *
-     * @param path the resource name
+     * @param name         the resource name
+     * @param fallbackName the fallback resource name. May be {@code null}
+     * @param service      the archetype service
      */
-    public IMObjectEditorFactory(String path) {
-        this.path = path;
+    public IMObjectEditorFactory(String name, String fallbackName, IArchetypeService service) {
+        this.name = name;
+        this.fallbackName = fallbackName;
+        this.service = service;
     }
 
     /**
@@ -87,19 +102,13 @@ public class IMObjectEditorFactory {
      * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      * @return an editor for {@code object}
+     * @throws IllegalStateException if a registered editor cannot be created
      */
     public IMObjectEditor create(IMObject object, IMObject parent, LayoutContext context) {
-        IMObjectEditor result = null;
+        IMObjectEditor result;
 
-        ArchetypeHandler handler;
-        if (parent != null) {
-            String primary = object.getArchetypeId().getShortName();
-            String secondary = parent.getArchetypeId().getShortName();
-            handler = getEditors().getHandler(primary, secondary);
-        } else {
-            String shortName = object.getArchetypeId().getShortName();
-            handler = getEditors().getHandler(shortName);
-        }
+        String shortName = object.getArchetypeId().getShortName();
+        ArchetypeHandler handler = getEditors().getHandler(shortName);
 
         if (handler != null) {
             Class type = handler.getType();
@@ -108,13 +117,13 @@ public class IMObjectEditorFactory {
                 try {
                     result = (IMObjectEditor) ctor.newInstance(object, parent, context);
                 } catch (Throwable throwable) {
-                    log.error(throwable, throwable);
+                    throw new IllegalStateException("Failed to construct " + type.getName() + " for "
+                                                    + object.getArchetypeId().getShortName(), throwable);
                 }
             } else {
-                log.error("No valid constructor found for class: " + type.getName());
+                throw new IllegalStateException("No valid constructor found for class: " + type.getName());
             }
-        }
-        if (result == null) {
+        } else {
             result = new DefaultIMObjectEditor(object, parent, context);
         }
         return result;
@@ -125,9 +134,9 @@ public class IMObjectEditorFactory {
      *
      * @return the editors
      */
-    private synchronized ShortNamePairArchetypeHandlers getEditors() {
+    private synchronized ArchetypeHandlers getEditors() {
         if (editors == null) {
-            editors = new ShortNamePairArchetypeHandlers(path, IMObjectEditor.class);
+            editors = new ArchetypeHandlers<>(name, fallbackName, IMObjectEditor.class, service);
         }
         return editors;
     }

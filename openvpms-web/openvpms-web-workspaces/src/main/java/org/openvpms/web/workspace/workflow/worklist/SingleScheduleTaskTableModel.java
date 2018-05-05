@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.workflow.worklist;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -26,9 +27,11 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.table.DefaultTableHeaderRenderer;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
+import org.openvpms.web.workspace.workflow.scheduling.ScheduleColours;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
 
 import java.util.Date;
@@ -92,10 +95,12 @@ public class SingleScheduleTaskTableModel extends TaskTableModel {
     /**
      * Constructs a {@link SingleScheduleTaskTableModel}.
      *
-     * @param grid the task grid
+     * @param grid             the task grid
+     * @param context          the context
+     * @param colours          the colour cache
      */
-    public SingleScheduleTaskTableModel(TaskGrid grid, Context context) {
-        super(grid, context);
+    public SingleScheduleTaskTableModel(TaskGrid grid, Context context, ScheduleColours colours) {
+        super(grid, context, colours);
     }
 
     /**
@@ -124,10 +129,12 @@ public class SingleScheduleTaskTableModel extends TaskTableModel {
         DefaultTableColumnModel result = new DefaultTableColumnModel();
         List<Schedule> schedules = grid.getSchedules();
         Schedule schedule = schedules.get(0);
-        int i = 0;
         String[] names = getColumnNames();
-        for (; i < names.length; ++i) {
+        TaskTableCellRenderer renderer = new TaskTableCellRenderer(this);
+        for (int i = 0; i < names.length; ++i) {
             ScheduleColumn column = new ScheduleColumn(i, schedule, names[i]);
+            column.setCellRenderer(renderer);
+            column.setHeaderRenderer(DefaultTableHeaderRenderer.DEFAULT);
             result.addColumn(column);
         }
         return result;
@@ -190,7 +197,7 @@ public class SingleScheduleTaskTableModel extends TaskTableModel {
     private String[] getColumnNames() {
         if (columnNames == null) {
             columnNames = new String[NODE_NAMES.length + 1];
-            ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor("act.customerTask");
+            ArchetypeDescriptor archetype = DescriptorHelper.getArchetypeDescriptor(ScheduleArchetypes.TASK);
             if (archetype != null) {
                 for (int i = 0; i < NODE_NAMES.length; ++i) {
                     NodeDescriptor descriptor = archetype.getNodeDescriptor(NODE_NAMES[i]);

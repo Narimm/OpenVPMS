@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.prescription;
@@ -43,7 +43,20 @@ public class PrescriptionTestHelper {
      * @param clinician the clinician
      */
     public static Act createPrescription(Party patient, Product product, User clinician) {
-        return createPrescription(patient, product, clinician, 1, 5, DateRules.getDate(new Date(), 1, DateUnits.YEARS));
+        return createPrescription(patient, product, clinician, 1);
+    }
+
+    /**
+     * Creates a new prescription with 5 repeats, expiring in 12 months.
+     *
+     * @param patient   the patient
+     * @param product   the product to dispense
+     * @param clinician the clinician
+     * @param quantity  the quantity
+     */
+    public static Act createPrescription(Party patient, Product product, User clinician, int quantity) {
+        return createPrescription(patient, product, clinician, quantity, 5,
+                                  DateRules.getDate(new Date(), 1, DateUnits.YEARS));
     }
 
     /**

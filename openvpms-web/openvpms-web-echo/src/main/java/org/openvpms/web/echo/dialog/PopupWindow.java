@@ -11,14 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.dialog;
 
+import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
+import nextapp.echo2.app.Window;
 import nextapp.echo2.app.WindowPane;
 import nextapp.echo2.app.event.ActionListener;
 import org.openvpms.web.echo.button.ButtonRow;
@@ -36,6 +38,11 @@ import org.openvpms.web.echo.pane.ContentPane;
  * @author Tim Anderson
  */
 public abstract class PopupWindow extends WindowPane {
+
+    /**
+     * The root pane.
+     */
+    private ContentPane root;
 
     /**
      * The layout pane.
@@ -87,7 +94,7 @@ public abstract class PopupWindow extends WindowPane {
 
         row = new ButtonRow(focusGroup, "DialogButtonRow", ButtonRow.BUTTON_STYLE);
 
-        ContentPane root = new ContentPane();
+        root = new ContentPane();
         layout = createSplitPane();
         layout.add(row);
         root.add(layout);
@@ -105,6 +112,15 @@ public abstract class PopupWindow extends WindowPane {
         if (defaultButton != null) {
             getButtons().setFocus(defaultButton);
         }
+    }
+
+    /**
+     * Returns the root content pane.
+     *
+     * @return the content pane
+     */
+    protected ContentPane getContentPane() {
+        return root;
     }
 
     /**
@@ -202,17 +218,43 @@ public abstract class PopupWindow extends WindowPane {
 
     /**
      * Notifies {@code WindowPaneListener}s that the user has requested to close this {@code WindowPane}.
-     * <p/>
+     * <p>
      * This implementation re-registers keystroke listeners as a workaround to bugs in Firefox.
      *
      * @see KeyStrokeHelper#reregisterKeyStrokeListeners
      */
     @Override
     protected void fireWindowClosing() {
-        // re-register listeners for Firefox
-        KeyStrokeHelper.reregisterKeyStrokeListeners();
-
+        reregisterKeyStrokeListeners();
         super.fireWindowClosing();
+    }
+
+    /**
+     * Workaround to force re-registration of the key-stroke listeners on the parent dialog, if any, or the root window
+     * otherwise.
+     * Failure to do this means that the keyboard shortcuts don't work.
+     */
+    protected void reregisterKeyStrokeListeners() {
+        ApplicationInstance active = ApplicationInstance.getActive();
+        if (active != null) {
+            WindowPane next = null;
+            Window root = active.getDefaultWindow();
+            for (Component c : root.getContent().getComponents()) {
+                if (c instanceof WindowPane) {
+                    WindowPane pane = (WindowPane) c;
+                    if (pane.isModal()) {
+                        if (pane != this && (next == null || pane.getZIndex() > next.getZIndex())) {
+                            next = pane;
+                        }
+                    }
+                }
+            }
+            if (next != null) {
+                KeyStrokeHelper.reregisterKeyStrokeListeners(next);
+            } else {
+                KeyStrokeHelper.reregisterKeyStrokeListeners(root);
+            }
+        }
     }
 
     /**

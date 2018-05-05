@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -111,8 +111,7 @@ public class TestLaboratoryOrderService implements LaboratoryOrderService {
 
     /**
      * Cancels an order.
-     *
-     * @param context           the patient context
+     *  @param context           the patient context
      * @param placerOrderNumber the placer order number, to uniquely identify the order
      * @param serviceId         the universal service identifier
      * @param date              the order date
@@ -120,10 +119,11 @@ public class TestLaboratoryOrderService implements LaboratoryOrderService {
      * @param user              the user that generated the cancellation
      */
     @Override
-    public void cancelOrder(PatientContext context, long placerOrderNumber, String serviceId, Date date,
-                            Entity laboratory, User user) {
+    public boolean cancelOrder(PatientContext context, long placerOrderNumber, String serviceId, Date date,
+                               Entity laboratory, User user) {
         orders.add(new LabOrder(LabOrder.Type.CANCEL, context.getPatient(), placerOrderNumber, date,
                                 context.getClinician(), laboratory));
+        return true;
     }
 
     /**

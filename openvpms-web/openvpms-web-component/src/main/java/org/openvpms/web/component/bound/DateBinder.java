@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
@@ -53,6 +53,7 @@ public class DateBinder extends Binder {
     public DateBinder(DateField field, Property property) {
         super(property, false);
         this.field = field;
+        field.setEnabled(!property.isReadOnly());
         listener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent event) {
                 String name = event.getPropertyName();
@@ -98,6 +99,9 @@ public class DateBinder extends Binder {
             calendar.setTime(date);
         }
         chooser.setSelectedDate(calendar);
+        if (calendar != null) {
+            chooser.setDisplayedDate(calendar);
+        }
         chooser.addPropertyChangeListener(listener);
     }
 }

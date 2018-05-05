@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.util;
@@ -30,23 +30,21 @@ import java.util.List;
 /**
  * Entity relationship helper methods.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class EntityRelationshipHelper {
 
     /**
-     * Returns the target from the default entity relationship from the
-     * specified relationship node.
+     * Returns the target from the default entity relationship from the specified relationship node.
+     * <p/>
+     * Note that this can return a reference to an inactive object.
      *
      * @param entity  the parent entity
      * @param node    the relationship node
      * @param service the archetype service
-     * @return the default target, or the the first target if there is no
-     *         default, or <tt>null</tt> if none is found
+     * @return the default target, or the the first target if there is no default, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws IMObjectBeanException     if the node does't exist or an element
-     *                                   is of the wrong type
+     * @throws IMObjectBeanException     if the node doesn't exist or an element is of the wrong type
      */
     public static IMObjectReference getDefaultTargetRef(
             Entity entity, String node, IArchetypeService service) {
@@ -54,83 +52,66 @@ public class EntityRelationshipHelper {
     }
 
     /**
-     * Returns the target from the default entity relationship from the
-     * specified relationship node.
+     * Returns the target from the default entity relationship from the specified relationship node.
+     * <p/>
+     * Note that this can return a reference to an inactive object.
      *
      * @param entity        the parent entity
      * @param node          the relationship node
-     * @param useNonDefault if <tt>true</tt> use a non-default relationship if
-     *                      no default can be found
+     * @param useNonDefault if {@code true} use a non-default relationship if no default can be found
      * @param service       the archetype service
      * @return the default target, or the the first target if there is no
-     *         default, or <tt>null</tt> if none is found
+     * default, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws IMObjectBeanException     if the node does't exist or an element
-     *                                   is of the wrong type
+     * @throws IMObjectBeanException     if the node doesn't exist or an element is of the wrong type
      */
-    public static IMObjectReference getDefaultTargetRef(
-            Entity entity, String node, boolean useNonDefault,
-            IArchetypeService service) {
+    public static IMObjectReference getDefaultTargetRef(Entity entity, String node, boolean useNonDefault,
+                                                        IArchetypeService service) {
         IMObjectBean bean = new IMObjectBean(entity, service);
-        return getDefaultTargetRef(
-                bean.getValues(node, EntityRelationship.class), useNonDefault,
-                service);
+        return getDefaultTargetRef(bean.getValues(node, EntityRelationship.class), useNonDefault, service);
     }
 
     /**
-     * Returns the active target from the default entity relationship from the
-     * specified relationship node.
+     * Returns the active target from the default entity relationship from the specified relationship node.
      *
      * @param entity  the parent entity
      * @param node    the relationship node
      * @param service the archetype service
-     * @return the default target, or the the first target if there is no
-     *         default, or <tt>null</tt> if none is found
+     * @return the default target, or the the first target if there is no default, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws IMObjectBeanException     if the node does't exist or an element
-     *                                   is of the wrong type
+     * @throws IMObjectBeanException     if the node doesn't exist or an element is of the wrong type
      */
-    public static Entity getDefaultTarget(Entity entity, String node,
-                                          IArchetypeService service) {
+    public static Entity getDefaultTarget(Entity entity, String node, IArchetypeService service) {
         return getDefaultTarget(entity, node, true, service);
     }
 
     /**
-     * Returns the active target from the default entity relationship from the
-     * specified relationship node.
+     * Returns the active target from the default entity relationship from the specified relationship node.
      *
      * @param entity        the parent entity
      * @param node          the relationship node
-     * @param useNonDefault if <tt>true</tt> use a non-default relationship if
-     *                      no default can be found
+     * @param useNonDefault if {@code true} use a non-default relationship if no default can be found
      * @param service       the archetype service
-     * @return the default target, or the the first target if there is no
-     *         default and <tt>useNonDefault</tt> is <tt>true</tt>,
-     *         or <tt>null</tt> if none is found
+     * @return the default target, or the the first target if there is no default and {@code useNonDefault} is
+     * {@code true}, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws IMObjectBeanException     if the node does't exist or an element
-     *                                   is of the wrong type
+     * @throws IMObjectBeanException     if the node doesn't exist or an element is of the wrong type
      */
-    public static Entity getDefaultTarget(Entity entity, String node,
-                                          boolean useNonDefault,
-                                          IArchetypeService service) {
+    public static Entity getDefaultTarget(Entity entity, String node, boolean useNonDefault, IArchetypeService service) {
         IMObjectBean bean = new IMObjectBean(entity, service);
-        return getDefaultTarget(bean.getValues(node, EntityRelationship.class),
-                                useNonDefault, service);
+        return getDefaultTarget(bean.getValues(node, EntityRelationship.class), useNonDefault, service);
     }
 
     /**
-     * Returns the active target from the default entity relationship from the
-     * supplied relationship list.
+     * Returns the active target from the default entity relationship from the supplied relationship list.
      *
      * @param relationships a list of relationship objects
      * @param service       the archetype service
      * @return the default target, or the the first target if there is no
-     *         default, or <tt>null</tt> if none is found
+     * default, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public static Entity getDefaultTarget(
-            List<EntityRelationship> relationships, IArchetypeService service) {
+    public static Entity getDefaultTarget(List<EntityRelationship> relationships, IArchetypeService service) {
         return getDefaultTarget(relationships, true, service);
     }
 
@@ -139,27 +120,25 @@ public class EntityRelationshipHelper {
      * supplied relationship list.
      *
      * @param relationships a list of relationship objects
-     * @param useNonDefault if <tt>true</tt> use a non-default relationship if
-     *                      no default can be found
+     * @param useNonDefault if {@code true} use a non-default relationship if no default can be found
      * @param service       the archetype service
-     * @return the default target, or the the first target if there is no
-     *         default and <tt>useNonDefault</tt> is <tt>true</tt>,
-     *         or <tt>null</tt> if none is found
+     * @return the default target, or the the first target if there is no default and {@code useNonDefault}
+     * is {@code true}, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public static Entity getDefaultTarget(
-            List<EntityRelationship> relationships, boolean useNonDefault,
-            IArchetypeService service) {
+    public static Entity getDefaultTarget(List<EntityRelationship> relationships, boolean useNonDefault,
+                                          IArchetypeService service) {
         Entity result = null;
         for (EntityRelationship relationship : relationships) {
             if (relationship.isActive()) {
                 if (result == null && useNonDefault) {
                     result = getEntity(relationship.getTarget(), service);
                 } else {
-                    IMObjectBean bean = new IMObjectBean(relationship);
+                    IMObjectBean bean = new IMObjectBean(relationship, service);
                     if (bean.hasNode("default") && bean.getBoolean("default")) {
-                        result = getEntity(relationship.getTarget(), service);
-                        if (result != null) {
+                        Entity entity = getEntity(relationship.getTarget(), service);
+                        if (entity != null) {
+                            result = entity;
                             break;
                         }
                     }
@@ -172,15 +151,15 @@ public class EntityRelationshipHelper {
     /**
      * Returns the active target reference from the default entity relationship
      * from the supplied relationship list.
+     * <p/>
+     * Note that this can return a reference to an inactive object.
      *
      * @param relationships a list of relationship objects
      * @param service       the archetype service
-     * @return the default target, or the the first target if there is no
-     *         default, or <tt>null</tt> if none is found
+     * @return the default target, or the the first target if there is no default, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public static IMObjectReference getDefaultTargetRef(
-            List<EntityRelationship> relationships, boolean useNonDefault,
+    public static IMObjectReference getDefaultTargetRef(List<EntityRelationship> relationships, boolean useNonDefault,
             IArchetypeService service) {
         IMObjectReference result = null;
         for (EntityRelationship relationship : relationships) {
@@ -211,8 +190,7 @@ public class EntityRelationshipHelper {
      * @param service      the archetype service
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public static void setDefault(Entity entity, String node,
-                                  EntityRelationship relationship,
+    public static void setDefault(Entity entity, String node, EntityRelationship relationship,
                                   IArchetypeService service) {
         IMObjectBean bean = new IMObjectBean(entity, service);
         List<EntityRelationship> relationships
@@ -231,13 +209,12 @@ public class EntityRelationshipHelper {
     /**
      * Returns the entity associate with a reference.
      *
-     * @param ref     the reference. May be <tt>null</tt>
+     * @param ref     the reference. May be {@code null}
      * @param service the archetype service.
-     * @return the corresponding entity, or <tt>null</tt>
+     * @return the corresponding entity, or {@code null}
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private static Entity getEntity(IMObjectReference ref,
-                                    IArchetypeService service) {
+    private static Entity getEntity(IMObjectReference ref, IArchetypeService service) {
         Entity result = null;
         if (ref != null) {
             Entity entity = (Entity) service.get(ref);

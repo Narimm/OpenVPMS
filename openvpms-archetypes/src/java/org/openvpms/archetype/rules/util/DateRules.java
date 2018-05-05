@@ -11,12 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.util;
 
 import org.apache.commons.lang.time.DateUtils;
+import org.joda.time.DateTime;
+import org.joda.time.Period;
 import org.openvpms.component.system.common.util.DateHelper;
 
 import java.sql.Timestamp;
@@ -69,6 +71,28 @@ public class DateRules {
     }
 
     /**
+     * Helper to add a {@code Period} to a {@code Date}.
+     *
+     * @param date   the date
+     * @param period the period to add
+     * @return a new date
+     */
+    public static Date plus(Date date, Period period) {
+        return new DateTime(date).plus(period).toDate();
+    }
+
+    /**
+     * Helper to subtract a {@code Period} from a {@code Date}.
+     *
+     * @param date   the date
+     * @param period the period to subtract
+     * @return a new date
+     */
+    public static Date minus(Date date, Period period) {
+        return new DateTime(date).minus(period).toDate();
+    }
+
+    /**
      * Returns today's date, minus any time component.
      *
      * @return today's date
@@ -105,7 +129,8 @@ public class DateRules {
         if (datetime == null) {
             return null;
         }
-        return DateUtils.truncate(datetime, Calendar.DAY_OF_MONTH);
+        // truncate modifies the source
+        return DateUtils.truncate(new Date(datetime.getTime()), Calendar.DAY_OF_MONTH);
     }
 
     /**
@@ -176,22 +201,22 @@ public class DateRules {
 
     /**
      * Helper to compare two dates.
-     * <p/>
+     * <p>
      * Null dates are treated as greater than non-null dates.
-     * <p/>
+     * <p>
      * This is functionally equivalent to the {@link Date#compareTo(Date)}
      * method, except that it doesn't throw {@code ClassCastExceptions}
      * if {@code lhs} is an instance of a {@link Timestamp Timestamp} and
      * {@code rhs} isn't.
-     * <p/>
+     * <p>
      * For timestamps, the nanoseconds are ignored.
      *
      * @param lhs the date. May be {@code null}
      * @param rhs the date to compare with. May be {@code null}
      * @return {@code 0} if the {@code lhs} is equal to {@code rhs};
-     *         a value less than {@code 0} if {@code lhs} is before
-     *         {@code rhs}; and a value greater than
-     *         {@code 0} if {@code lhs} is after {@code rhs}.
+     * a value less than {@code 0} if {@code lhs} is before
+     * {@code rhs}; and a value greater than
+     * {@code 0} if {@code lhs} is after {@code rhs}.
      */
     public static int compareTo(Date lhs, Date rhs) {
         return compareDateTime(lhs, rhs, true);
@@ -199,26 +224,26 @@ public class DateRules {
 
     /**
      * Helper to compare two dates.
-     * <p/>
+     * <p>
      * This is functionally equivalent to the {@link Date#compareTo(Date)}
      * method, except that it doesn't throw {@code ClassCastExceptions}
      * if {@code lhs} is an instance of a {@link Timestamp Timestamp} and
      * {@code rhs} isn't.
-     * <p/>
+     * <p>
      * For timestamps, the nanoseconds are ignored.
      *
      * @param lhs          the date
      * @param rhs          the date to compare with
      * @param ignoreMillis if {@code true}, ignore milliseconds
      * @return {@code 0} if the {@code lhs} is equal to {@code rhs};
-     *         a value less than {@code 0} if {@code lhs} is before
-     *         {@code rhs}; and a value greater than
-     *         {@code 0} if {@code lhs} is after {@code rhs}.
+     * a value less than {@code 0} if {@code lhs} is before
+     * {@code rhs}; and a value greater than
+     * {@code 0} if {@code lhs} is after {@code rhs}.
      */
     public static int compareTo(Date lhs, Date rhs, boolean ignoreMillis) {
         if (ignoreMillis) {
-            lhs = DateUtils.truncate(lhs, Calendar.SECOND);
-            rhs = DateUtils.truncate(rhs, Calendar.SECOND);
+            lhs = DateUtils.truncate(new Date(lhs.getTime()), Calendar.SECOND);
+            rhs = DateUtils.truncate(new Date(rhs.getTime()), Calendar.SECOND);
         }
         return compareTo(lhs, rhs);
     }
@@ -238,6 +263,8 @@ public class DateRules {
 
     /**
      * Determines if a date falls between two dates.
+     * <p>
+     * The lower bound is inclusive, the upper bound exclusive.
      *
      * @param date       the date to compare
      * @param lowerBound the from date. If {@code null}, indicates that the date is unbounded
@@ -250,8 +277,10 @@ public class DateRules {
 
     /**
      * Determines if a date falls between two dates, inclusive.
-     * <p/>
+     * <p>
      * Any time component of the specified dates is ignored.
+     * <p>
+     * The lower bound is inclusive, the upper bound exclusive.
      *
      * @param date the date to compare
      * @param from the lower bound. If {@code null}, indicates there is no lower bound
@@ -263,7 +292,7 @@ public class DateRules {
         from = getDate(from);
         to = getDate(to);
         return (from == null || DateRules.compareTo(from, date) <= 0)
-               && (to == null || DateRules.compareTo(to, date) >= 0);
+               && (to == null || DateRules.compareTo(to, date) > 0);
     }
 
     /**
@@ -287,14 +316,14 @@ public class DateRules {
 
     /**
      * Compares the date portion of two date/times. Any time component is ignored.
-     * <p/>
+     * <p>
      * Null dates are treated as greater than non-null dates.
      *
      * @param d1 the first date/time. May be {@code null}
      * @param d2 the second date/time. May be {@code null}
      * @return the {@code 0} if {@code d1} is equal to this {@code d2};
-     *         a value less than {@code 0} if {@code d1}  is before the {@code d2};
-     *         and a value greater than {@code 0} if {@code d1} is after {@code d2}.
+     * a value less than {@code 0} if {@code d1}  is before the {@code d2};
+     * and a value greater than {@code 0} if {@code d1} is after {@code d2}.
      */
     public static int compareDates(Date d1, Date d2) {
         return compareDate(d1, d2, true);
@@ -307,8 +336,8 @@ public class DateRules {
      * @param d2       the second date/time. May be {@code null}
      * @param nullHigh if {@code true} nulls are considered greater than any date, else they are lower
      * @return the {@code 0} if {@code d1} is equal to this {@code d2};
-     *         a value less than {@code 0} if {@code d1}  is before the {@code d2};
-     *         and a value greater than {@code 0} if {@code d1} is after {@code d2}.
+     * a value less than {@code 0} if {@code d1}  is before the {@code d2};
+     * and a value greater than {@code 0} if {@code d1} is after {@code d2}.
      */
     public static int compareDate(Date d1, Date d2, boolean nullHigh) {
         d1 = getDate(d1);
@@ -323,20 +352,11 @@ public class DateRules {
      * @param d2       the second date/time. May be {@code null}
      * @param nullHigh if {@code true} nulls are considered greater than any date, else they are lower
      * @return the {@code 0} if {@code d1} is equal to this {@code d2};
-     *         a value less than {@code 0} if {@code d1}  is before the {@code d2};
-     *         and a value greater than {@code 0} if {@code d1} is after {@code d2}.
+     * a value less than {@code 0} if {@code d1}  is before the {@code d2};
+     * and a value greater than {@code 0} if {@code d1} is after {@code d2}.
      */
     public static int compareDateTime(Date d1, Date d2, boolean nullHigh) {
-        if (d1 == null || d2 == null) {
-            if (d1 == null && d2 == null) {
-                return 0;
-            } else if (d1 == null) {
-                return nullHigh ? 1 : -1;
-            } else {
-                return nullHigh ? -1 : 1;
-            }
-        }
-        return DateHelper.compareTo(d1, d2);
+        return DateHelper.compareTo(d1, d2, nullHigh);
     }
 
     /**
@@ -344,8 +364,8 @@ public class DateRules {
      *
      * @param date the date
      * @return the {@code 0} if {@code date} is equal to today's date;
-     *         a value less than {@code 0} if {@code date} is before today's date;
-     *         and a value greater than {@code 0} if {@code date} is after today's date
+     * a value less than {@code 0} if {@code date} is before today's date;
+     * and a value greater than {@code 0} if {@code date} is after today's date
      */
     public static int compareDateToToday(Date date) {
         return getDate(date).compareTo(getToday());
@@ -353,7 +373,7 @@ public class DateRules {
 
     /**
      * Determines if two dates are equal.
-     * <p/>
+     * <p>
      * This handles nulls and ignores any time component.
      *
      * @param date1 the first date. May be {@code null}

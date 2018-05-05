@@ -1,38 +1,38 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
+import org.openvpms.component.model.archetype.ArchetypeDescriptor;
+import org.openvpms.component.model.object.IMObject;
+import org.openvpms.component.model.object.Reference;
 import org.springframework.test.context.ContextConfiguration;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
  * Tests the {@link TypeHelper} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 @ContextConfiguration("../archetype-service-appcontext.xml")
 public class TypeHelperTestCase extends AbstractArchetypeServiceTest {
@@ -75,13 +75,13 @@ public class TypeHelperTestCase extends AbstractArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link TypeHelper#isA(IMObjectReference, String)} method.
+     * Tests the {@link TypeHelper#isA(Reference, String)} method.
      */
     @Test
     public void testIsARef() {
         IMObject object = create("party.customerperson");
         assertNotNull(object);
-        IMObjectReference ref = object.getObjectReference();
+        Reference ref = object.getObjectReference();
 
         assertTrue(TypeHelper.isA(ref, "party.customerperson"));
         assertFalse(TypeHelper.isA(ref, "party.patientpet"));
@@ -93,12 +93,12 @@ public class TypeHelperTestCase extends AbstractArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link TypeHelper#isA(IMObjectReference, String[])} method.
+     * Tests the {@link TypeHelper#isA(Reference, String[])} method.
      */
     @Test
     public void testIsARefMultiple() {
         IMObject object = create("act.customerAccountPayment");
-        IMObjectReference ref = object.getObjectReference();
+        Reference ref = object.getObjectReference();
         assertNotNull(ref);
         String[] matches = {"act.customerAccountPaymentCash", "act.customerAccountPayment"};
         assertTrue(TypeHelper.isA(ref, matches));
@@ -120,8 +120,7 @@ public class TypeHelperTestCase extends AbstractArchetypeServiceTest {
      */
     @Test
     public void testIsAIdMultiple() {
-        IMObject object = create("act.customerAccountPayment");
-        ArchetypeId id = object.getArchetypeId();
+        ArchetypeId id = new ArchetypeId("act.customerAccountPayment.1.0");
         assertNotNull(id);
         String[] matches = {"act.customerAccountPaymentCash", "act.customerAccountPayment"};
         assertTrue(TypeHelper.isA(id, matches));
@@ -182,9 +181,7 @@ public class TypeHelperTestCase extends AbstractArchetypeServiceTest {
      */
     @Test
     public void testMatchesId() {
-        IMObject object = create("party.customerperson");
-        assertNotNull(object);
-        ArchetypeId id = object.getArchetypeId();
+        ArchetypeId id = new ArchetypeId("party.customerperson.1.0");
 
         assertTrue(TypeHelper.matches(id, "party.customerperson"));
         assertFalse(TypeHelper.matches(id, "party.patientpet"));

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -19,9 +19,11 @@ package org.openvpms.web.workspace.patient.history;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 
+import java.util.function.Predicate;
+
 /**
  * An iterator over patient history acts.
- * <p/>
+ * <p>
  * This includes 3 levels of act hierarchy.
  *
  * @author Tim Anderson
@@ -33,10 +35,12 @@ public class PatientHistoryIterator extends ActHierarchyIterator<Act> {
      *
      * @param acts          the top-level acts to iterate
      * @param shortNames    the history item short names to include
+     * @param search        the search criteria. May be {@code null}
      * @param sortAscending if {@code true} sort items on ascending timestamp; otherwise sort on descending timestamp
      */
-    public PatientHistoryIterator(Iterable<Act> acts, String[] shortNames, boolean sortAscending) {
-        this(acts, new PatientHistoryFilter(shortNames, sortAscending));
+    public PatientHistoryIterator(Iterable<Act> acts, String[] shortNames, Predicate<Act> search,
+                                  boolean sortAscending) {
+        this(acts, new PatientHistoryFilter(shortNames, search, sortAscending));
     }
 
     /**

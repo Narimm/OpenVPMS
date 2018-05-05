@@ -35,6 +35,7 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -163,7 +164,7 @@ public class DocumentViewer {
 
     /**
      * Registers a listener for download events.
-     * <p/>
+     * <p>
      * This enables download events to be intercepted. Only applicable if {@code link} was specified at construction.
      *
      * @param listener the listener. May be {@code null}
@@ -209,7 +210,8 @@ public class DocumentViewer {
             if (hasDoc) {
                 if (link) {
                     if (parent instanceof DocumentAct) {
-                        downloader = new DocumentActDownloader((DocumentAct) parent, template, context.getContext());
+                        downloader = new DocumentActDownloader((DocumentAct) parent, template, context.getContext(),
+                                                               ServiceHelper.getBean(FileNameFormatter.class));
                     } else {
                         downloader = new DocumentRefDownloader(reference, name);
                     }
@@ -237,7 +239,7 @@ public class DocumentViewer {
      *
      * @param bean the act bean
      * @return a component to view the external investigation, or {@code null} if the investigation type doesn't support
-     *         it or the act has no investigation type
+     * it or the act has no investigation type
      */
     private Component getInvestigation(ActBean bean) {
         Component result = null;

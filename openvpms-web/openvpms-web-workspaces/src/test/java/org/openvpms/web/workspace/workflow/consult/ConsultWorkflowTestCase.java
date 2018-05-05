@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.consult;
@@ -30,11 +30,12 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditorTest;
-import org.openvpms.web.workspace.patient.visit.VisitEditor;
+import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
 import org.openvpms.web.workspace.patient.visit.VisitEditorDialog;
 import org.openvpms.web.workspace.workflow.checkin.CheckInWorkflowRunner;
 
@@ -90,7 +91,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     @Test
     public void testConsultForAppointment() {
         Date date = new Date();
-        Act appointment = createAppointment(date, customer, patient, clinician);
+        Act appointment = createAppointment(date, customer, patient, clinician, location);
 
         // create a COMPLETED event for the previous date, with no end date. This should not be used by check-in
         // or consult
@@ -105,7 +106,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         Act event = runner.runWorkflow(patient, customer, workList, date, clinician, location);
         assertNotEquals(previousEvent, event); // new event should have been created
 
-        checkConsultWorkflow(appointment, event);
+        checkConsultWorkflow(appointment, event, clinician);
     }
 
     /**
@@ -122,7 +123,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         previousEvent.setStatus(ActStatus.COMPLETED);
         save(previousEvent);
 
-        Act appointment = createAppointment(date, customer, patient, clinician);
+        Act appointment = createAppointment(date, customer, patient, clinician, location);
         Entity taskType = ScheduleTestHelper.createTaskType();
         Party workList = createWorkList(taskType, 1);
         CheckInWorkflowRunner runner = new CheckInWorkflowRunner(appointment, getPractice(), context);
@@ -132,7 +133,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
 
         Act task = runner.checkTask(workList, customer, patient, TaskStatus.PENDING);
 
-        checkConsultWorkflow(task, event);
+        checkConsultWorkflow(task, event, clinician);
     }
 
     /**
@@ -165,7 +166,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testCompleteInvoiceStatusForAppointment() {
-        Act appointment = createAppointment(customer, patient, clinician);
+        Act appointment = createAppointment(customer, patient, clinician, location);
         checkCompleteInvoiceStatus(appointment);
     }
 
@@ -184,7 +185,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testInProgressInvoiceStatusForBilledAppointment() {
-        Act appointment = createAppointment(customer, patient, clinician);
+        Act appointment = createAppointment(customer, patient, clinician, location);
         checkChangeCompleteInvoiceToInProgress(appointment, WorkflowStatus.BILLED);
     }
 
@@ -194,7 +195,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testInProgressInvoiceStatusForCompletedAppointment() {
-        Act appointment = createAppointment(customer, patient, clinician);
+        Act appointment = createAppointment(customer, patient, clinician, location);
         checkChangeCompleteInvoiceToInProgress(appointment, WorkflowStatus.COMPLETED);
     }
 
@@ -228,6 +229,45 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     }
 
     /**
+     * Verifies that when the practice 'usedLoggedInClinician' is set true, the clinician comes from the context
+     * user rather than the appointment.
+     */
+    @Test
+    public void testUseLoggedInClinicianForClinician() {
+        checkUseLoggedInClinician(true, clinician, TestHelper.createClinician(), clinician);
+    }
+
+    /**
+     * Verifies that when the practice 'usedLoggedInClinician' is set true, and the logged in user is not a
+     * clinician, the clinician comes from the appointment.
+     */
+    @Test
+    public void testUseLoggedInClinicianForNonClinician() {
+        User user = TestHelper.createUser();
+        checkUseLoggedInClinician(true, user, clinician, clinician);
+    }
+
+    /**
+     * Verifies that when the practice 'usedLoggedInClinician' is set false, the clinician comes from the context
+     * user rather than the appointment.
+     */
+    @Test
+    public void testUseLoggedInClinicianDisabledForClinician() {
+        User clinician2 = TestHelper.createClinician();
+        checkUseLoggedInClinician(false, clinician, clinician2, clinician2);
+    }
+
+    /**
+     * Verifies that when the practice 'usedLoggedInClinician' is set false, and the logged in user is not a
+     * clinician, the clinician comes from the appointment.
+     */
+    @Test
+    public void testUseLoggedInClinicianDisabledForNonClinician() {
+        User user = TestHelper.createUser();
+        checkUseLoggedInClinician(false, user, clinician, clinician);
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -243,19 +283,57 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     }
 
     /**
+     * Tests the effects of the practice useLoggedInClinician option during the Consult workflow.
+     *
+     * @param enabled              if {@code true}, enable the option, otherwise disable it
+     * @param user                 the current user
+     * @param appointmentClinician the appointment clinician
+     * @param expectedClinician    the expected clinician on new acts
+     */
+    private void checkUseLoggedInClinician(boolean enabled, User user, User appointmentClinician,
+                                           User expectedClinician) {
+        IMObjectBean bean = new IMObjectBean(getPractice());
+        bean.setValue("useLoggedInClinician", enabled);
+
+        context.setUser(user);
+        context.setClinician(clinician);
+
+        Date date = new Date();
+        Act appointment = createAppointment(date, customer, patient, appointmentClinician, location);
+
+        // create a COMPLETED event for the previous date, with no end date. This should not be used by check-in
+        // or consult
+        Act previousEvent = PatientTestHelper.createEvent(DateRules.getYesterday(), null, patient,
+                                                          appointmentClinician);
+        previousEvent.setStatus(ActStatus.COMPLETED);
+        save(previousEvent);
+
+        Entity taskType = ScheduleTestHelper.createTaskType();
+        Party workList = createWorkList(taskType, 1);
+        CheckInWorkflowRunner runner = new CheckInWorkflowRunner(appointment, getPractice(), context);
+
+        Act event = runner.runWorkflow(patient, customer, workList, date, expectedClinician, location);
+        assertNotEquals(previousEvent, event); // new event should have been created
+
+        checkConsultWorkflow(appointment, event, expectedClinician);
+    }
+
+    /**
      * Tests the consult workflow.
      *
-     * @param act   the appointment/task
-     * @param event the event created at check-in
+     * @param act       the appointment/task
+     * @param event     the event created at check-in
+     * @param clinician the expected clinician
      */
-    private void checkConsultWorkflow(Act act, Act event) {
+    private void checkConsultWorkflow(Act act, Act event, User clinician) {
         ConsultWorkflowRunner workflow = new ConsultWorkflowRunner(act, getPractice(), context);
         workflow.start();
 
         VisitEditorDialog dialog = workflow.editVisit();
         assertEquals(event, dialog.getEditor().getEvent());
         workflow.addNote();
-        workflow.addVisitInvoiceItem(patient, clinician);
+        CustomerChargeActItemEditor itemEditor = workflow.addVisitInvoiceItem(patient, new BigDecimal(20));
+        assertEquals(clinician, itemEditor.getClinician());
         fireDialogButton(dialog, PopupDialog.OK_ID);
 
         workflow.checkComplete(ActStatus.IN_PROGRESS);
@@ -269,27 +347,28 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      * @param userClose if <tt>true</tt> cancel by clicking the 'x' button, otherwise cancel via the 'Cancel' button
      */
     private void checkCancelInvoice(boolean save, boolean userClose) {
-        Act appointment = createAppointment(customer, patient, clinician);
+        Act appointment = createAppointment(customer, patient, clinician, location);
         ConsultWorkflowRunner workflow = new ConsultWorkflowRunner(appointment, getPractice(), context);
         workflow.start();
 
         // first task is to edit the clinical event 
         VisitEditorDialog dialog = workflow.editVisit();
-        BigDecimal amount = BigDecimal.valueOf(20);
-        workflow.addVisitInvoiceItem(patient, amount, clinician);
+        BigDecimal fixedPrice = new BigDecimal("18.18");
+        workflow.addVisitInvoiceItem(patient, fixedPrice);
 
         // next is to edit the invoice
         if (save) {
             dialog.getEditor().selectCharges();
             fireDialogButton(dialog, PopupDialog.APPLY_ID);          // save the invoice
         }
-        workflow.addVisitInvoiceItem(patient, amount, clinician);    // add another item. Won't be saved
+        workflow.addVisitInvoiceItem(patient, fixedPrice);    // add another item. Won't be saved
 
         // close the dialog
         cancelDialog(dialog, userClose);
 
         if (save) {
-            workflow.checkInvoice(ActStatus.IN_PROGRESS, amount);
+            BigDecimal fixedPriceIncTax = BigDecimal.valueOf(20);
+            workflow.checkInvoice(ActStatus.IN_PROGRESS, fixedPriceIncTax, clinician);
         } else {
             FinancialAct invoice = workflow.getInvoice();
             assertNotNull(invoice);
@@ -311,7 +390,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         workflow.start();
 
         VisitEditorDialog dialog = workflow.editVisit();
-        workflow.addVisitInvoiceItem(patient, clinician);
+        workflow.addVisitInvoiceItem(patient, new BigDecimal(20));
         dialog.getEditor().getChargeEditor().setStatus(ActStatus.COMPLETED);
         fireDialogButton(dialog, PopupDialog.OK_ID);
 
@@ -339,7 +418,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         workflow.start();
 
         VisitEditorDialog dialog = workflow.editVisit();
-        workflow.addVisitInvoiceItem(patient, clinician);
+        workflow.addVisitInvoiceItem(patient, new BigDecimal(20));
         dialog.getEditor().getChargeEditor().setStatus(ActStatus.IN_PROGRESS);
         fireDialogButton(dialog, PopupDialog.OK_ID);
 
@@ -351,21 +430,6 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         // verify the appointment/task is that expected
         workflow.checkComplete(expectedStatus);
         workflow.checkContext(context, customer, patient, clinician);
-    }
-
-    /**
-     * Verifies that the selected act in the history matches that expected and is associated with or the same as
-     * the supplied event.
-     *
-     * @param editor   the visit editor
-     * @param selected the expected selected act
-     * @param event    the event
-     */
-    private void checkSelectedHistory(VisitEditor editor, Act selected, Act event) {
-        assertEquals(selected, editor.getHistoryWindow().getObject());
-        assertEquals(event, editor.getHistoryWindow().getEvent());
-        assertEquals(selected, editor.getHistoryBrowser().getSelected());
-        assertEquals(event, editor.getHistoryBrowser().getSelectedParent());
     }
 
 }

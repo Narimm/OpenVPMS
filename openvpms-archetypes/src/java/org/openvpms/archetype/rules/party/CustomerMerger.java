@@ -11,22 +11,22 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
 
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountQueryFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -62,11 +62,11 @@ class CustomerMerger extends PartyMerger {
      * Constructs a {@link CustomerMerger}.
      *
      * @param service the archetype service
-     * @param lookups the lookup service
+     * @param rules   the customer rules
      */
-    public CustomerMerger(IArchetypeService service, ILookupService lookups) {
-        super("party.customerperson", service);
-        rules = new CustomerRules(service, lookups);
+    public CustomerMerger(IArchetypeService service, CustomerRules rules) {
+        super(CustomerArchetypes.PERSON, service);
+        this.rules = rules;
     }
 
     /**
@@ -85,7 +85,7 @@ class CustomerMerger extends PartyMerger {
      */
     @Override
     protected List<IMObject> moveParticipations(Party from, Party to) {
-        List<IMObject> result = new ArrayList<IMObject>();
+        List<IMObject> result = new ArrayList<>();
 
         // remove the opening and closing balance acts from the from customer
         ArchetypeQuery fromQuery = createOpeningClosingBalanceQuery(from);
@@ -160,8 +160,7 @@ class CustomerMerger extends PartyMerger {
     private boolean remove(ArchetypeQuery query) {
         boolean removed = false;
         IArchetypeService service = getArchetypeService();
-        Iterator<IMObject> iter
-                = new IMObjectQueryIterator<IMObject>(service, query);
+        Iterator<IMObject> iter = new IMObjectQueryIterator<>(service, query);
         while (iter.hasNext()) {
             service.remove(iter.next());
             removed = true;
@@ -174,7 +173,7 @@ class CustomerMerger extends PartyMerger {
      *
      * @param party the customer
      * @return the first start time, or <tt>null</tt> if the customer has no
-     *         transactions
+     * transactions
      * @throws ArchetypeServiceException for any archetype service error
      */
     private Date getFirstTransactionStartTime(Party party) {
@@ -199,10 +198,8 @@ class CustomerMerger extends PartyMerger {
      * @return a new query
      */
     private ArchetypeQuery createOpeningClosingBalanceQuery(Party party) {
-        String[] shortNames = {OPENING_BALANCE,
-                               CLOSING_BALANCE};
-        ArchetypeQuery query = CustomerAccountQueryFactory.createQuery(
-                party, shortNames);
+        String[] shortNames = {OPENING_BALANCE, CLOSING_BALANCE};
+        ArchetypeQuery query = CustomerAccountQueryFactory.createQuery(party, shortNames);
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
         return query;
     }

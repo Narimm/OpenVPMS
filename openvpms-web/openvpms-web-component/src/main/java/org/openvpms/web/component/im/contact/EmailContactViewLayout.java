@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.contact;
@@ -21,14 +21,15 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.mail.MailDialog;
+import org.openvpms.web.component.mail.MailDialogFactory;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -36,7 +37,7 @@ import org.openvpms.web.echo.factory.ButtonFactory;
  *
  * @author Tim Anderson
  */
-public class EmailContactViewLayout extends AbstractLayoutStrategy {
+public class EmailContactViewLayout extends AbstractContactViewLayout{
 
     /**
      * Creates a component for a property.
@@ -57,7 +58,8 @@ public class EmailContactViewLayout extends AbstractLayoutStrategy {
             if (!StringUtils.isEmpty(mail) && context.getMailContext() != null) {
                 Button link = ButtonFactory.create(null, "hyperlink", new ActionListener() {
                     public void onAction(ActionEvent event) {
-                        MailDialog dialog = new MailDialog(context.getMailContext(), contact, context);
+                        MailDialogFactory factory = ServiceHelper.getBean(MailDialogFactory.class);
+                        MailDialog dialog = factory.create(context.getMailContext(), contact, context);
                         dialog.show();
                     }
                 });

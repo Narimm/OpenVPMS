@@ -12,12 +12,21 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:plugin="http://openvpms.org/schema/plugin/spring"
+       xsi:schemaLocation="http://www.springframework.org/schema/aop
+                           http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+                           http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/tx
+                           http://www.springframework.org/schema/tx/spring-tx-4.2.xsd
+                           http://openvpms.org/schema/plugin/spring http://openvpms.org/schema/plugin/spring/plugin.xsd">
 
     <!-- ================================================================== -->
     <!--                         GENERAL DEFINITIONS                        -->
@@ -35,6 +44,7 @@
             <list>
                 <value>classpath:default-openvpms.properties</value>
                 <value>classpath:hibernate.properties</value>
+                <value>classpath:smartflow.properties</value>
             </list>
         </property>
     </bean>
@@ -52,78 +62,61 @@
     <!-- ================================================================== -->
 
     <!--  The DataSource -->
-    <bean id="dataSource"
-          class="org.apache.commons.dbcp2.BasicDataSource">
-        <property name="driverClassName"
-                  value="${hibernate.connection.driver_class}"/>
+    <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
+        <property name="driverClassName" value="${hibernate.connection.driver_class}"/>
         <property name="url" value="${hibernate.connection.url}"/>
-        <property name="username"
-                  value="${hibernate.connection.username}"/>
-        <property name="password"
-                  value="${hibernate.connection.password}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+
+    <bean id="databaseService" class="org.openvpms.db.service.impl.DatabaseServiceImpl">
+        <constructor-arg value="${hibernate.connection.driver_class}"/>
+        <constructor-arg value="${hibernate.connection.url}"/>
+        <constructor-arg ref="dataSource"/>
+    </bean>
+
+    <bean id="databaseVersionChecker" class="org.openvpms.db.service.DatabaseVersionChecker">
+        <constructor-arg ref="databaseService"/>
     </bean>
 
     <!--  Hibernate session factory -->
-    <bean id="sessionFactory"
-          class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean"
+          depends-on="databaseVersionChecker">
         <property name="dataSource" ref="dataSource"/>
         <property name="hibernateProperties">
             <props>
-                <prop key="hibernate.dialect">
-                    ${hibernate.dialect}
-                </prop>
-                <prop key="hibernate.show_sql">
-                    ${hibernate.show_sql}
-                </prop>
-                <prop key="hibernate.max_fetch_depth">
-                    ${hibernate.max_fetch_depth}
-                </prop>
-                <prop key="hibernate.c3p0.min_size">
-                    ${hibernate.c3p0.min_size}
-                </prop>
-                <prop key="hibernate.c3p0.max_size">
-                    ${hibernate.c3p0.max_size}
-                </prop>
-                <prop key="hibernate.c3p0.timeout">
-                    ${hibernate.c3p0.timeout}
-                </prop>
-                <prop key="hibernate.c3p0.max_statements">
-                    ${hibernate.c3p0.max_statements}
-                </prop>
-                <prop key="hibernate.cache.region.factory_class">
-                    ${hibernate.cache.region.factory_class}
-                </prop>
-                <prop key="hibernate.cache.use_second_level_cache">
-                    ${hibernate.cache.use_second_level_cache}
-                </prop>
-                <prop key="hibernate.cache.use_query_cache">
-                    ${hibernate.cache.use_query_cache}
-                </prop>
+                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+                <prop key="hibernate.max_fetch_depth">${hibernate.max_fetch_depth}</prop>
+                <prop key="hibernate.c3p0.min_size">${hibernate.c3p0.min_size}</prop>
+                <prop key="hibernate.c3p0.max_size">${hibernate.c3p0.max_size}</prop>
+                <prop key="hibernate.c3p0.timeout">${hibernate.c3p0.timeout}</prop>
+                <prop key="hibernate.c3p0.max_statements">${hibernate.c3p0.max_statements}</prop>
+                <prop key="hibernate.cache.region.factory_class">${hibernate.cache.region.factory_class}</prop>
+                <prop key="hibernate.cache.use_second_level_cache">${hibernate.cache.use_second_level_cache}</prop>
+                <prop key="hibernate.cache.use_query_cache">${hibernate.cache.use_query_cache}</prop>
                 <prop key="hibernate.jdbc.use_scrollable_resultset">true</prop>
-                <prop key="hibernate.jdbc.batch_size">
-                    ${hibernate.jdbc.batch_size}
-                </prop>
-                <prop key="hibernate.c3p0.max_statements">
-                    ${hibernate.c3p0.max_statements}
-                </prop>
+                <prop key="hibernate.jdbc.batch_size">${hibernate.jdbc.batch_size}</prop>
+                <prop key="hibernate.c3p0.max_statements">${hibernate.c3p0.max_statements}</prop>
                 <prop key="net.sf.ehcache.configurationResourceName">/ehcache.xml</prop>
                 <prop key="hibernate.generate_statistics">true</prop>
             </props>
         </property>
-        <property name="schemaUpdate" value="false"/>
         <property name="mappingLocations">
             <list>
                 <value>classpath:org/openvpms/component/business/dao/**/*.hbm.xml</value>
                 <value>classpath:org/openvpms/archetype/rules/**/*.hbm.xml</value>
+                <value>classpath:org/openvpms/web/jobs/**/*.hbm.xml</value>
             </list>
         </property>
     </bean>
-
     <!--  Transaction manager -->
-    <bean id="txnManager"
-          class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+    <bean id="txnManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
         <property name="sessionFactory" ref="sessionFactory"/>
     </bean>
+
+    <aop:config proxy-target-class="true"/>
+    <tx:annotation-driven transaction-manager="txnManager"/>
 
     <!-- ================================================================== -->
     <!--                           DAO DEFINITIONS                        = -->
@@ -152,44 +145,6 @@
         <property name="configLocation" value="classpath:ehcache.xml"/>
         <property name="shared" value="true"/>
     </bean>
-
-    <!-- ================================================================== -->
-    <!--                           JMX                                      -->
-    <!-- ================================================================== -->
-
-    <!--
-    <bean id="hibernateStatisticsMBean" class="org.hibernate.jmx.StatisticsService" lazy-init="false">
-        <property name="statisticsEnabled" value="true"/>
-        <property name="sessionFactory" ref="sessionFactory"/>
-    </bean>
-
-    <bean id="ehCacheMBeanRegistration" class="org.springframework.beans.factory.config.MethodInvokingFactoryBean" lazy-init="false">
-        <property name="staticMethod" value="net.sf.ehcache.management.ManagementService.registerMBeans"/>
-        <property name="arguments">
-            <list>
-                <ref bean="cacheManager"/>
-                <ref bean="mbeanServer"/>
-                <value>true</value>
-                <value>true</value>
-                <value>true</value>
-                <value>true</value>
-            </list>
-        </property>
-    </bean>
-
-    <bean id="mbeanServer" class="org.springframework.jmx.support.MBeanServerFactoryBean" lazy-init="false">
-        <property name="locateExistingServerIfPossible" value="true"/>
-    </bean>
-
-    <bean id="mbeanExporter" class="org.springframework.jmx.export.MBeanExporter" lazy-init="false">
-        <property name="beans">
-            <map>
-                <entry key="Hibernate:name=statistics" value-ref="hibernateStatisticsMBean"/>
-            </map>
-        </property>
-        <property name="server" ref="mbeanServer"/>
-    </bean>
-    -->
 
     <!-- ================================================================== -->
     <!--                      BUSINESS SERVICE BEANS                        -->
@@ -254,7 +209,9 @@
     <bean id="functionsFactory" class="org.openvpms.web.component.function.DefaultFunctionsFactory">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="practiceService"/>
         <constructor-arg ref="currencies"/>
+        <constructor-arg ref="addressFormatter"/>
         <constructor-arg ref="patientAgeFormatter"/>
         <property name="macros" ref="macros"/>
     </bean>

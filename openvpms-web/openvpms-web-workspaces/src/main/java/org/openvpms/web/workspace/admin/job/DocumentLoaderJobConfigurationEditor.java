@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.job;
 
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -39,7 +40,7 @@ import static org.openvpms.archetype.rules.doc.DocumentArchetypes.DOCUMENT_TEMPL
  *
  * @author Tim Anderson
  */
-public class DocumentLoaderJobConfigurationEditor extends JobConfigurationEditor {
+public class DocumentLoaderJobConfigurationEditor extends AbstractJobConfigurationEditor {
 
     /**
      * Constructs a {@link DocumentLoaderJobConfigurationEditor}.
@@ -48,7 +49,7 @@ public class DocumentLoaderJobConfigurationEditor extends JobConfigurationEditor
      * @param parent        the parent object. May be {@code null}
      * @param layoutContext the layout context
      */
-    public DocumentLoaderJobConfigurationEditor(IMObject object, IMObject parent, LayoutContext layoutContext) {
+    public DocumentLoaderJobConfigurationEditor(Entity object, IMObject parent, LayoutContext layoutContext) {
         super(object, parent, layoutContext);
     }
 
@@ -65,7 +66,7 @@ public class DocumentLoaderJobConfigurationEditor extends JobConfigurationEditor
     }
 
     /**
-     * Validates the source and target directories.
+     * Validates the source, target and error directories.
      *
      * @param validator the validator
      * @return {@code true} if the directories are valid
@@ -74,11 +75,20 @@ public class DocumentLoaderJobConfigurationEditor extends JobConfigurationEditor
         boolean result = false;
         Property source = getProperty("sourceDir");
         Property target = getProperty("targetDir");
+        Property error = getProperty("errorDir");
         File sourceDir = new File(source.getString());
         File targetDir = new File(target.getString());
-        if (validateDir(source, sourceDir, validator) && validateDir(target, targetDir, validator)) {
+        File errorDir = error.getString() != null ? new File(error.getString()) : null;
+        if (validateDir(source, sourceDir, validator) && validateDir(target, targetDir, validator)
+            && (errorDir == null || validateDir(error, errorDir, validator))) {
             if (sourceDir.equals(targetDir)) {
-                validator.add(this, new ValidatorError(Messages.get("docload.dir.samedirs")));
+                String message = Messages.format("docload.dir.samedirs", source.getDisplayName(),
+                                                 target.getDisplayName());
+                validator.add(this, new ValidatorError(message));
+            } else if (errorDir != null && sourceDir.equals(errorDir)) {
+                String message = Messages.format("docload.dir.samedirs", source.getDisplayName(),
+                                                 error.getDisplayName());
+                validator.add(this, new ValidatorError(message));
             } else {
                 result = true;
             }
@@ -98,9 +108,9 @@ public class DocumentLoaderJobConfigurationEditor extends JobConfigurationEditor
         boolean valid = false;
 
         if (!file.exists()) {
-            validator.add(property, new ValidatorError(property, Messages.format("docload.dir.notfound", file)));
+            validator.add(property, new ValidatorError(property, Messages.format("dir.notfound", file.getPath())));
         } else if (!file.isDirectory()) {
-            validator.add(property, new ValidatorError(property, Messages.format("docload.dir.notdir", file)));
+            validator.add(property, new ValidatorError(property, Messages.format("dir.notdir", file.getPath())));
         } else {
             valid = true;
         }

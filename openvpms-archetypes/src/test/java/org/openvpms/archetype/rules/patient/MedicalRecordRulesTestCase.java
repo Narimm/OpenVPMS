@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -22,21 +22,29 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActIdentity;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -45,6 +53,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
 import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
+import static org.openvpms.archetype.rules.patient.PatientTestHelper.createDocumentAttachment;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 import static org.openvpms.archetype.test.TestHelper.getDatetime;
 
@@ -69,6 +78,16 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * The rules.
      */
     private MedicalRecordRules rules;
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        clinician = TestHelper.createClinician();
+        patient = TestHelper.createPatient();
+        rules = new MedicalRecordRules(getArchetypeService());
+    }
 
     /**
      * Verifies that deletion of an <em>act.patientClinicalProblem</em>
@@ -167,19 +186,17 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link MedicalRecordRules#addNote} method.
+     * Tests the {@link MedicalRecordRules#createNote(Date, Party, String, User, User)} method.
      */
     @Test
-    public void testAddNote() {
-        Act event = createEvent();
+    public void testCreateNote() {
         Date startTime = getDate("2012-07-17");
+        Party patient = TestHelper.createPatient();
         User author = TestHelper.createUser();
         User clinician = TestHelper.createClinician();
         String text = "Test note";
-        Act note = rules.addNote(event, startTime, text, clinician, author);
+        Act note = rules.createNote(startTime, patient, text, clinician, author);
 
-        ActBean eventBean = new ActBean(event);
-        assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, note));
         ActBean bean = new ActBean(note);
         assertEquals(startTime, note.getActivityStartTime());
         assertEquals(text, bean.getString("note"));
@@ -322,21 +339,25 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         Act event = createEvent();
         Act problem = createProblem();
         Act note = createNote();
-        rules.linkMedicalRecords(event, problem, note);
+        Act addendum = createAddendum();
+        rules.linkMedicalRecords(event, problem, note, addendum);
 
         event = get(event);
         problem = get(problem);
         note = get(note);
+        addendum = get(addendum);
 
         ActBean eventBean = new ActBean(event);
-        assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, problem));
-        assertTrue(eventBean.hasRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, note));
+        assertTrue(eventBean.hasNodeTarget("items", problem));
+        assertTrue(eventBean.hasNodeTarget("items", note));
+        assertTrue(eventBean.hasNodeTarget("items", addendum));
 
         ActBean problemBean = new ActBean(problem);
-        assertTrue(problemBean.hasRelationship(PatientArchetypes.CLINICAL_PROBLEM_ITEM, note));
+        assertTrue(problemBean.hasNodeTarget("items", note));
+        assertTrue(problemBean.hasNodeTarget("items", addendum));
 
         // verify that it can be called again with no ill effect
-        rules.linkMedicalRecords(event, problem, note);
+        rules.linkMedicalRecords(event, problem, note, addendum);
     }
 
     /**
@@ -419,7 +440,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies the {@link MedicalRecordRules#linkMedicalRecords(Act, Act, Act)} method,
+     * Verifies the {@link MedicalRecordRules#linkMedicalRecords(Act, Act, Act, Act)} method,
      * links all of a problem's items to the parent event if they aren't already present.
      */
     @Test
@@ -435,7 +456,7 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         save(problem, note1, medication);
 
         // now link the records to the event
-        rules.linkMedicalRecords(event, problem, note2);
+        rules.linkMedicalRecords(event, problem, note2, null);
 
         event = get(event);
         problem = get(problem);
@@ -557,9 +578,9 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
         Act event3 = createEvent(eventDate3);
         save(event3);
 
-        rules.addToHistoricalEvents(Arrays.asList(med1), eventDate1);
-        rules.addToHistoricalEvents(Arrays.asList(med2), eventDate2);
-        rules.addToHistoricalEvents(Arrays.asList(med3), eventDate3);
+        rules.addToHistoricalEvents(Collections.singletonList(med1), eventDate1);
+        rules.addToHistoricalEvents(Collections.singletonList(med2), eventDate2);
+        rules.addToHistoricalEvents(Collections.singletonList(med3), eventDate3);
 
         event1 = rules.getEvent(patient, eventDate1);
         checkContains(event1, med1);
@@ -599,10 +620,22 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
 
         // over a week after event2, a new event should be created
         checkGetEventForAddition(null, getDatetime("2013-11-29 00:00:00"));
+
+        // now make event2 a boarding event. It should now be returned
+        Party customer = TestHelper.createCustomer();
+        Entity cageType = ScheduleTestHelper.createCageType("Z Cage Type");
+        Entity schedule = ScheduleTestHelper.createSchedule(TestHelper.createLocation(), cageType);
+        Act appointment = ScheduleTestHelper.createAppointment(getDatetime("2013-11-21 11:50:00"),
+                                                               getDatetime("2013-11-30 17:00:00"),
+                                                               schedule, customer, patient);
+        ActBean bean = new ActBean(appointment);
+        bean.addNodeRelationship("event", event2);
+        save(appointment, event2);
+        checkGetEventForAddition(event2, getDatetime("2013-11-29 00:00:00"));
     }
 
     /**
-     * Tests the {@link MedicalRecordRules#getEvent(IMObjectReference)}
+     * Tests the {@link MedicalRecordRules#getEventForAddition} method.
      */
     @Test
     public void testGetEventWithCompletedEventWithNoEndDate() {
@@ -630,30 +663,122 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
 
         // over a week after event2, a new event should be created
         checkGetEventForAddition(null, getDatetime("2013-11-29 13:00:00"));
+
+        // now make event2 a boarding event. It should now be returned
+        Party customer = TestHelper.createCustomer();
+        Entity cageType = ScheduleTestHelper.createCageType("Z Cage Type");
+        Entity schedule = ScheduleTestHelper.createSchedule(TestHelper.createLocation(), cageType);
+        Act appointment = ScheduleTestHelper.createAppointment(getDatetime("2013-11-21 11:50:00"),
+                                                               getDatetime("2013-11-30 17:00:00"),
+                                                               schedule, customer, patient);
+        ActBean bean = new ActBean(appointment);
+        bean.addNodeRelationship("event", event2);
+        save(appointment, event2);
+
+        checkGetEventForAddition(event2, getDatetime("2013-11-29 13:00:00"));
     }
 
     /**
-     * Tests the {@link MedicalRecordRules#isAllergy(Act)} method.
+     * Tests the {@link MedicalRecordRules#getLockableRecords()} method.
      */
     @Test
-    public void testIsAllergy() {
-        Act act = (Act) create(PatientArchetypes.ALERT);
-        assertFalse(rules.isAllergy(act));
-        ActBean bean = new ActBean(act);
-        bean.setValue("alertType", "ALLERGY");
-        assertTrue(rules.isAllergy(act));
-        bean.setValue("alertType", "AGGRESSION");
-        assertFalse(rules.isAllergy(act));
+    public void testGetLockableRecords() {
+        List<String> shortNames = Arrays.asList(rules.getLockableRecords());
+        assertEquals(13, shortNames.size());
+        assertTrue(shortNames.contains(PatientArchetypes.CLINICAL_ADDENDUM));
+        assertTrue(shortNames.contains(PatientArchetypes.CLINICAL_NOTE));
+        assertTrue(shortNames.contains(PatientArchetypes.DOCUMENT_ATTACHMENT));
+        assertTrue(shortNames.contains(PatientArchetypes.DOCUMENT_ATTACHMENT_VERSION));
+        assertTrue(shortNames.contains(PatientArchetypes.DOCUMENT_FORM));
+        assertTrue(shortNames.contains(PatientArchetypes.DOCUMENT_IMAGE));
+        assertTrue(shortNames.contains(PatientArchetypes.DOCUMENT_IMAGE_VERSION));
+        assertTrue(shortNames.contains(PatientArchetypes.DOCUMENT_LETTER));
+        assertTrue(shortNames.contains(PatientArchetypes.DOCUMENT_LETTER_VERSION));
+        assertTrue(shortNames.contains(InvestigationArchetypes.PATIENT_INVESTIGATION));
+        assertTrue(shortNames.contains(InvestigationArchetypes.PATIENT_INVESTIGATION_VERSION));
+        assertTrue(shortNames.contains(PatientArchetypes.PATIENT_MEDICATION));
+        assertTrue(shortNames.contains(PatientArchetypes.PATIENT_WEIGHT));
     }
 
     /**
-     * Sets up the test case.
+     * Verifies that each of the lockable medical records have a startTime and status node.
+     * If the status is hidden, it must be read-only.
+     * <br/>
+     * Note that in the original version of medical record locking, the startTime node was also read only.
+     * However this prevented the 1.8 behaviour of allowing practices to forward/back-date records when locking is not
+     * enabled.
      */
-    @Before
-    public void setUp() {
-        clinician = TestHelper.createClinician();
-        patient = TestHelper.createPatient();
-        rules = new MedicalRecordRules(getArchetypeService());
+    @Test
+    public void testLockableRecordStartTimeAndStatusNodes() {
+        IArchetypeService service = getArchetypeService();
+        for (String shortName : rules.getLockableRecords()) {
+            NodeDescriptor startTime = DescriptorHelper.getNode(shortName, "startTime", service);
+            assertNotNull(shortName, startTime);
+
+            NodeDescriptor status = DescriptorHelper.getNode(shortName, "status", service);
+            assertNotNull(shortName, status);
+            if (status.isHidden()) {
+                assertTrue(shortName, status.isReadOnly());
+            }
+        }
+    }
+
+    /**
+     * Tests the {@link MedicalRecordRules#getAttachment(String, Act)}.
+     */
+    @Test
+    public void testGetAttachment() {
+        Act event = createEvent();
+        ActBean bean = new ActBean(event);
+
+        assertNull(rules.getAttachment("notes.pdf", event));
+        DocumentAct act1 = createDocumentAttachment(getDatetime("2017-04-22 10:00:00"), patient, "notes.pdf");
+        DocumentAct act2 = createDocumentAttachment(getDatetime("2017-04-22 11:00:00"), patient, "billing.pdf");
+        bean.addNodeRelationship("items", act1);
+        bean.addNodeRelationship("items", act2);
+        bean.save();
+
+        assertEquals(act1, rules.getAttachment("notes.pdf", event));
+        assertEquals(act2, rules.getAttachment("billing.pdf", event));
+
+        DocumentAct act3 = createDocumentAttachment(getDatetime("2017-04-22 12:00:00"), patient, "notes.pdf");
+        bean.addNodeRelationship("items", act3);
+        bean.save();
+
+        assertEquals(act3, rules.getAttachment("notes.pdf", event));
+    }
+
+    /**
+     * Tests the {@link MedicalRecordRules#getAttachment(String, Act, String, String)} method.
+     */
+    @Test
+    public void testGetAttachmentWithIdentity() {
+        Act event = createEvent();
+        ActBean bean = new ActBean(event);
+
+        // Smart Flow Sheet supplies the same surgery UID for both anaesthetic and anaesthetic records reports.
+        String archetype = "actIdentity.smartflowsheet";
+        String surgeryUid = UUID.randomUUID().toString();
+        ActIdentity identity1a = createIdentity(archetype, surgeryUid);
+        ActIdentity identity1b = createIdentity(archetype, surgeryUid);
+        ActIdentity identity2 = createIdentity(archetype, UUID.randomUUID().toString());
+        assertNull(rules.getAttachment("anaesthetic.pdf", event, archetype, identity1a.getIdentity()));
+
+        DocumentAct act1a = createDocumentAttachment(getDatetime("2017-04-22 10:00:00"), patient, "anaesthetic.pdf",
+                                                     identity1a);
+        DocumentAct act1b = createDocumentAttachment(getDatetime("2017-04-22 10:00:00"), patient,
+                                                     "anaesthetic records.pdf", identity1b);
+        DocumentAct act2 = createDocumentAttachment(getDatetime("2017-04-22 11:00:00"), patient, "anaesthetic.pdf",
+                                                    identity2);
+
+        bean.addNodeRelationship("items", act1a);
+        bean.addNodeRelationship("items", act1b);
+        bean.addNodeRelationship("items", act2);
+        bean.save();
+
+        assertEquals(act1a, rules.getAttachment("anaesthetic.pdf", event, archetype, surgeryUid));
+        assertEquals(act1b, rules.getAttachment("anaesthetic records.pdf", event, archetype, surgeryUid));
+        assertEquals(act2, rules.getAttachment("anaesthetic.pdf", event, archetype, identity2.getIdentity()));
     }
 
     /**
@@ -706,12 +831,12 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * @return a new act
      */
     protected Act createProblem() {
-        Act act = createAct("act.patientClinicalProblem");
+        Act act = createAct(PatientArchetypes.CLINICAL_PROBLEM);
         Lookup diagnosis = TestHelper.getLookup("lookup.diagnosis", "HEART_MURMUR");
         act.setReason(diagnosis.getCode());
         ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.patient", patient);
-        bean.addParticipation("participation.clinician", clinician);
+        bean.addNodeParticipation("patient", patient);
+        bean.addNodeParticipation("clinician", clinician);
         return act;
     }
 
@@ -721,10 +846,35 @@ public class MedicalRecordRulesTestCase extends ArchetypeServiceTest {
      * @return a new act
      */
     protected Act createNote() {
-        Act act = createAct("act.patientClinicalNote");
+        Act act = createAct(PatientArchetypes.CLINICAL_NOTE);
         ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.patient", patient);
+        bean.addNodeParticipation("patient", patient);
         return act;
+    }
+
+    /**
+     * Helper to create an <em>act.patientClinicalAddendum</em>.
+     *
+     * @return a new act
+     */
+    protected Act createAddendum() {
+        Act act = createAct(PatientArchetypes.CLINICAL_ADDENDUM);
+        ActBean bean = new ActBean(act);
+        bean.addNodeParticipation("patient", patient);
+        return act;
+    }
+
+    /**
+     * Creates an act identity.
+     *
+     * @param archetype the identity archetype
+     * @param identity  the identity
+     * @return a new identity
+     */
+    private ActIdentity createIdentity(String archetype, String identity) {
+        ActIdentity result = (ActIdentity) create(archetype);
+        result.setIdentity(identity);
+        return result;
     }
 
     /**

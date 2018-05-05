@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -25,15 +25,14 @@ import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.common.SequencedRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.object.Relationship;
 
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActive;
-import static org.openvpms.component.business.service.archetype.functor.RelationshipRef.SOURCE;
-import static org.openvpms.component.business.service.archetype.functor.RelationshipRef.TARGET;
 import static org.openvpms.component.business.service.archetype.helper.IMObjectBeanException.ErrorCode.ArchetypeNotFound;
 
 
@@ -109,22 +108,22 @@ public class EntityBean extends IMObjectBean {
 
     /**
      * Adds a new relationship between the current entity (the source), and the supplied target.
-     * <p/>
+     * <p>
      * If the relationship is an {@link EntityRelationship}, it will also be added to the target.
      *
      * @param name   the name
      * @param target the target
      * @return the new relationship
      * @throws ArchetypeServiceException for any archetype service error
-     * @throws IMObjectBeanException if the relationship archetype is not found
+     * @throws IMObjectBeanException     if the relationship archetype is not found
      */
     @Override
     public IMObjectRelationship addNodeTarget(String name, IMObject target) {
-        IMObjectRelationship result = super.addNodeTarget(name, target);
+        Relationship result = super.addNodeTarget(name, target);
         if (target instanceof Entity && result instanceof EntityRelationship) {
             ((Entity) target).addEntityRelationship((EntityRelationship) result);
         }
-        return result;
+        return (IMObjectRelationship) result;
     }
 
     /**
@@ -143,13 +142,13 @@ public class EntityBean extends IMObjectBean {
      *
      * @param target the target entity
      * @return the first entity relationship with {@code target} as its
-     *         target or {@code null} if none is found
+     * target or {@code null} if none is found
      */
-    public EntityRelationship getRelationship(IMObjectReference target) {
+    public EntityRelationship getRelationship(Reference target) {
         Entity entity = getEntity();
-        for (EntityRelationship r : entity.getEntityRelationships()) {
+        for (Relationship r : entity.getEntityRelationships()) {
             if (target.equals(r.getTarget())) {
-                return r;
+                return (EntityRelationship) r;
             }
         }
         return null;
@@ -172,9 +171,10 @@ public class EntityBean extends IMObjectBean {
      * @param active    determines if the relationships must be active or not
      * @return all relationships with the specified short name
      */
+    @SuppressWarnings("unchecked")
     public List<EntityRelationship> getRelationships(String shortName, boolean active) {
-        Set<EntityRelationship> relationships = getEntity().getEntityRelationships();
-        return select(relationships, getActiveIsA(active, shortName));
+        Set relationships = getEntity().getEntityRelationships();
+        return select((Set<EntityRelationship>) relationships, getActiveIsA(active, shortName));
     }
 
     /**
@@ -518,21 +518,6 @@ public class EntityBean extends IMObjectBean {
     }
 
     /**
-     * Returns the source entity references from each relationship that is active at the specified time, for the
-     * specified node.
-     *
-     * @param node   the entity relationship node
-     * @param time   the time
-     * @param active determines if the relationships must be active
-     * @return a list of source entity references. May contain references to both active and inactive entities
-     * @deprecated use {@link #getNodeSourceEntities(String, Date)}
-     */
-    @Deprecated
-    public List<IMObjectReference> getNodeSourceEntityRefs(String node, Date time, boolean active) {
-        return getRelatedObjectRefs(node, isActive(time), SOURCE, null);
-    }
-
-    /**
      * Returns the source entity references from each relationship for the specified node that matches the supplied
      * predicate.
      *
@@ -564,22 +549,6 @@ public class EntityBean extends IMObjectBean {
      */
     public List<IMObjectReference> getNodeTargetEntityRefs(String node, Date time) {
         return getNodeTargetObjectRefs(node, time);
-    }
-
-    /**
-     * Returns the target entity references from each relationship that is
-     * active at the specified time, for the specified node.
-     *
-     * @param node   the entity relationship node
-     * @param time   the time
-     * @param active determines if the relationships must be active
-     * @return a list of target entity references. May contain references to
-     *         both active and inactive entities
-     * @deprecated use {@link #getNodeTargetEntityRefs(String, Date)}
-     */
-    @Deprecated
-    public List<IMObjectReference> getNodeTargetEntityRefs(String node, Date time, boolean active) {
-        return getRelatedObjectRefs(node, isActive(time), TARGET, null);
     }
 
     /**
@@ -845,7 +814,7 @@ public class EntityBean extends IMObjectBean {
      * @return the source reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public IMObjectReference getSourceEntityRef(String shortName) {
+    public Reference getSourceEntityRef(String shortName) {
         return getSourceObjectRef(getEntity().getEntityRelationships(), shortName);
     }
 
@@ -857,7 +826,7 @@ public class EntityBean extends IMObjectBean {
      * @return the source reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public IMObjectReference getSourceEntityRef(String shortName, boolean active) {
+    public Reference getSourceEntityRef(String shortName, boolean active) {
         return getSourceObjectRef(getEntity().getEntityRelationships(), shortName, active);
     }
 
@@ -869,7 +838,7 @@ public class EntityBean extends IMObjectBean {
      * @return the source reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public IMObjectReference getSourceEntityRef(String[] shortNames, boolean active) {
+    public Reference getSourceEntityRef(String[] shortNames, boolean active) {
         return getSourceObjectRef(getEntity().getEntityRelationships(), shortNames, active);
     }
 
@@ -880,7 +849,7 @@ public class EntityBean extends IMObjectBean {
      * @return the target reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public IMObjectReference getTargetEntityRef(String shortName) {
+    public Reference getTargetEntityRef(String shortName) {
         return getTargetObjectRef(getEntity().getEntityRelationships(), shortName);
     }
 
@@ -892,7 +861,7 @@ public class EntityBean extends IMObjectBean {
      * @return the target reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public IMObjectReference getTargetEntityRef(String shortName, boolean active) {
+    public Reference getTargetEntityRef(String shortName, boolean active) {
         return getTargetObjectRef(getEntity().getEntityRelationships(), shortName, active);
     }
 
@@ -904,7 +873,7 @@ public class EntityBean extends IMObjectBean {
      * @return the target reference, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public IMObjectReference getTargetEntityRef(String[] shortNames, boolean active) {
+    public Reference getTargetEntityRef(String[] shortNames, boolean active) {
         return getTargetObjectRef(getEntity().getEntityRelationships(), shortNames, active);
     }
 

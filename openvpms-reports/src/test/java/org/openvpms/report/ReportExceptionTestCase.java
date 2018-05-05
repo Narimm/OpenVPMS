@@ -12,22 +12,25 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.report;
 
-import static org.junit.Assert.assertEquals;
 import org.junit.Test;
-import static org.openvpms.report.ReportException.ErrorCode.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.openvpms.report.ReportException.ErrorCode.FailedToCreateReport;
+import static org.openvpms.report.ReportException.ErrorCode.FailedToFindSubReport;
+import static org.openvpms.report.ReportException.ErrorCode.FailedToGenerateReport;
+import static org.openvpms.report.ReportException.ErrorCode.FailedToPrintReport;
+import static org.openvpms.report.ReportException.ErrorCode.NoExpressionEvaluatorForType;
+import static org.openvpms.report.ReportException.ErrorCode.UnsupportedMimeType;
 
 
 /**
  * {@link ReportException} test case.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ReportExceptionTestCase {
 
@@ -37,30 +40,23 @@ public class ReportExceptionTestCase {
     @Test
     public void testMessages() {
         assertEquals("Need to update tests to incorporate new messages",
-                     12, ReportException.ErrorCode.values().length);
-        checkException(FailedToCreateReport, "Failed to create report: foo",
-                       "foo");
+                     10, ReportException.ErrorCode.values().length);
+        checkException(FailedToCreateReport, "Failed to create report foo: bar", "foo", "bar");
         checkException(FailedToFindSubReport, "There is no sub-report named: foo\nThis is needed by report: bar",
                        "foo", "bar");
-        checkException(FailedToGenerateReport, "Failed to generate report: foo",
-                       "foo");
-        checkException(FailedToPrintReport, "Failed to print report: foo",
-                       "foo");
-        checkException(UnsupportedMimeTypes,
-                       "Mime types not supported by report");
+        checkException(FailedToGenerateReport, "Failed to generate report foo: bar", "foo", "bar");
+        checkException(FailedToPrintReport, "Failed to print report foo on printer bar: gum", "foo", "bar", "gum");
         checkException(UnsupportedMimeType,
-                       "foo is not a supported mime type", "foo");
+                       "foo is not a supported mime type by bar", "foo", "bar");
         checkException(NoExpressionEvaluatorForType,
                        "No ExpressionEvalutor for type: foo", "foo");
-        checkException(ReportException.ErrorCode.FailedToGetParameters,
-                       "Failed to get report parameters");
-        checkException(ReportException.ErrorCode.InvalidArchetype,
-                       "foo is not a valid report type", "foo");
+        checkException(ReportException.ErrorCode.FailedToGetParameters, "Failed to get report parameters for foo",
+                       "foo");
         checkException(ReportException.ErrorCode.NoTemplateForArchetype,
                        "No document template available for report type: foo", "foo");
         checkException(ReportException.ErrorCode.UnsupportedTemplate,
                        "Unsupported document template: foo", "foo");
-        checkException(ReportException.ErrorCode.NoPagesToPrint, "Report has no pages to print");
+        checkException(ReportException.ErrorCode.NoPagesToPrint, "Report has no pages to print: foo", "foo");
     }
 
     /**

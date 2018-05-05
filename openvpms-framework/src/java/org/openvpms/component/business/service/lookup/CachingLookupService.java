@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
@@ -27,6 +27,7 @@ import org.openvpms.component.business.service.archetype.AbstractArchetypeServic
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.object.Reference;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -168,7 +169,7 @@ public class CachingLookupService extends AbstractLookupService {
      * @return the corresponding lookup, or {@code null} if none is found. The lookup may be inactive
      */
     @Override
-    protected Lookup getLookup(IMObjectReference reference) {
+    protected Lookup getLookup(Reference reference) {
         Lookup result = null;
         if (reference != null) {
             Element element = cache.get(new Key(reference));
@@ -272,7 +273,7 @@ public class CachingLookupService extends AbstractLookupService {
         /**
          * Non-null if a reference is being used as the identifier.
          */
-        private IMObjectReference ref;
+        private Reference ref;
 
         /**
          * Determines if the key is a short name only.
@@ -295,7 +296,7 @@ public class CachingLookupService extends AbstractLookupService {
             hashCode = key.hashCode();
         }
 
-        public Key(IMObjectReference ref) {
+        public Key(Reference ref) {
             this.ref = ref;
             hashCode = ref.hashCode();
         }

@@ -11,17 +11,18 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.patient.reminder.DueReminderQuery;
-import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
+import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.echo.help.HelpContext;
 
 /**
@@ -32,30 +33,85 @@ import org.openvpms.web.echo.help.HelpContext;
 public class ReminderGeneratorFactory {
 
     /**
-     * Constructs a {@link ReminderGenerator} to process a single reminder.
+     * Constructs a {@link ReminderGenerator} to process a single reminder item.
      *
-     * @param event       the reminder event
-     * @param context     the context
-     * @param mailContext the mail context, used when printing reminders interactively. May be {@code null}
-     * @param help        the help context
+     * @param item     the reminder item
+     * @param contact  the contact to send to. May be {@code null}
+     * @param location the practice location
+     * @param practice the practice
+     * @param help     the help context
      */
-    public ReminderGenerator create(ReminderEvent event, Context context, MailContext mailContext, HelpContext help) {
-        return new ReminderGenerator(event, context, mailContext, help);
+    public ReminderGenerator create(Act item, Contact contact, Party location, Party practice, HelpContext help) {
+        ActBean bean = new ActBean(item);
+        Act reminder = (Act) bean.getNodeSourceObject("reminder");
+        if (reminder == null) {
+            throw new IllegalArgumentException("Argument 'item' is not associated with any reminder");
+        }
+        return create(item, reminder, contact, location, practice, help);
+    }
+
+    /**
+     * Constructs a {@link ReminderGenerator} to process a single reminder item.
+     *
+     * @param item     the reminder item
+     * @param reminder the reminder
+     * @param contact  the contact to send to. May be {@code null}
+     * @param location the practice location
+     * @param practice the practice
+     * @param help     the help context
+     */
+    public ReminderGenerator create(Act item, Act reminder, Contact contact, Party location, Party practice,
+                                    HelpContext help) {
+        return new ReminderGenerator(item, reminder, contact, help, createFactory(location, practice, help));
     }
 
     /**
      * Constructs a {@link ReminderGenerator} for reminders returned by a query.
      *
-     * @param query       the query
-     * @param context     the context
-     * @param mailContext the mail context, used when printing reminders interactively. May be {@code null}
-     * @param help        the help context
+     * @param factory  the query factory
+     * @param location the practice location
+     * @param practice the practice
+     * @param help     the help context
      * @throws ArchetypeServiceException  for any archetype service error
      * @throws ReminderProcessorException for any error
      */
-    public ReminderGenerator create(DueReminderQuery query, Context context, MailContext mailContext,
+    public ReminderGenerator create(ReminderItemQueryFactory factory, Party location, Party practice,
                                     HelpContext help) {
-        return new ReminderGenerator(query, context, mailContext, help);
+        return new ReminderGenerator(factory, help, createFactory(location, practice, help));
+    }
+
+    /**
+     * Creates a {@link PatientReminderProcessorFactory}.
+     *
+     * @param location the location
+     * @param practice the practice
+     * @param help     the help context
+     * @return a new factory
+     */
+    public PatientReminderProcessorFactory createFactory(Party location, Party practice, HelpContext help) {
+        return new PatientReminderProcessorFactory(location, practice, help);
+    }
+
+    /**
+     * Creates a {@link PatientReminderPreviewer}.
+     *
+     * @param processor the processor
+     * @param help      the help context
+     * @return a new previewer
+     */
+    public PatientReminderPreviewer createPreviewer(PatientReminderProcessor processor, HelpContext help) {
+        if (processor instanceof ReminderEmailProcessor) {
+            return new ReminderEmailPreviewer((ReminderEmailProcessor) processor, help);
+        } else if (processor instanceof ReminderSMSProcessor) {
+            return new ReminderSMSPreviewer((ReminderSMSProcessor) processor, help);
+        } else if (processor instanceof ReminderPrintProcessor) {
+            return new ReminderPrintPreviewer((ReminderPrintProcessor) processor, help);
+        } else if (processor instanceof ReminderExportProcessor) {
+            return new ReminderExportPreviewer((ReminderExportProcessor) processor, help);
+        } else if (processor instanceof ReminderListProcessor) {
+            return new ReminderListPreviewer((ReminderListProcessor) processor, help);
+        }
+        throw new IllegalArgumentException("Unsupported processor: " + processor.getClass().getName());
     }
 
 }

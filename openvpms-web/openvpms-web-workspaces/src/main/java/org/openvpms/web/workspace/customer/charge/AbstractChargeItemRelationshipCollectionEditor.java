@@ -11,33 +11,31 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
-import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.archetype.rules.product.ProductRules;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.web.component.app.UserPreferences;
 import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.DefaultCollectionResultSetFactory;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
+import org.openvpms.web.component.im.edit.act.ProductTemplateExpander;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.button.CheckBox;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.CheckBoxFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.DoseManager;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
 
@@ -51,9 +49,9 @@ import org.openvpms.web.workspace.customer.PriceActItemEditor;
 public abstract class AbstractChargeItemRelationshipCollectionEditor extends ActRelationshipCollectionEditor {
 
     /**
-     * The doses.
+     * The edit context.
      */
-    private final DoseManager doseManager;
+    private final PriceActEditContext editContext;
 
     /**
      * Constructs an {@link AbstractChargeItemRelationshipCollectionEditor}
@@ -62,8 +60,9 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
      * @param act      the parent act
      * @param context  the layout context
      */
-    public AbstractChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context) {
-        this(property, act, context, DefaultCollectionResultSetFactory.INSTANCE);
+    public AbstractChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context,
+                                                          PriceActEditContext editContext) {
+        this(property, act, context, DefaultCollectionResultSetFactory.INSTANCE, editContext);
     }
 
     /**
@@ -74,36 +73,21 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
      * @param context  the layout context
      * @param factory  the result set factory
      */
-    public AbstractChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act, LayoutContext context,
-                                                          CollectionResultSetFactory factory) {
+    public AbstractChargeItemRelationshipCollectionEditor(CollectionProperty property, Act act,
+                                                          LayoutContext context, CollectionResultSetFactory factory,
+                                                          PriceActEditContext editContext) {
         super(property, act, context, factory);
-        doseManager = new DoseManager(ServiceHelper.getBean(PatientRules.class),
-                                      ServiceHelper.getBean(ProductRules.class));
+        this.editContext = editContext;
+        setRemoveConfirmationHandler(DefaultChargeRemoveConfirmationHandler.INSTANCE);
     }
 
     /**
-     * Creates a new editor.
+     * Returns the edit context.
      *
-     * @param object  the object to edit
-     * @param context the layout context
-     * @return an editor to edit {@code object}
+     * @return the edit context
      */
-    @Override
-    public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
-        IMObjectEditor editor = super.createEditor(object, context);
-        if (editor instanceof PriceActItemEditor) {
-            ((PriceActItemEditor) editor).setDoseManager(doseManager);
-        }
-        return editor;
-    }
-
-    /**
-     * Returns the dose manager.
-     *
-     * @return the dose manager
-     */
-    protected DoseManager getDoseManager() {
-        return doseManager;
+    protected PriceActEditContext getEditContext() {
+        return editContext;
     }
 
     /**
@@ -113,10 +97,13 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
      * @return a new table model
      */
     @Override
+    @SuppressWarnings("unchecked")
     protected IMTableModel<IMObject> createTableModel(LayoutContext context) {
         context = new DefaultLayoutContext(context);
         context.setComponentFactory(new TableComponentFactory(context));
-        return new ChargeItemTableModel<>(getCollectionPropertyEditor().getArchetypeRange(), context);
+        ChargeItemTableModel model = new ChargeItemTableModel(getCollectionPropertyEditor().getArchetypeRange(),
+                                                              context);
+        return (IMTableModel) model;
     }
 
     /**
@@ -128,12 +115,12 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
      * @return the row of controls
      */
     @Override
-    protected Row createControls(FocusGroup focus) {
-        Row controls = super.createControls(focus);
-        final UserPreferences preferences = ServiceHelper.getPreferences();
-        boolean showBatch = preferences.getShowBatchDuringCharging();
-        boolean showTemplate = preferences.getShowTemplateDuringCharging();
-        boolean showProductType = preferences.getShowProductTypeDuringCharging();
+    protected ButtonRow createControls(FocusGroup focus) {
+        ButtonRow controls = super.createControls(focus);
+        final Preferences preferences = getContext().getPreferences();
+        boolean showBatch = preferences.getBoolean(PreferenceArchetypes.CHARGE, "showBatch", false);
+        boolean showTemplate = preferences.getBoolean(PreferenceArchetypes.CHARGE, "showTemplate", false);
+        boolean showProductType = preferences.getBoolean(PreferenceArchetypes.CHARGE, "showProductType", false);
 
         ChargeItemTableModel model = getModel();
         if (model.hasBatch()) {
@@ -142,8 +129,8 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
                 @Override
                 public void onAction(ActionEvent event) {
                     boolean selected = batch.isSelected();
-                    preferences.setShowBatchDuringCharging(selected);
-                    getModel().setShowBatch(preferences.getShowBatchDuringCharging());
+                    preferences.setPreference(PreferenceArchetypes.CHARGE, "showBatch", selected);
+                    getModel().setShowBatch(preferences.getBoolean(PreferenceArchetypes.CHARGE, "showBatch", false));
                 }
             });
             controls.add(batch);
@@ -155,7 +142,7 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
             @Override
             public void onAction(ActionEvent event) {
                 boolean selected = template.isSelected();
-                preferences.setShowTemplateDuringCharging(selected);
+                preferences.setPreference(PreferenceArchetypes.CHARGE, "showTemplate", selected);
                 getModel().setShowTemplate(selected);
             }
         });
@@ -163,7 +150,7 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
             @Override
             public void onAction(ActionEvent event) {
                 boolean selected = productType.isSelected();
-                preferences.setShowProductTypeDuringCharging(selected);
+                preferences.setPreference(PreferenceArchetypes.CHARGE, "showProductType", selected);
                 getModel().setShowProductType(selected);
             }
         });
@@ -173,12 +160,27 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
     }
 
     /**
+     * Creates a new product template expander.
+     * <p/>
+     * This implementation will restrict products to those of the location and stock location,
+     * if {@link PriceActEditContext#useLocationProducts} is {@code true}.
+     *
+     * @return a new product template expander
+     */
+    @Override
+    protected ProductTemplateExpander getProductTemplateExpander() {
+        PriceActEditContext context = getEditContext();
+        return new ProductTemplateExpander(context.useLocationProducts(), context.getLocation(),
+                                           context.getStockLocation());
+    }
+
+    /**
      * Returns the underlying table model.
      *
      * @return the model
      */
     private ChargeItemTableModel getModel() {
-        IMTableModel<IMObject> model = getTable().getModel().getModel();
+        IMTableModel model = getTable().getModel().getModel();
         return (ChargeItemTableModel) model;
     }
 }

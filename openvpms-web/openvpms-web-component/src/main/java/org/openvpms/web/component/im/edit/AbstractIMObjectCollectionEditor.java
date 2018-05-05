@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -19,6 +19,8 @@ package org.openvpms.web.component.im.edit;
 import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -77,6 +79,11 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
      * The error listener.
      */
     private ErrorListener errorListener;
+
+    /**
+     * The alert listener.
+     */
+    private AlertListener alertListener;
 
     /**
      * Constructs an {@link AbstractIMObjectCollectionEditor}.
@@ -224,21 +231,35 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     }
 
     /**
+     * Registers a listener to be notified of alerts.
+     *
+     * @param listener the listener. May be {@code null}
+     */
+    @Override
+    public void setAlertListener(AlertListener listener) {
+        this.alertListener = listener;
+    }
+
+    /**
+     * Returns the listener to be notified of alerts.
+     *
+     * @return the listener. May be {@code null}
+     */
+    @Override
+    public AlertListener getAlertListener() {
+        return alertListener;
+    }
+
+    /**
      * Save any edits.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
-    public boolean save() {
-        boolean saved;
-        if (!isModified()) {
-            saved = true;
-        } else {
-            saved = doSave();
-            if (saved) {
-                clearModified();
-            }
+    public void save() {
+        if (isModified()) {
+            doSave();
+            clearModified();
         }
-        return saved;
     }
 
     /**
@@ -251,12 +272,13 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     }
 
     /**
-     * Adds an object to the collection.
+     * Adds an object to the collection, if it doesn't exist.
      *
      * @param object the object to add
+     * @return {@code true} if the object was added, otherwise {@code false}
      */
-    public void add(IMObject object) {
-        collection.add(object);
+    public boolean add(IMObject object) {
+        return collection.add(object);
     }
 
     /**
@@ -340,10 +362,10 @@ public abstract class AbstractIMObjectCollectionEditor extends AbstractModifiabl
     /**
      * Saves any current edits.
      *
-     * @return {@code true} if edits were saved successfully, otherwise {@code false}
+     * @throws OpenVPMSException if the save fails
      */
-    protected boolean doSave() {
-        return collection.save();
+    protected void doSave() {
+        collection.save();
     }
 
     /**

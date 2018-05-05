@@ -11,12 +11,11 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow;
 
-import org.openvpms.web.workspace.customer.charge.ChargeEditorQueue;
 import org.openvpms.web.workspace.customer.charge.EditorQueue;
 
 /**
@@ -31,5 +30,5 @@ public interface EditorQueueHandle {
      *
      * @return the popup dialog manager
      */
-    ChargeEditorQueue getEditorQueue();
+    EditorQueue getQueue();
 }

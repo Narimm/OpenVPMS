@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -32,8 +32,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class MultipleRelationshipCollectionTargetEditor
-        extends IMObjectTableCollectionEditor {
+public class MultipleRelationshipCollectionTargetEditor extends IMObjectTableCollectionEditor {
 
     /**
      * Constructs a {@link MultipleRelationshipCollectionTargetEditor}.
@@ -62,12 +61,13 @@ public class MultipleRelationshipCollectionTargetEditor
     }
 
     /**
-     * Adds an object to the collection.
+     * Adds an object to the collection, if it doesn't exist.
      *
      * @param object the object to add
+     * @return {@code true} if the object was added, otherwise {@code false}
      */
-    public void add(IMObject object) {
-        getEditor().add(object);
+    public boolean add(IMObject object) {
+        return getEditor().add(object);
     }
 
     /**
@@ -111,7 +111,7 @@ public class MultipleRelationshipCollectionTargetEditor
         IMObject result = null;
         if (object instanceof IMObjectRelationship) {
             IMObjectReference target = ((IMObjectRelationship) object).getTarget();
-            for (IMObject o : getEditor().getObjects()) {
+            for (IMObject o : getObjects()) {
                 if (o.getObjectReference().equals(target)) {
                     result = o;
                     break;

@@ -1,5 +1,22 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.web.workspace;
 
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.workspace.Workspaces;
 import org.openvpms.web.component.workspace.WorkspacesFactory;
@@ -22,21 +39,25 @@ public class DefaultWorkspacesFactory implements WorkspacesFactory {
     /**
      * Creates the customer workspaces.
      *
-     * @param context the context
+     * @param context     the context
+     * @param preferences the user preferences
      * @return the customer workspaces
      */
-    public Workspaces createCustomerWorkspaces(Context context) {
-        return new CustomerWorkspaces(context);
+    @Override
+    public Workspaces createCustomerWorkspaces(Context context, Preferences preferences) {
+        return new CustomerWorkspaces(context, preferences);
     }
 
     /**
      * Creates the patient workspaces.
      *
-     * @param context the context
+     * @param context     the context
+     * @param preferences the user preferences
      * @return the patient workspaces
      */
-    public Workspaces createPatientWorkspaces(Context context) {
-        return new PatientWorkspaces(context);
+    @Override
+    public Workspaces createPatientWorkspaces(Context context, Preferences preferences) {
+        return new PatientWorkspaces(context, preferences);
     }
 
     /**
@@ -45,6 +66,7 @@ public class DefaultWorkspacesFactory implements WorkspacesFactory {
      * @param context the context
      * @return the supplier workspaces
      */
+    @Override
     public Workspaces createSupplierWorkspaces(Context context) {
         return new SupplierWorkspaces(context);
     }
@@ -52,11 +74,13 @@ public class DefaultWorkspacesFactory implements WorkspacesFactory {
     /**
      * Creates the workflow workspaces.
      *
-     * @param context the context
+     * @param context     the context
+     * @param preferences user preferences
      * @return the workflow workspaces
      */
-    public Workspaces createWorkflowWorkspaces(Context context) {
-        return new WorkflowWorkspaces(context);
+    @Override
+    public Workspaces createWorkflowWorkspaces(Context context, Preferences preferences) {
+        return new WorkflowWorkspaces(context, preferences);
     }
 
     /**
@@ -65,6 +89,7 @@ public class DefaultWorkspacesFactory implements WorkspacesFactory {
      * @param context the context
      * @return the product workspaces
      */
+    @Override
     public Workspaces createProductWorkspaces(Context context) {
         return new ProductWorkspaces(context);
     }
@@ -72,11 +97,13 @@ public class DefaultWorkspacesFactory implements WorkspacesFactory {
     /**
      * Creates the reporting workspaces.
      *
-     * @param context the context
+     * @param context     the context
+     * @param preferences user preferences
      * @return the reporting workspaces
      */
-    public Workspaces createReportingWorkspaces(Context context) {
-        return new ReportingWorkspaces(context);
+    @Override
+    public Workspaces createReportingWorkspaces(Context context, Preferences preferences) {
+        return new ReportingWorkspaces(context, preferences);
     }
 
     /**
@@ -85,6 +112,7 @@ public class DefaultWorkspacesFactory implements WorkspacesFactory {
      * @param context the context
      * @return the administration workspaces
      */
+    @Override
     public Workspaces createAdminWorkspaces(Context context) {
         return new AdminWorkspaces(context);
     }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.discount;
@@ -24,10 +24,13 @@ import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.EntityLink;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
+import org.openvpms.component.business.domain.im.common.PeriodRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
@@ -37,8 +40,8 @@ import java.util.List;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.openvpms.archetype.rules.finance.discount.DiscountTestHelper.createDiscount;
 
 
@@ -112,7 +115,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         discountGroup = createDiscountGroup(discount10, discount5);
         costDiscountGroup = createDiscountGroup(costDiscount0, costDiscount10);
 
-        rules = new DiscountRules(getArchetypeService(), getLookupService());
+        rules = new DiscountRules(getArchetypeService());
 
         // set up practice with 10% tax rate
         practice = (Party) TestHelper.create(PracticeArchetypes.PRACTICE);
@@ -359,10 +362,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
 
         // now expire the product discount by setting the end time of the
         // discount relationship, and verify the discount no longer applies
-        EntityBean bean = new EntityBean(product);
-        EntityRelationship r = bean.getRelationship(discount10);
-        r.setActiveEndTime(new Date(now.getTime() - 1));
-        bean.save();
+        expireDiscount(product, discount10, now);
 
         checkCalculatePercentageDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
         checkCalculatePercentageDiscount(now, custWithDisc, patientNoDisc, product, BigDecimal.ZERO);
@@ -379,6 +379,21 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         checkCalculatePercentageDiscount(now, custWithDisc, patientNoDisc, product, cents5);
         checkCalculatePercentageDiscount(now, custNoDisc, patientWithDisc, product, cents5);
         checkCalculatePercentageDiscount(now, custWithDisc, patientWithDisc, product, cents5);
+    }
+
+    /**
+     * Expires a relationship to a discount.
+     *
+     * @param entity   the entity
+     * @param discount the discount to expire
+     * @param time     the time relative to expire the discount to
+     */
+    private void expireDiscount(Entity entity, Entity discount, Date time) {
+        IMObjectBean bean = new IMObjectBean(entity);
+        EntityLink result = (EntityLink) bean.getValue("discounts", RefEquals.getTargetEquals(discount));
+        assertNotNull(result);
+        result.setActiveEndTime(new Date(time.getTime() - 1000));
+        save(entity);
     }
 
     /**
@@ -403,10 +418,7 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
 
         // now expire the product discount by setting the end time of the
         // discount relationship, and verify the discount no longer applies
-        EntityBean bean = new EntityBean(product);
-        EntityRelationship r = bean.getRelationship(costDiscount0);
-        r.setActiveEndTime(new Date(now.getTime() - 1));
-        bean.save();
+        expireDiscount(product, costDiscount0, now);
 
         checkCalculateCostDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
         checkCalculateCostDiscount(now, custWithDisc, patientNoDisc, product, BigDecimal.ZERO);
@@ -448,11 +460,8 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         // now expire the product type discount by setting the end time of the
         // discount relationship, and verify the discount no longer applies
         EntityBean bean = new EntityBean(product);
-        Entity productType = bean.getNodeSourceEntity("type");
-        bean = new EntityBean(productType);
-        EntityRelationship r = bean.getRelationship(discount10);
-        r.setActiveEndTime(new Date(now.getTime() - 1000));
-        bean.save();
+        Entity productType = bean.getNodeTargetEntity("type");
+        expireDiscount(productType, discount10, now);
 
         checkCalculatePercentageDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
         checkCalculatePercentageDiscount(now, custWithDisc, patientNoDisc, product, BigDecimal.ZERO);
@@ -495,11 +504,8 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
         // now expire the product type discount by setting the end time of the
         // discount relationship, and verify the discount no longer applies
         EntityBean bean = new EntityBean(product);
-        Entity productType = bean.getNodeSourceEntity("type");
-        bean = new EntityBean(productType);
-        EntityRelationship r = bean.getRelationship(costDiscount0);
-        r.setActiveEndTime(new Date(now.getTime() - 1000));
-        bean.save();
+        Entity productType = bean.getNodeTargetEntity("type");
+        expireDiscount(productType, costDiscount0, now);
 
         checkCalculateCostDiscount(now, custNoDisc, patientNoDisc, product, BigDecimal.ZERO);
         checkCalculateCostDiscount(now, custWithDisc, patientNoDisc, product, BigDecimal.ZERO);
@@ -886,12 +892,11 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      */
     private Product createProductWithProductTypeDiscount(String shortName, Entity discount) {
         Product product = createProduct(shortName);
-        Entity type = (Entity) create("entity.productType");
+        Entity type = (Entity) create(ProductArchetypes.PRODUCT_TYPE);
         type.setName("DiscountRulesTestCase-entity" + type.hashCode());
         addDiscount(type, discount, null);
-        EntityBean typeBean = new EntityBean(type);
-        typeBean.addRelationship("entityRelationship.productTypeProduct", product);
-        save(type);
+        EntityBean bean = new EntityBean(product);
+        bean.addNodeTarget("type", type);
         save(product);
         return product;
     }
@@ -904,21 +909,11 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      * @param endTime  the end time of the discount. May be {@code null}
      */
     private void addDiscount(Entity entity, Entity discount, Date endTime) {
-        EntityBean bean = new EntityBean(entity);
-        String shortName = null;
-        if (bean.isA("product.*")) {
-            shortName = "entityRelationship.discountProduct";
-        } else if (bean.isA("party.customer*")) {
-            shortName = "entityRelationship.discountCustomer";
-        } else if (bean.isA("party.patientpet")) {
-            shortName = "entityRelationship.discountPatient";
-        } else if (bean.isA("entity.productType")) {
-            shortName = "entityRelationship.discountProductType";
-        } else {
-            fail("Invalid entity for discounts: " + entity.getArchetypeId());
+        IMObjectBean bean = new IMObjectBean(entity);
+        IMObjectRelationship relationship = bean.addNodeTarget("discounts", discount);
+        if (relationship instanceof PeriodRelationship) {
+            ((PeriodRelationship) relationship).setActiveEndTime(endTime);
         }
-        EntityRelationship r = bean.addRelationship(shortName, discount);
-        r.setActiveEndTime(endTime);
         bean.save();
     }
 
@@ -931,10 +926,10 @@ public class DiscountRulesTestCase extends ArchetypeServiceTest {
      */
     private Entity createDiscountGroup(Entity... discounts) {
         Entity result = (Entity) create("entity.discountGroupType");
-        EntityBean bean = new EntityBean(result);
+        IMObjectBean bean = new IMObjectBean(result);
         bean.setValue("name", "XDISCOUNT_RULES_TESTCASE_" + Math.abs(new Random().nextInt()));
         for (Entity discount : discounts) {
-            bean.addRelationship("entityRelationship.discountType", discount);
+            bean.addNodeTarget("discounts", discount);
         }
         save(result);
         return result;

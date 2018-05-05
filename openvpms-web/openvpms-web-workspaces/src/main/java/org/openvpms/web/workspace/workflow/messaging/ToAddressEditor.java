@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.messaging;
@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.workflow.messaging;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -26,6 +27,7 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationHelper;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -40,6 +42,7 @@ import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,6 +69,11 @@ class ToAddressEditor extends AbstractModifiable implements PropertyEditor {
     private final ComponentState state;
 
     /**
+     * The user rules.
+     */
+    private final UserRules rules;
+
+    /**
      * The participation. This is only populated in order for the parent act to validate successfully.
      */
     private Participation participation;
@@ -87,7 +95,7 @@ class ToAddressEditor extends AbstractModifiable implements PropertyEditor {
         if (participation != null) {
             participation.setAct(act.getObjectReference());
         }
-        selector = new MultiIMObjectSelector<Entity>(property.getDisplayName(), context, SHORT_NAMES);
+        selector = new MultiIMObjectSelector<>(property.getDisplayName(), context, SHORT_NAMES);
         selector.setListener(new AbstractIMObjectSelectorListener<Entity>() {
             public void selected(Entity object) {
                 onSelected(object);
@@ -95,6 +103,7 @@ class ToAddressEditor extends AbstractModifiable implements PropertyEditor {
         });
         selector.getTextField().setWidth(new Extent(100, Extent.PERCENT));
         state = new ComponentState(selector.getComponent(), property, selector.getFocusGroup());
+        rules = ServiceHelper.getBean(UserRules.class);
     }
 
     /**
@@ -114,7 +123,7 @@ class ToAddressEditor extends AbstractModifiable implements PropertyEditor {
      * @return the selected users
      */
     public Set<User> getTo() {
-        return MessageHelper.getUsers(selector.getObjects());
+        return rules.getUsers(selector.getObjects());
     }
 
     /**
@@ -226,6 +235,26 @@ class ToAddressEditor extends AbstractModifiable implements PropertyEditor {
      */
     @Override
     public ErrorListener getErrorListener() {
+        return null;
+    }
+
+    /**
+     * Registers a listener to be notified of alerts.
+     *
+     * @param listener the listener. May be {@code null}
+     */
+    @Override
+    public void setAlertListener(AlertListener listener) {
+        // no-op
+    }
+
+    /**
+     * Returns the listener to be notified of alerts.
+     *
+     * @return {@code null}
+     */
+    @Override
+    public AlertListener getAlertListener() {
         return null;
     }
 

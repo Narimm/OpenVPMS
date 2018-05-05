@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro.impl;
@@ -32,6 +32,7 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.ReadOnlyArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectVariables;
@@ -83,8 +84,9 @@ public class ReportMacroRunnerTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        handlers = new DocumentHandlers();
-        handlers.addDocumentHandler(new JRXMLDocumentHandler(getArchetypeService()));
+        IArchetypeService service = getArchetypeService();
+        handlers = new DocumentHandlers(service, Collections.<DocumentHandler>singletonList(
+                new JRXMLDocumentHandler(service)));
     }
 
     /**
@@ -172,8 +174,9 @@ public class ReportMacroRunnerTestCase extends ArchetypeServiceTest {
 
         // run the report macro against the customer
         ReportMacro macro = new ReportMacro(lookup, service);
-        MacroContext context = new MacroContext(Collections.<String, Macro>emptyMap(), null, null, variables);
         ArchetypeFunctionsFactory functions = applicationContext.getBean(ArchetypeFunctionsFactory.class);
+        MacroContext context = new MacroContext(Collections.<String, Macro>emptyMap(), null, null, variables,
+                                                functions.create(new ReadOnlyArchetypeService(service), false));
         ReportFactory factory = new ReportFactory(service, getLookupService(), handlers, functions);
         ReportMacroRunner runner = new ReportMacroRunner(context, factory);
         return runner.run(macro, "");

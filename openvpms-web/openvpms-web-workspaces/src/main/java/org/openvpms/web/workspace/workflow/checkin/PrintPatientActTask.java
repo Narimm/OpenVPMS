@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
+import org.openvpms.web.component.im.doc.DocumentGeneratorFactory;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.component.workflow.PrintActTask;
@@ -84,8 +85,8 @@ public class PrintPatientActTask extends PrintActTask {
                     notifySkipped();
                 }
             };
-            DocumentGenerator generator = new DocumentGenerator(object, context, context.getHelpContext(),
-                                                                listener);
+            DocumentGeneratorFactory factory = ServiceHelper.getBean(DocumentGeneratorFactory.class);
+            DocumentGenerator generator = factory.create(object, context, context.getHelpContext(), listener);
             generator.generate(true, false, true);
         } else {
             super.start(context);
@@ -111,7 +112,7 @@ public class PrintPatientActTask extends PrintActTask {
         if (event != null) {
             PatientMedicalRecordLinker linker = new PatientMedicalRecordLinker(event, document);
             if (Retryer.run(linker)) {
-                context.setObject(PatientArchetypes.CLINICAL_EVENT, linker.getEvent());
+                context.setObject(PatientArchetypes.CLINICAL_EVENT, event);
                 notifyCompleted();
             } else {
                 notifyCancelled();

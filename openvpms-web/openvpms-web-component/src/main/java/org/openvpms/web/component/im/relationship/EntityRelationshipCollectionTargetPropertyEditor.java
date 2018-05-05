@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -19,21 +19,19 @@ package org.openvpms.web.component.im.relationship;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.property.CollectionProperty;
 
 
 /**
- * A {@link CollectionPropertyEditor} for collections of
- * {@link EntityRelationship}s where the targets are being added and removed.
+ * A {@link CollectionPropertyEditor} for collections of {@link EntityRelationship}s where the targets are being added
+ * and removed.
  *
  * @author Tim Anderson
  */
 public class EntityRelationshipCollectionTargetPropertyEditor
-        extends RelationshipCollectionTargetPropertyEditor {
+        extends RelationshipCollectionTargetPropertyEditor<EntityRelationship> {
 
     /**
      * Constructs an {@link EntityRelationshipCollectionTargetPropertyEditor}.
@@ -41,8 +39,7 @@ public class EntityRelationshipCollectionTargetPropertyEditor
      * @param property the property to edit
      * @param parent   the parent object
      */
-    public EntityRelationshipCollectionTargetPropertyEditor(
-            CollectionProperty property, Entity parent) {
+    public EntityRelationshipCollectionTargetPropertyEditor(CollectionProperty property, Entity parent) {
         super(property, parent);
     }
 
@@ -51,13 +48,11 @@ public class EntityRelationshipCollectionTargetPropertyEditor
      *
      * @param source    the source object
      * @param target    the target object
-     * @param shortName the relationship archetype short name
-     * @return the new relationship, or <tt>null</tt> if it couldn't be created
-     * @throws ArchetypeServiceException for any error
+     * @param shortName the relationship short name
+     * @return the new relationship, or {@code null} if it couldn't be created
      */
-    protected IMObjectRelationship addRelationship(IMObject source,
-                                                   IMObject target,
-                                                   String shortName) {
+    @Override
+    protected EntityRelationship addRelationship(IMObject source, IMObject target, String shortName) {
         EntityBean bean = new EntityBean((Entity) source);
         return bean.addRelationship(shortName, (Entity) target);
     }
@@ -70,10 +65,9 @@ public class EntityRelationshipCollectionTargetPropertyEditor
      * @param relationship the relationship to remove
      * @return {@code true} if the relationship was removed
      */
-    protected boolean removeRelationship(IMObject source, IMObject target, IMObjectRelationship relationship) {
+    protected boolean removeRelationship(IMObject source, IMObject target, EntityRelationship relationship) {
         Entity targetEntity = (Entity) target;
-        EntityRelationship rel = (EntityRelationship) relationship;
-        targetEntity.removeEntityRelationship(rel);
+        targetEntity.removeEntityRelationship(relationship);
 
         // Remove the relationship from the source entity. This will generate events, so invoke last
         return getProperty().remove(relationship);

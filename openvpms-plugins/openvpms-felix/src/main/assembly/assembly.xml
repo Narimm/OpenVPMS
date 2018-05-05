@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+    <id>openvpms-osgi-bundles</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <fileSets>
+        <fileSet>
+            <directory>target/classes/data</directory>
+            <outputDirectory>/data</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>target/classes/deploy</directory>
+            <outputDirectory>/deploy</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>target/classes/etc</directory>
+            <outputDirectory>/etc</outputDirectory>
+        </fileSet>
+    </fileSets>
+
+    <dependencySets>
+        <dependencySet>
+            <outputDirectory>/system</outputDirectory>
+            <unpack>false</unpack>
+            <useProjectArtifact>false</useProjectArtifact>
+            <includes>
+                <include>org.apache.felix:org.apache.felix.log</include>
+                <include>org.apache.felix:org.apache.felix.configadmin</include>
+                <include>org.apache.felix:org.apache.felix.fileinstall</include>
+                <include>org.apache.felix:org.apache.felix.scr</include>
+                <!-- TODO - the following require servlet API 3.1.0 which requires Tomcat 8 -->
+                <!--include>org.apache.felix:org.apache.felix.http.api</include>
+                <include>org.apache.felix:org.apache.felix.http.base</include>
+                <include>org.apache.felix:org.apache.felix.http.bridge</include-->
+
+                <include>org.apache.felix:org.apache.felix.gogo.command</include>
+                <include>org.apache.felix:org.apache.felix.gogo.runtime</include>
+                <include>org.apache.felix:org.apache.felix.gogo.shell</include>
+                <include>org.apache.felix:org.apache.felix.shell.remote</include>
+            </includes>
+        </dependencySet>
+    </dependencySets>
+
+</assembly>

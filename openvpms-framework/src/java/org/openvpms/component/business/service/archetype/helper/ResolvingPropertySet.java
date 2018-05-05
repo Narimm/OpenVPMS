@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
 
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.system.common.util.AbstractPropertySet;
 import org.openvpms.component.system.common.util.MapPropertySet;
 import org.openvpms.component.system.common.util.PropertySet;
@@ -45,6 +46,11 @@ public class ResolvingPropertySet extends AbstractPropertySet {
     private IArchetypeService service;
 
     /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
+    /**
      * The property resolver.
      */
     private PropertyResolver resolver;
@@ -53,9 +59,10 @@ public class ResolvingPropertySet extends AbstractPropertySet {
      * Constructs a {@link ResolvingPropertySet}.
      *
      * @param service the archetype service
+     * @param lookups the lookup service
      */
-    public ResolvingPropertySet(IArchetypeService service) {
-        this(new HashMap<String, Object>(), service);
+    public ResolvingPropertySet(IArchetypeService service, ILookupService lookups) {
+        this(new HashMap<String, Object>(), service, lookups);
     }
 
     /**
@@ -63,10 +70,12 @@ public class ResolvingPropertySet extends AbstractPropertySet {
      *
      * @param properties the underlying properties
      * @param service    the archetype service
+     * @param lookups    the lookup service
      */
-    public ResolvingPropertySet(Map<String, Object> properties, IArchetypeService service) {
+    public ResolvingPropertySet(Map<String, Object> properties, IArchetypeService service, ILookupService lookups) {
         this.properties = new MapPropertySet(properties);
         this.service = service;
+        this.lookups = lookups;
     }
 
     /**
@@ -153,6 +162,6 @@ public class ResolvingPropertySet extends AbstractPropertySet {
      * @return a new resolver
      */
     protected PropertyResolver createResolver(PropertySet properties, IArchetypeService service) {
-        return new PropertySetResolver(properties, service);
+        return new PropertySetResolver(properties, service, lookups);
     }
 }

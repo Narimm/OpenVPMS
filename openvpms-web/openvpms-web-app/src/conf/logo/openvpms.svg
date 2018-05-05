@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   id="Layer_1"
+   x="0px"
+   y="0px"
+   width="329.33px"
+   height="62.655px"
+   viewBox="0 0 329.33 62.655"
+   enable-background="new 0 0 329.33 62.655"
+   xml:space="preserve"
+   inkscape:version="0.91 r13725"
+   sodipodi:docname="vpms_logo-lato.svg"><metadata
+   id="metadata4326"><rdf:RDF><cc:Work
+       rdf:about=""><dc:format>image/svg+xml</dc:format><dc:type
+         rdf:resource="http://purl.org/dc/dcmitype/StillImage" /></cc:Work></rdf:RDF></metadata><defs
+   id="defs4324" /><sodipodi:namedview
+   pagecolor="#ffffff"
+   bordercolor="#666666"
+   borderopacity="1"
+   objecttolerance="10"
+   gridtolerance="10"
+   guidetolerance="10"
+   inkscape:pageopacity="0"
+   inkscape:pageshadow="2"
+   inkscape:window-width="1920"
+   inkscape:window-height="1080"
+   id="namedview4322"
+   showgrid="false"
+   inkscape:zoom="4.4180611"
+   inkscape:cx="168.06015"
+   inkscape:cy="34.722654"
+   inkscape:window-x="0"
+   inkscape:window-y="0"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="Layer_1" />
+<text
+   transform="matrix(1 0 0 1 48.4419 51.4951)"
+   id="text4308"><tspan
+     x="0"
+     y="0"
+     font-family="'Lato'"
+     font-weight="300"
+     font-size="60"
+     id="tspan4310">PEN</tspan><tspan
+     x="116.429"
+     y="0"
+     font-family="'Lato'"
+     font-size="60"
+     id="tspan4312">VPMS</tspan></text>
+
+<g
+   id="g4314">
+	<g
+   id="g4316">
+		<path
+   fill="#80C342"
+   d="M22.723,7.333c-0.001,0,0,0-0.001,0c-0.004,0-0.009,0-0.014,0C10.158,7.34-0.009,17.522,0,30.069    C0.007,42.615,10.18,52.78,22.723,52.78c0.004,0,0.009,0,0.013,0c12.55-0.01,22.718-10.189,22.708-22.739    C45.437,17.498,35.265,7.333,22.723,7.333L22.723,7.333z M22.708,19.293h0.014c2.874,0,5.577,1.119,7.609,3.149    c2.033,2.031,3.153,4.733,3.154,7.606v0.001l0,0c0.003,2.875-1.115,5.577-3.147,7.612s-4.734,3.155-7.611,3.158h-0.004    c-2.874,0-5.576-1.119-7.608-3.15c-2.033-2.031-3.153-4.733-3.155-7.606c-0.002-2.876,1.116-5.579,3.147-7.613    c2.032-2.035,4.733-3.156,7.608-3.157C22.712,19.293,22.709,19.293,22.708,19.293L22.708,19.293z"
+   id="path4318" />
+	</g>
+</g>
+<circle
+   fill="#FFFFFF"
+   stroke="#80C342"
+   stroke-width="4.1552"
+   cx="39.05"
+   cy="12.258"
+   r="8.07"
+   id="circle4320" />
+</svg>

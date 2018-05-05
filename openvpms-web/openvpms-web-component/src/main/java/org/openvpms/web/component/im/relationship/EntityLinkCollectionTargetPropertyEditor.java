@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -19,12 +19,12 @@ package org.openvpms.web.component.im.relationship;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ import static org.openvpms.web.component.im.relationship.SequencedRelationshipCo
  *
  * @author Tim Anderson
  */
-public class EntityLinkCollectionTargetPropertyEditor extends RelationshipCollectionTargetPropertyEditor {
+public class EntityLinkCollectionTargetPropertyEditor extends RelationshipCollectionTargetPropertyEditor<EntityLink> {
 
     /**
      * Determines if the collection is sequenced.
@@ -57,12 +57,7 @@ public class EntityLinkCollectionTargetPropertyEditor extends RelationshipCollec
         sequenced = SequencedRelationshipCollectionHelper.hasSequenceNode(property.getArchetypeRange());
         if (sequenced) {
             // make sure each relationship has a sequence number
-            List<Map.Entry<IMObject, IMObjectRelationship>> entries = sort(getTargets());
-            List<IMObject> relationships = new ArrayList<>();
-            for (Map.Entry<IMObject, IMObjectRelationship> entry : entries) {
-                relationships.add(entry.getValue());
-            }
-            SequencedRelationshipCollectionHelper.sequence(relationships);
+            sequence();
         }
     }
 
@@ -76,8 +71,8 @@ public class EntityLinkCollectionTargetPropertyEditor extends RelationshipCollec
         List<IMObject> result;
         if (sequenced) {
             result = new ArrayList<>();
-            List<Map.Entry<IMObject, IMObjectRelationship>> entries = sort(getTargets());
-            for (Map.Entry<IMObject, IMObjectRelationship> entry : entries) {
+            List<Map.Entry<IMObject, EntityLink>> entries = sort(getTargets());
+            for (Map.Entry<IMObject, EntityLink> entry : entries) {
                 result.add(entry.getKey());
             }
         } else {
@@ -91,12 +86,12 @@ public class EntityLinkCollectionTargetPropertyEditor extends RelationshipCollec
      *
      * @param source    the source object
      * @param target    the target object
-     * @param shortName the relationship archetype short name
+     * @param shortName the relationship short name
      * @return the new relationship, or {@code null} if it couldn't be created
      * @throws ArchetypeServiceException for any error
      */
     @Override
-    protected IMObjectRelationship addRelationship(IMObject source, IMObject target, String shortName) {
+    protected EntityLink addRelationship(IMObject source, IMObject target, String shortName) {
         EntityLink link = (EntityLink) IMObjectCreator.create(shortName);
         if (link != null) {
             link.setSource(source.getObjectReference());
@@ -105,8 +100,7 @@ public class EntityLinkCollectionTargetPropertyEditor extends RelationshipCollec
             entity.addEntityLink(link);
 
             if (sequenced) {
-                int sequence = SequencedRelationshipCollectionHelper.getNextSequence(getTargets().values());
-                link.setSequence(sequence);
+                sequence(link);
             }
         }
         return link;
@@ -121,19 +115,43 @@ public class EntityLinkCollectionTargetPropertyEditor extends RelationshipCollec
      * @return {@code true} if the relationship was removed
      */
     @Override
-    protected boolean removeRelationship(IMObject source, IMObject target, IMObjectRelationship relationship) {
+    protected boolean removeRelationship(IMObject source, IMObject target, EntityLink relationship) {
         return getProperty().remove(relationship);
     }
 
     /**
      * Invoked by {@link #doSave()} to remove objects queued for removal.
-     * <p>
+     * <p/>
      * For entity links, the parent must first be saved, otherwise constraint violations will occur.
      *
-     * @return {@code true} if they were removed
+     * @throws OpenVPMSException if the remove fails
      */
     @Override
-    protected boolean remove() {
-        return SaveHelper.save(getParent()) && super.remove();
+    protected void remove() {
+        ServiceHelper.getArchetypeService().save(getParent());
+        super.remove();
     }
+
+    /**
+     * Sequences the relationships.
+     */
+    protected void sequence() {
+        List<Map.Entry<IMObject, EntityLink>> entries = sort(getTargets());
+        List<IMObject> relationships = new ArrayList<>();
+        for (Map.Entry<IMObject, EntityLink> entry : entries) {
+            relationships.add(entry.getValue());
+        }
+        SequencedRelationshipCollectionHelper.sequence(relationships);
+    }
+
+    /**
+     * Sequences a relationship.
+     *
+     * @param relationship the relationship
+     */
+    protected void sequence(EntityLink relationship) {
+        int sequence = SequencedRelationshipCollectionHelper.getNextSequence(getTargets().values());
+        relationship.setSequence(sequence);
+    }
+
 }

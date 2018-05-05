@@ -11,13 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
 
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.party.Party;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.system.ServiceHelper;
 
 
@@ -41,4 +44,53 @@ public class UserHelper {
         }
         return false;
     }
+
+    /**
+     * Determines if a user is a clinician.
+     *
+     * @param user the user. May be {@code null}
+     * @return {@code true} if the user is a clinician
+     */
+    public static boolean isClinician(User user) {
+        return (user != null && ServiceHelper.getBean(UserRules.class).isClinician(user));
+    }
+
+    /**
+     * Determines if the logged in user should be used for clinician fields.
+     * This returns {@code true} if the context has:
+     * <ul>
+     * <li> a practice, with useLoggedInClinician set; and</li>
+     * <li> a user, who is a clinician</li>
+     * </ul>
+     *
+     * @param context the context
+     * @return {@code true} if the context user should be used for clinician fields
+     */
+    public static boolean useLoggedInClinician(Context context) {
+        boolean result = false;
+        User user = context.getUser();
+        Party practice = context.getPractice();
+        if (user != null && practice != null) {
+            if (new IMObjectBean(practice).getBoolean("useLoggedInClinician") && isClinician(user)) {
+                result = true;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the name for a user, given their login name.
+     *
+     * @param loginName the login name. May be {@code null}
+     * @return the name, or {@code loginName} if the user doesn't exist
+     */
+    public static String getName(String loginName) {
+        String result = null;
+        if (loginName != null) {
+            User user = ServiceHelper.getBean(UserRules.class).getUser(loginName);
+            result = user != null ? user.getName() : loginName;
+        }
+        return result;
+    }
+
 }

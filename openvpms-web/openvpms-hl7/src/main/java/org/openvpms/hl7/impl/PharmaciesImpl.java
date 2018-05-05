@@ -50,24 +50,24 @@ public class PharmaciesImpl extends ServicesImpl implements Pharmacies {
     }
 
     /**
-     * Adds an object to the cache, if it active, and newer than the existing instance, if any.
+     * Invoked when an object is added or updated in the cache.
      *
-     * @param object the object to add
+     * @param object the object
      */
     @Override
-    protected void addObject(Entity object) {
+    protected void added(Entity object) {
         services.add(object);  // register the pharmacy to receive patient information
-        super.addObject(object);
+        super.added(object);
     }
 
     /**
-     * Removes an object.
+     * Invoked when an object is removed from the cache.
      *
-     * @param object the object to remove
+     * @param object the removed object
      */
     @Override
-    protected void removeObject(Entity object) {
+    protected void removed(Entity object) {
         services.remove(object);  // de-register the service so it no longer receives patient events
-        super.removeObject(object);
+        super.removed(object);
     }
 }

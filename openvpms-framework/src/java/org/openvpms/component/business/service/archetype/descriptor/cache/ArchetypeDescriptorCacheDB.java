@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -24,11 +24,13 @@ import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * This implementation reads the archetype descriptors from the databases and caches them in memory.
@@ -256,6 +258,7 @@ public class ArchetypeDescriptorCacheDB implements IArchetypeDescriptorCache {
          *
          * @param descriptor the descriptor to load
          */
+        @SuppressWarnings("unchecked")
         private void loadArchetypeDescriptor(ArchetypeDescriptor descriptor) {
             ArchetypeId archId = descriptor.getType();
 
@@ -268,8 +271,9 @@ public class ArchetypeDescriptorCacheDB implements IArchetypeDescriptorCache {
                 Thread.currentThread().getContextClassLoader().loadClass(descriptor.getClassName());
 
                 // check that the assertions are specified correctly
-                if (descriptor.getNodeDescriptors().size() > 0) {
-                    checkAssertionsInNode(descriptor.getNodeDescriptors());
+                Map nodeDescriptors = descriptor.getNodeDescriptors();
+                if (nodeDescriptors.size() > 0) {
+                    checkAssertionsInNode((Map<String, NodeDescriptor>) nodeDescriptors);
                 }
 
                 if (log.isDebugEnabled()) {

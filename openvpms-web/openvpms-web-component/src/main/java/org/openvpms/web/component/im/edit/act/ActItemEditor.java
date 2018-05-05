@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.web.component.im.clinician.ClinicianParticipationEditor;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -126,6 +127,10 @@ public abstract class ActItemEditor extends AbstractActEditor {
      */
     private boolean currentTemplate;
 
+    /**
+     * Listener for product change events.
+     */
+    private final ModifiableListener productListener;
 
     /**
      * Print node name.
@@ -150,6 +155,12 @@ public abstract class ActItemEditor extends AbstractActEditor {
         }
         location = getLocation(parent, context);
         pricingGroup = getPricingGroup(location);
+        productListener = new ModifiableListener() {
+            @Override
+            public void modified(Modifiable modifiable) {
+                productModified();
+            }
+        };
     }
 
     /**
@@ -235,7 +246,7 @@ public abstract class ActItemEditor extends AbstractActEditor {
         if (product != null) {
             // clear the quantity. If the quantity changes after the product is set, don't overwrite with that
             // from the template, as it is the dose quantity for the patient weight
-            setQuantity(null);
+            setQuantity(BigDecimal.ZERO);
             setProduct(product.getProduct());
             if (MathRules.isZero(getQuantity())) {
                 setQuantity(product.getHighQuantity());
@@ -451,6 +462,22 @@ public abstract class ActItemEditor extends AbstractActEditor {
     }
 
     /**
+     * Invoked when the product changes.
+     * <p/>
+     * This delegates to {@link #productModified(Participation)} if there is a current participation.
+     */
+    protected void productModified() {
+        Participation participation = null;
+        ProductParticipationEditor editor = getProductEditor();
+        if (editor != null) {
+            participation = editor.getParticipation();
+        }
+        if (participation != null) {
+            productModified(participation);
+        }
+    }
+
+    /**
      * Invoked when the participation product is changed.
      * <p/>
      * This delegates to {@link #productModified(Product)}.
@@ -499,17 +526,6 @@ public abstract class ActItemEditor extends AbstractActEditor {
      */
     protected ProductPrice getProductPrice(String shortName, Product product) {
         return rules.getProductPrice(product, shortName, getStartTime(), pricingGroup);
-    }
-
-    /**
-     * Returns the first product price with the specified short name and price.
-     *
-     * @param shortName the price short name
-     * @param price     the price
-     * @param product   the product
-     */
-    protected ProductPrice getProductPrice(String shortName, BigDecimal price, Product product) {
-        return rules.getProductPrice(product, price, shortName, getStartTime(), pricingGroup);
     }
 
     /**
@@ -641,15 +657,12 @@ public abstract class ActItemEditor extends AbstractActEditor {
         final ProductParticipationEditor product = getProductEditor();
         final PatientParticipationEditor patient = getPatientEditor();
         if (product != null) {
-            final Participation participant = product.getParticipation();
-            product.addModifiableListener(new ModifiableListener() {
-                public void modified(Modifiable modifiable) {
-                    productModified(participant);
-                }
-            });
+            product.addModifiableListener(productListener);
         }
         if (patient != null && product != null) {
             product.setPatient(patient.getEntity());
+            // NOTE: if layout is called multiple times and the patient editor is not recreated, multiple listeners
+            // will be registered
             patient.getEditor().addModifiableListener(new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
                     product.setPatient(patient.getEntity());

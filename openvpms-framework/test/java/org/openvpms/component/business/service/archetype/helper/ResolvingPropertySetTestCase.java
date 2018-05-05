@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -21,7 +21,9 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.util.PropertySet;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
 import static org.junit.Assert.assertEquals;
@@ -39,11 +41,17 @@ import static org.junit.Assert.fail;
 public class ResolvingPropertySetTestCase extends AbstractArchetypeServiceTest {
 
     /**
+     * The lookup service.
+     */
+    @Autowired
+    ILookupService lookups;
+
+    /**
      * Tests single-level property resolution.
      */
     @Test
     public void testSingleLevelResolution() {
-        PropertySet set = new ResolvingPropertySet(getArchetypeService());
+        PropertySet set = new ResolvingPropertySet(getArchetypeService(), lookups);
         set.set("firstName", "J");
         set.set("lastName", "Zoo");
         assertEquals("J", set.getString("firstName"));
@@ -58,7 +66,7 @@ public class ResolvingPropertySetTestCase extends AbstractArchetypeServiceTest {
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
         act.setParticipant("participation.customer", party);
-        PropertySet set = new ResolvingPropertySet(getArchetypeService());
+        PropertySet set = new ResolvingPropertySet(getArchetypeService(), lookups);
         set.set("act", act.getAct());
 
         assertEquals("J", set.getString("act.customer.entity.firstName"));
@@ -76,7 +84,7 @@ public class ResolvingPropertySetTestCase extends AbstractArchetypeServiceTest {
     @Test
     public void testResolutionByReference() {
         Party party = createCustomer();
-        PropertySet set = new ResolvingPropertySet(getArchetypeService());
+        PropertySet set = new ResolvingPropertySet(getArchetypeService(), lookups);
         set.set("ref", party.getObjectReference());
         assertEquals("J", set.getString("ref.firstName"));
         assertEquals("Zoo", set.getString("ref.lastName"));
@@ -90,7 +98,7 @@ public class ResolvingPropertySetTestCase extends AbstractArchetypeServiceTest {
     @Test
     public void testMissingReference() {
         ActBean act = createAct("act.customerEstimation");
-        PropertySet set = new ResolvingPropertySet(getArchetypeService());
+        PropertySet set = new ResolvingPropertySet(getArchetypeService(), lookups);
         set.set("act", act.getAct());
         assertNull(set.get("act.customer.entity.firstName"));
     }
@@ -103,7 +111,7 @@ public class ResolvingPropertySetTestCase extends AbstractArchetypeServiceTest {
         Party party = createCustomer();
         ActBean act = createAct("act.customerEstimation");
         act.setParticipant("participation.customer", party);
-        PropertySet set = new ResolvingPropertySet(getArchetypeService());
+        PropertySet set = new ResolvingPropertySet(getArchetypeService(), lookups);
         set.set("act", act.getAct());
 
         // root node followed by invalid node
@@ -135,7 +143,7 @@ public class ResolvingPropertySetTestCase extends AbstractArchetypeServiceTest {
     public void testPropertyNameWithDots() {
         Party customer = createCustomer();
 
-        PropertySet set = new ResolvingPropertySet(getArchetypeService());
+        PropertySet set = new ResolvingPropertySet(getArchetypeService(), lookups);
         set.set("Globals.Name", "A");
         set.set("Globals.Customer", customer);
 

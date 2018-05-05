@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Letterhead" pageWidth="612" pageHeight="792" whenNoDataType="AllSectionsNoDetail" columnWidth="554" leftMargin="0" rightMargin="58" topMargin="0" bottomMargin="0" uuid="0d884615-14c1-48b1-801d-fc1e1707caca">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="39"/>
+	<property name="ireport.y" value="0"/>
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
+	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<parameter name="pageNo" class="java.lang.Integer" isForPrompting="false">
+		<parameterDescription><![CDATA[]]></parameterDescription>
+		<defaultValueExpression><![CDATA[999]]></defaultValueExpression>
+	</parameter>
+	<field name="[party:getBillingAddress(party:getLetterheadContacts($OpenVPMS.location))]" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="[party:getEmailAddress(party:getLetterheadContacts($OpenVPMS.location))]" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="[party:getTelephone(party:getLetterheadContacts($OpenVPMS.location))]" class="java.lang.String"/>
+	<field name="[party:getFaxNumber(party:getLetterheadContacts($OpenVPMS.location))]" class="java.lang.String"/>
+	<field name="[party:getWebsite(party:getLetterheadContacts($OpenVPMS.location))]" class="java.lang.String"/>
+	<field name="[party:getLetterheadContacts($OpenVPMS.location)/name]" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="OpenVPMS.location.letterhead.target.logoFile" class="java.lang.String"/>
+	<field name="OpenVPMS.location.letterhead.target.companyID" class="java.lang.String"/>
+	<field name="OpenVPMS.location.letterhead.target.plainPaper" class="java.lang.Boolean"/>
+	<field name="OpenVPMS.location.letterhead.target.letterheadP1only" class="java.lang.Boolean"/>
+	<variable name="isPlainPaper" class="java.lang.String"/>
+	<title>
+		<band height="113">
+			<frame>
+				<reportElement isPrintRepeatedValues="false" x="0" y="0" width="554" height="113" isRemoveLineWhenBlank="true" uuid="46bfd1f4-931a-4dab-8629-2bc426397723">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[($P{pageNo}==1)&&($P{IsEmail}||($F{OpenVPMS.location.letterhead.target.plainPaper}==null?Boolean.TRUE:$F{OpenVPMS.location.letterhead.target.plainPaper}))]]></printWhenExpression>
+				</reportElement>
+				<image onErrorType="Blank">
+					<reportElement x="0" y="0" width="288" height="94" uuid="86791095-cda3-4d47-bc9d-625a5b970041">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					</reportElement>
+					<imageExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.logoFile}]]></imageExpression>
+				</image>
+				<textField>
+					<reportElement x="335" y="0" width="219" height="17" uuid="9b277f69-fa72-4026-8c58-18c6df26859b">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Left">
+						<font size="13" isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{[party:getLetterheadContacts($OpenVPMS.location)/name]}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="335" y="17" width="219" height="26" uuid="de7ba422-6831-40c0-a2be-1e1a458fb7fa"/>
+					<textElement textAlignment="Left">
+						<font size="10" isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{[party:getBillingAddress(party:getLetterheadContacts($OpenVPMS.location))]}.trim()]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement positionType="Float" x="335" y="43" width="219" height="12" uuid="a1fed66b-661b-498a-804d-7c328f79dfd8">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Left">
+						<font size="9" isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA["Ph: "+$F{[party:getTelephone(party:getLetterheadContacts($OpenVPMS.location))]}
++(($F{[party:getFaxNumber(party:getLetterheadContacts($OpenVPMS.location))]}.length()>0)?
+  ("  Fax: "+$F{[party:getFaxNumber(party:getLetterheadContacts($OpenVPMS.location))]}):"")]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement positionType="Float" x="335" y="56" width="219" height="12" uuid="9b4d6691-fc79-4877-80ce-7eadfe6c4186">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Left">
+						<font size="9" isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{[party:getEmailAddress(party:getLetterheadContacts($OpenVPMS.location))]}.length()==0?"":("E: "+$F{[party:getEmailAddress(party:getLetterheadContacts($OpenVPMS.location))]})]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement positionType="Float" x="335" y="68" width="219" height="12" uuid="fe74ee1c-ce40-41b2-91ac-0bef3d404bcb">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Left">
+						<font size="9" isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{[party:getWebsite(party:getLetterheadContacts($OpenVPMS.location))]}.length()==0?"":("W: "+$F{[party:getWebsite(party:getLetterheadContacts($OpenVPMS.location))]})]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement positionType="Float" x="335" y="80" width="219" height="12" isRemoveLineWhenBlank="true" uuid="92f62849-0634-46c1-897a-97d32816ef3f">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Left">
+						<font size="9" isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{OpenVPMS.location.letterhead.target.companyID}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</title>
+	<columnHeader>
+		<band height="113">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[(!$P{IsEmail}) && (! ($F{OpenVPMS.location.letterhead.target.plainPaper}==null?Boolean.TRUE:$F{OpenVPMS.location.letterhead.target.plainPaper})) &&
+ ( ($P{pageNo}==1)?Boolean.TRUE:! ($F{OpenVPMS.location.letterhead.target.letterheadP1only}==null?Boolean.TRUE:$F{OpenVPMS.location.letterhead.target.letterheadP1only}) )]]></printWhenExpression>
+			<staticText>
+				<reportElement isPrintRepeatedValues="false" mode="Transparent" x="0" y="0" width="554" height="113" forecolor="#000000" uuid="6236acaa-838c-487b-a21e-ff7e47cf4f69">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<printWhenExpression><![CDATA[(!$P{IsEmail}) && (! ($F{OpenVPMS.location.letterhead.target.plainPaper}==null?Boolean.TRUE:$F{OpenVPMS.location.letterhead.target.plainPaper})) &&
+ ( ($P{pageNo}==1)?Boolean.TRUE:! ($F{OpenVPMS.location.letterhead.target.letterheadP1only}==null?Boolean.TRUE:$F{OpenVPMS.location.letterhead.target.letterheadP1only}) )]]></printWhenExpression>
+				</reportElement>
+				<text><![CDATA[]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<columnFooter>
+		<band height="5">
+			<staticText>
+				<reportElement x="0" y="0" width="554" height="5" uuid="5493c8de-6a82-4524-8b06-c99fa0ca8b18">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<text><![CDATA[Static Text]]></text>
+			</staticText>
+		</band>
+	</columnFooter>
+	<summary>
+		<band height="207">
+			<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+			<printWhenExpression><![CDATA[Boolean.FALSE]]></printWhenExpression>
+			<staticText>
+				<reportElement x="0" y="0" width="554" height="207" isRemoveLineWhenBlank="true" uuid="31f66fbf-2c82-45f5-8c71-ed7ceff4ff02">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<printWhenExpression><![CDATA[Boolean.FALSE]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Top"/>
+				<text><![CDATA[These instructions are never printed.
+There are three areas: 
+A) the title block which contains the generated letterhead fields; 
+B) the column header which contains a blank static field which represents the area occupied by the letterhead area on pre-printed stationary;
+C) the column footer which contains a 5px high blank static field that is always printed and is used a spacer to space down the other items on the document title.
+ . 
+For Page 1, either of A or B are printed, depending on the Plain Paper and IsEmail settings.
+For pages > 1, A is never printed, and B is only printed for the not IsEmail, not Plain Paper, and not Letterhead Page 1 only - ie only when we need to space down over the preprinted letterhead. 
+
+The height of the A & B bands is normally set to 120px.  This puts the address block in the correct place for window envelopes.
+Note that if you do change the size of these, then the other items in the Title band of the system documents that use this letterhead subreport (ie the invoice, credit note, etc etc) will float up or down and this can be used to reposition the address block to suit non-standard window elements.]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

@@ -11,20 +11,22 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
 
 
 import org.apache.commons.jxpath.util.TypeConverter;
+import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
 import org.openvpms.component.system.common.util.PropertySetException;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Date;
 
 import static org.openvpms.component.system.common.util.PropertySetException.ErrorCode.ConversionFailed;
@@ -248,6 +250,274 @@ public abstract class AbstractProperty extends AbstractModifiable implements Pro
     @Override
     public IMObjectReference getReference() {
         return (IMObjectReference) get(null, IMObjectReference.class);
+    }
+
+    /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        return false;
+    }
+
+    /**
+     * Returns the property name.
+     *
+     * @return the property name
+     */
+    @Override
+    public String getName() {
+        return null;
+    }
+
+    /**
+     * Returns the property display name.
+     *
+     * @return the display name
+     */
+    @Override
+    public String getDisplayName() {
+        return null;
+    }
+
+    /**
+     * Returns the property description.
+     *
+     * @return the description. May be {@code null}
+     */
+    @Override
+    public String getDescription() {
+        return null;
+    }
+
+    /**
+     * Sets the value of the property.
+     * The value will only be set if it is valid, and different to the existing
+     * value. If the value is set, any listeners will be notified.
+     *
+     * @param value the property value
+     * @return {@code true} if the value was set, {@code false} if it
+     * cannot be set due to error, or is the same as the existing value
+     */
+    @Override
+    public boolean setValue(Object value) {
+        return false;
+    }
+
+    /**
+     * Returns the value of the property.
+     *
+     * @return the property value. May be {@code null}
+     */
+    @Override
+    public Object getValue() {
+        return null;
+    }
+
+    /**
+     * Returns the minimum length of the property.
+     *
+     * @return the minimum length
+     */
+    @Override
+    public int getMinLength() {
+        return 0;
+    }
+
+    /**
+     * Returns the maximum length of the property.
+     *
+     * @return the maximum length, or {@code -1} if it is unbounded
+     */
+    @Override
+    public int getMaxLength() {
+        return 0;
+    }
+
+    /**
+     * Returns the property type.
+     *
+     * @return the property type
+     */
+    @Override
+    public Class getType() {
+        return null;
+    }
+
+    /**
+     * Determines if the property is a boolean.
+     *
+     * @return {@code true} if it is a boolean
+     */
+    @Override
+    public boolean isBoolean() {
+        return false;
+    }
+
+    /**
+     * Determines if the property is a string.
+     *
+     * @return {@code true} if it is a string
+     */
+    @Override
+    public boolean isString() {
+        return false;
+    }
+
+    /**
+     * Determines if the property is numeric.
+     *
+     * @return {@code true} if it is numeric
+     */
+    @Override
+    public boolean isNumeric() {
+        return false;
+    }
+
+    /**
+     * Determines if the property is a date.
+     *
+     * @return {@code true} if it is a date
+     */
+    @Override
+    public boolean isDate() {
+        return false;
+    }
+
+    /**
+     * Determines if the property is a money property.
+     *
+     * @return {@code true} it is a money property
+     */
+    @Override
+    public boolean isMoney() {
+        return false;
+    }
+
+    /**
+     * Determines if the property is an object reference.
+     *
+     * @return {@code true} if it is an object reference
+     */
+    @Override
+    public boolean isObjectReference() {
+        return false;
+    }
+
+    /**
+     * Determines if the property is a lookup.
+     *
+     * @return {@code true} if it is a lookup
+     */
+    @Override
+    public boolean isLookup() {
+        return false;
+    }
+
+    /**
+     * Determines if the property is a password.
+     *
+     * @return {@code true} if it is a password
+     */
+    @Override
+    public boolean isPassword() {
+        return false;
+    }
+
+    /**
+     * Determines if the property is a collection.
+     *
+     * @return {@code true} if it is a collection
+     */
+    @Override
+    public boolean isCollection() {
+        return false;
+    }
+
+    /**
+     * Returns the archetype short names that this property may support.
+     * <p/>
+     * Wildcards are expanded.
+     *
+     * @return the archetype short names
+     * @throws ArchetypeServiceException for any error
+     */
+    @Override
+    public String[] getArchetypeRange() {
+        return new String[0];
+    }
+
+    /**
+     * Determines if the property value is derived from an expression.
+     *
+     * @return {@code true} if the value is derived, otherwise {@code false}
+     */
+    @Override
+    public boolean isDerived() {
+        return false;
+    }
+
+    /**
+     * Determines if the property is read-only.
+     *
+     * @return {@code true} if the property is read-only
+     */
+    @Override
+    public boolean isReadOnly() {
+        return false;
+    }
+
+    /**
+     * Determines if the property is hidden.
+     *
+     * @return {@code true} if the property is hidden; otherwise {@code false}
+     */
+    @Override
+    public boolean isHidden() {
+        return false;
+    }
+
+    /**
+     * Determines if the property is required.
+     *
+     * @return {@code true} if the property is required; otherwise
+     * {@code false}
+     */
+    @Override
+    public boolean isRequired() {
+        return false;
+    }
+
+    /**
+     * Determines if the property is empty.
+     *
+     * @return {@code true} if the value is {@code null}, an empty string or collection; otherwise {@code false}
+     */
+    @Override
+    public boolean isEmpty() {
+        boolean result;
+        Object value = getValue();
+        if (value instanceof String) {
+            result = ((String) value).length() == 0;
+        } else if (value instanceof Collection) {
+            result = ((Collection) value).isEmpty();
+        } else {
+            result = value == null;
+        }
+        return result;
+    }
+
+    /**
+     * Returns the property descriptor.
+     *
+     * @return the property descriptor, or {@code null} if the property has no descriptor
+     */
+    @Override
+    public NodeDescriptor getDescriptor() {
+        return null;
     }
 
     /**

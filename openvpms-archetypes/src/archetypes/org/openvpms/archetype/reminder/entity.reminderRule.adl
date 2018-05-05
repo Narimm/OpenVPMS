@@ -1,0 +1,41 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="entity.reminderRule.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.common.Entity" displayName="Reminder Rule">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="1" hidden="true" derived="true"
+              derivedValue="'Reminder Rule'"/>
+        <node name="description" type="java.lang.String" path="/description" minCardinality="0" hidden="true"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" hidden="true"/>
+        <node name="contact" path="/details/contact" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="email" path="/details/email" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="sms" displayName="SMS" path="/details/sms" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="print" path="/details/print" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="list" path="/details/list" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="export" path="/details/export" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="sendTo" path="/details/sendTo" type="java.lang.String" defaultValue="'FIRST'" minCardinality="1">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="FIRST" value="First"/>
+                    <property name="ANY" value="Any"/>
+                    <property name="ALL" value="All"/>
+                </propertyList>
+            </assertion>
+        </node>
+    </archetype>
+</archetypes>

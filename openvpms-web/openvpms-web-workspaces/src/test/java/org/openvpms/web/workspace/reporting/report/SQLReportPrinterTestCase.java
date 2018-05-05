@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.report;
@@ -24,11 +24,15 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.report.DocFormats;
+import org.openvpms.report.ReportFactory;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.doc.DocumentTestHelper;
+import org.openvpms.web.component.im.doc.FileNameFormatter;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,11 +65,15 @@ public class SQLReportPrinterTestCase extends AbstractAppTest {
         Document document = DocumentTestHelper.createDocument("/sqlreport.jrxml");
         DocumentTemplate template = new DocumentTemplate((Entity) create("entity.documentTemplate"),
                                                          getArchetypeService());
-        SQLReportPrinter printer = new SQLReportPrinter(template, document, context);
+        ReportFactory factory = ServiceHelper.getBean(ReportFactory.class);
+        FileNameFormatter formatter = ServiceHelper.getBean(FileNameFormatter.class);
+        DataSource dataSource = ServiceHelper.getBean("reportingDataSource", DataSource.class);
+        SQLReportPrinter printer = new SQLReportPrinter(template, document, context, factory, formatter, dataSource,
+                                                        ServiceHelper.getArchetypeService());
 
         // pass the customer id as a parameter
         Party customer = TestHelper.createCustomer("Foo", "Bar", true);
-        Map<String, Object> parameters = new HashMap<String, Object>();
+        Map<String, Object> parameters = new HashMap<>();
         parameters.put("customerId", customer.getId());
         printer.setParameters(parameters);
 

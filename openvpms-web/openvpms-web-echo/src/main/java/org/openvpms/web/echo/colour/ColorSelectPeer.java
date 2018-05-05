@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.echo.colour;
 
@@ -24,6 +24,7 @@ import nextapp.echo2.extras.app.ColorSelect;
 import nextapp.echo2.extras.webcontainer.ExtrasUtil;
 import nextapp.echo2.webcontainer.ComponentSynchronizePeer;
 import nextapp.echo2.webcontainer.ContainerInstance;
+import nextapp.echo2.webcontainer.FocusSupport;
 import nextapp.echo2.webcontainer.PartialUpdateManager;
 import nextapp.echo2.webcontainer.PartialUpdateParticipant;
 import nextapp.echo2.webcontainer.PropertyUpdateProcessor;
@@ -34,6 +35,7 @@ import nextapp.echo2.webrender.Service;
 import nextapp.echo2.webrender.ServiceRegistry;
 import nextapp.echo2.webrender.WebRenderServlet;
 import nextapp.echo2.webrender.servermessage.DomUpdate;
+import nextapp.echo2.webrender.servermessage.WindowUpdate;
 import nextapp.echo2.webrender.service.JavaScriptService;
 import nextapp.echo2.webrender.service.StaticBinaryService;
 import org.w3c.dom.Element;
@@ -46,10 +48,9 @@ import org.w3c.dom.Element;
  * that corrects the bug:
  * <a href="bugs.nextapp.com/mantis/view.php?id=515">ColorSelect.setColor(Color) fails on subsequent updates</a>
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class ColorSelectPeer implements ComponentSynchronizePeer, PropertyUpdateProcessor {
+public class ColorSelectPeer implements ComponentSynchronizePeer, PropertyUpdateProcessor, FocusSupport {
 
     /**
      * Service to provide supporting JavaScript library.
@@ -161,6 +162,12 @@ public class ColorSelectPeer implements ComponentSynchronizePeer, PropertyUpdate
         renderDisposeDirective(rc, (ColorSelect) component);
     }
 
+    @Override
+    public void renderSetFocus(RenderContext renderContext, Component component) {
+        WindowUpdate.renderSetFocus(renderContext.getServerMessage(),
+                                    ContainerInstance.getElementId(component) + "_input");
+    }
+
     /**
      * Renders a dispose directive.
      *
@@ -195,6 +202,8 @@ public class ColorSelectPeer implements ComponentSynchronizePeer, PropertyUpdate
         Boolean displayValue = (Boolean) colorSelect.getRenderProperty(ColorSelect.PROPERTY_DISPLAY_VALUE);
         if (displayValue != null && !displayValue.booleanValue()) {
             initElement.setAttribute("display-value", "false");
+        } else {
+            initElement.setAttribute("tabindex", Integer.toString(colorSelect.getFocusTraversalIndex()));
         }
         Extent hueWidth = (Extent) colorSelect.getRenderProperty(ColorSelect.PROPERTY_HUE_WIDTH);
         if (hueWidth != null) {

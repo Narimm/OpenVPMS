@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -20,7 +20,6 @@ import echopointng.KeyStrokes;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.macro.MacroDialog;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
@@ -29,11 +28,8 @@ import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.workspace.customer.charge.CustomerChargeDocuments;
 import org.openvpms.web.workspace.customer.charge.UndispensedOrderChecker;
 import org.openvpms.web.workspace.patient.charge.VisitChargeEditor;
-
-import java.util.List;
 
 /**
  * Browser that displays clinical events and their child acts and supports editing them.
@@ -47,9 +43,8 @@ public class VisitEditorDialog extends PopupDialog {
      */
     private final VisitEditor editor;
 
-
     /**
-     * Constructs a {@code VisitEditorDialog}.
+     * Constructs a {@link VisitEditorDialog}.
      *
      * @param title       the dialog title
      * @param visitEditor the visit browser
@@ -206,10 +201,8 @@ public class VisitEditorDialog extends PopupDialog {
      * Any documents added as part of the save that have a template with an IMMEDIATE print mode will be printed.
      */
     private void saveCharge(boolean close) {
-        CustomerChargeDocuments docs = new CustomerChargeDocuments(editor.getChargeEditor(), getHelpContext());
-        List<Act> existing = docs.getUnprinted();
         if (editor.save()) {
-            printNew(docs, existing, close);
+            printNew(close);
         }
     }
 
@@ -303,10 +296,8 @@ public class VisitEditorDialog extends PopupDialog {
      * Marks the invoice COMPLETED and closes the dialog if the operation is successful.
      */
     private void onComplete() {
-        CustomerChargeDocuments docs = new CustomerChargeDocuments(editor.getChargeEditor(), getHelpContext());
-        List<Act> existing = docs.getUnprinted();
         if (editor.saveAsCompleted()) {
-            printNew(docs, existing, true);
+            printNew(true);
         }
     }
 
@@ -314,10 +305,8 @@ public class VisitEditorDialog extends PopupDialog {
      * Marks the invoice IN_PROGRESS, and closes the dialog if the operation is successful.
      */
     private void onInProgress() {
-        CustomerChargeDocuments docs = new CustomerChargeDocuments(editor.getChargeEditor(), getHelpContext());
-        List<Act> existing = docs.getUnprinted();
         if (editor.saveAsInProgress()) {
-            printNew(docs, existing, true);
+            printNew(true);
         }
     }
 
@@ -331,24 +320,25 @@ public class VisitEditorDialog extends PopupDialog {
     /**
      * Prints any new documents set for immediate printing.
      *
-     * @param docs     the documents
-     * @param existing the existing documents
-     * @param close    if {@code true}, close the dialog
+     * @param close if {@code true}, close the dialog
      */
-    private void printNew(CustomerChargeDocuments docs, List<Act> existing, boolean close) {
-        ActionListener printListener = null;
-        if (close) {
-            printListener = new ActionListener() {
-                @Override
-                public void onAction(ActionEvent event) {
-                    VisitEditorDialog.super.onOK();
-                }
-            };
-        }
-        if (!docs.printNew(existing, printListener)) {
+    private void printNew(boolean close) {
+        VisitChargeEditor editor = this.editor.getChargeEditor();
+        if (editor != null) {
+            ActionListener printListener = null;
             if (close) {
-                // nothing to print, so close now
-                super.onOK();
+                printListener = new ActionListener() {
+                    @Override
+                    public void onAction(ActionEvent event) {
+                        VisitEditorDialog.super.onOK();
+                    }
+                };
+            }
+            if (!editor.getUnprintedDocuments().printNew(printListener)) {
+                if (close) {
+                    // nothing to print, so close now
+                    super.onOK();
+                }
             }
         }
     }

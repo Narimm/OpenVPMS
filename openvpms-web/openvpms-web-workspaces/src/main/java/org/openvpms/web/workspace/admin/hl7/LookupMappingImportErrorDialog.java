@@ -55,7 +55,8 @@ public class LookupMappingImportErrorDialog extends ModalDialog {
         PagedIMTable<LookupMapping> table = new PagedIMTable<>(model, resultSet);
         Label message = LabelFactory.create("admin.hl7.mapping.import.error.message");
         getLayout().add(ColumnFactory.create(Styles.LARGE_INSET,
-                                             ColumnFactory.create(Styles.WIDE_CELL_SPACING, message, table)));
+                                             ColumnFactory.create(Styles.WIDE_CELL_SPACING, message,
+                                                                  table.getComponent())));
     }
 
     private static class ErrorTableModel extends AbstractIMTableModel<LookupMapping> {

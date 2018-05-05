@@ -59,7 +59,7 @@
           dateOfBirth="07/09/2006" desexed="False" deceased="False" active="True"/>
     <data id="C3" archetype="party.customerperson" title="LADY" firstName="Judith" initials="J" lastName="Bourke">
         <data collection="contacts" archetype="contact.phoneNumber" areaCode="07" telephoneNumber="34561234"
-              preferred="True"/>
+              preferred="True" sms="true"/>
         <data collection="contacts" archetype="contact.phoneNumber" areaCode="04" telephoneNumber="18976543"
               preferred="False"/>
         <data collection="contacts" archetype="contact.location" address="123 Gilrown Avenue" suburb="KENMORE_4069"

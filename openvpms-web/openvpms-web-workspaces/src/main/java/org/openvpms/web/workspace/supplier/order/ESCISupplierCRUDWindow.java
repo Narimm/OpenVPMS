@@ -40,7 +40,9 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.supplier.SupplierActCRUDWindow;
 import org.quartz.Scheduler;
-import org.quartz.SimpleTrigger;
+import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
+import org.quartz.TriggerKey;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -116,13 +118,14 @@ public class ESCISupplierCRUDWindow extends SupplierActCRUDWindow<FinancialAct> 
             if (!StringUtils.isEmpty(name)) {
                 String triggerName = "ESCIDispatcherAdhocTrigger";
                 Scheduler scheduler = ServiceHelper.getBean(Scheduler.class);
-                scheduler.unscheduleJob(triggerName, null); // remove the existing trigger, if any
-                SimpleTrigger trigger = new SimpleTrigger(triggerName);
-                trigger.setJobName(name);
+                scheduler.unscheduleJob(new TriggerKey(triggerName)); // remove the existing trigger, if any
+
+                TriggerBuilder<Trigger> builder = TriggerBuilder.newTrigger().withIdentity(triggerName);
                 if (delay) {
                     Date in30secs = new Date(System.currentTimeMillis() + 30 * 1000);
-                    trigger.setStartTime(in30secs);
+                    builder.startAt(in30secs);
                 }
+                Trigger trigger = builder.build();
                 scheduler.scheduleJob(trigger);
             }
         } catch (Throwable exception) {

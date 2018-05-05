@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Practice Summary_CountApptTypeClinician" pageWidth="612" pageHeight="792" whenNoDataType="AllSectionsNoDetail" columnWidth="554" leftMargin="0" rightMargin="58" topMargin="0" bottomMargin="0" uuid="c37c4a8a-9a38-4e61-92cf-49d5505110fd">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
+	<parameter name="DateFrom" class="java.util.Date"/>
+	<parameter name="DateTo" class="java.util.Date"/>
+	<queryString language="SQL">
+		<![CDATA[select et.name as apptType,
+(
+select count(distinct pp.entity_id) as patientCount
+from acts a
+join participations pp on pp.act_id = a.act_id and pp.arch_short_name = 'participation.patient'
+where a.arch_short_name = 'act.customerAppointment'
+and a.activity_start_time between $P{DateFrom} and DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
+) as totalPatientCount,
+(
+select count(distinct pc.entity_id) as customerCount
+from acts a
+join participations pc on pc.act_id = a.act_id and pc.arch_short_name = 'participation.customer'
+where a.arch_short_name = 'act.customerAppointment'
+and a.activity_start_time between $P{DateFrom} and DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
+) as totalCustomerCount,
+count(distinct pp.entity_id) as patientCount, 
+count(distinct pc.entity_id) as customerCount, 
+sum(a.status='COMPLETED') as completedCount,
+sum(a.status='CANCELLED') as cancelledCount,
+sum(a.status='PENDING') as pendingCount,
+sum(a.status in('IN_PROGRESS','BILLED','CHECKED_IN')) as progressCount,
+count(*) as apptCount
+#ifnull(ev.name,'--None--') as cl_name,
+#ev.description as cl_descr
+from acts a
+join participations pc on pc.act_id = a.act_id and pc.arch_short_name = 'participation.customer'
+left join participations pp on pp.act_id = a.act_id and pp.arch_short_name = 'participation.patient'
+#left join participations pv on pv.act_id = a.act_id and pv.arch_short_name = 'participation.clinician'
+#left join entities ev on ev.entity_id = pv.entity_id
+left join participations pt on pt.act_id = a.act_id and pt.arch_short_name = 'participation.appointmentType'
+left join entities et on et.entity_id = pt.entity_id
+where a.arch_short_name = 'act.customerAppointment'
+and a.activity_start_time between  $P{DateFrom} and DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
+group by et.entity_id order by et.name]]>
+	</queryString>
+	<field name="apptType" class="java.lang.String"/>
+	<field name="totalPatientCount" class="java.lang.Long"/>
+	<field name="totalCustomerCount" class="java.lang.Long"/>
+	<field name="patientCount" class="java.lang.Long"/>
+	<field name="customerCount" class="java.lang.Long"/>
+	<field name="completedCount" class="java.math.BigDecimal"/>
+	<field name="cancelledCount" class="java.math.BigDecimal"/>
+	<field name="pendingCount" class="java.math.BigDecimal"/>
+	<field name="progressCount" class="java.math.BigDecimal"/>
+	<field name="apptCount" class="java.lang.Long"/>
+	<variable name="SumApptCount" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{apptCount}]]></variableExpression>
+	</variable>
+	<variable name="SumPatientCount" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{patientCount}]]></variableExpression>
+	</variable>
+	<variable name="SumCustomerCount" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{customerCount}]]></variableExpression>
+	</variable>
+	<variable name="SumCompleteCount" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{completedCount}]]></variableExpression>
+	</variable>
+	<variable name="SumCancelledCount" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{cancelledCount}]]></variableExpression>
+	</variable>
+	<variable name="SumPendingCount" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{pendingCount}]]></variableExpression>
+	</variable>
+	<variable name="SumInProgCount" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{progressCount}]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band/>
+	</title>
+	<columnHeader>
+		<band height="48">
+			<staticText>
+				<reportElement x="211" y="19" width="62" height="24" uuid="11474418-c9f9-4524-a87a-7f6c394b89fa"/>
+				<textElement textAlignment="Center">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Distinct
+Patients]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="278" y="18" width="60" height="25" uuid="717d5174-e107-41be-9867-d05c86ba66a9">
+					<property name="local_mesure_unitwidth" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Appoint- ments]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="0" width="237" height="18" uuid="74ed863c-335a-4be2-ac16-834e1c226fb0"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Appointment Counts by Type]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="144" y="19" width="61" height="24" uuid="eb01c655-e0a8-4f4c-95f6-c965af55cf11"/>
+				<textElement textAlignment="Center">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Distinct
+Customers]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="30" width="133" height="13" uuid="fe71104d-fbd5-42cf-997a-b885b9fadc03"/>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Appointment Type]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="338" y="19" width="56" height="24" uuid="5ac2c0cf-0918-4502-a5ba-0bde80adb86b">
+					<property name="local_mesure_unitwidth" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Status
+Complete]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="394" y="19" width="54" height="24" uuid="138f484d-89d4-4324-8fb4-e362f4a1c518">
+					<property name="local_mesure_unitwidth" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Status
+Cancelled]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="451" y="19" width="46" height="24" uuid="62f1707a-8747-4ad6-a2c3-c90e0748a0e1">
+					<property name="local_mesure_unitwidth" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Status
+Pending]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="504" y="19" width="46" height="24" uuid="63e4f2ba-3ed0-41c8-8f6b-a2012e0b4fd4">
+					<property name="local_mesure_unitwidth" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Status
+In Prog.]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="19" splitType="Stretch">
+			<textField>
+				<reportElement x="211" y="0" width="36" height="14" uuid="2bf6c41f-ffca-48ac-bc8c-8b208e79d0f4"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patientCount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="278" y="0" width="36" height="14" uuid="128251fd-09af-4ba7-8fe5-39176e5ac371">
+					<property name="local_mesure_unitwidth" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{apptCount}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="248" y="0" width="25" height="14" uuid="909822f1-e6d2-47cd-9d8c-27e5877c2d53">
+					<property name="local_mesure_unitwidth" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patientCount}.doubleValue()/$F{totalPatientCount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="314" y="0" width="24" height="14" uuid="a0e9887b-fd90-4665-a953-55ec1912bf25">
+					<property name="local_mesure_unitwidth" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{apptCount}.doubleValue()/$V{SumApptCount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="143" y="0" width="36" height="14" uuid="0d49dc9d-d5e0-480b-b334-2200c0447ee9"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{customerCount}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="180" y="0" width="25" height="14" uuid="64820859-1346-4abf-9290-4c833a118406"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patientCount}.doubleValue()/$F{totalPatientCount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="0" width="133" height="14" uuid="27af68dd-950c-4c54-b7bf-c05bdd33efff">
+					<property name="local_mesure_unity" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="px"/>
+				</reportElement>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{apptType}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="363" y="0" width="31" height="14" uuid="63266427-f8a0-4d58-ac17-62506e8ec29e">
+					<property name="local_mesure_unitwidth" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{completedCount}.doubleValue()/$F{apptCount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="415" y="0" width="30" height="14" uuid="39f885bf-d9dc-4c1b-984f-bdf5f16c2e5b">
+					<property name="local_mesure_unitwidth" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{cancelledCount}.doubleValue()/$F{apptCount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="466" y="0" width="31" height="14" uuid="47f23d74-7f99-4364-b43c-51c7b9ada2b8">
+					<property name="local_mesure_unitwidth" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{pendingCount}.doubleValue()/$F{apptCount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="519" y="0" width="31" height="14" uuid="0ce693f4-e096-41d0-8a15-9894601e7f4c">
+					<property name="local_mesure_unitwidth" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{progressCount}.doubleValue()/$V{SumApptCount}.doubleValue()]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="139">
+			<textField>
+				<reportElement x="278" y="3" width="36" height="14" uuid="8ca2d058-5de7-4a70-9cfa-2562c97185f3">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumApptCount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="211" y="3" width="36" height="14" uuid="2e6ef018-e1e5-4737-8332-ffb84f73353a"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumPatientCount}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="3" width="133" height="13" uuid="a01e1973-266f-47e5-b6c9-986a2be78b15"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Totals]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="21" width="133" height="13" uuid="334cb766-a700-4dbf-a211-2e6a139ae6fb"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Total distinct:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="211" y="22" width="36" height="14" uuid="4a72f01a-d291-4a1d-a522-5ae901dc8c8c"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalPatientCount}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="56" width="550" height="76" uuid="592442fd-b79d-4694-8e5a-b97c6cb5580d"/>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[The percentages in the Customers and Patients columns show the ratio of the Type's count to the total number of customers and patients respectively.
+Those in the Appointment Count column show the ratio of the Type's count to the total number of appointments.
+The Status columns show the percentage of appointments with the indicated status. 'In Prog.' includes In Progress, Checked In and Billed.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="32" y="38" width="258" height="18" uuid="7db8c494-5288-4638-babd-667828e0fd83">
+					<printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font size="11" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[No Data Found - Check Parameters]]></text>
+			</staticText>
+			<line>
+				<reportElement positionType="Float" x="-3" y="135" width="550" height="1" uuid="49c673b5-9ab5-449f-9c6c-7a0ae5c9d52b"/>
+				<graphicElement>
+					<pen lineStyle="Double"/>
+				</graphicElement>
+			</line>
+			<textField>
+				<reportElement x="143" y="21" width="36" height="14" uuid="8d0b1b08-96fc-4911-a6a5-48498389a895"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalCustomerCount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="143" y="3" width="36" height="14" uuid="8c83045b-683e-4497-a0fe-ac0190dfca1a"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumPatientCount}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0%">
+				<reportElement x="514" y="3" width="36" height="14" uuid="306bb485-83eb-4df9-a7a2-8615285a0eb2">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumInProgCount}.doubleValue()/$V{SumApptCount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0%">
+				<reportElement x="461" y="3" width="36" height="14" uuid="ebdee00e-8815-4e22-87ee-5b413f8e7fcd">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumPendingCount}.doubleValue()/$V{SumApptCount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0%">
+				<reportElement x="409" y="3" width="36" height="14" uuid="fc258673-fa13-46eb-8ede-d974d6c7b073">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumCancelledCount}.doubleValue()/$V{SumApptCount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0%">
+				<reportElement x="358" y="3" width="36" height="14" uuid="10401a8a-ba7a-4b8a-a72e-e8ccf55c04a7">
+					<property name="com.jaspersoft.studio.unit.width" value="px"/>
+				</reportElement>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumCompleteCount}.doubleValue()/$V{SumApptCount}.doubleValue()]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

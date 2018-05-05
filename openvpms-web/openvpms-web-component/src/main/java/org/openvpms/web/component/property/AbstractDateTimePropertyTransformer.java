@@ -228,8 +228,8 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
                 formatDate = DateFormatter.formatDate(date, false);
                 formatMin = DateFormatter.formatDate(min, false);
             } else {
-                formatDate = DateFormatter.formatDateTime(date, false);
-                formatMin = DateFormatter.formatDateTime(min, false);
+                formatDate = DateFormatter.formatDateTime(date);
+                formatMin = DateFormatter.formatDateTime(min);
             }
             String msg = Messages.format("property.error.minDate", formatDate, formatMin);
             throw new PropertyException(getProperty(), msg);
@@ -241,8 +241,8 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
                 formatDate = DateFormatter.formatDate(date, false);
                 formatMax = DateFormatter.formatDate(max, false);
             } else {
-                formatDate = DateFormatter.formatDateTime(date, false);
-                formatMax = DateFormatter.formatDateTime(max, false);
+                formatDate = DateFormatter.formatDateTime(date);
+                formatMax = DateFormatter.formatDateTime(max);
             }
             String msg = Messages.format("property.error.maxDate", formatDate, formatMax);
             throw new PropertyException(getProperty(), msg);
@@ -260,7 +260,6 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
         return new PropertyException(getProperty(), message, cause);
     }
 
-
     /**
      * Zeroes any seconds (and milliseconds) from the date.
      *
@@ -271,7 +270,7 @@ public abstract class AbstractDateTimePropertyTransformer extends AbstractProper
         long ms = date.getTime();
         long seconds = ms % (60 * 1000);
         if (seconds != 0) {
-            date.setTime(ms - seconds);
+            date = new Date(ms - seconds);
         }
         return date;
     }

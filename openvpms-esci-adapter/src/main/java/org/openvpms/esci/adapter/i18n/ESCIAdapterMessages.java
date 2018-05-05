@@ -11,12 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.i18n;
 
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.i18n.Message;
+import org.openvpms.component.i18n.Messages;
 import org.openvpms.esci.ubl.common.aggregate.DocumentReferenceType;
 
 import java.math.BigDecimal;
@@ -44,8 +46,8 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message ESCINotConfigured(Party supplier, Party stockLocation) {
-        return messages.getMessage(1, supplier.getId(), supplier.getName(), stockLocation.getId(),
-                                   stockLocation.getName());
+        return messages.create(1, supplier.getId(), supplier.getName(), stockLocation.getId(),
+                               stockLocation.getName());
     }
 
     /**
@@ -56,7 +58,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invalidSupplierURL(Party supplier, String serviceURL) {
-        return messages.getMessage(2, supplier.getId(), supplier.getName(), serviceURL);
+        return messages.create(2, supplier.getId(), supplier.getName(), serviceURL);
     }
 
     /**
@@ -66,7 +68,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invalidServiceURL(String serviceURL) {
-        return messages.getMessage(3, serviceURL);
+        return messages.create(3, serviceURL);
     }
 
     /**
@@ -76,7 +78,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message connectionFailed(String serviceURL) {
-        return messages.getMessage(4, serviceURL);
+        return messages.create(4, serviceURL);
     }
 
     /**
@@ -87,7 +89,28 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message connectionFailed(Party supplier, String serviceURL) {
-        return messages.getMessage(5, supplier.getId(), supplier.getName(), serviceURL);
+        return messages.create(5, supplier.getId(), supplier.getName(), serviceURL);
+    }
+
+    /**
+     * Creates a new message when a supplier web service does not respond in time.
+     *
+     * @param serviceURL the service URL
+     * @return a new message
+     */
+    public static Message connectionTimedOut(String serviceURL) {
+        return messages.create(6, serviceURL);
+    }
+
+    /**
+     * Creates a new message when a supplier web service does not respond in time.
+     *
+     * @param supplier   the supplier
+     * @param serviceURL the service URL
+     * @return a new message
+     */
+    public static Message connectionTimedOut(Party supplier, String serviceURL) {
+        return messages.create(7, supplier.getId(), supplier.getName(), serviceURL);
     }
 
     /**
@@ -99,7 +122,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message ublElementRequired(String path, String parent, String id) {
-        return messages.getMessage(100, path, parent, id);
+        return messages.create(100, path, parent, id);
     }
 
     /**
@@ -114,7 +137,7 @@ public class ESCIAdapterMessages {
      */
     public static Message ublInvalidCardinality(String path, String parent, String id, String expected,
                                                 int actual) {
-        return messages.getMessage(101, path, parent, id, expected, actual);
+        return messages.create(101, path, parent, id, expected, actual);
     }
 
     /**
@@ -127,7 +150,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message ublInvalidIdentifier(String path, String parent, String parentId, String value) {
-        return messages.getMessage(102, path, parent, parentId, value);
+        return messages.create(102, path, parent, parentId, value);
     }
 
     /**
@@ -142,7 +165,7 @@ public class ESCIAdapterMessages {
      */
     public static Message ublInvalidValue(String path, String parent, String parentId, String expected,
                                           String actual) {
-        return messages.getMessage(103, path, parent, parentId, expected, actual);
+        return messages.create(103, path, parent, parentId, expected, actual);
     }
 
     /**
@@ -155,7 +178,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invalidAmount(String path, String parent, String parentId, BigDecimal amount) {
-        return messages.getMessage(104, path, parent, parentId, amount);
+        return messages.create(104, path, parent, parentId, amount);
     }
 
     /**
@@ -170,7 +193,7 @@ public class ESCIAdapterMessages {
      */
     public static Message invalidCurrency(String path, String parent, String parentId, String expected,
                                           String actual) {
-        return messages.getMessage(105, path, parent, parentId, expected, actual);
+        return messages.create(105, path, parent, parentId, expected, actual);
     }
 
     /**
@@ -183,7 +206,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invalidQuantity(String path, String parent, String parentId, BigDecimal quantity) {
-        return messages.getMessage(106, path, parent, parentId, quantity);
+        return messages.create(106, path, parent, parentId, quantity);
     }
 
     /**
@@ -196,7 +219,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invalidSupplier(String path, String parent, String parentId, String supplierId) {
-        return messages.getMessage(107, path, parent, parentId, supplierId);
+        return messages.create(107, path, parent, parentId, supplierId);
     }
 
     /**
@@ -208,7 +231,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invalidOrder(String parent, String parentId, String orderId) {
-        return messages.getMessage(108, parent, parentId, orderId);
+        return messages.create(108, parent, parentId, orderId);
     }
 
     /**
@@ -223,8 +246,8 @@ public class ESCIAdapterMessages {
      */
     public static Message supplierMismatch(String path, String parent, String parentId, Party expectedSupplier,
                                            Party actualSupplier) {
-        return messages.getMessage(109, path, parent, parentId, expectedSupplier.getId(), expectedSupplier.getName(),
-                                   actualSupplier.getId(), actualSupplier.getName());
+        return messages.create(109, path, parent, parentId, expectedSupplier.getId(), expectedSupplier.getName(),
+                               actualSupplier.getId(), actualSupplier.getName());
     }
 
     /**
@@ -239,7 +262,7 @@ public class ESCIAdapterMessages {
      */
     public static Message invalidTaxSchemeAndCategory(String path, String parent, String id, String schemeId,
                                                       String categoryId) {
-        return messages.getMessage(110, path, parent, id, schemeId, categoryId);
+        return messages.create(110, path, parent, id, schemeId, categoryId);
     }
 
     /**
@@ -252,7 +275,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message noCustomerOrAdditionalAccountId(String path, String parent, String id) {
-        return messages.getMessage(111, path, parent, id);
+        return messages.create(111, path, parent, id);
     }
 
     /**
@@ -265,7 +288,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message noCustomerOrSupplierAccountId(String path, String parent, String id) {
-        return messages.getMessage(112, path, parent, id);
+        return messages.create(112, path, parent, id);
     }
 
     /**
@@ -278,7 +301,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invalidStockLocation(String path, String parent, String id, String stockLocationId) {
-        return messages.getMessage(113, path, parent, id, stockLocationId);
+        return messages.create(113, path, parent, id, stockLocationId);
     }
 
     /**
@@ -293,9 +316,9 @@ public class ESCIAdapterMessages {
      */
     public static Message stockLocationMismatch(String path, String parent, String parentId,
                                                 Party expectedStockLocation, Party actualStockLocation) {
-        return messages.getMessage(114, path, parent, parentId, expectedStockLocation.getId(),
-                                   expectedStockLocation.getName(), actualStockLocation.getId(),
-                                   actualStockLocation.getName());
+        return messages.create(114, path, parent, parentId, expectedStockLocation.getId(),
+                               expectedStockLocation.getName(), actualStockLocation.getId(),
+                               actualStockLocation.getName());
     }
 
     /**
@@ -305,7 +328,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message amountTooManyDecimalPlaces(BigDecimal amount) {
-        return messages.getMessage(115, amount);
+        return messages.create(115, amount);
     }
 
     /**
@@ -315,7 +338,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message quantityTooManyDecimalPlaces(BigDecimal quantity) {
-        return messages.getMessage(116, quantity);
+        return messages.create(116, quantity);
     }
 
     /**
@@ -326,7 +349,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message duplicateOrder(long id, Party supplier) {
-        return messages.getMessage(200, id, supplier.getId(), supplier.getName());
+        return messages.create(200, id, supplier.getId(), supplier.getName());
     }
 
     /**
@@ -337,7 +360,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message noSupplierOrderCode(Party supplier, Product product) {
-        return messages.getMessage(300, supplier.getId(), supplier.getName(), product.getId(), product.getName());
+        return messages.create(300, supplier.getId(), supplier.getName(), product.getId(), product.getName());
     }
 
     /**
@@ -347,7 +370,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message noPracticeLocationForStockLocation(Party stockLocation) {
-        return messages.getMessage(301, stockLocation.getId(), stockLocation.getName());
+        return messages.create(301, stockLocation.getId(), stockLocation.getName());
     }
 
     /**
@@ -356,7 +379,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message orderAccepted() {
-        return messages.getMessage(400);
+        return messages.create(400);
     }
 
     /**
@@ -366,7 +389,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message orderRejected(String reason) {
-        return messages.getMessage(401, reason);
+        return messages.create(401, reason);
     }
 
     /**
@@ -375,7 +398,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message orderRejectedNoReason() {
-        return messages.getMessage(402);
+        return messages.create(402);
     }
 
     /**
@@ -386,7 +409,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message duplicateOrderResponse(long orderId, String responseId) {
-        return messages.getMessage(403, orderId, responseId);
+        return messages.create(403, orderId, responseId);
     }
 
     /**
@@ -400,8 +423,8 @@ public class ESCIAdapterMessages {
      */
     public static Message failedToProcessOrderResponse(String responseId, Party supplier, Party stockLocation,
                                                        String reason) {
-        return messages.getMessage(500, responseId, supplier.getId(), supplier.getName(), stockLocation.getId(),
-                                   stockLocation.getName(), reason);
+        return messages.create(500, responseId, supplier.getId(), supplier.getName(), stockLocation.getId(),
+                               stockLocation.getName(), reason);
     }
 
     /**
@@ -411,7 +434,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invoiceNoProduct(String invoiceLineId) {
-        return messages.getMessage(601, invoiceLineId);
+        return messages.create(601, invoiceLineId);
     }
 
     /**
@@ -424,7 +447,7 @@ public class ESCIAdapterMessages {
      */
     public static Message invoiceInvalidPayableAmount(String invoiceId, BigDecimal payableAmount,
                                                       BigDecimal calculated) {
-        return messages.getMessage(602, invoiceId, payableAmount, calculated);
+        return messages.create(602, invoiceId, payableAmount, calculated);
     }
 
     /**
@@ -437,7 +460,7 @@ public class ESCIAdapterMessages {
      */
     public static Message invoiceInvalidLineExtensionAmount(String invoiceId, BigDecimal lineExtensionAmount,
                                                             BigDecimal calculated) {
-        return messages.getMessage(603, invoiceId, lineExtensionAmount, calculated);
+        return messages.create(603, invoiceId, lineExtensionAmount, calculated);
     }
 
     /**
@@ -449,7 +472,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invoiceInvalidTax(String invoiceId, BigDecimal tax, BigDecimal calculated) {
-        return messages.getMessage(604, invoiceId, tax, calculated);
+        return messages.create(604, invoiceId, tax, calculated);
     }
 
     /**
@@ -462,7 +485,7 @@ public class ESCIAdapterMessages {
      */
     public static Message invoiceLineInvalidLineExtensionAmount(String invoiceLineId, BigDecimal lineExtensionAmount,
                                                                 BigDecimal calculated) {
-        return messages.getMessage(605, invoiceLineId, lineExtensionAmount, calculated);
+        return messages.create(605, invoiceLineId, lineExtensionAmount, calculated);
     }
 
     /**
@@ -473,7 +496,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invoiceInvalidOrderItem(String invoiceLineId, String orderId) {
-        return messages.getMessage(606, invoiceLineId, orderId);
+        return messages.create(606, invoiceLineId, orderId);
     }
 
     /**
@@ -483,7 +506,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message invoiceAllowanceNotSupported(String invoiceId) {
-        return messages.getMessage(607, invoiceId);
+        return messages.create(607, invoiceId);
     }
 
     /**
@@ -496,7 +519,7 @@ public class ESCIAdapterMessages {
      */
     public static Message invoiceInvalidChargeTotal(String invoiceId, BigDecimal chargeTotalAmount,
                                                     BigDecimal calculated) {
-        return messages.getMessage(608, invoiceId, chargeTotalAmount, calculated);
+        return messages.create(608, invoiceId, chargeTotalAmount, calculated);
     }
 
     /**
@@ -507,7 +530,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message duplicateInvoice(String invoiceId, long deliveryId) {
-        return messages.getMessage(609, invoiceId, deliveryId);
+        return messages.create(609, invoiceId, deliveryId);
     }
 
     /**
@@ -518,7 +541,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message duplicateInvoiceForOrder(String invoiceId, long orderId) {
-        return messages.getMessage(610, invoiceId, orderId);
+        return messages.create(610, invoiceId, orderId);
     }
 
     /**
@@ -531,7 +554,7 @@ public class ESCIAdapterMessages {
      */
     public static Message invoiceInvalidTaxExclusiveAmount(String invoiceId, BigDecimal taxExclusiveAmount,
                                                            BigDecimal calculated) {
-        return messages.getMessage(611, invoiceId, taxExclusiveAmount, calculated);
+        return messages.create(611, invoiceId, taxExclusiveAmount, calculated);
     }
 
     /**
@@ -544,8 +567,8 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message failedToProcessInvoice(String invoiceId, Party supplier, Party stockLocation, String reason) {
-        return messages.getMessage(700, invoiceId, supplier.getId(), supplier.getName(), stockLocation.getId(),
-                                   stockLocation.getName(), reason);
+        return messages.create(700, invoiceId, supplier.getId(), supplier.getName(), stockLocation.getId(),
+                               stockLocation.getName(), reason);
     }
 
     /**
@@ -561,7 +584,7 @@ public class ESCIAdapterMessages {
         String id = (reference.getID()) != null ? reference.getID().getValue() : null;
         String docType = (reference.getDocumentType()) != null ? reference.getDocumentType().getValue() : null;
         String clazz = (content != null) ? content.getClass().getName() : null;
-        return messages.getMessage(800, supplier.getId(), supplier.getName(), id, docType, clazz);
+        return messages.create(800, supplier.getId(), supplier.getName(), id, docType, clazz);
     }
 
     /**
@@ -574,7 +597,7 @@ public class ESCIAdapterMessages {
     public static Message documentNotFound(Party supplier, DocumentReferenceType reference) {
         String id = (reference.getID()) != null ? reference.getID().getValue() : null;
         String docType = (reference.getDocumentType()) != null ? reference.getDocumentType().getValue() : null;
-        return messages.getMessage(801, supplier.getId(), supplier.getName(), id, docType);
+        return messages.create(801, supplier.getId(), supplier.getName(), id, docType);
     }
 
     /**
@@ -587,7 +610,7 @@ public class ESCIAdapterMessages {
     public static Message failedToAcknowledgeDocument(Party supplier, DocumentReferenceType reference) {
         String id = (reference.getID()) != null ? reference.getID().getValue() : null;
         String docType = (reference.getDocumentType()) != null ? reference.getDocumentType().getValue() : null;
-        return messages.getMessage(802, supplier.getId(), supplier.getName(), id, docType);
+        return messages.create(802, supplier.getId(), supplier.getName(), id, docType);
     }
 
     /**
@@ -596,7 +619,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message orderInvoiced() {
-        return messages.getMessage(900);
+        return messages.create(900);
     }
 
     /**
@@ -608,7 +631,7 @@ public class ESCIAdapterMessages {
      * @return a new message
      */
     public static Message failedToProcessInbox(Party supplier, Party stockLocation, String reason) {
-        return messages.getMessage(1000, supplier.getId(), supplier.getName(), stockLocation.getId(),
-                                   stockLocation.getName(), reason);
+        return messages.create(1000, supplier.getId(), supplier.getName(), stockLocation.getId(),
+                               stockLocation.getName(), reason);
     }
 }

@@ -11,37 +11,45 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
+import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.party.CustomerRules;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.ContextApplicationInstance;
+import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.query.ResultSetIterator;
 import org.openvpms.web.component.im.sms.SMSDialog;
 import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.MailDialog;
+import org.openvpms.web.component.mail.MailDialogFactory;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -49,13 +57,17 @@ import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.alert.Alert;
 import org.openvpms.web.workspace.alert.AlertSummary;
-import org.openvpms.web.workspace.customer.note.CustomerAlertQuery;
+import org.openvpms.web.workspace.customer.communication.CommunicationArchetypes;
+import org.openvpms.web.workspace.customer.communication.CustomerAlertQuery;
 import org.openvpms.web.workspace.summary.PartySummary;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -79,49 +91,40 @@ public class CustomerSummary extends PartySummary {
 
 
     /**
-     * Constructs a {@code CustomerSummary}.
+     * Constructs a {@link CustomerSummary}.
      *
-     * @param context the context
-     * @param help    the help context
+     * @param context     the context
+     * @param help        the help context
+     * @param preferences the preferences
      */
-    public CustomerSummary(Context context, HelpContext help) {
-        super(context, help.topic("customer/summary"));
+    public CustomerSummary(Context context, HelpContext help, Preferences preferences) {
+        super(context, help.topic("customer/summary"), preferences);
         partyRules = ServiceHelper.getBean(CustomerRules.class);
         accountRules = ServiceHelper.getBean(CustomerAccountRules.class);
     }
 
     /**
      * Returns summary information for a party.
-     * <p/>
+     * <p>
      * The summary includes any alerts.
      *
      * @param party the party
      * @return a summary component
      */
+    @Override
     protected Component createSummary(Party party) {
         Component column = ColumnFactory.create();
-        IMObjectReferenceViewer customerName = new IMObjectReferenceViewer(party.getObjectReference(),
-                                                                           party.getName(), true, getContext());
-        customerName.setStyleName("hyperlink-bold");
-        column.add(RowFactory.create("Inset.Small", customerName.getComponent()));
-        Label customerId = createLabel("customer.id", party.getId());
-        column.add(RowFactory.create("Inset.Small", customerId));
-        Label phone = LabelFactory.create();
-        phone.setText(partyRules.getTelephone(party, true));
-        column.add(RowFactory.create("Inset.Small", phone));
+        Component customerName = getCustomerName(party);
+        column.add(ColumnFactory.create(Styles.SMALL_INSET, customerName));
+        Component customerId = getCustomerId(party);
+        column.add(ColumnFactory.create(Styles.SMALL_INSET, customerId));
+        Component phone = getCustomerPhone(party);
+        column.add(ColumnFactory.create(Styles.SMALL_INSET, phone));
 
         Contact email = ContactHelper.getPreferredEmail(party);
-        if (email != null) {
-            column.add(RowFactory.create("Inset.Small", getEmail(email)));
-        }
+        column.add(ColumnFactory.create(Styles.SMALL_INSET, getEmail(email)));
         final Context context = getContext();
-        Party practice = context.getPractice();
-        boolean accountSummary = true;
-        if (practice != null) {
-            IMObjectBean bean = new IMObjectBean(practice);
-            accountSummary = bean.getBoolean("showCustomerAccountSummary");
-        }
-        if (accountSummary) {
+        if (getPreferences().getBoolean(PreferenceArchetypes.SUMMARY, "showCustomerAccount", true)) {
             Label balanceTitle = create("customer.account.balance");
             BigDecimal balance = accountRules.getBalance(party);
             Label balanceValue = create(balance);
@@ -151,10 +154,10 @@ public class CustomerSummary extends PartySummary {
         }
         AlertSummary alerts = getAlertSummary(party);
         if (alerts != null) {
-            column.add(ColumnFactory.create("Inset.Small", alerts.getComponent()));
+            column.add(ColumnFactory.create(Styles.SMALL_INSET, alerts.getComponent()));
         }
         Column result = ColumnFactory.create("PartySummary", column);
-        if (SMSHelper.isSMSEnabled(practice)) {
+        if (SMSHelper.isSMSEnabled(context.getPractice())) {
             final List<Contact> contacts = ContactHelper.getSMSContacts(party);
             if (!contacts.isEmpty()) {
                 Context local = new LocalContext(context);
@@ -165,10 +168,80 @@ public class CustomerSummary extends PartySummary {
                         dialog.show();
                     }
                 });
-                result.add(RowFactory.create("Inset.Small", button));
+                result.add(RowFactory.create(Styles.SMALL_INSET, button));
             }
         }
 
+        return result;
+    }
+
+    /**
+     * Returns a component representing the customer name.
+     *
+     * @param customer the customer
+     * @return the customer name component
+     */
+    protected Component getCustomerName(Party customer) {
+        IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(customer.getObjectReference(),
+                                                                     customer.getName(), true, getContext());
+        viewer.setStyleName("hyperlink-bold");
+        return viewer.getComponent();
+    }
+
+    /**
+     * Returns a component representing the customer identifier.
+     *
+     * @param customer the customer
+     * @return the customer identifier component
+     */
+    protected Component getCustomerId(final Party customer) {
+        Component customerId = createLabel("customer.id", customer.getId());
+        Button communication = ButtonFactory.create(null, "button.communication", new ActionListener() {
+            public void onAction(ActionEvent event) {
+                ContextApplicationInstance instance = ContextApplicationInstance.getInstance();
+                ContextHelper.setCustomer(instance.getContext(), customer);
+                instance.switchTo(CommunicationArchetypes.ACTS);
+            }
+        });
+        Row right = RowFactory.create(communication);
+
+        RowLayoutData rightLayout = new RowLayoutData();
+        rightLayout.setAlignment(Alignment.ALIGN_RIGHT);
+        rightLayout.setWidth(Styles.FULL_WIDTH);
+        right.setLayoutData(rightLayout);
+
+        return RowFactory.create(Styles.WIDE_CELL_SPACING, customerId, right);
+    }
+
+    /**
+     * Returns a component representing the customer phone contact.
+     *
+     * @param customer the customer
+     * @return the customer identifier component
+     */
+    protected Label getCustomerPhone(Party customer) {
+        Label phone = LabelFactory.create();
+        phone.setText(partyRules.getTelephone(customer, true));
+        return phone;
+    }
+
+    /**
+     * Returns the alerts for a party.
+     *
+     * @param party the party
+     * @return the party's alerts
+     */
+    @Override
+    protected List<Alert> getAlerts(Party party) {
+        List<Alert> result = queryAlerts(party);
+        Lookup accountTypeLookup = partyRules.getAccountType(party);
+        if (accountTypeLookup != null) {
+            AccountType accountType = new AccountType(accountTypeLookup);
+            Lookup alertLookup = accountType.getAlert();
+            if (alertLookup != null) {
+                result.add(new Alert(alertLookup));
+            }
+        }
         return result;
     }
 
@@ -178,14 +251,15 @@ public class CustomerSummary extends PartySummary {
      * @param party the party
      * @return the party's alerts
      */
-    protected List<Alert> getAlerts(Party party) {
-        List<Alert> result = queryAlerts(party);
-        Lookup accountTypeLookup = partyRules.getAccountType(party);
-        if (accountTypeLookup != null) {
-            AccountType accountType = new AccountType(accountTypeLookup);
-            Lookup alertLookup = accountType.getAlert();
-            if (alertLookup != null) {
-                result.add(new Alert(alertLookup));
+    protected List<Alert> queryAlerts(Party party) {
+        List<Alert> result = new ArrayList<>();
+        ResultSet<Act> set = createAlertsResultSet(party, 20);
+        ResultSetIterator<Act> iterator = new ResultSetIterator<>(set);
+        while (iterator.hasNext()) {
+            Act act = iterator.next();
+            Lookup lookup = ServiceHelper.getLookupService().getLookup(act, "alertType");
+            if (lookup != null) {
+                result.add(new Alert(lookup, act));
             }
         }
         return result;
@@ -206,8 +280,10 @@ public class CustomerSummary extends PartySummary {
 
     /**
      * Returns a button to launch an {@link MailDialog} for a customer.
+     * <p/>
+     * If the customer has no email address, displays 'No email', but still allows emails to be sent.
      *
-     * @param email the preferred email
+     * @param email the preferred email. May be {@code null}
      * @return a new button to launch the dialog
      */
     private Component getEmail(final Contact email) {
@@ -216,11 +292,13 @@ public class CustomerSummary extends PartySummary {
                 Context context = getContext();
                 HelpContext help = getHelpContext().topic("customer/email");
                 MailContext mailContext = new CustomerMailContext(context, help);
-                MailDialog dialog = new MailDialog(mailContext, email, new DefaultLayoutContext(context, help));
+                MailDialogFactory factory = ServiceHelper.getBean(MailDialogFactory.class);
+                MailDialog dialog = factory.create(mailContext, email, new DefaultLayoutContext(context, help));
                 dialog.show();
             }
         });
-        mail.setText(ContactHelper.getEmail(email));
+        String address = (email != null) ? ContactHelper.getEmail(email) : Messages.get("customer.email.none");
+        mail.setText(address);
         return mail;
     }
 

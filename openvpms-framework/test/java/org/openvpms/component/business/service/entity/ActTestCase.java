@@ -1,27 +1,25 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.entity;
 
 import org.apache.commons.lang.StringUtils;
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -29,10 +27,17 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
+import org.openvpms.component.model.object.Relationship;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 /**
  * Test the entity service with acts
@@ -132,7 +137,7 @@ public class ActTestCase extends AbstractArchetypeServiceTest {
         act1.addSourceActRelationship(createActRelationship(act1, act2));
         save(act1);
         act1 = (Act) get(act1.getObjectReference());
-        for (ActRelationship theRel : act1.getSourceActRelationships()) {
+        for (Relationship theRel : act1.getSourceActRelationships()) {
             act2 = (Act) get(theRel.getTarget());
         }
         save(act2);
@@ -220,6 +225,41 @@ public class ActTestCase extends AbstractArchetypeServiceTest {
         assertNotNull(tmp);
         assertFalse(StringUtils.isEmpty(rel.getName()));
         assertFalse(StringUtils.isEmpty(rel.getDescription()));
+    }
+
+    @Test
+    public void testIdentities() {
+        Act act = createAct("act");
+        act.addIdentity(createIdentity("12345"));
+        save(act);
+
+        act = get(act);
+        assertNotNull(act);
+        assertEquals(1, act.getIdentities().size());
+
+        org.openvpms.component.model.act.ActIdentity identity = act.getIdentities().iterator().next();
+        assertEquals("12345", identity.getIdentity());
+
+        act.removeIdentity(identity);
+        save(act);
+
+        act = get(act);
+        assertNotNull(act);
+        assertEquals(0, act.getIdentities().size());
+
+        assertNull(get(identity));
+    }
+
+    /**
+     * Creates an act identity.
+     *
+     * @param id the id
+     * @return a new identity
+     */
+    private ActIdentity createIdentity(String id) {
+        ActIdentity result = (ActIdentity) create("actIdentity.reference");
+        result.setIdentity(id);
+        return result;
     }
 
     /**

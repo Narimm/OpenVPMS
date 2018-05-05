@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -51,6 +51,18 @@ class ScheduleDocumentTemplateQuery extends DocumentTemplateQuery {
     private final Entity workList;
 
     /**
+     * Constructs a {@link ScheduleDocumentTemplateQuery}.
+     *
+     * @param schedule the schedule. May be {@code null}
+     * @param workList the work list. May be {@code null}
+     */
+    public ScheduleDocumentTemplateQuery(Entity schedule, Entity workList) {
+        this.schedule = (schedule == null || useAllTemplates(schedule)) ? null : schedule;
+        this.workList = (workList == null || useAllTemplates(workList)) ? null : workList;
+        setTypes(PatientArchetypes.DOCUMENT_FORM, PatientArchetypes.DOCUMENT_LETTER);
+    }
+
+    /**
      * Determines if a schedule uses all patient forms and letters, or those directly associated with it via
      * its templates node.
      * <p/>
@@ -59,7 +71,7 @@ class ScheduleDocumentTemplateQuery extends DocumentTemplateQuery {
      *
      * @param schedule the schedule. An <em>party.organisationSchedule</em> or <em>party.organisationWorkList</em>.
      * @return {@code true} if the schedule uses all patient forms and letters, {@code false} if it uses those linked
-     *         via its "templates" node
+     * via its "templates" node
      */
     public static boolean useAllTemplates(Entity schedule) {
         IMObjectBean bean = new IMObjectBean(schedule);
@@ -71,26 +83,27 @@ class ScheduleDocumentTemplateQuery extends DocumentTemplateQuery {
     }
 
     /**
-     * Constructs a {@link ScheduleDocumentTemplateQuery}.
+     * Returns the schedule.
      *
-     * @param schedule the schedule. May be {@code null}
-     * @param workList the work list. May be {@code null}
+     * @return the schedule, or {@code null} if  all templates are being used
      */
-    public ScheduleDocumentTemplateQuery(Entity schedule, Entity workList) {
-        if ((schedule != null && useAllTemplates(schedule)) || (workList != null && useAllTemplates(workList))) {
-            this.schedule = null;
-            this.workList = null;
-        } else {
-            this.schedule = schedule;
-            this.workList = workList;
-        }
-        setTypes(PatientArchetypes.DOCUMENT_FORM, PatientArchetypes.DOCUMENT_LETTER);
+    public Entity getSchedule() {
+        return schedule;
+    }
+
+    /**
+     * Returns the work list.
+     *
+     * @return the work list, or {@code null} if  all templates are being used
+     */
+    public Entity getWorkList() {
+        return workList;
     }
 
     /**
      * Creates the result set.
      *
-     * @param sort the sort criteria. May be <tt>null</tt>
+     * @param sort the sort criteria. May be {@code null}
      * @return a new result set
      */
     @Override
@@ -120,8 +133,8 @@ class ScheduleDocumentTemplateQuery extends DocumentTemplateQuery {
 
             private ExistsConstraint createExists(Entity entity, String alias) {
                 String relAlias = alias + "r";
-                return exists(subQuery(entity.getArchetypeId().getShortName(), alias)
-                                      .add(join("templates", relAlias).add(idEq("t", relAlias + ".target"))));
+                return exists(subQuery(entity, alias).add(join("templates", relAlias)
+                                                                  .add(idEq("t", relAlias + ".target"))));
             }
         };
     }

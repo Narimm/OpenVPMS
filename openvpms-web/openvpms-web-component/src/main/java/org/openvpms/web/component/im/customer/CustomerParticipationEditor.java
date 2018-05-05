@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.customer;
@@ -23,7 +23,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
-import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -48,19 +47,17 @@ public class CustomerParticipationEditor extends ParticipationEditor<Party> {
 
 
     /**
-     * Constructs a {@code CustomerParticipationEditor}.
+     * Constructs a {@link CustomerParticipationEditor}.
      *
      * @param participation the object to edit
      * @param parent        the parent object
      * @param layout        the layout context. May be {@code null}
      */
-    public CustomerParticipationEditor(Participation participation,
-                                       Act parent, LayoutContext layout) {
+    public CustomerParticipationEditor(Participation participation, Act parent, LayoutContext layout) {
         super(participation, parent, layout);
         if (!TypeHelper.isA(participation, "participation.customer")) {
-            throw new IllegalArgumentException(
-                "Invalid participation type:"
-                + participation.getArchetypeId().getShortName());
+            throw new IllegalArgumentException("Invalid participation type:"
+                                               + participation.getArchetypeId().getShortName());
         }
         Context context = getLayoutContext().getContext();
         IMObjectReference customerRef = participation.getEntity();
@@ -78,9 +75,9 @@ public class CustomerParticipationEditor extends ParticipationEditor<Party> {
 
     /**
      * Associates a patient participation editor with this.
-     * <p/>
+     * <p>
      * If non-null, the patient will be updated if it is selected in the customer browser.
-     * <p/>
+     * <p>
      * The patient participation editor's
      * {@link PatientParticipationEditor#setCustomerParticipationEditor setCustomerParticipationEditor} method will be
      * invoked, passing this instance.
@@ -102,16 +99,10 @@ public class CustomerParticipationEditor extends ParticipationEditor<Party> {
      */
     @Override
     protected IMObjectReferenceEditor<Party> createEntityEditor(
-        Property property) {
+            Property property) {
         LayoutContext context = getLayoutContext();
         LayoutContext subContext = new DefaultLayoutContext(context, context.getHelpContext().topic("customer"));
-        return new AbstractIMObjectReferenceEditor<Party>(property, getParent(), subContext, true) {
-
-            @Override
-            public boolean setObject(Party object) {
-                ContextHelper.setCustomer(getLayoutContext().getContext(), object);
-                return super.setObject(object);
-            }
+        return new CustomerReferenceEditor(property, getParent(), subContext, true) {
 
             /**
              * Invoked when an object is selected from a browser.

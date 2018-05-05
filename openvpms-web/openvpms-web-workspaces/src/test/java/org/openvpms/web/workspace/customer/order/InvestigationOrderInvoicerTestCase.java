@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.order;
@@ -34,7 +34,6 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -306,8 +305,8 @@ public class InvestigationOrderInvoicerTestCase extends AbstractCustomerChargeAc
     private Act getInvestigation(TestChargeEditor editor) {
         List<Act> acts = editor.getItems().getCurrentActs();
         assertEquals(1, acts.size());
-        IMObjectEditor itemEditor = editor.getItems().getEditor(acts.get(0));
-        List<Act> investigations = ((CustomerChargeActItemEditor) itemEditor).getInvestigations();
+        CustomerChargeActItemEditor itemEditor = editor.getItems().getEditor(acts.get(0));
+        List<Act> investigations = itemEditor.getInvestigations();
         assertEquals(1, investigations.size());
         return investigations.get(0);
     }

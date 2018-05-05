@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.hl7;
@@ -25,10 +25,10 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.lookup.LookupRelationship;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -190,7 +190,8 @@ public class LookupMappingImporterTestCase extends AbstractLookupMappingTest {
     private LookupMappings load(String[][] data) throws IOException {
         Document document = createCSV(data);
         LookupMappingImporter importer = new LookupMappingImporter(getArchetypeService(), getLookupService(),
-                                                                   new DocumentHandlers(), SEPARATOR);
+                                                                   new DocumentHandlers(getArchetypeService()),
+                                                                   SEPARATOR);
         return importer.load(document);
     }
 
@@ -242,7 +243,7 @@ public class LookupMappingImporterTestCase extends AbstractLookupMappingTest {
         }
         csv.close();
 
-        DocumentHandlers handlers = new DocumentHandlers();
+        DocumentHandlers handlers = new DocumentHandlers(getArchetypeService());
         DocumentHandler handler = handlers.get("Dummy.csv", AbstractCSVReader.MIME_TYPE);
         return handler.create("Dummy.csv", new ByteArrayInputStream(writer.toString().getBytes("UTF-8")),
                               AbstractCSVReader.MIME_TYPE, -1);

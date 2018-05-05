@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.investigation;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.DefaultContextSwitchListener;
@@ -44,15 +45,22 @@ import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 public class InvestigationsWorkspace extends ResultSetCRUDWorkspace<Act> {
 
     /**
+     * User preferences.
+     */
+    private final Preferences preferences;
+
+    /**
      * Constructs an {@link InvestigationsWorkspace}.
      *
      * @param context     the context
      * @param mailContext the mail context
+     * @param preferences user preferences
      */
-    public InvestigationsWorkspace(Context context, MailContext mailContext) {
-        super("workflow", "investigation", context);
+    public InvestigationsWorkspace(Context context, MailContext mailContext, Preferences preferences) {
+        super("workflow.investigation", context);
         setArchetypes(Archetypes.create(InvestigationArchetypes.PATIENT_INVESTIGATION, Act.class));
         setMailContext(mailContext);
+        this.preferences = preferences;
     }
 
     /**
@@ -65,7 +73,8 @@ public class InvestigationsWorkspace extends ResultSetCRUDWorkspace<Act> {
         CRUDWindow<Act> window = getCRUDWindow();
         if (window != null) {
             CustomerPatientSummaryFactory factory = ServiceHelper.getBean(CustomerPatientSummaryFactory.class);
-            CustomerPatientSummary summary = factory.createCustomerPatientSummary(getContext(), getHelpContext());
+            CustomerPatientSummary summary = factory.createCustomerPatientSummary(getContext(), getHelpContext(),
+                                                                                  preferences);
             return summary.getSummary(window.getObject());
         }
         return null;

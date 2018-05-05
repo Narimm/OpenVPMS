@@ -1,31 +1,29 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper.lookup;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.archetype.AssertionDescriptor;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -52,8 +50,7 @@ import java.util.Collections;
  * &lt;/node&gt;
  * </pre>
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class TargetLookup extends AbstractLookupAssertion {
 
@@ -74,21 +71,18 @@ class TargetLookup extends AbstractLookupAssertion {
 
 
     /**
-     * Constructs a new <tt>TargetLookup</tt>.
+     * Constructs a {@link TargetLookup}.
      *
      * @param descriptor    the assertion descriptor
      * @param service       the archetype service
      * @param lookupService the lookup service
      */
-    public TargetLookup(AssertionDescriptor descriptor,
-                        IArchetypeService service,
-                        ILookupService lookupService) {
+    public TargetLookup(AssertionDescriptor descriptor, IArchetypeService service, ILookupService lookupService) {
         super(descriptor, TYPE, service, lookupService);
         relationship = getProperty("relationship");
         value = getProperty("value");
         if (StringUtils.isEmpty(relationship) || StringUtils.isEmpty(value)) {
-            throw new LookupHelperException(
-                    LookupHelperException.ErrorCode.InvalidTargetLookupSpec);
+            throw new LookupHelperException(LookupHelperException.ErrorCode.InvalidTargetLookupSpec);
         }
     }
 
@@ -113,8 +107,7 @@ class TargetLookup extends AbstractLookupAssertion {
         Collection<Lookup> lookups;
         Lookup lookup = getSourceLookup(context);
         if (lookup != null) {
-            lookups = getLookupService().getTargetLookups(lookup,
-                                                          relationship);
+            lookups = getLookupService().getTargetLookups(lookup, relationship);
         } else {
             lookups = Collections.emptyList();
         }
@@ -125,8 +118,7 @@ class TargetLookup extends AbstractLookupAssertion {
      * Returns the lookup with the specified code.
      *
      * @param context the context
-     * @return the lookup matching <tt>code</tt>, or <tt>null</tt> if
-     *         none is found
+     * @return the lookup matching {@code code}, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
@@ -134,8 +126,7 @@ class TargetLookup extends AbstractLookupAssertion {
         Lookup result = null;
         Lookup source = getSourceLookup(context);
         if (source != null) {
-            Collection<Lookup> lookups
-                    = getLookupService().getTargetLookups(source, relationship);
+            Collection<Lookup> lookups = getLookupService().getTargetLookups(source, relationship);
             for (Lookup lookup : lookups) {
                 if (code.equals(lookup.getCode())) {
                     result = lookup;
@@ -149,9 +140,8 @@ class TargetLookup extends AbstractLookupAssertion {
     /**
      * Returns the name of the lookup with the specified code.
      *
-     * @param context the context. May be <tt>null</tt>
-     * @return the name of the lookup matching <tt>code</tt>, or
-     *         <tt>null</tt> if none is found
+     * @param context the context. May be {@code null}
+     * @return the name of the lookup matching {@code code}, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
@@ -164,7 +154,7 @@ class TargetLookup extends AbstractLookupAssertion {
      * Returns the source lookup.
      *
      * @param context the context
-     * @return the source lookup, or <tt>null</tt> if none can be found
+     * @return the source lookup, or {@code null} if none can be found
      */
     private Lookup getSourceLookup(IMObject context) {
         return getLookup(context, value, relationship, "source");

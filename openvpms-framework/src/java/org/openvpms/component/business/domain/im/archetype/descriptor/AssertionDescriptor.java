@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -36,7 +34,8 @@ import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
  * @version $LastChangedDate$
  */
-public class AssertionDescriptor extends Descriptor {
+public class AssertionDescriptor extends Descriptor
+        implements org.openvpms.component.model.archetype.AssertionDescriptor {
 
     /**
      * Serialization version ID.
@@ -115,7 +114,7 @@ public class AssertionDescriptor extends Descriptor {
      *
      * @param property the property to add
      */
-    public void addProperty(NamedProperty property) {
+    public void addProperty(org.openvpms.component.model.archetype.NamedProperty property) {
         propertyMap.getProperties().put(property.getName(), property);
     }
 
@@ -124,7 +123,7 @@ public class AssertionDescriptor extends Descriptor {
      *
      * @param property the property to remove
      */
-    public void removeProperty(NamedProperty property) {
+    public void removeProperty(org.openvpms.component.model.archetype.NamedProperty property) {
         propertyMap.getProperties().remove(property.getName());
     }
 
@@ -143,7 +142,7 @@ public class AssertionDescriptor extends Descriptor {
      * @param name the property name
      * @return the named property, or <tt>null</tt> if none is found
      */
-    public NamedProperty getProperty(String name) {
+    public org.openvpms.component.model.archetype.NamedProperty getProperty(String name) {
         return propertyMap.getProperties().get(name);
     }
 
@@ -249,12 +248,13 @@ public class AssertionDescriptor extends Descriptor {
      * @return <tt>true</tt> if the value is valid, otherwise <tt>false</tt>
      * @throws AssertionException if the assertion cannot be evaluated
      */
-    public boolean validate(Object value, IMObject parent, NodeDescriptor node) {
+    public boolean validate(Object value, org.openvpms.component.model.object.IMObject parent,
+                            org.openvpms.component.model.archetype.NodeDescriptor node) {
         if (descriptor == null) {
             throw new AssertionException(AssertionException.ErrorCode.NoAssertionTypeSpecified,
                                          new Object[]{this.getName(), node.getName()});
         }
-        return descriptor.validate(value, parent, node, this);
+        return descriptor.validate(value, (IMObject) parent, (NodeDescriptor) node, this);
     }
 
     /**

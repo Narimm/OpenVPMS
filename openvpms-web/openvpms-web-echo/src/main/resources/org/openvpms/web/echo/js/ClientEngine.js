@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 /*
@@ -454,11 +454,20 @@ EchoAsyncMonitor = {
     timeoutId: null,
 
     /**
+     * Flag to indicate if the user has been active since the last connect
+     * See OVPMS-1847
+     */
+    activeSession: false,
+
+    /**
      * Initiates an HTTP request to the asynchronous monitor poll service to
      * determine if the server has the need to update the client.
      */
     connect: function () {
-        var conn = new EchoHttpConnection(EchoClientEngine.baseServerUri + EchoAsyncMonitor.pollServiceRequest, "GET");
+        var uri = EchoClientEngine.baseServerUri + EchoAsyncMonitor.pollServiceRequest + "&active=" +
+                  EchoAsyncMonitor.activeSession;
+        EchoAsyncMonitor.activeSession = false;
+        var conn = new EchoHttpConnection(uri, "GET");
         conn.responseHandler = EchoAsyncMonitor.responseHandler;
         conn.invalidResponseHandler = EchoAsyncMonitor.invalidResponseHandler;
         conn.connect();
@@ -513,6 +522,13 @@ EchoAsyncMonitor = {
             // Server does not require synchronization: restart countdown to next poll request.
             EchoAsyncMonitor.start();
         }
+    },
+
+    /**
+     * Flags the session as active.
+     */
+    active: function () {
+        EchoAsyncMonitor.activeSession = true;
     }
 };
 
@@ -1051,6 +1067,7 @@ EchoClientMessage = {
         }
         messagePartElement.appendChild(actionElement);
 
+        EchoAsyncMonitor.active(); // flag the session as active. See OVPMS-1939
         EchoDebugManager.updateClientMessage();
 
         return actionElement;
@@ -3441,8 +3458,9 @@ EchoServerTransaction = {
         if (EchoClientProperties.get("quirkSafariUnescapedXHR")) {
             EchoDomUtil.fixSafariEscaping(EchoClientMessage.messageDocument);
         }
-        var conn = new EchoHttpConnection(EchoClientEngine.baseServerUri + EchoServerTransaction.synchronizeServiceRequest,
-                                          "POST", EchoClientMessage.messageDocument, "text/xml");
+        var uri = EchoClientEngine.baseServerUri + EchoServerTransaction.synchronizeServiceRequest
+                  + "&active=" + EchoAsyncMonitor.activeSession;
+        var conn = new EchoHttpConnection(uri, "POST", EchoClientMessage.messageDocument, "text/xml");
         conn.responseHandler = EchoServerTransaction.responseHandler;
         conn.invalidResponseHandler = EchoServerTransaction.invalidResponseHandler;
         EchoServerTransaction.active = true;

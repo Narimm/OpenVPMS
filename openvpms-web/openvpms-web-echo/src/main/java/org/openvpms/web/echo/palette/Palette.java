@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.palette;
@@ -45,20 +43,24 @@ import java.util.List;
  * displayed in a 'selected' list box. Items are moved from one to the other
  * using a pair of buttons.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class Palette<T> extends Row {
 
     /**
+     * The set of all items.
+     */
+    private final List<T> items;
+
+    /**
      * The set of unselected items.
      */
-    private final List<T> unselected;
+    private final List<T> unselected = new ArrayList<>();
 
     /**
      * The set of selected items.
      */
-    private final List<T> selected;
+    private final List<T> selected = new ArrayList<>();
 
     /**
      * The unselected item list box.
@@ -82,7 +84,7 @@ public class Palette<T> extends Row {
 
 
     /**
-     * Construct a new <code>Palette</code>,
+     * Constructs a {@link Palette}.
      *
      * @param items    all items that may be selected
      * @param selected the selected items
@@ -90,10 +92,8 @@ public class Palette<T> extends Row {
     @SuppressWarnings("unchecked")
     public Palette(List<T> items, List<T> selected) {
         setStyleName("Palette");
-        this.selected = selected;
-        sort(selected);
-        unselected = (List<T>) ListUtils.subtract(items, selected);
-        sort(unselected);
+        this.items = items;
+        setSelected(selected);
 
         doLayout();
     }
@@ -123,6 +123,15 @@ public class Palette<T> extends Row {
     }
 
     /**
+     * Returns all items available for selection.
+     *
+     * @return the items
+     */
+    public List<T> getItems() {
+        return items;
+    }
+
+    /**
      * Lay out the component.
      */
     protected void doLayout() {
@@ -148,16 +157,34 @@ public class Palette<T> extends Row {
                 onRemove();
             }
         });
-        Label available = LabelFactory.create("available", "Palette.ListLabel");
-        Label selected = LabelFactory.create("selected", "Palette.ListLabel");
-        Column left = ColumnFactory.create("Palette.ListColumn", available,
-                                           unselectedList);
+        Label available = createAvailableLabel();
+        Label selected = createSelectedLabel();
+        Column left = ColumnFactory.create("Palette.ListColumn", available, unselectedList);
         Column middle = ColumnFactory.create("ControlColumn", add, remove);
-        Column right = ColumnFactory.create("Palette.ListColumn", selected,
-                                            selectedList);
+        Column right = ColumnFactory.create("Palette.ListColumn", selected, selectedList);
         add(left);
         add(middle);
         add(right);
+    }
+
+    /**
+     * Sets the selected items.
+     *
+     * @param list the selected items
+     */
+    @SuppressWarnings("unchecked")
+    protected void setSelected(List<T> list) {
+        selected.clear();
+        selected.addAll(list);
+        unselected.clear();
+        unselected.addAll((List<T>) ListUtils.subtract(items, selected));
+        sort(selected);
+        sort(unselected);
+
+        if (selectedList != null && unselectedList != null) {
+            selectedList.setModel(new DefaultListModel(selected.toArray()));
+            unselectedList.setModel(new DefaultListModel(unselected.toArray()));
+        }
     }
 
     /**
@@ -228,19 +255,46 @@ public class Palette<T> extends Row {
 
     /**
      * Sorts a list.
-     * <p/>
+     * <p>
      * This implementation is a no-op
      *
      * @param values the list to sort
      */
-    @SuppressWarnings("unused")
     protected void sort(List<T> values) {
 
     }
 
+    /**
+     * Creates a label for the 'available' column.
+     *
+     * @return a new label
+     */
+    protected Label createAvailableLabel() {
+        return createLabel("label.available");
+    }
+
+    /**
+     * Creates a label for the 'selected' column.
+     *
+     * @return a new label
+     */
+    protected Label createSelectedLabel() {
+        return createLabel("label.selected");
+    }
+
+    /**
+     * Creates a new column label.
+     *
+     * @param key the resource bundle key
+     * @return a new label
+     */
+    protected Label createLabel(String key) {
+        return LabelFactory.create(key, "Palette.ListLabel");
+    }
+
     @SuppressWarnings("unchecked")
     private List<T> getValues(ListModel model) {
-        List<T> result = new ArrayList<T>();
+        List<T> result = new ArrayList<>();
         for (int i = 0; i < model.size(); ++i) {
             result.add((T) model.get(i));
         }

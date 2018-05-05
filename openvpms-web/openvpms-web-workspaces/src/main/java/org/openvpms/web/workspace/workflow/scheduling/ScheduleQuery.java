@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -31,7 +31,6 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -46,6 +45,16 @@ public abstract class ScheduleQuery {
      * The schedules.
      */
     private final Schedules schedules;
+
+    /**
+     * The available views.
+     */
+    private final List<Entity> views;
+
+    /**
+     * The default schedule view.
+     */
+    private final Entity defaultView;
 
     /**
      * The schedule selector.
@@ -84,6 +93,8 @@ public abstract class ScheduleQuery {
      */
     public ScheduleQuery(Schedules schedules) {
         this.schedules = schedules;
+        views = schedules.getScheduleViews();
+        defaultView = schedules.getDefaultScheduleView(views);
     }
 
     /**
@@ -116,11 +127,10 @@ public abstract class ScheduleQuery {
      * @param view the schedule view
      */
     public void setScheduleView(Entity view) {
-        if (viewField == null || !ObjectUtils.equals(viewField.getSelectedItem(), view)) {
-            getComponent();
+        getComponent();
+        if (!ObjectUtils.equals(viewField.getSelectedItem(), view)) {
             viewField.setSelectedItem(view);
-            viewSchedules = null;
-            updateScheduleField();
+            updateViewSchedules();
         }
     }
 
@@ -155,7 +165,7 @@ public abstract class ScheduleQuery {
      */
     public List<Entity> getSelectedSchedules() {
         Entity schedule = getSchedule();
-        return (schedule != null) ? Arrays.asList(schedule) : getViewSchedules();
+        return (schedule != null) ? Collections.singletonList(schedule) : getViewSchedules();
     }
 
     /**
@@ -238,14 +248,30 @@ public abstract class ScheduleQuery {
     }
 
     /**
+     * Invoked when the schedule view changes.
+     * <p/>
+     * Notifies any listener to perform a query.
+     */
+    protected void onViewChanged() {
+        updateViewSchedules();
+        onQuery();
+    }
+
+    /**
+     * Invoked to update the view schedules.
+     */
+    protected void updateViewSchedules() {
+        viewSchedules = null;
+        updateScheduleField();
+    }
+
+    /**
      * Creates a new field to select a schedule view.
      *
      * @return a new select field
      */
     private SelectField createScheduleViewField() {
         SelectField result;
-        List<Entity> views = schedules.getScheduleViews();
-        Entity defaultView = schedules.getDefaultScheduleView();
         IMObjectListModel model = new IMObjectListModel(views, false, false);
         result = SelectFieldFactory.create(model);
         result.setCellRenderer(IMObjectListCellRenderer.NAME);
@@ -266,8 +292,18 @@ public abstract class ScheduleQuery {
      * @return a new select field
      */
     private SelectField createScheduleField() {
-        IMObjectListModel model = createScheduleModel();
+        List<Entity> viewSchedules = getViewSchedules();
+        IMObjectListModel model = createScheduleModel(viewSchedules);
         SelectField result = SelectFieldFactory.create(model);
+        if (defaultView != null && defaultView.equals(getScheduleView())) {
+            Entity schedule = schedules.getDefaultSchedule(defaultView, viewSchedules);
+            if (schedule != null) {
+                result.setSelectedItem(schedule);
+            } else {
+                result.setSelectedIndex(model.getAllIndex());
+            }
+        }
+
         result.setCellRenderer(IMObjectListCellRenderer.NAME);
         result.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
@@ -292,18 +328,17 @@ public abstract class ScheduleQuery {
      * @return a new schedule model
      */
     private IMObjectListModel createScheduleModel() {
-        List<Entity> schedules = getViewSchedules();
-        return new IMObjectListModel(schedules, true, false);
+        return createScheduleModel(getViewSchedules());
     }
 
     /**
-     * Invoked when the schedule view changes.
-     * <p/>
-     * Notifies any listener to perform a query.
+     * Creates a model containing the schedules.
+     *
+     * @param schedules the schedules
+     * @return a new schedule model
      */
-    protected void onViewChanged() {
-        viewSchedules = null;
-        updateScheduleField();
-        onQuery();
+    private IMObjectListModel createScheduleModel(List<Entity> schedules) {
+        return new IMObjectListModel(schedules, true, false);
     }
+
 }

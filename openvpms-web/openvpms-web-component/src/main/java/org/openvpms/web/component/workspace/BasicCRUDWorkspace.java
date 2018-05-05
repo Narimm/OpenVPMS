@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -35,50 +35,44 @@ import org.openvpms.web.resource.i18n.Messages;
  *
  * @author Tim Anderson
  */
-public abstract class BasicCRUDWorkspace<T extends IMObject>
-        extends AbstractCRUDWorkspace<T, T> {
+public abstract class BasicCRUDWorkspace<T extends IMObject> extends AbstractCRUDWorkspace<T, T> {
 
     /**
-     * Constructs a{@code BasicCRUDWorkspace}, with a selector for  the object.
+     * Constructs a {@link BasicCRUDWorkspace}, with a selector for  the object.
      * <p/>
      * The {@link #setArchetypes} method must be invoked to set the archetypes
      * that the workspace supports, before performing any operations.
      *
-     * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId  the workspace localisation identifier
-     * @param context      the context
+     * @param id      the workspace id
+     * @param context the context
      */
-    public BasicCRUDWorkspace(String workspacesId, String workspaceId, Context context) {
-        this(workspacesId, workspaceId, null, context);
+    public BasicCRUDWorkspace(String id, Context context) {
+        this(id, null, context);
     }
 
     /**
-     * Constructs a new {@code BasicCRUDWorkspace}, with a selector for
-     * the object.
+     * Constructs a {@link BasicCRUDWorkspace}, with a selector for the object.
      *
-     * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId  the workspace localisation identifier
-     * @param archetypes   the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
-     *                     method must be invoked to set a non-null value before performing any operation
-     * @param context      the context
+     * @param id         the workspace id
+     * @param archetypes the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
+     *                   method must be invoked to set a non-null value before performing any operation
+     * @param context    the context
      */
-    public BasicCRUDWorkspace(String workspacesId, String workspaceId, Archetypes<T> archetypes, Context context) {
-        super(workspacesId, workspaceId, archetypes, archetypes, context);
+    public BasicCRUDWorkspace(String id, Archetypes<T> archetypes, Context context) {
+        super(id, archetypes, archetypes, context);
     }
 
     /**
-     * Constructs a {@code BasicCRUDWorkspace}.
+     * Constructs a {@link BasicCRUDWorkspace}.
      *
-     * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId  the workspace localisation identifier
+     * @param id           the workspace id
      * @param archetypes   the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
      *                     method must be invoked to set a non-null value before performing any operation
      * @param context      the context
      * @param showSelector if {@code true}, show a selector to select the object
      */
-    public BasicCRUDWorkspace(String workspacesId, String workspaceId, Archetypes<T> archetypes, Context context,
-                              boolean showSelector) {
-        super(workspacesId, workspaceId, archetypes, archetypes, context, showSelector);
+    public BasicCRUDWorkspace(String id, Archetypes<T> archetypes, Context context, boolean showSelector) {
+        super(id, archetypes, archetypes, context, showSelector);
     }
 
     /**
@@ -104,7 +98,7 @@ public abstract class BasicCRUDWorkspace<T extends IMObject>
     @Override
     protected BrowserDialog<T> createBrowserDialog(Browser<T> browser, HelpContext help) {
         String title = Messages.format("imobject.select.title", getArchetypes().getDisplayName());
-        return new BrowserDialog<T>(title, browser, true, help);
+        return new BrowserDialog<>(title, browser, true, help);
     }
 
     /**

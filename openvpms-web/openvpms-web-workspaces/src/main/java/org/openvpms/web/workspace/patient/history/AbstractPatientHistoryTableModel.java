@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -37,33 +37,42 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
+import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.CachingReadOnlyArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.system.common.cache.IMObjectCache;
 import org.openvpms.component.system.common.cache.LRUIMObjectCache;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.AbstractIMObjectTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
+import org.openvpms.web.component.im.view.IMObjectViewerDialog;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.util.StyleSheetHelper;
+import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.ComponentFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
@@ -76,7 +85,7 @@ import java.util.Map;
 
 /**
  * Base class for tables displaying summaries of patient medical history.
- * <p/>
+ * <p>
  * NOTE: this should ideally rendered using using TableLayoutDataEx row spanning but for a bug in TableEx that prevents
  * events on buttons when row selection is enabled in Firefox.
  * See http://forum.nextapp.com/forum/index.php?showtopic=4114 for details
@@ -107,16 +116,6 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     private final LayoutContext context;
 
     /**
-     * The selected parent act row.
-     */
-    private int selectedParent;
-
-    /**
-     * A map of jxpath expressions, keyed on archetype short name, used to format the text column.
-     */
-    private Map<String, String> expressions = new HashMap<String, String>();
-
-    /**
      * The patient rules.
      */
     private final PatientRules patientRules;
@@ -124,7 +123,12 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     /**
      * Determines if the clinician is shown in history items.
      */
-    private boolean showClinician;
+    private final boolean showClinician;
+
+    /**
+     * Determines if product batches are shown in history items.
+     */
+    private final boolean showBatches;
 
     /**
      * The archetype service.
@@ -132,10 +136,30 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     private final IArchetypeService service;
 
     /**
+     * The jxpath function library.
+     */
+    private final FunctionLibrary functions;
+
+    /**
+     * The object cache, used during rendering.
+     */
+    private final IMObjectCache cache;
+
+    /**
+     * The selected parent act row.
+     */
+    private int selectedParent;
+
+    /**
+     * A map of jxpath expressions, keyed on archetype short name, used to format the text column.
+     */
+    private Map<String, String> expressions = new HashMap<>();
+
+    /**
      * Cache of clinician names. This is refreshed each time the table is rendered to ensure the data doesn't
      * become stale.
      */
-    private Map<Long, String> clinicianNames = new HashMap<Long, String>();
+    private Map<Long, String> clinicianNames = new HashMap<>();
 
     /**
      * The padding, in pixels, used to indent the Type.
@@ -153,14 +177,9 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     private int clinicianWidth = -1;
 
     /**
-     * The jxpath function library.
+     * Listener to view a batch.
      */
-    private final FunctionLibrary functions;
-
-    /**
-     * The object cache, used during rendering.
-     */
-    private final IMObjectCache cache;
+    private ContextSwitchListener batchViewer;
 
     /**
      * Default fixed column width, in pixels.
@@ -203,16 +222,14 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
         model.addColumn(new TableColumn(SUMMARY_COLUMN));
         model.addColumn(new TableColumn(SPACER_COLUMN));
         setTableColumnModel(model);
-        Party practice = context.getContext().getPractice();
-        if (practice != null) {
-            IMObjectBean bean = new IMObjectBean(practice);
-            showClinician = bean.getBoolean("showClinicianInHistoryItems");
-        }
+        Preferences preferences = context.getPreferences();
+        showClinician = preferences.getBoolean(PreferenceArchetypes.HISTORY, "showClinician", false);
+        showBatches = preferences.getBoolean(PreferenceArchetypes.HISTORY, "showBatches", false);
         ArchetypeFunctionsFactory factory = ServiceHelper.getBean(ArchetypeFunctionsFactory.class);
         IArchetypeService archetypeService = ServiceHelper.getArchetypeService();
         cache = new LRUIMObjectCache(cacheSize, archetypeService);
         service = new CachingReadOnlyArchetypeService(cache, archetypeService);
-        functions = factory.create(service);
+        functions = factory.create(service, true);
         initStyles();
     }
 
@@ -305,6 +322,24 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
             act = acts.get(--index);
         }
         return (found) ? act : null;
+    }
+
+    /**
+     * Determines if the clinician is being displayed.
+     *
+     * @return {@code true} if the clinician is being displayed
+     */
+    public boolean showClinician() {
+        return showClinician;
+    }
+
+    /**
+     * Determines if product batches are being displayed.
+     *
+     * @return {@code true} if the batches are being displayed
+     */
+    public boolean showBatches() {
+        return showBatches;
     }
 
     /**
@@ -486,7 +521,9 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * @return a component representing the item
      */
     protected Component formatItem(ActBean bean) {
-        if (bean.isA("act.patientInvestigation*") || bean.isA("act.patientDocument*")) {
+        if (bean.isA(PatientArchetypes.PATIENT_MEDICATION)) {
+            return getMedicationDetail(bean, showBatches);
+        } else if (bean.isA("act.patientInvestigation*") || bean.isA("act.patientDocument*")) {
             return getDocumentDetail((DocumentAct) bean.getAct());
         }
         return getTextDetail(bean.getAct());
@@ -494,7 +531,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
 
     /**
      * Returns a component for the act type.
-     * <p/>
+     * <p>
      * This indents the type depending on the act's depth in the act hierarchy.
      *
      * @param bean the act
@@ -543,7 +580,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
 
     /**
      * Returns the depth of an act relative to an event or problem.
-     * <p/>
+     * <p>
      * This is used to inset child acts.
      *
      * @param bean the act
@@ -551,7 +588,8 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      */
     protected int getDepth(ActBean bean) {
         int depth = 0;
-        if (bean.isA("act.patientDocument*Version")) {
+        if (bean.isA("act.patientDocument*Version")
+            || bean.isA(InvestigationArchetypes.PATIENT_INVESTIGATION_VERSION)) {
             ++depth;
         }
         if (bean.hasNode("problem") && !bean.getNodeSourceObjectRefs("problem").isEmpty()) {
@@ -591,7 +629,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
 
     /**
      * Returns the clinician name associated with an act.
-     * <p/>
+     * <p>
      * This caches clinician names for the duration of a single table render, to improve performance.
      *
      * @param bean the act
@@ -614,6 +652,73 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
             clinician = Messages.get("patient.record.summary.clinician.none");
         }
         return clinician;
+    }
+
+    /**
+     * Returns a component for the detail of an <em>act.patientMedication</em>.
+     *
+     * @param bean        the act bean
+     * @param showBatches if (@code true}, include any batch number
+     */
+    protected Component getMedicationDetail(ActBean bean, boolean showBatches) {
+        Component component = getTextDetail(bean.getAct());
+        if (showBatches) {
+            component = addBatch(bean, component);
+        }
+        return component;
+    }
+
+    /**
+     * Adds a batch to the medication display, if one is present.
+     *
+     * @param bean       the act bean
+     * @param medication the medication component
+     * @return the medication and batch, if one is present, otherwise just the medication
+     */
+    protected Component addBatch(ActBean bean, Component medication) {
+        Component result;
+        if (showBatches) {
+            Component batch = getBatch(bean);
+            if (batch != null) {
+                result = ColumnFactory.create(Styles.CELL_SPACING, medication, batch);
+            } else {
+                result = medication;
+            }
+        } else {
+            result = medication;
+        }
+        return result;
+    }
+
+    /**
+     * Returns a component representing a medication batch, if it has one.
+     *
+     * @param bean the medication act bean
+     * @return the batch component, or {@code null} if the medication has no batch
+     */
+    protected Component getBatch(ActBean bean) {
+        Component result = null;
+        IMObjectReference reference = bean.getNodeParticipantRef("batch");
+        if (reference != null) {
+            if (batchViewer == null) {
+                batchViewer = new ContextSwitchListener() {
+                    @Override
+                    public void switchTo(IMObject object) {
+                        onShowBatch(object);
+                    }
+
+                    @Override
+                    public void switchTo(String shortName) {
+
+                    }
+                };
+            }
+            IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(reference, batchViewer,
+                                                                         getContext().getContext());
+            result = RowFactory.create(Styles.CELL_SPACING, LabelFactory.create("patient.record.summary.batch"),
+                                       viewer.getComponent());
+        }
+        return result;
     }
 
     /**
@@ -645,7 +750,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * @return a new component
      */
     protected Label getTextDetail(Act act) {
-        String text = getText(act);
+        String text = getText(act, true);
         return getTextDetail(text);
     }
 
@@ -671,12 +776,15 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
 
     /**
      * Returns the act detail as a string.
-     * If a jxpath expression is registered, this will be evaluated, otherwise the act description will be used.
+     * <p>
+     * If a jxpath expression is registered, this will be evaluated. If not, and {@code useDescription} is {@code true}
+     * the act description will be used.
      *
-     * @param act the act
+     * @param act            the act
+     * @param useDescription if {@code true}, fall back to the act description if there is no expression registered
      * @return the text. May be {@code null}
      */
-    protected String getText(Act act) {
+    protected String getText(Act act, boolean useDescription) {
         String text = null;
         String shortName = act.getArchetypeId().getShortName();
         String expr = getExpression(shortName);
@@ -691,7 +799,7 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
                 log.error(exception, exception);
                 text = exception.getMessage();
             }
-        } else {
+        } else if (useDescription) {
             text = act.getDescription();
         }
         return text;
@@ -733,6 +841,28 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     }
 
     /**
+     * Returns an empty component styled to the same width as a date.
+     *
+     * @return a new component
+     */
+    protected Component getDateSpacer() {
+        LabelEx result = new LabelEx("");
+        result.setStyleName("MedicalRecordSummary.date");
+        return result;
+    }
+
+    /**
+     * Displays a batch in a popup.
+     *
+     * @param object the batch
+     */
+    private void onShowBatch(IMObject object) {
+        HelpContext help = context.getHelpContext().topic(object, "view");
+        IMObjectViewerDialog dialog = new IMObjectViewerDialog(object, context.getContext(), help);
+        dialog.show();
+    }
+
+    /**
      * Helper to return the jxpath expression for an archetype short name.
      *
      * @param shortName the archetype short name
@@ -761,24 +891,23 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
      * @return a component to represent the date
      */
     private Component getDate(Act act, int row) {
-        LabelEx date;
+        Component date;
         boolean showDate = true;
+        Date startTime = act.getActivityStartTime();
         if (row > 0) {
             Act prev = getObject(row - 1);
             if (!TypeHelper.isA(prev, parentShortName)
-                && ObjectUtils.equals(DateRules.getDate(act.getActivityStartTime()),
-                                      DateRules.getDate(prev.getActivityStartTime()))) {
-                // act belongs to the same parent act as the prior row,
-                // and has the same date, so don't display it again
+                && ObjectUtils.equals(DateRules.getDate(startTime), DateRules.getDate(prev.getActivityStartTime()))) {
+                // act belongs to the same parent act as the prior row, and has the same date, so don't display it again
                 showDate = false;
             }
         }
         if (showDate) {
             date = new LabelEx(DateFormatter.formatDate(act.getActivityStartTime(), false));
+            date.setStyleName("MedicalRecordSummary.date");
         } else {
-            date = new LabelEx("");
+            date = getDateSpacer();
         }
-        date.setStyleName("MedicalRecordSummary.date");
         return date;
     }
 

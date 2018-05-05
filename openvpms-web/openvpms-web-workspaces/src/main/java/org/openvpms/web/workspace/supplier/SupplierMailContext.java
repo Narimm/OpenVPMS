@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier;
@@ -23,10 +23,9 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextMailContext;
 import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.BrowserFactory;
+import org.openvpms.web.component.im.query.MultiSelectBrowser;
+import org.openvpms.web.component.im.query.MultiSelectTableBrowser;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.mail.AttachmentBrowserFactory;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.supplier.document.SupplierDocumentQuery;
@@ -50,17 +49,15 @@ public class SupplierMailContext extends ContextMailContext {
      */
     public SupplierMailContext(Context context, final HelpContext help) {
         super(context);
-        setAttachmentBrowserFactory(new AttachmentBrowserFactory() {
-            public Browser<Act> createBrowser(MailContext context) {
-                Browser<Act> browser = null;
-                Party supplier = getContext().getSupplier();
-                if (supplier != null) {
-                    Query<Act> query = new SupplierDocumentQuery<Act>(supplier);
-                    DefaultLayoutContext layout = new DefaultLayoutContext(getContext(), help);
-                    browser = BrowserFactory.create(query, layout);
-                }
-                return browser;
+        setAttachmentBrowserFactory(mailContext -> {
+            MultiSelectBrowser<Act> browser = null;
+            Party supplier = getContext().getSupplier();
+            if (supplier != null) {
+                Query<Act> query = new SupplierDocumentQuery<>(supplier);
+                DefaultLayoutContext layout = new DefaultLayoutContext(getContext(), help);
+                browser = new MultiSelectTableBrowser<>(query, layout);
             }
+            return browser;
         });
     }
 

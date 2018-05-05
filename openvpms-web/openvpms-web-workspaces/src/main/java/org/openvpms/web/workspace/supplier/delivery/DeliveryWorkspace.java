@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.delivery;
@@ -21,8 +21,8 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.workspace.BrowserCRUDWorkspace;
 import org.openvpms.web.component.workspace.CRUDWindow;
+import org.openvpms.web.component.workspace.QueryBrowserCRUDWorkspace;
 import org.openvpms.web.workspace.supplier.SupplierMailContext;
 
 
@@ -32,15 +32,15 @@ import org.openvpms.web.workspace.supplier.SupplierMailContext;
  * @author Tim Anderson
  */
 public class DeliveryWorkspace
-    extends BrowserCRUDWorkspace<FinancialAct, FinancialAct> {
+    extends QueryBrowserCRUDWorkspace<FinancialAct, FinancialAct> {
 
     /**
-     * Constructs a {@code DeliveryWorkspace}.
+     * Constructs a {@link DeliveryWorkspace}.
      *
      * @param context the context
      */
     public DeliveryWorkspace(Context context) {
-        super("supplier", "delivery", context, false);
+        super("supplier.delivery", context, false);
         setArchetypes(FinancialAct.class, "act.supplierDelivery", "act.supplierReturn");
         setChildArchetypes(getArchetypes());
         setMailContext(new SupplierMailContext(context, getHelpContext()));

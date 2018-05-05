@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 /*
@@ -132,6 +132,24 @@ ExtrasColorSelect = Core.extend({
                                             var componentId = EchoDomUtil.getComponentId(echoEvent.registeredTarget.id);
                                             var colorSelect = ExtrasColorSelect.getComponent(componentId);
                                             colorSelect.processSVMouseUp(echoEvent);
+                                        },
+
+                                        processBlur: function (echoEvent) {
+                                            var componentId = EchoDomUtil.getComponentId(echoEvent.registeredTarget.id);
+                                            var colorSelect = ExtrasColorSelect.getComponent(componentId);
+                                            colorSelect.processBlur(echoEvent);
+                                        },
+
+                                        processFocus: function (echoEvent) {
+                                            var componentId = EchoDomUtil.getComponentId(echoEvent.registeredTarget.id);
+                                            var colorSelect = ExtrasColorSelect.getComponent(componentId);
+                                            colorSelect.processFocus(echoEvent);
+                                        },
+
+                                        processKeyPress: function (echoEvent) {
+                                            var componentId = EchoDomUtil.getComponentId(echoEvent.registeredTarget.id);
+                                            var colorSelect = ExtrasColorSelect.getComponent(componentId);
+                                            colorSelect.processKeyPress(echoEvent);
                                         }
                                     },
 
@@ -332,8 +350,24 @@ ExtrasColorSelect = Core.extend({
                                         colorDivElement.style.borderWidth = "1px";
                                         colorDivElement.style.fontFamily = "monospace";
                                         colorDivElement.style.textAlign = "center";
+                                        var input = null;
                                         if (this.displayValue) {
-                                            colorDivElement.appendChild(document.createTextNode("#000000"));
+                                            if (this.enabled) {
+                                                input = document.createElement("input");
+                                                input.id = this.elementId + "_input";
+                                                input.type = "text";
+                                                input.setAttribute("tabindex", this.tabindex);
+                                                input.value = "#000000";
+                                                input.style.height = "16px";
+                                                input.style.alignment = "center";
+                                                input.style.borderStyle = "none";
+                                                input.style.color = "inherit";
+                                                input.style.background = "inherit";
+                                                input.style.textAlign = "center";
+                                                colorDivElement.appendChild(input);
+                                            } else {
+                                                colorDivElement.appendChild(document.createTextNode("#000000"));
+                                            }
                                         }
                                         colorSelectDivElement.appendChild(colorDivElement);
 
@@ -367,6 +401,12 @@ ExtrasColorSelect = Core.extend({
 
                                         EchoEventProcessor.addHandler(svListenerDivElement.id, "mousedown", "ExtrasColorSelect.processSVMouseDown");
                                         EchoEventProcessor.addHandler(hListenerDivElement.id, "mousedown", "ExtrasColorSelect.processHMouseDown");
+
+                                        if (input != null) {
+                                            EchoEventProcessor.addHandler(input, "keypress", "ExtrasColorSelect.processKeyPress");
+                                            EchoEventProcessor.addHandler(input, "blur", "ExtrasColorSelect.processBlur");
+                                            EchoEventProcessor.addHandler(input, "focus", "ExtrasColorSelect.processFocus");
+                                        }
                                     },
 
                                     dispose: function () {
@@ -376,6 +416,9 @@ ExtrasColorSelect = Core.extend({
                                         EchoEventProcessor.removeHandler(this.elementId + "_hlistener", "mousedown");
                                         EchoEventProcessor.removeHandler(this.elementId + "_hlistener", "mousemove");
                                         EchoEventProcessor.removeHandler(this.elementId + "_hlistener", "mouseup");
+                                        EchoEventProcessor.removeHandler(this.elementId + "_input", "keypress");
+                                        EchoEventProcessor.removeHandler(this.elementId + "_input", "blur");
+                                        EchoEventProcessor.removeHandler(this.elementId + "_input", "focus");
                                     },
 
                                     /**
@@ -500,9 +543,75 @@ ExtrasColorSelect = Core.extend({
                                     },
 
                                     /**
+                                     * Processes a key press event:
+                                     * Initiates an action in the event that the key pressed was the
+                                     * ENTER key.
+                                     *
+                                     * @param e the DOM Level 2 event
+                                     */
+                                     processKeyPress: function(e) {
+                                        if (!this.enabled || !EchoClientEngine.verifyInput(this.elementId, false)) {
+                                             EchoDomUtil.preventEventDefault(e);
+                                             return;
+                                         }
+                                         if (e.keyCode == 13) {
+                                             this.updateFromInput();
+                                         }
+                                     },
+
+
+                                     /**
+                                       * Processes a focus blur event:
+                                       */
+                                     processBlur: function(echoEvent) {
+                                         var input = document.getElementById(this.elementId + "_input");
+                                         if (input != null) {
+                                             input.style.textAlign = "center";
+                                             EchoFocusManager.setFocusedState(this.elementId, false);
+                                         }
+                                     },
+
+                                     /**
+                                      * Processes a focus blur event:
+                                      */
+                                     processFocus: function(echoEvent) {
+                                         var input = document.getElementById(this.elementId + "_input");
+                                         if (input != null) {
+                                             input.style.textAlign = "left";
+                                             this.updateFromInput();
+                                             EchoFocusManager.setFocusedState(this.elementId, true);
+                                         }
+                                     },
+
+                                     updateFromInput: function() {
+                                         var input = document.getElementById(this.elementId + "_input");
+                                         if (input != null) {
+                                             var r = 0;
+                                             var g = 0;
+                                             var b = 0;
+                                             var value = input.value;
+                                             if (value != null && value.startsWith("#")) {
+                                                 value = value.substring(1);
+                                             }
+                                             if (value.length >= 2) {
+                                                 r = parseInt(value.substr(0, 2), 16);
+                                                 value = value.substr(2);
+                                             }
+                                             if (value.length >= 2) {
+                                                 g = parseInt(value.substr(0, 2), 16);
+                                                 value = value.substr(2);
+                                             }
+                                             if (value.length >= 2) {
+                                                 b = parseInt(value.substr(0, 2), 16);
+                                             }
+                                             this.setColor(new ExtrasColorSelect.RGB(r, g, b));
+                                         }
+                                     },
+
+                                    /**
                                      * Updates the component state in the outgoing <code>ClientMessage</code>.
                                      *
-                                     * @param componentId the id of the Text Component
+                                     * @param color the colour
                                      */
                                     updateClientMessage: function (color) {
                                         var colorPropertyElement = EchoClientMessage.createPropertyElement(this.elementId, "color");
@@ -533,8 +642,14 @@ ExtrasColorSelect = Core.extend({
                                         colorDivElement.style.backgroundColor = renderHexTriplet;
                                         colorDivElement.style.borderColor = renderHexTriplet;
                                         colorDivElement.style.color = this.v < 0.67 ? "#ffffff" : "#000000";
+                                        var inputElement = null;
                                         if (this.displayValue) {
-                                            colorDivElement.childNodes[0].nodeValue = renderHexTriplet;
+                                            if (this.enabled) {
+                                                inputElement = document.getElementById(this.elementId + "_input");
+                                                inputElement.value = renderHexTriplet;
+                                            } else {
+                                                colorDivElement.childNodes[0].nodeValue = renderHexTriplet;
+                                            }
                                         }
 
                                         var sLineElement = document.getElementById(this.elementId + "_sline");
@@ -674,6 +789,11 @@ ExtrasColorSelect.MessageProcessor = {
         }
         if (initMessageElement.getAttribute("saturation-height")) {
             colorSelect.saturationHeight = parseInt(initMessageElement.getAttribute("saturation-height"));
+        }
+        if (initMessageElement.getAttribute("tabindex")) {
+            colorSelect.tabindex = initMessageElement.getAttribute("tabindex");
+        } else {
+            colorSelect.tabindex = -1;
         }
 
         colorSelect.transparentImageSrc = EchoClientEngine.baseServerUri + "?serviceId=Echo2Extras.ExtrasUtil.Transparent";

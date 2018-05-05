@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Practice Summary_CountVisitsClinician" pageWidth="612" pageHeight="792" whenNoDataType="AllSectionsNoDetail" columnWidth="554" leftMargin="0" rightMargin="58" topMargin="0" bottomMargin="0" uuid="90fa74b2-3788-43f1-8c4c-337e43039c0b">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS.xml"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
+	<parameter name="DateFrom" class="java.util.Date"/>
+	<parameter name="DateTo" class="java.util.Date"/>
+	<queryString language="SQL">
+		<![CDATA[select
+(
+select count(distinct pp.entity_id) as patientCount
+from acts a
+join participations pp on pp.act_id = a.act_id and pp.arch_short_name = 'participation.patient'
+left join participations pl on pl.act_id = a.act_id and pl.arch_short_name = 'participation.location'
+left join entities el on el.entity_id = pl.entity_id
+where a.arch_short_name = 'act.patientClinicalEvent'
+and a.activity_start_time between $P{DateFrom} and DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
+) as totalPatientCount,
+count(distinct pp.entity_id) as patientCount, count(*) as visitCount,
+       ifnull(ec.name,'--None--') as cl_name,
+       ec.entity_id as clinician_id
+from acts a
+join participations pp on pp.act_id = a.act_id and pp.arch_short_name = 'participation.patient'
+left join participations pc on pc.act_id = a.act_id and pc.arch_short_name = 'participation.clinician'
+left join entities ec on ec.entity_id = pc.entity_id
+left join participations pl on pl.act_id = a.act_id and pl.arch_short_name = 'participation.location'
+left join entities el on el.entity_id = pl.entity_id
+where a.arch_short_name = 'act.patientClinicalEvent'
+and a.activity_start_time between  $P{DateFrom} and DATE_ADD($P{DateTo}, INTERVAL "23:59:59" HOUR_SECOND)
+group by pc.entity_id order by ec.name
+;]]>
+	</queryString>
+	<field name="totalPatientCount" class="java.lang.Long"/>
+	<field name="patientCount" class="java.lang.Long"/>
+	<field name="visitCount" class="java.lang.Long"/>
+	<field name="cl_name" class="java.lang.String"/>
+	<field name="clinician_id" class="java.lang.Long"/>
+	<variable name="SumVisitCount" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{visitCount}]]></variableExpression>
+	</variable>
+	<variable name="SumPatientCount" class="java.lang.Long" calculation="Sum">
+		<variableExpression><![CDATA[$F{patientCount}]]></variableExpression>
+	</variable>
+	<variable name="clinician" class="java.lang.String">
+		<variableExpression><![CDATA[EVALUATE("user:format($F.clinician_id, 'short')")]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band/>
+	</title>
+	<columnHeader>
+		<band height="33">
+			<staticText>
+				<reportElement x="22" y="19" width="132" height="13" uuid="343115d4-79a4-41cd-9cc2-46d71c0f429c"/>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Clinician]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="154" y="19" width="94" height="13" uuid="408e92b1-9196-4d05-aa86-7236205ec030"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Distinct Patients]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="278" y="19" width="77" height="13" uuid="807a4447-ab03-4661-9c99-1af123db7e5a"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Visit Count]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="0" width="257" height="18" uuid="c7f92e02-13ed-4e7f-a630-1bd3bae2f73a"/>
+				<textElement>
+					<font size="11" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Visit Counts by Clinician]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="17" splitType="Stretch">
+			<textField>
+				<reportElement x="171" y="0" width="77" height="14" uuid="f97f8d34-6ede-432c-9bdc-8fcf34e2c981"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patientCount}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="22" y="0" width="132" height="14" uuid="a10af2aa-4e56-47bf-9733-5e37b5717aa5"/>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{clinician}==null?"--No Clinician--":$V{clinician}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="278" y="0" width="77" height="14" uuid="b271db08-8db6-4522-8dee-45fcdb72cf53"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{visitCount}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="248" y="0" width="31" height="14" uuid="202af00c-59a7-447c-9118-4b3f23ba0ec8"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patientCount}.doubleValue()/$V{SumPatientCount}.doubleValue()]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Auto" pattern="#,##0%">
+				<reportElement x="355" y="0" width="31" height="14" uuid="f76f6d79-faf4-48d1-b0ff-a0e8d76b5eb7"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{visitCount}.doubleValue()/$V{SumVisitCount}.doubleValue()]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="87">
+			<textField>
+				<reportElement x="278" y="3" width="77" height="14" uuid="c775607f-5368-4560-b0b6-d0e2214abe54"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumVisitCount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="171" y="3" width="77" height="14" uuid="0a043926-766d-4730-8967-8524a988017b"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SumPatientCount}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="22" y="4" width="132" height="13" uuid="c57367c6-1970-4bab-9b17-a128b67ba7fb"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Totals]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="22" y="22" width="132" height="13" uuid="60b3a4b6-2358-4553-861e-fc28bb88b6c9"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Distinct patients seen:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="171" y="22" width="77" height="14" uuid="082d0bdd-b635-42c4-a5ac-6efb2d517be2"/>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{totalPatientCount}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="42" width="550" height="43" uuid="9ecb40e0-eb73-4672-8f20-a19672e4d3d3"/>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[The percentages show the ratio of the clinician's count to the column total.
+The 'Distinct patients seen' count will be less than the Total of the Distinct Patients column if a given patient is seen by multiple clinicians.]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="292" y="17" width="258" height="19" uuid="35593b4a-0321-4116-af7d-91725a5b2b86">
+					<printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font size="11" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[No Data Found - Check Parameters]]></text>
+			</staticText>
+			<line>
+				<reportElement positionType="Float" x="0" y="86" width="550" height="1" uuid="737ed431-06b8-4634-b646-560aee18e2f5"/>
+				<graphicElement>
+					<pen lineStyle="Double"/>
+				</graphicElement>
+			</line>
+		</band>
+	</summary>
+</jasperReport>

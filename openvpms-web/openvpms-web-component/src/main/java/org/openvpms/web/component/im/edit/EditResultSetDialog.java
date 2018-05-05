@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -39,7 +40,7 @@ import java.util.List;
 
 /**
  * A edit dialog that allows the results from an {@link ResultSet} to be iterated through and edited.
- * <p/>
+ * <p>
  * An object may only be edited if {@link IMObjectActions#canEdit(IMObject)} returns {@code true}.
  * If not, it will be viewed instead.
  *
@@ -114,7 +115,7 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
         this.context = context;
         this.actions = actions;
         setDefaultCloseAction(CANCEL_ID);
-        iter = new ResultSetIterator<T>(set, first);
+        iter = new ResultSetIterator<>(set, first);
         if (iter.hasNext()) {
             select(iter.next());
         }
@@ -175,21 +176,30 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
     /**
      * Saves the current object.
      *
-     * @return {@code true} if the object was saved
+     * @param editor the editor
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
-        boolean result = super.doSave();
-        if (result) {
-            IMObjectEditor editor = getEditor();
-            if (editor != null) {
-                T object = (T) editor.getObject();
-                if (!actions.canEdit(object)) {
-                    select(object);
-                }
+    @SuppressWarnings("unchecked")
+    protected void doSave(IMObjectEditor editor) {
+        super.doSave(editor);
+        if (editor != null) {
+            T object = (T) editor.getObject();
+            if (!actions.canEdit(object)) {
+                select(object);
             }
         }
-        return result;
+    }
+
+    /**
+     * Enables/disables the buttons.
+     */
+    protected void enableButtons() {
+        ButtonSet set = getButtons();
+        IMObjectEditor editor = getEditor();
+        set.setEnabled(APPLY_ID, editor != null);
+        set.setEnabled(PREVIOUS_ID, iter.lastIndex() > 0);
+        set.setEnabled(NEXT_ID, iter.hasNext());
     }
 
     /**
@@ -199,7 +209,7 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
      * @param editor the editor. May be {@code null}
      * @param next   the operation. If {@code true} move next, else move previous
      * @return {@code true} if the editor is modified; {@code false} if the editor hasn't been modified, or is
-     *         {@code null}
+     * {@code null}
      */
     private boolean checkModified(final IMObjectEditor editor, final boolean next) {
         boolean result = true;
@@ -346,7 +356,7 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
     private void setViewer(IMObjectViewer viewer, List<Selection> path) {
         IMObjectViewer previous = this.viewer;
         if (previous != null) {
-            removeComponent(previous.getComponent(), previous.getFocusGroup());
+            removeComponent();
         }
         this.viewer = viewer;
         if (viewer != null) {
@@ -356,17 +366,6 @@ public class EditResultSetDialog<T extends IMObject> extends AbstractEditDialog 
                 viewer.setSelectionPath(path);
             }
         }
-    }
-
-    /**
-     * Enables/disables the buttons.
-     */
-    private void enableButtons() {
-        ButtonSet set = getButtons();
-        IMObjectEditor editor = getEditor();
-        set.setEnabled(APPLY_ID, editor != null);
-        set.setEnabled(PREVIOUS_ID, iter.lastIndex() > 0);
-        set.setEnabled(NEXT_ID, iter.hasNext());
     }
 
 }

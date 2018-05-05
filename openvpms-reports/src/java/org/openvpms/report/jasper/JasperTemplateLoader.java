@@ -11,24 +11,22 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
 
-import net.sf.jasperreports.engine.JRBand;
-import net.sf.jasperreports.engine.JRElement;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRExpression;
 import net.sf.jasperreports.engine.JasperCompileManager;
 import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.design.JRDesignExpression;
-import net.sf.jasperreports.engine.design.JRDesignParameter;
-import net.sf.jasperreports.engine.design.JRDesignSubreport;
+import net.sf.jasperreports.engine.JasperReportsContext;
 import net.sf.jasperreports.engine.design.JasperDesign;
+import net.sf.jasperreports.engine.fill.JREvaluator;
 import net.sf.jasperreports.engine.xml.JRXmlLoader;
+import net.sf.jasperreports.repo.ReportResource;
+import net.sf.jasperreports.repo.RepositoryService;
+import net.sf.jasperreports.repo.Resource;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentException;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
@@ -37,9 +35,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.report.ReportException;
 
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.openvpms.report.ReportException.ErrorCode.FailedToCreateReport;
@@ -48,63 +44,95 @@ import static org.openvpms.report.ReportException.ErrorCode.FailedToFindSubRepor
 
 /**
  * Helper for loading and compiling jasper report templates.
+ * <p/>
+ * This implements {@link RepositoryService} in order to support loading of sub-reports during report evaluation.
+ * <br/>
+ * This allows sub-reports to be loaded based on data in the report, rather than statically defined.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class JasperTemplateLoader {
+public class JasperTemplateLoader implements RepositoryService {
+
+    /**
+     * The report name, used in error reporting.
+     */
+    private final String name;
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
+     * The document handlers.
+     */
+    private final DocumentHandlers handlers;
+
+    /**
+     * The jasper reports context.
+     */
+    private final JasperReportsContext context;
 
     /**
      * The compiled report.
      */
-    private JasperReport report;
+    private final JasperReport report;
 
     /**
-     * The sub-reports.
+     * The sub-reports, keyed on name.
      */
-    private final List<JasperReport> subReports = new ArrayList<JasperReport>();
+    private final Map<String, JasperReport> subReports = new HashMap<>();
 
     /**
-     * Report parameters.
+     * Cached expression evaluator.
      */
-    private final Map<String, Object> parameters = new HashMap<String, Object>();
-
+    private JREvaluator evaluator;
 
     /**
-     * Constructs a <tt>JasperTemplateLoader</tt>.
+     * Constructs a {@link JasperTemplateLoader}.
      *
      * @param template the document template
      * @param service  the archetype service
      * @param handlers the document handlers
+     * @param context  the jasper reports context
      * @throws ReportException if the report cannot be created
      */
-    public JasperTemplateLoader(Document template, IArchetypeService service,
-                                DocumentHandlers handlers) {
+    public JasperTemplateLoader(Document template, IArchetypeService service, DocumentHandlers handlers,
+                                JasperReportsContext context) {
+        this.name = template.getName();
+        this.service = service;
+        this.context = context;
+        this.handlers = handlers;
+
         InputStream stream = null;
         try {
             DocumentHandler handler = handlers.get(template);
             stream = handler.getContent(template);
-            JasperDesign report = JRXmlLoader.load(stream);
-            init(template.getName(), report, service, handlers);
-        } catch (DocumentException exception) {
-            throw new ReportException(exception, FailedToCreateReport, exception.getMessage());
-        } catch (JRException exception) {
-            throw new ReportException(exception, FailedToCreateReport, exception.getMessage());
+            JasperDesign design = JRXmlLoader.load(context, stream);
+            report = compile(design);
+        } catch (DocumentException | JRException exception) {
+            throw new ReportException(exception, FailedToCreateReport, template.getName(), exception.getMessage());
         } finally {
             IOUtils.closeQuietly(stream);
         }
     }
 
     /**
-     * Constructs a new <code>JasperTemplateLoader</code>.
+     * Constructs a {@link JasperTemplateLoader}.
      *
      * @param design   the master report design
      * @param service  the archetype service
      * @param handlers the document handlers
+     * @param context  the jasper reports context
      * @throws ReportException if the report cannot be created
      */
-    public JasperTemplateLoader(JasperDesign design, IArchetypeService service, DocumentHandlers handlers) {
-        init(design.getName(), design, service, handlers);
+    public JasperTemplateLoader(JasperDesign design, IArchetypeService service, DocumentHandlers handlers,
+                                JasperReportsContext context) {
+        this.name = design.getName();
+        this.service = service;
+        this.handlers = handlers;
+        this.context = context;
+        report = compile(design);
     }
 
     /**
@@ -117,101 +145,113 @@ public class JasperTemplateLoader {
     }
 
     /**
+     * Returns the expression evaluator.
+     * <p/>
+     * NOTE: this only supports evaluation of simple expressions. Expressions that invoke JasperReport functions aren't
+     * supported as these require a constructed JasperReport.
+     *
+     * @return the expression evaluator
+     * @throws JRException if the evaluator can't be loaded
+     */
+    public JREvaluator getEvaluator() throws JRException {
+        if (evaluator == null) {
+            evaluator = JasperCompileManager.loadEvaluator(report);
+        }
+        return evaluator;
+    }
+
+    /**
+     * Returns a resource given its URI.
+     *
+     * @param uri the resource URI
+     * @return {@code null}
+     */
+    @Override
+    public Resource getResource(final String uri) {
+        return null;
+    }
+
+    /**
      * Returns the sub-reports.
+     * <p/>
+     * These are only available after the report has been evaluated, as they are loaded as required.
      *
-     * @return the sub-reports.
+     * @return the sub-reports
      */
-    public JasperReport[] getSubReports() {
-        return subReports.toArray(new JasperReport[subReports.size()]);
+    public Map<String, JasperReport> getSubReports() {
+        return subReports;
     }
 
     /**
-     * Returns the report parameters to use when filling the report.
+     * Saves a resource to the repository.
      *
-     * @return the report parameters
+     * @param uri      the resource URI
+     * @param resource the resource to save
+     * @throws UnsupportedOperationException if invoked
      */
-    public Map<String, Object> getParameters() {
-        return parameters;
+    @Override
+    public void saveResource(final String uri, final Resource resource) {
+        throw new UnsupportedOperationException();
     }
 
     /**
-     * Initialises the report.
+     * Returns a resource given its URI.
+     * <p/>
+     * Note that this implementation only supports {@code ReportResource} resource types.
      *
-     * @param name     the template name
-     * @param design   the report design
-     * @param service  the archetype service
-     * @param handlers the document handlers
-     * @throws ReportException if the report cannot be initialised
+     * @param uri          the resource URI
+     * @param resourceType the resource type. Must be a {@code ReportResource} in this implementation
+     * @return the corresponding resource, or {@code null} if {@code resourceType} is not supported
+     * @throws ReportException if the report cannot be found
      */
-    protected void init(String name, JasperDesign design, IArchetypeService service, DocumentHandlers handlers) {
-        try {
-            if (design.getDetailSection() != null) {
-                for (JRBand band : design.getDetailSection().getBands()) {
-                    compileSubReports(band, design, name, service, handlers);
-                }
-            }
-            if (design.getSummary() != null) {
-                compileSubReports(design.getSummary(), design, name, service, handlers);
-            }
-            report = JasperCompileManager.compileReport(design);
-        } catch (JRException exception) {
-            throw new ReportException(exception, FailedToCreateReport, exception.getMessage());
-        }
-    }
-
-    /**
-     * Compiles sub-reports referenced by the specified band.
-     *
-     * @param band     the band to locate sub-reports in
-     * @param design   the parent report design
-     * @param name     the template name, used for error reporting
-     * @param service  the archetype service
-     * @param handlers the document handlers
-     * @throws JRException for any jasper reports error
-     */
-    private void compileSubReports(JRBand band, JasperDesign design, String name, IArchetypeService service,
-                                   DocumentHandlers handlers) throws JRException {
-        for (JRElement element : band.getElements()) {
-            if (element instanceof JRDesignSubreport) {
-                JRDesignSubreport subReport = (JRDesignSubreport) element;
-                String reportName = getReportName(subReport);
-                JasperDesign report = JasperReportHelper.getReport(reportName, service, handlers);
-                if (report == null) {
-                    throw new ReportException(FailedToFindSubReport, reportName, name);
-                }
-
-                // replace the original expression with a parameter
-                JRDesignExpression expression = new JRDesignExpression();
-                expression.setText("$P{" + reportName + "}");
-                expression.setValueClass(JasperReport.class);
-                subReport.setExpression(expression);
-
-                JasperReport compiled = JasperCompileManager.compileReport(report);
-                subReports.add(compiled);
-                parameters.put(reportName, compiled);
-
-                JRDesignParameter param = new JRDesignParameter();
-                param.setName(reportName);
-                param.setValueClass(JasperReport.class);
-                param.setForPrompting(false);
-                design.addParameter(param);
-            }
-        }
-    }
-
-    /**
-     * Returns the name from a report.
-     *
-     * @param report the report
-     * @return the report name. May be <tt>null</tt>
-     */
-    private String getReportName(JRDesignSubreport report) {
-        JRExpression expression = report.getExpression();
-        if (expression != null) {
-            String name = expression.getText();
-            name = StringUtils.strip(name, " \"");
-            return name;
+    @Override
+    public <K extends Resource> K getResource(final String uri, final Class<K> resourceType) {
+        if (resourceType.isAssignableFrom(ReportResource.class)) {
+            JasperReport report = getSubreport(uri);
+            ReportResource resource = new ReportResource();
+            resource.setReport(report);
+            return resourceType.cast(resource);
         }
         return null;
     }
+
+    /**
+     * Compiles the master report.
+     *
+     * @param design the report design
+     * @return the compiled report
+     */
+    protected JasperReport compile(JasperDesign design) {
+        JasperReport result;
+        try {
+            result = JasperCompileManager.compileReport(design);
+        } catch (JRException exception) {
+            throw new ReportException(exception, FailedToCreateReport, name, exception.getMessage());
+        }
+        return result;
+    }
+
+    /**
+     * Gets a sub-report, given its name.
+     *
+     * @param name the sub-report name
+     * @return the corresponding report
+     */
+    protected JasperReport getSubreport(String name) {
+        JasperReport compiled = subReports.get(name);
+        if (compiled == null) {
+            try {
+                JasperDesign report = JasperReportHelper.getReport(name, service, handlers, context);
+                if (report == null) {
+                    throw new ReportException(FailedToFindSubReport, name, this.name);
+                }
+                compiled = JasperCompileManager.compileReport(report);
+                subReports.put(name, compiled);
+            } catch (JRException exception) {
+                throw new ReportException(FailedToFindSubReport, exception, name, this.name);
+            }
+        }
+        return compiled;
+    }
+
 }

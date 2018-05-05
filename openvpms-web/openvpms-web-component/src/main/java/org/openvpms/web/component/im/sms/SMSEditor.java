@@ -11,26 +11,28 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.sms;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.list.DefaultListModel;
-import nextapp.echo2.app.list.ListModel;
+import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.collections.ComparatorUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.macro.Macros;
-import org.openvpms.sms.Connection;
-import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.sms.SMSException;
+import org.openvpms.sms.util.SMSLengthCalculator;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.bound.BoundSelectFieldFactory;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.edit.Editors;
+import org.openvpms.web.component.im.list.PairListModel;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.Modifiable;
@@ -41,17 +43,20 @@ import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
+import org.openvpms.web.component.service.SMSService;
+import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.echo.text.CountedTextArea;
+import org.openvpms.web.echo.text.SMSTextArea;
 import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -61,6 +66,11 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class SMSEditor extends AbstractModifiable {
+
+    /**
+     * The context.
+     */
+    private final Context context;
 
     /**
      * The phone number, if 0 or 1 no. are provided.
@@ -73,74 +83,100 @@ public class SMSEditor extends AbstractModifiable {
     private SelectField phoneSelector;
 
     /**
+     * The selected contact.
+     */
+    private Contact selected;
+
+    /**
      * The text message.
      */
-    private CountedTextArea message;
+    private final SMSTextArea message;
 
     /**
      * The text property. Used to support macro expansion.
      */
-    private SimpleProperty messageProperty;
+    private final SimpleProperty messageProperty;
 
     /**
      * The phone property.
      */
-    private SimpleProperty phoneProperty;
+    private final SimpleProperty phoneProperty;
 
     /**
      * Focus group.
      */
-    private FocusGroup focus;
-
-    /**
-     * Maximum SMS length.
-     */
-    private static final int MAX_LENGTH = 160;
+    private final FocusGroup focus;
 
     /**
      * Used to track property modification, and perform validation.
      */
-    private Editors editors;
-
+    private final Editors editors;
 
     /**
-     * Constructs an {@code SMSEditor}.
+     * The maximum number of parts in multi-part SMS messages.
      */
-    public SMSEditor() {
-        this(Collections.<Contact>emptyList(), null);
+    private int maxParts;
+
+    /**
+     * Ad hoc SMS reason code.
+     */
+    private static final String AD_HOC_SMS = "AD_HOC_SMS";
+
+    /**
+     * Constructs an {@link SMSEditor}.
+     *
+     * @param context the context
+     */
+    public SMSEditor(Context context) {
+        this(Collections.<Contact>emptyList(), null, context);
     }
 
     /**
-     * Constructs an {@code SMSEditor}.
-     * <p/>
+     * Constructs an {@link SMSEditor}.
+     * <p>
      * If no phone numbers are supplied, the phone number will be editable, otherwise it will be read-only.
      * If there are multiple phone numbers, they will be displayed in a dropdown, with the first no. as the default
      *
      * @param contacts  the available mobile contacts. May be {@code null}
      * @param variables the variables for macro expansion. May be {@code null}
+     * @param context   the context
      */
-    public SMSEditor(List<Contact> contacts, Variables variables) {
+    public SMSEditor(List<Contact> contacts, Variables variables, Context context) {
+        this.context = context;
         int length = (contacts == null) ? 0 : contacts.size();
         phoneProperty = new SimpleProperty("phone", null, String.class, Messages.get("sms.phone"));
         phoneProperty.setRequired(true);
         if (length <= 1) {
             phone = BoundTextComponentFactory.create(phoneProperty, 20);
             if (length == 1) {
-                phoneProperty.setValue(formatPhone(contacts.get(0)));
+                onSelected(contacts.get(0));
+                phoneProperty.setValue(formatPhone(selected));
                 phone.setEnabled(false);
             }
         } else {
-            phoneSelector = BoundSelectFieldFactory.create(phoneProperty, formatPhones(contacts));
+            final PairListModel model = formatPhones(contacts);
+            phoneSelector = BoundSelectFieldFactory.create(phoneProperty, model);
+            phoneSelector.addActionListener(new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    int index = phoneSelector.getSelectedIndex();
+                    if (index >= 0 && index < model.size()) {
+                        onSelected((Contact) model.getValue(index));
+                    } else {
+                        onSelected(null);
+                    }
+                }
+            });
             phoneSelector.setSelectedIndex(0);
         }
 
         messageProperty = new SimpleProperty("message", null, String.class, Messages.get("sms.message"));
         messageProperty.setRequired(true);
-        messageProperty.setMaxLength(MAX_LENGTH);
+        messageProperty.setMaxLength(-1); // don't limit length as it is determined by maxParts and encoding
         Macros macros = ServiceHelper.getMacros();
         messageProperty.setTransformer(new StringPropertyTransformer(messageProperty, false, macros, null, variables));
 
-        message = new BoundCountedTextArea(messageProperty, 40, 15);
+        message = new BoundSMSTextArea(messageProperty, 40, 15);
         message.setStyleName(Styles.DEFAULT);
         focus = new FocusGroup("SMSEditor");
         if (phone != null) {
@@ -159,6 +195,8 @@ public class SMSEditor extends AbstractModifiable {
                 resetValid();
             }
         });
+
+        setMaxParts(ServiceHelper.getSMSConnectionFactory().getMaxParts());
     }
 
     /**
@@ -167,9 +205,18 @@ public class SMSEditor extends AbstractModifiable {
      * @throws SMSException if the SMS can't be sent
      */
     public void send() {
-        ConnectionFactory factory = ServiceHelper.getSMSConnectionFactory();
-        Connection connection = factory.createConnection();
-        connection.send(getPhone(), getMessage());
+        String phone = getPhone();
+        String message = getMessage();
+        SMSService service = ServiceHelper.getBean(SMSService.class);
+        Party customer = context.getCustomer();
+        String subject = Messages.get("sms.log.adhoc.subject");
+        if (customer != null) {
+            service.send(phone, message, customer, context.getPatient(), selected, subject, AD_HOC_SMS,
+                         context.getLocation());
+        } else {
+            Party party = (selected != null) ? selected.getParty() : null;
+            service.send(phone, message, party, selected, subject, AD_HOC_SMS, context.getLocation());
+        }
     }
 
     /**
@@ -193,6 +240,48 @@ public class SMSEditor extends AbstractModifiable {
      */
     public void setMessage(String message) {
         messageProperty.setValue(message);
+    }
+
+    /**
+     * Sets the maximum number of parts of the message.
+     *
+     * @param maxParts the maximum length
+     */
+    public void setMaxParts(int maxParts) {
+        if (maxParts <= 0) {
+            maxParts = 1;
+        }
+        this.maxParts = maxParts;
+        message.setMaxParts(maxParts);
+    }
+
+    /**
+     * Validates the object.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    public boolean validate(Validator validator) {
+        boolean valid = super.validate(validator);
+        if (valid) {
+            String message = getMessage();
+            int parts = SMSLengthCalculator.getParts(message);
+            if (parts > maxParts) {
+                valid = false;
+                validator.add(this, new ValidatorError(Messages.format("sms.toolong", parts, maxParts)));
+            }
+        }
+        return valid;
+    }
+
+    /**
+     * Returns the selected contact.
+     *
+     * @return the selected contact. May be {@code null}
+     */
+    public Contact getContact() {
+        return selected;
     }
 
     /**
@@ -314,29 +403,36 @@ public class SMSEditor extends AbstractModifiable {
 
     /**
      * Formats phone numbers that are flagged for SMS messaging.
-     * <p/>
+     * <p>
      * The preferred no.s are at the head of the list
      *
      * @param contacts the SMS contacts
      * @return a list of phone numbers
      */
-    private ListModel formatPhones(List<Contact> contacts) {
-        List<String> phones = new ArrayList<String>();
-        String preferred = null;
+    private PairListModel formatPhones(List<Contact> contacts) {
+        List<PairListModel.Pair> phones = new ArrayList<>();
+        PairListModel.Pair preferred = null;
         for (Contact contact : contacts) {
             String phone = formatPhone(contact);
+            PairListModel.Pair pair = new PairListModel.Pair(phone, contact);
             IMObjectBean bean = new IMObjectBean(contact);
             if (bean.getBoolean("preferred")) {
-                preferred = phone;
+                preferred = pair;
             }
-            phones.add(phone);
+            phones.add(pair);
         }
-        Collections.sort(phones);
+        Collections.sort(phones, new Comparator<PairListModel.Pair>() {
+            @Override
+            @SuppressWarnings("unchecked")
+            public int compare(PairListModel.Pair o1, PairListModel.Pair o2) {
+                return ComparatorUtils.nullLowComparator(null).compare(o1.getKey(), o2.getKey());
+            }
+        });
         if (preferred != null && !phones.get(0).equals(preferred)) {
             phones.remove(preferred);
             phones.add(0, preferred);
         }
-        return new DefaultListModel(phones.toArray(new String[phones.size()]));
+        return new PairListModel(phones);
     }
 
     /**
@@ -361,4 +457,7 @@ public class SMSEditor extends AbstractModifiable {
         return phone;
     }
 
+    private void onSelected(Contact selected) {
+        this.selected = selected;
+    }
 }

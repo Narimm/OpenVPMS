@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
 
 import nextapp.echo2.app.table.TableCellRenderer;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.im.act.PagedActHierarchyTableModel;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
@@ -36,7 +35,7 @@ public class PatientHistoryBrowser extends AbstractPatientHistoryBrowser {
     /**
      * The table model that wraps the underlying model, to filter acts.
      */
-    private PagedActHierarchyTableModel<Act> pagedModel;
+    private PagedPatientHistoryTableModel pagedModel;
 
     /**
      * The cell renderer.
@@ -72,7 +71,8 @@ public class PatientHistoryBrowser extends AbstractPatientHistoryBrowser {
         if (pagedModel != null) {
             // ensure the table model has the selected child act short names prior to performing the query
             PatientHistoryQuery query = getQuery();
-            pagedModel.setShortNames(query.getActItemShortNames());
+            pagedModel.setShortNames(query.getSelectedItemShortNames());
+            pagedModel.setSearch(query.getValue());
             pagedModel.setSortAscending(query.isSortAscending());
         }
         super.query();
@@ -110,9 +110,7 @@ public class PatientHistoryBrowser extends AbstractPatientHistoryBrowser {
         PatientHistoryQuery query = getQuery();
         pagedModel = createPagedModel((IMObjectTableModel<Act>) model, query);
         pagedModel.setSortAscending(query.isSortAscending());
-        PagedIMTable<Act> result = super.createTable(pagedModel);
-        initTable(result);
-        return result;
+        return super.createTable(pagedModel);
     }
 
     /**
@@ -122,8 +120,8 @@ public class PatientHistoryBrowser extends AbstractPatientHistoryBrowser {
      * @param query the history query
      * @return a new paged table model
      */
-    protected PagedActHierarchyTableModel<Act> createPagedModel(IMObjectTableModel<Act> model, PatientHistoryQuery query) {
-        return new PagedPatientHistoryTableModel((PatientHistoryTableModel) model, query.getActItemShortNames());
+    protected PagedPatientHistoryTableModel createPagedModel(IMObjectTableModel<Act> model, PatientHistoryQuery query) {
+        return new PagedPatientHistoryTableModel((PatientHistoryTableModel) model, query.getSelectedItemShortNames());
     }
 
     /**

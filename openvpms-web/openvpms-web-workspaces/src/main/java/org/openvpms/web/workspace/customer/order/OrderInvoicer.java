@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.order;
@@ -28,7 +28,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -38,14 +38,16 @@ import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditor;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.charge.AbstractInvoicer;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
+import org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActEditDialog;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -197,9 +199,9 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
      * @param editor the editor
      * @return {@code true}  if the order or return can update the editor
      */
-    public boolean canCharge(AbstractCustomerChargeActEditor editor) {
+    public boolean canCharge(CustomerChargeActEditor editor) {
         boolean result = false;
-        FinancialAct charge = (FinancialAct) editor.getObject();
+        FinancialAct charge = editor.getObject();
         if (!ActStatus.POSTED.equals(editor.getStatus())) {
             if (invoice != null && invoice.getId() == charge.getId()) {
                 result = true;
@@ -243,11 +245,43 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
 
         // NOTE: need to display the dialog as the process of populating medications and reminders can display
         // popups which would parent themselves on the wrong window otherwise.
-        CustomerChargeActEditDialog dialog = new CustomerChargeActEditDialog(editor, charger, context.getContext(),
-                                                                             false);
+        CustomerChargeActEditDialog dialog = new DefaultCustomerChargeActEditDialog(editor, charger,
+                                                                                    context.getContext(), false);
         dialog.show();
         doCharge(editor);
         return dialog;
+    }
+
+    /**
+     * Determines if an order/return must charged via an editor.
+     *
+     * @return {@code true} if an editor is required
+     */
+    public boolean requiresEdit() {
+        for (Item item : items) {
+            if (item.requiresEdit()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Charges an order/return.
+     * <p/>
+     * This should only be invoked if {@link #requiresEdit()} has returned {@code false}
+     */
+    public void charge() {
+        List<FinancialAct> updated = new ArrayList<>();
+        for (Item item : items) {
+            if (!item.updateReceivedQuantity()) {
+                throw new IllegalStateException("Failed to update received quantity");
+            }
+            updated.add(item.getInvoiceItem());
+        }
+        act.setStatus(ActStatus.POSTED);
+        updated.add(act);
+        ServiceHelper.getArchetypeService(false).save(updated);
     }
 
     /**
@@ -258,7 +292,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
      * @param editor the editor to add invoice items to
      * @throws IllegalStateException if the editor cannot be used, or the order/return is invalid
      */
-    public void charge(AbstractCustomerChargeActEditor editor) {
+    public void charge(CustomerChargeActEditor editor) {
         if (!canCharge(editor)) {
             throw new IllegalStateException("Cannot charge " + act.getArchetypeId() + " to editor");
         }
@@ -269,7 +303,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
     }
 
     /**
-     * Determines if the order/return can be invoiced..
+     * Determines if the order/return can be invoiced.
      *
      * @return {@code true} if the order/return can be invoiced
      */
@@ -308,13 +342,34 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
     }
 
     /**
+     * Helper to validate if a required property is set.
+     *
+     * @param validator  the validator
+     * @param properties the properties
+     * @param name       the property name
+     * @param value      the property value
+     * @return {@code true} if the property is set, otherwise {@code false}
+     */
+    protected static boolean validateRequired(Validator validator, PropertySet properties, String name, Object value) {
+        boolean valid = false;
+        if (value != null) {
+            valid = true;
+        } else {
+            Property property = properties.get(name);
+            validator.add(property, new ValidatorError(property, Messages.format("property.error.required",
+                                                                                 property.getDisplayName())));
+        }
+        return valid;
+    }
+
+    /**
      * Charges an order/return.
      * <p/>
      * Note that the caller is responsible for saving the act.
      *
      * @param editor the editor to add invoice items to
      */
-    private void doCharge(AbstractCustomerChargeActEditor editor) {
+    private void doCharge(CustomerChargeActEditor editor) {
         ActRelationshipCollectionEditor items = editor.getItems();
 
         for (Item item : this.items) {
@@ -332,17 +387,6 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
     }
 
     /**
-     * Creates a new {@link CustomerChargeActEditor}.
-     *
-     * @param charge  the charge
-     * @param context the layout context
-     * @return a new charge editor
-     */
-    protected CustomerChargeActEditor createChargeEditor(FinancialAct charge, LayoutContext context) {
-        return new CustomerChargeActEditor(charge, null, context, false);
-    }
-
-    /**
      * Returns the invoice associated with an invoice item.
      *
      * @param invoiceItem the invoice item
@@ -357,7 +401,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
         if (ref != null) {
             invoice = invoices.get(ref);
             if (invoice == null) {
-                invoice = (FinancialAct) IMObjectHelper.getObject(ref, null);
+                invoice = (FinancialAct) IMObjectHelper.getObject(ref);
                 if (invoice != null) {
                     invoices.put(ref, invoice);
                 }
@@ -366,39 +410,40 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
         return invoice;
     }
 
-    protected static boolean validateRequired(Validator validator, PropertySet properties, String name, Object value) {
-        boolean valid = false;
-        if (value != null) {
-            valid = true;
-        } else {
-            Property property = properties.get(name);
-            validator.add(property, new ValidatorError(property, Messages.format("property.error.required",
-                                                                                 property.getDisplayName())));
-        }
-        return valid;
-    }
-
     protected class Item {
 
+        private final Date startTime;
         private final IMObjectReference patient;
         private final BigDecimal quantity;
         private final IMObjectReference product;
         private final IMObjectReference clinician;
         private final FinancialAct invoiceItem;
         private final BigDecimal invoiceQty;
+        private final BigDecimal receivedQty;
+        private final BigDecimal returnedQty;
         private final boolean isOrder;
         private final boolean posted;
         private final PropertySet properties;
 
         public Item(FinancialAct orderItem, FinancialAct invoiceItem, FinancialAct invoice) {
             ActBean bean = new ActBean(orderItem);
+            this.startTime = orderItem.getActivityStartTime();
             this.patient = bean.getNodeParticipantRef("patient");
             this.product = bean.getNodeParticipantRef("product");
             this.clinician = bean.getNodeParticipantRef("clinician");
             this.quantity = bean.getBigDecimal("quantity", ZERO);
             this.invoiceItem = invoiceItem;
             isOrder = !orderItem.isCredit();
-            invoiceQty = (invoiceItem != null) ? invoiceItem.getQuantity() : ZERO;
+            if (invoiceItem != null) {
+                invoiceQty = invoiceItem.getQuantity();
+                ActBean invoiceBean = new ActBean(invoiceItem);
+                receivedQty = invoiceBean.getBigDecimal("receivedQuantity", ZERO);
+                returnedQty = invoiceBean.getBigDecimal("returnedQuantity", ZERO);
+            } else {
+                invoiceQty = ZERO;
+                receivedQty = ZERO;
+                returnedQty = ZERO;
+            }
             posted = (invoice != null) && ActStatus.POSTED.equals(invoice.getStatus());
             properties = new PropertySet(orderItem);
         }
@@ -440,13 +485,25 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
                 result = false;
             } else if (!posted) {
                 // can only add the return if the associated invoice isn't posted
-                IMObjectBean bean = new IMObjectBean(invoiceItem);
-                BigDecimal receivedQuantity = bean.getBigDecimal("receivedQuantity", ZERO);
-                BigDecimal returnedQuantity = bean.getBigDecimal("returnedQuantity", ZERO);
-                BigDecimal newQuantity = receivedQuantity.subtract(returnedQuantity).subtract(quantity);
+                BigDecimal newQuantity = receivedQty.subtract(returnedQty).subtract(quantity);
                 result = newQuantity.compareTo(ZERO) >= 0;
             } else {
                 result = false;
+            }
+            return result;
+        }
+
+        /**
+         * Determines if the charging must be performed in an editor.
+         *
+         * @return {@code true} if the charging must be performed in an editor
+         */
+        public boolean requiresEdit() {
+            boolean result = true;
+            if (canInvoice()) {
+                if (receivedQty.subtract(returnedQty).add(quantity).compareTo(invoiceQty) <= 0) {
+                    result = !sameDetails();
+                }
             }
             return result;
         }
@@ -460,8 +517,31 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
             return !isOrder || (invoiceItem != null && (invoiceQty.compareTo(quantity) > 0));
         }
 
-        public void charge(AbstractCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor) {
+        /**
+         * Updates the received quantity on a POSTED invoice, iff it doesn't exceed the ordered quantity.
+         * <p/>
+         * NOTE: the caller is responsible for saving the item, ensuring that business rules aren't invoked
+         *
+         * @return {@code true} if the received quantity was updated
+         */
+        public boolean updateReceivedQuantity() {
+            boolean result = false;
+            if (isOrder && invoiceItem != null && posted) {
+                ActBean bean = new ActBean(invoiceItem);
+                BigDecimal received = receivedQty.add(quantity);
+                if (received.subtract(returnedQty).compareTo(invoiceQty) <= 0) {
+                    bean.setValue("receivedQuantity", received);
+                    result = true;
+                }
+            }
+            return result;
+        }
+
+        public void charge(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor) {
             FinancialAct object = (FinancialAct) itemEditor.getObject();
+            itemEditor.setStartTime(startTime);
+            itemEditor.setPatientRef(patient);
+            itemEditor.setProductRef(product); // TODO - protect against product change
             if (TypeHelper.isA(object, CustomerAccountArchetypes.INVOICE_ITEM)) {
                 BigDecimal received = itemEditor.getReceivedQuantity();
                 BigDecimal returned = itemEditor.getReturnedQuantity();
@@ -486,12 +566,10 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
             } else {
                 itemEditor.setQuantity(quantity);
             }
-            itemEditor.setPatientRef(patient);
             if (clinician != null) {
                 itemEditor.setClinicianRef(clinician);
             }
-            itemEditor.setProductRef(product); // TODO - protect against product change
-            editor.setOrdered((Act) itemEditor.getObject());
+            editor.setOrdered(itemEditor.getObject());
         }
 
         public boolean hasPatient(IMObjectReference patient) {
@@ -508,7 +586,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
             return result;
         }
 
-        public FinancialAct getCurrentInvoiceItem(AbstractCustomerChargeActEditor editor) {
+        public FinancialAct getCurrentInvoiceItem(CustomerChargeActEditor editor) {
             FinancialAct result = null;
             if (invoiceItem != null) {
                 List<Act> acts = editor.getItems().getCurrentActs();
@@ -518,6 +596,20 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
                 }
             }
             return result;
+        }
+
+        /**
+         * Determines if the order has the same patient and product as the original invoice.
+         *
+         * @return {@code true} if the patient and product are the same
+         */
+        public boolean sameDetails() {
+            if (invoiceItem != null) {
+                ActBean bean = new ActBean(invoiceItem);
+                return ObjectUtils.equals(bean.getNodeParticipantRef("patient"), patient)
+                       && ObjectUtils.equals(bean.getNodeParticipantRef("product"), product);
+            }
+            return false;
         }
 
         protected boolean validateRequired(Validator validator, String name, Object value) {
@@ -543,7 +635,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
         }
 
         protected String[] getProductArchetypes() {
-            return new String[]{ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE};
+            return new String[]{ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE, ProductArchetypes.SERVICE};
         }
 
     }

@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -31,20 +31,28 @@
               maxCardinality="1"
               filter="participation.product"/>
         <node name="description" displayName="Notes" type="java.lang.String" path="/description"/>
-        <node name="status" path="/status" type="java.lang.String"
-              minCardinality="1" defaultValue="'IN_PROGRESS'">
+        <node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'IN_PROGRESS'"
+              readOnly="true">
             <assertion name="lookup.local">
                 <propertyList name="entries">
                     <property name="IN_PROGRESS" value="In Progress"/>
-                    <property name="RECEIVED" value="Received"/>
-                    <property name="COMPLETED" value="Completed"/>
                     <property name="CANCELLED" value="Cancelled"/>
-                    <property name="PRELIMINARY" value="Preliminary"/>
-                    <property name="FINAL" value="Final"/>
+                    <property name="POSTED" value="Finalised"/>
                 </propertyList>
             </assertion>
         </node>
-        <node name="reviewed" path="/printed" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="status2" displayName="Order Status" path="/status2" type="java.lang.String" minCardinality="1"
+              defaultValue="'PENDING'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="PENDING" value="Pending"/>
+                    <property name="SENT" value="Sent"/>
+                    <property name="RECEIVED" value="Received"/>
+                    <property name="REVIEWED" value="Reviewed"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="printed" path="/printed" type="java.lang.Boolean" defaultValue="false()" hidden="true"/>
         <node name="clinician" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
               filter="participation.clinician"/>
         <node displayName="Report" name="document" path="/document" minCardinality="0" maxCardinality="1"

@@ -19,19 +19,22 @@ package org.openvpms.web.workspace.workflow.checkout;
 import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.payment.CustomerPaymentEditor;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.print.BatchPrintDialog;
-import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.Task;
+import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
@@ -41,6 +44,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -52,7 +56,7 @@ import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
  *
  * @author Tim Anderson
  */
-class CheckoutWorkflowRunner extends FinancialWorkflowRunner<CheckoutWorkflowRunner.TestWorkflow> {
+class CheckoutWorkflowRunner extends FinancialWorkflowRunner<CheckOutWorkflow> {
 
     /**
      * The appointment/task.
@@ -69,7 +73,6 @@ class CheckoutWorkflowRunner extends FinancialWorkflowRunner<CheckoutWorkflowRun
      */
     private String status;
 
-
     /**
      * Constructs a {@code CheckoutWorkflowRunner}.
      *
@@ -83,7 +86,7 @@ class CheckoutWorkflowRunner extends FinancialWorkflowRunner<CheckoutWorkflowRun
         this.act = act;
         endTime = act.getActivityEndTime();
         status = act.getStatus();
-        setWorkflow(new TestWorkflow(act, context));
+        setWorkflow(new TestWorkflow(act, context, new HelpContext("foo", null)));
     }
 
     /**
@@ -170,10 +173,14 @@ class CheckoutWorkflowRunner extends FinancialWorkflowRunner<CheckoutWorkflowRun
         }
         act = get(act);
         if (statusUpdated) {
-            Act event = (Act) getWorkflow().getContext().getObject(PatientArchetypes.CLINICAL_EVENT);
-            assertNotNull(event);
-            assertEquals(ActStatus.COMPLETED, event.getStatus());
-            assertNotNull(event.getActivityEndTime());
+            Visits visits = getWorkflow().getVisits();
+            assertFalse(visits.isEmpty());
+            for (Visit event : visits) {
+                Act act = event.getEvent();
+                assertNotNull(act);
+                assertEquals(ActStatus.COMPLETED, act.getStatus());
+                assertNotNull(act.getActivityEndTime());
+            }
 
             assertEquals(ActStatus.COMPLETED, act.getStatus());
             if (isTask) {
@@ -202,26 +209,42 @@ class CheckoutWorkflowRunner extends FinancialWorkflowRunner<CheckoutWorkflowRun
         assertTrue(amount.compareTo(itemTotal) == 0);
     }
 
-    protected static class TestWorkflow extends CheckOutWorkflow {
-
+    private static class TestWorkflow extends CheckOutWorkflow {
         /**
-         * Constructs a new {@code TestWorkflow} from an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
+         * Constructs a {@link TestWorkflow} from an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
          *
          * @param act     the act
          * @param context the external context to access and update
+         * @param help    the help context
          */
-        public TestWorkflow(Act act, Context context) {
-            super(act, context, new HelpContext("foo", null));
+        public TestWorkflow(Act act, Context context, HelpContext help) {
+            super(act, context, help);
         }
 
         /**
-         * Creates a new task to edit the invoice.
+         * Creates a new task to performing charging.
          *
+         * @param visits the events
          * @return a new task
          */
         @Override
-        protected EditIMObjectTask createEditInvoiceTask() {
-            return new EditInvoiceTask();
+        protected CheckoutEditInvoiceTask createChargeTask(Visits visits) {
+            return new CheckoutEditInvoiceTask(visits) {
+                /**
+                 * Creates a new editor for an object.
+                 * <p/>
+                 * This implementation suppresses a default item from being added.
+                 *
+                 * @param object  the object to edit
+                 * @param context the task context
+                 * @return a new editor
+                 */
+                @Override
+                protected IMObjectEditor createEditor(IMObject object, TaskContext context) {
+                    LayoutContext layout = new DefaultLayoutContext(true, context, new HelpContext("foo", null));
+                    return new CheckoutChargeEditor((FinancialAct) object, getVisits(), layout, false);
+                }
+            };
         }
     }
 }

@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"  ?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<!-- This file loads all the reports accessible from Reporting|Reports.
+  These are normally never customised and hence can be safely loaded without fear of overwriting 
+  the customised versions.
+  Remember that if you do customise a report then you should ensure that your customised version 
+  has a different report name and content file name.
+  This will ensure that it is never overwritten when using this file to load the standard reports.
+  -->
+  
+<templates>
+
+<!-- Reports got from Reporting|Reports-->
+    <template name="Customer Acquisition Report" archetype="REPORT" reportType="CUSTOMER"
+              description="Lists new customers in specified period by Location and Account Type"
+              path="Reporting/Reports/Customer/A4/Customer Acquisition Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Customer Balance Report" archetype="REPORT" reportType="FINANCIAL"
+              description="Shows customers with non-zero balances as at the specified Statement Date" 
+              path="Reporting/Reports/Customer/A4/Customer Balance Report.jrxml"
+              mimeType="text/xml" docType="document.other"/>
+    <template name="Customer List Report" archetype="REPORT" reportType="CUSTOMER" 
+              description="Shows customers grouped by Practice Location &#038; Account Type"
+              path="Reporting/Reports/Customer/A4/Customer List Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Customer Payments Report" archetype="REPORT" reportType="FINANCIAL"
+              description="Lists customer payments and refunds between the specified dates" 
+              path="Reporting/Reports/Customer/A4/Customer Payments Report.jrxml"
+              mimeType="text/xml" docType="document.other"/>
+    <template name="Customer Product Sales Report" archetype="REPORT" reportType="FINANCIAL"
+              description="Lists the selected products sold in given period to selected customers"
+              path="Reporting/Reports/Customer/A4/Customer Product Sales Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Customer Reconciliation Report" archetype="REPORT" reportType="FINANCIAL"
+              description="Displays the selected customer's transactions for the specified period"
+              path="Reporting/Reports/Customer/A4/Customer Reconciliation Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Customer Referral Report" archetype="REPORT" reportType="CUSTOMER"
+              description="Shows number of customers for each Referred By name" 
+              path="Reporting/Reports/Customer/A4/Customer Referral Report.jrxml"
+              mimeType="text/xml" docType="document.other"/>
+    <template name="Customer Retention Report" archetype="REPORT" reportType="CUSTOMER"
+              description="Shows retained and lost customers by comparing their activity in two periods" 
+              path="Reporting/Reports/Customer/A4/Customer Retention Report.jrxml"
+              mimeType="text/xml" docType="document.other"/>
+    <template name="Customer Running Balance Report" archetype="REPORT" reportType="FINANCIAL"
+              description="Shows the customer's transactions between the specified dates"
+              path="Reporting/Reports/Customer/A4/Customer Running Balance Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Customer Sales Report" archetype="REPORT" reportType="FINANCIAL" 
+              description="Lists customer sales and adjustment transactions in the specified period"
+              path="Reporting/Reports/Customer/A4/Customer Sales Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Duplicate Customers/Patients Report" archetype="REPORT" reportType="CUSTOMER" 
+              description="Finds Duplicate Customers &#038; Patients using the selected criteria"
+              path="Reporting/Reports/Customer/A4/Duplicate Customers-Patients.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Duplicate Customers/Patients subreport" archetype="SUBREPORT" reportType="CUSTOMER" description="Subreport - Duplicate Customers &#038; Patients"
+              path="Reporting/Reports/Customer/A4/Duplicate Customers-Patients subreport.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Estimates Report" archetype="REPORT" reportType="CUSTOMER" 
+              description="Lists estimates in specified period"
+              path="Reporting/Reports/Customer/A4/Estimates Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Estimates Report subreport" archetype="SUBREPORT" reportType="CUSTOMER" description="Subreport for Estimates Report"
+              path="Reporting/Reports/Customer/A4/Estimates Report subreport.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Export Customer Addresses for Sales" archetype="REPORT" reportType="CUSTOMER"
+              description="Export Addresses of customers/patients with sales in date range of selected products"
+              path="Reporting/Reports/Customer/A4/Export Customer Addresses for Sales.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Export Customer Addresses" archetype="REPORT" reportType="CUSTOMER"
+              description="Export Addresses of selected customers/patients"
+              path="Reporting/Reports/Customer/A4/Export Customer Addresses.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Export Customer Email Addresses for Sales" archetype="REPORT" reportType="CUSTOMER"
+              description="Export Email Addresses of customers/patients with sales in date range of selected products"
+              path="Reporting/Reports/Customer/A4/Export Customer Email Addresses for Sales.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Export Customer Email Addresses" archetype="REPORT" reportType="CUSTOMER"
+              description="Export Email Addresses of selected customers/patients"
+              path="Reporting/Reports/Customer/A4/Export Customer Email Addresses.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Export Customer Phone Numbers for Sales" archetype="REPORT" reportType="CUSTOMER"
+              description="Export Phone numbers of customers/patients with sales in date range of selected products"
+              path="Reporting/Reports/Customer/A4/Export Customer Phone Numbers for Sales.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Export Customer Phone Numbers" archetype="REPORT" reportType="CUSTOMER"
+              description="Export Phone numbers of selected customers/patients"
+              path="Reporting/Reports/Customer/A4/Export Customer Phone Numbers.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Task Time Statistics" archetype="REPORT" reportType="CUSTOMER"
+              description="Displays statistics for worklist task times"
+              path="Reporting/Reports/Customer/A4/Task Time Statistics.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Wait Time Statistics" archetype="REPORT" reportType="CUSTOMER"
+              description="Displays statistics for appointment wait times"
+              path="Reporting/Reports/Customer/A4/Wait Time Statistics.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Clinician Sales Report" archetype="REPORT" reportType="FINANCIAL"
+              description="Shows sales data by clinician and optionally by location, product type, and product" 
+              path="Reporting/Reports/Financial/A4/Clinician Sales Report.jrxml"
+              mimeType="text/xml" docType="document.other"/>
+    <template name="Debtors - Current" archetype="REPORT" reportType="FINANCIAL"
+              description="Provides the current debtors position at the time the report was run"
+              path="Reporting/Reports/Financial/A4/Debtors - Current.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Debtors - Current - SubReport1" archetype="SUBREPORT" reportType="FINANCIAL"
+              description="Debtors - Current - SubReport1"
+              path="Reporting/Reports/Financial/A4/Debtors - Current - SubReport1.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Debtors - Historical" archetype="REPORT" reportType="FINANCIAL"
+              description="Provides the debtors position at any specified date"
+              path="Reporting/Reports/Financial/A4/Debtors - Historical.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Key Performance Indicators" archetype="REPORT" reportType="FINANCIAL"
+              description="Shows 40 KPI numbers for a specified period and up to 3 prior periods"
+              path="Reporting/Reports/Financial/A4/Key Performance Indicators.jrxml"
+              mimeType="text/xml" docType="document.other"/>
+    <template name="Practice Clinician Sales Report" archetype="REPORT" reportType="FINANCIAL"
+              description="Shows sales data by clinician and location using item, transaction and includes metrics"
+              path="Reporting/Reports/Financial/A4/Practice Clinician Sales Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Practice Summary" archetype="REPORT" reportType="FINANCIAL" 
+              description="Prints various practice statistics for a specified period"
+              path="Reporting/Reports/Financial/A4/Practice Summary.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Practice Sum. Count Appointments by Clinician" archetype="SUBREPORT" reportType="FINANCIAL"
+              description="Practice Sum. Count Appointments by Clinician"
+              path="Reporting/Reports/Financial/A4/Practice Summary_CountApptsClinician.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Practice Sum. Count Appointments by Type" archetype="SUBREPORT" reportType="FINANCIAL"
+              description="Practice Sum. Count Appointments by Type"
+              path="Reporting/Reports/Financial/A4/Practice Summary_CountApptsType.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Practice Sum. Count Visits by Clinician" archetype="SUBREPORT" reportType="FINANCIAL"
+              description="Practice Sum. Count Visits by Clinician"
+              path="Reporting/Reports/Financial/A4/Practice Summary_CountVisitsClinician.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Practice Sum. Count Visits by Location" archetype="SUBREPORT" reportType="FINANCIAL"
+              description="Practice Sum. Count Visits by Location"
+              path="Reporting/Reports/Financial/A4/Practice Summary_CountVisitsLocation.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Practice Sum. Income by Clinician" archetype="SUBREPORT" reportType="FINANCIAL"
+              description="Practice Sum. Income by Clinician"
+              path="Reporting/Reports/Financial/A4/Practice Summary_IncomeByClinician.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Practice Sum. Income by Location" archetype="SUBREPORT" reportType="FINANCIAL"
+              description="Practice Sum. Income by Location"
+              path="Reporting/Reports/Financial/A4/Practice Summary_IncomeByLocation.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Practice Sum. Outstanding Debtors" archetype="SUBREPORT" reportType="FINANCIAL"
+              description="Practice Sum. Outstanding Debtors"
+              path="Reporting/Reports/Financial/A4/Practice Summary_OutstandingDebtors.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Practice Sum. Payments by Location" archetype="SUBREPORT" reportType="FINANCIAL"
+              description="Practice Sum. Payments by Location"
+              path="Reporting/Reports/Financial/A4/Practice Summary_PaymentsByLocation.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Practice Sum. Poduct Sales by Location" archetype="SUBREPORT" reportType="FINANCIAL"
+              description="Practice Sum. Poduct Sales by Location"
+              path="Reporting/Reports/Financial/A4/Practice Summary_ProdSalesLocation.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Practice Sum. Poduct Sales by Type" archetype="SUBREPORT" reportType="FINANCIAL"
+              description="Practice Sum. Poduct Sales by Type"
+              path="Reporting/Reports/Financial/A4/Practice Summary_ProdSalesType.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Patient Acquisition Report" archetype="REPORT" reportType="PATIENT"
+              description="Shows patients acquired between the specified dates and their owners"
+              path="Reporting/Reports/Patient/A4/Patient Acquisition Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Patient Deceased Report" archetype="REPORT" reportType="PATIENT"
+              description="Lists patients deceased in specified date range with owner and chip/tag details" 
+              path="Reporting/Reports/Patient/A4/Patient Deceased Report.jrxml"
+              mimeType="text/xml" docType="document.other"/>
+    <template name="Patient History Search" archetype="REPORT" reportType="PATIENT" 
+              description="Finds notes with specified text with date range, species, breed and clinician selection"
+              path="Reporting/Reports/Patient/A4/Patient History Search.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Patient List Report" archetype="REPORT" reportType="PATIENT" 
+              description="Lists owner and patient details with DOB, species and breed selection"
+              path="Reporting/Reports/Patient/A4/Patient List Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Patient Sales Alert Check" archetype="REPORT" reportType="PATIENT"
+              description="List patients who do not have product related sales alerts set"
+              path="Reporting/Reports/Patient/A4/Patient Sales Alert Check.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Patient Sterilisation Report" archetype="REPORT" reportType="PATIENT"
+              description="Lists desexed patients with DOB in specified range"
+              path="Reporting/Reports/Patient/A4/Patient Sterilisation Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Product Batch Use Report" archetype="REPORT" reportType="PRODUCT"
+              description="Shows usage of products having batch information with product, manufacturer and batch selection" 
+              path="Reporting/Reports/Product/A4/Product Batch Use Report.jrxml"
+              mimeType="text/xml" docType="document.other"/>
+    <template name="Product List Report" archetype="REPORT" reportType="PRODUCT" 
+              description="Lists products with selection by name, product type, classification, alert and pricing group"
+              path="Reporting/Reports/Product/A4/Product List Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Product Price List Report" archetype="REPORT" reportType="PRODUCT"
+              description="Lists prices as at a date with selection by name, product type, and pricing group"
+              path="Reporting/Reports/Product/A4/Product Price List Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Product Price Structure Report" archetype="REPORT" reportType="PRODUCT"
+              description="Shows price structure of selected products as at a date with selection by name, type, and pricing group"
+              path="Reporting/Reports/Product/A4/Product Price Structure Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Products Missing Prices for Pricing Group Report" archetype="REPORT" reportType="PRODUCT"
+              description="Shows products where active prices have pricing groups, but not all pricing groups are specified"
+              path="Reporting/Reports/Product/A4/Products Missing Prices for Pricing Group Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Stock Movement Report" archetype="REPORT" reportType="PRODUCT" 
+              description="Lists stock movements in specified date/time range during stocktake"
+              path="Reporting/Reports/Product/A4/Stock Movement Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Stock Reorder Report" archetype="REPORT" reportType="PRODUCT" 
+              description="Lists what should be ordered from specified suppliers for specified stock locations"
+              path="Reporting/Reports/Product/A4/Stock Reorder Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Stock Valuation Report" archetype="REPORT" reportType="PRODUCT" 
+              description="Shows stock valuation as at a given date for selected locations, products, types and classifications"
+              path="Reporting/Reports/Product/A4/Stock Valuation Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+    <template name="Stocktake Export Report" archetype="REPORT" reportType="PRODUCT"
+              description="Builds a spreadsheet for stocktaking products in a specified location" 
+              path="Reporting/Reports/Product/A4/Stocktake Export Report.jrxml"
+              mimeType="text/xml" docType="document.other"/>
+    <template name="Stocktake List Report" archetype="REPORT" reportType="PRODUCT"
+              description="Prints stocktake sheets for selected locations, products, and types" 
+              path="Reporting/Reports/Product/A4/Stocktake List Report.jrxml"
+              mimeType="text/xml" docType="document.other"/>
+    <template name="HL7 Messages Report" archetype="REPORT" reportType="WORKFLOW" 
+              description="Lists HL7 messages in the specified period containing the specified text"
+              path="Reporting/Reports/HL7/A4/HL7 Messages Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
+
+
+</templates>

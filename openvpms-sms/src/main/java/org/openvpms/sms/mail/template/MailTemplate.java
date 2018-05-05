@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.sms.mail.template;
@@ -25,8 +23,7 @@ import java.util.Map;
 /**
  * Template for email-to-SMS provider emails.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class MailTemplate {
 
@@ -93,11 +90,15 @@ public class MailTemplate {
     /**
      * Variables.
      */
-    private Map<String, String> variables = new HashMap<String, String>();
-
+    private Map<String, Object> variables = new HashMap<>();
 
     /**
-     * Constructs a <tt>MailTemplate</tt>.
+     * The maximum number of message parts supported.
+     */
+    private int maxParts;
+
+    /**
+     * Constructs a {@link MailTemplate}.
      */
     public MailTemplate() {
 
@@ -123,9 +124,9 @@ public class MailTemplate {
 
     /**
      * Sets the area prefix.
-     * <p/>
+     * <p>
      * In Australia this is the '0' prior to the area code.
-     * <p/>
+     * <p>
      * If specified, this will be removed from the front of phone numbers, when the country prefix is provided.
      *
      * @param prefix the area prefix
@@ -324,23 +325,41 @@ public class MailTemplate {
     }
 
     /**
+     * Returns the maximum number of message parts supported by the SMS provider.
+     *
+     * @return the maximum number of message parts
+     */
+    public int getMaxParts() {
+        return maxParts;
+    }
+
+    /**
+     * Sets the maximum number of message parts supported by the SMS provider.
+     *
+     * @param maxParts the maximum number of message parts
+     */
+    public void setMaxParts(int maxParts) {
+        this.maxParts = maxParts;
+    }
+
+    /**
      * Adds a variable.
      *
      * @param name  the variable name
-     * @param value the variable value. May be <tt>null</tt>
+     * @param value the variable value. May be {@code null}
      */
-    public void addVariable(String name, String value) {
+    public void addVariable(String name, Object value) {
         variables.put(name, value);
     }
 
     /**
      * Returns the variables to use in the template.
-     * <p/>
+     * <p>
      * Each entry in the returned map is a variable name/value pair.
      *
      * @return the variables
      */
-    public Map<String, String> getVariables() {
+    public Map<String, Object> getVariables() {
         return variables;
     }
 

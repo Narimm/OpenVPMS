@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
@@ -94,13 +95,14 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
      */
     public ProductBatchQuery(LayoutContext context) {
         super(SHORT_NAMES);
-        stockLocation = new IMObjectSelector<Party>(Messages.get("product.stockLocation"),
-                                                    new DefaultLayoutContext(context, context.getHelpContext()),
-                                                    StockArchetypes.STOCK_LOCATION);
+        setContains(true);
+        stockLocation = new IMObjectSelector<>(Messages.get("product.stockLocation"),
+                                               new DefaultLayoutContext(context, context.getHelpContext()),
+                                               StockArchetypes.STOCK_LOCATION);
         stockLocation.setObject(context.getContext().getStockLocation());
-        manufacturer = new IMObjectSelector<Party>(Messages.get("product.batch.manufacturer"),
-                                                   new DefaultLayoutContext(context, context.getHelpContext()),
-                                                   SupplierArchetypes.MANUFACTURER);
+        manufacturer = new IMObjectSelector<>(Messages.get("product.batch.manufacturer"),
+                                              new DefaultLayoutContext(context, context.getHelpContext()),
+                                              SupplierArchetypes.MANUFACTURER);
 
         AbstractIMObjectSelectorListener<Party> listener = new AbstractIMObjectSelectorListener<Party>() {
             public void selected(Party object) {
@@ -145,6 +147,16 @@ public class ProductBatchQuery extends AbstractEntityQuery<Entity> {
      */
     public void setExpireAfter(Date date) {
         getExpiryDate().setFrom(date);
+    }
+
+    /**
+     * Returns the preferred height of the query when rendered.
+     *
+     * @return the preferred height, or {@code null} if it has no preferred height
+     */
+    @Override
+    public Extent getHeight() {
+        return getHeight(3);
     }
 
     /**

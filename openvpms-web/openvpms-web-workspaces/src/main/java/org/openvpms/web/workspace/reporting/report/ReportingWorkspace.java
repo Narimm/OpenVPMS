@@ -11,13 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.report;
 
 import nextapp.echo2.app.Button;
-import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
@@ -26,8 +25,10 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.util.Variables;
+import org.openvpms.report.ReportFactory;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ReloadingContext;
+import org.openvpms.web.component.im.doc.FileNameFormatter;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserListener;
@@ -40,13 +41,12 @@ import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
-import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.reporting.AbstractReportingWorkspace;
-import org.openvpms.web.workspace.reporting.ReportQuery;
 
+import javax.sql.DataSource;
 import java.util.List;
 
 
@@ -80,7 +80,7 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
      * @param mailContext the mail context
      */
     public ReportingWorkspace(Context context, MailContext mailContext) {
-        super("reporting", "report", Entity.class, context, mailContext);
+        super("reporting.report", Entity.class, context, mailContext);
         user = getContext().getUser();
     }
 
@@ -132,8 +132,7 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
                 setObject(object);
             }
         });
-        Column entities = ColumnFactory.create("Inset", browser.getComponent());
-        container.add(entities);
+        container.add(browser.getComponent());
         if (!query.isAuto()) {
             browser.query();
         }
@@ -177,7 +176,11 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
                 ILookupService lookups = ServiceHelper.getLookupService();
                 DocumentTemplate template = new DocumentTemplate(entity, service);
                 Context context = getContext();
-                SQLReportPrinter printer = new SQLReportPrinter(template, context);
+                ReportFactory factory = ServiceHelper.getBean(ReportFactory.class);
+                FileNameFormatter formatter = ServiceHelper.getBean(FileNameFormatter.class);
+                DataSource dataSource = ServiceHelper.getBean("reportingDataSource", DataSource.class);
+                SQLReportPrinter printer = new SQLReportPrinter(template, context, factory, formatter, dataSource,
+                                                                service);
                 HelpContext help = getHelpContext().subtopic("run");
                 Variables variables = new MacroVariables(new ReloadingContext(context), service, lookups);
                 InteractiveSQLReportPrinter iPrinter = new InteractiveSQLReportPrinter(
@@ -197,9 +200,9 @@ public class ReportingWorkspace extends AbstractReportingWorkspace<Entity> {
      */
     private Browser<Entity> createBrowser(ReportQuery query) {
         DefaultLayoutContext context = new DefaultLayoutContext(getContext(), getHelpContext());
-        DefaultDescriptorTableModel<Entity> model = new DefaultDescriptorTableModel<Entity>(
-                query.getShortNames(), context, "id", "name", "description", "archetype", "reportType");
-        return new DefaultIMObjectTableBrowser<Entity>(query, model, context);
+        DefaultDescriptorTableModel<Entity> model = new DefaultDescriptorTableModel<>(
+                query.getShortNames(), context, "id", "name", "description", "reportType");
+        return new DefaultIMObjectTableBrowser<>(query, model, context);
     }
 
     /**

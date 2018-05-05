@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -20,7 +20,11 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.util.PropertyState;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.openvpms.component.business.service.archetype.helper.PropertyResolverException.ErrorCode.InvalidObject;
 
@@ -39,20 +43,16 @@ import static org.openvpms.component.business.service.archetype.helper.PropertyR
  *
  * @author Tim Anderson
  */
-public abstract class AbstractPropertyResolver implements PropertyResolver {
-
-    /**
-     * The archetype service.
-     */
-    protected final IArchetypeService service;
+public abstract class AbstractPropertyResolver extends BasePropertyResolver {
 
     /**
      * Constructs an {@link AbstractPropertyResolver}.
      *
      * @param service the archetype service
+     * @param lookups the lookup service
      */
-    public AbstractPropertyResolver(IArchetypeService service) {
-        this.service = service;
+    public AbstractPropertyResolver(IArchetypeService service, ILookupService lookups) {
+        super(service, lookups);
     }
 
     /**
@@ -67,6 +67,32 @@ public abstract class AbstractPropertyResolver implements PropertyResolver {
     }
 
     /**
+     * Returns all objects matching the named property.
+     * <p/>
+     * Unlike {@link #getObject(String)}, this method handles collections of arbitrary size.
+     *
+     * @param name the property name
+     * @return the corresponding property values
+     * @throws PropertyResolverException if the name is invalid
+     */
+    public List<Object> getObjects(String name) {
+        List<Object> result;
+        Root root = getRoot(name);
+        name = root.nodeName;
+        if (StringUtils.isEmpty(name)) {
+            result = new ArrayList<>();
+            if (root.object != null) {
+                result.add(root.object);
+            }
+        } else if (root.object instanceof IMObject) {
+            result = getObjects((IMObject) root.object, name);
+        } else {
+            throw new PropertyResolverException(PropertyResolverException.ErrorCode.InvalidProperty, name);
+        }
+        return result;
+    }
+
+    /**
      * Resolves the state corresponding to a property.
      *
      * @param name the property name
@@ -76,38 +102,13 @@ public abstract class AbstractPropertyResolver implements PropertyResolver {
     @Override
     public PropertyState resolve(String name) {
         PropertyState result = null;
-        int index = 0;
-        String objectName = name;
-        String nodeName = "";
-        Object object = null;
-        while (object == null && index != -1) {
-            if (exists(objectName)) {
-                object = get(objectName);
-                if (object instanceof IMObject) {
-                    if (!StringUtils.isEmpty(nodeName)) {
-                        result = resolve((IMObject) object, nodeName);
-                        break;
-                    }
-                } else if (object instanceof IMObjectReference) {
-                    object = service.get((IMObjectReference) object);
-                    if (object != null && !StringUtils.isEmpty(nodeName)) {
-                        result = resolve((IMObject) object, nodeName);
-                    }
-                    break;
-                } else {
-                    break;
-                }
-            } else {
-                index = name.indexOf('.', index);
-                if (index != -1) {
-                    objectName = name.substring(0, index);
-                    nodeName = name.substring(index + 1);
-                    ++index;
-                }
+        Root root = getRoot(name);
+        Object object = root.object;
+        String nodeName = root.nodeName;
+        if (object instanceof IMObject) {
+            if (!StringUtils.isEmpty(nodeName)) {
+                result = resolve((IMObject) object, nodeName);
             }
-        }
-        if (index == -1) {
-            throw new PropertyResolverException(InvalidObject, name);
         }
         if (result == null) {
             result = new PropertyState(name, object);
@@ -123,7 +124,7 @@ public abstract class AbstractPropertyResolver implements PropertyResolver {
      * @throws PropertyResolverException if the name is invalid
      */
     protected PropertyState resolve(IMObject object, String name) {
-        NodeResolver resolver = new NodeResolver(object, service);
+        NodeResolver resolver = new NodeResolver(object, getService(), getLookups());
         return resolver.resolve(name);
     }
 
@@ -145,11 +146,48 @@ public abstract class AbstractPropertyResolver implements PropertyResolver {
     protected abstract boolean exists(String name);
 
     /**
-     * Returns the archetype service.
-     *
-     * @return the archetype service
+     * Returns the root object.
+     * @param name the property name
+     * @return the root object
      */
-    protected IArchetypeService getService() {
-        return service;
+    private Root getRoot(String name) {
+        int index = 0;
+        String objectName = name;
+        String nodeName = "";
+        Object object = null;
+        while (object == null && index != -1) {
+            if (exists(objectName)) {
+                object = get(objectName);
+                if (object instanceof IMObjectReference) {
+                    object = resolve((IMObjectReference) object);
+                }
+                break;
+            } else {
+                index = name.indexOf('.', index);
+                if (index != -1) {
+                    objectName = name.substring(0, index);
+                    nodeName = name.substring(index + 1);
+                    ++index;
+                }
+            }
+        }
+        if (index == -1) {
+            throw new PropertyResolverException(InvalidObject, name);
+        }
+        return new Root(object, nodeName);
     }
+
+    private static class Root {
+
+        private final Object object;
+
+        private final String nodeName;
+
+        public Root(Object object, String nodeName) {
+            this.object = object;
+            this.nodeName = nodeName;
+        }
+
+    }
+
 }

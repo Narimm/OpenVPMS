@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.alert;
 
@@ -25,6 +25,7 @@ import nextapp.echo2.app.layout.ColumnLayoutData;
 import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -38,15 +39,15 @@ import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.IMObjectViewer;
-import org.openvpms.web.echo.colour.ColourHelper;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -91,7 +92,7 @@ public class AlertsViewer extends PopupDialog {
      * @param help    the help context
      */
     public AlertsViewer(Alert alert, Context context, HelpContext help) {
-        this(Arrays.asList(alert), context, help);
+        this(Collections.singletonList(alert), context, help);
         if (alert.getAlert() != null) {
             setTitle(DescriptorHelper.getDisplayName(alert.getAlert()));
         } else {
@@ -118,7 +119,7 @@ public class AlertsViewer extends PopupDialog {
      */
     @Override
     protected void doLayout() {
-        Column column = ColumnFactory.create("Inset", getComponent());
+        Column column = ColumnFactory.create(Styles.INSET, getComponent());
         getLayout().add(column);
     }
 
@@ -128,14 +129,14 @@ public class AlertsViewer extends PopupDialog {
      * @return the component
      */
     private Component getComponent() {
-        ResultSet<Alert> set = new ListResultSet<Alert>(alerts, 20);
+        ResultSet<Alert> set = new ListResultSet<>(alerts, 20);
         Model model = new Model();
-        table = new PagedIMTable<Alert>(model, set);
+        table = new PagedIMTable<>(model, set);
 
         table.getTable().setStyleName("AlertsViewerTable");
         // this style disables the selection blur style used in other tables, as it hides white text
 
-        column = ColumnFactory.create("CellSpacing", table);
+        column = ColumnFactory.create(Styles.CELL_SPACING, table.getComponent());
 
         if (alerts.size() == 1) {
             show(alerts.get(0));
@@ -220,7 +221,7 @@ public class AlertsViewer extends PopupDialog {
          * @param ascending if {@code true} sort in ascending order; otherwise
          *                  sort in {@code descending} order
          * @return the sort criteria, or {@code null} if the column isn't
-         *         sortable
+         * sortable
          */
         public SortConstraint[] getSortConstraints(int column, boolean ascending) {
             return null;
@@ -279,12 +280,11 @@ public class AlertsViewer extends PopupDialog {
         private Label getAlertType(Alert alert) {
             Label result = LabelFactory.create();
             result.setText(alert.getAlertType().getName());
-            IMObjectBean bean = new IMObjectBean(alert.getAlertType());
-            Color value = ColourHelper.getColor(bean.getString("colour"));
-            if (value != null) {
+            Color colour = alert.getColour();
+            if (colour != null) {
                 TableLayoutData layout = new TableLayoutData();
-                layout.setBackground(value);
-                result.setForeground(ColourHelper.getTextColour(value));
+                layout.setBackground(colour);
+                result.setForeground(alert.getTextColour());
                 result.setLayoutData(layout);
             }
             return result;
@@ -298,7 +298,7 @@ public class AlertsViewer extends PopupDialog {
          */
         private String getPriorityName(String code) {
             if (priorities == null) {
-                priorities = LookupNameHelper.getLookupNames("lookup.patientAlertType", "priority");
+                priorities = LookupNameHelper.getLookupNames(PatientArchetypes.ALERT_TYPE, "priority");
             }
             String name = priorities.get(code);
             if (name == null) {

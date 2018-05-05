@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting;
@@ -47,17 +47,15 @@ public abstract class AbstractReportingWorkspace<T extends IMObject> extends Abs
 
 
     /**
-     * Constructs an {@code AbstractReportingWorkspace}.
+     * Constructs an {@link AbstractReportingWorkspace}.
      *
-     * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId the workspace localisation identifier
-     * @param type        the supported workspace type
-     * @param context     the context
-     * @param mailContext the mail context
+     * @param id           the workspace id
+     * @param type         the supported workspace type
+     * @param context      the context
+     * @param mailContext  the mail context
      */
-    public AbstractReportingWorkspace(String workspacesId, String workspaceId, Class<T> type, Context context,
-                                      MailContext mailContext) {
-        super(workspacesId, workspaceId, context);
+    public AbstractReportingWorkspace(String id, Class<T> type, Context context, MailContext mailContext) {
+        super(id, context);
         this.type = type;
         setMailContext(mailContext);
     }

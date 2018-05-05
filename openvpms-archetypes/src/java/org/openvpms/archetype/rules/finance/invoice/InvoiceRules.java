@@ -11,16 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.invoice;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
-import org.openvpms.archetype.rules.patient.InvestigationActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -33,8 +33,7 @@ import java.util.List;
 /**
  * Invoice rules.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class InvoiceRules {
 
@@ -44,18 +43,14 @@ public class InvoiceRules {
     private final IArchetypeService service;
 
     /**
-     * Statuses of <em>act.patientInvestigation</em> acts that should be retained even if their associated
-     * invoice item is deleted.
-     */
-    private static final String[] INVESTIGATION_STATUSES = {InvestigationActStatus.COMPLETED,
-                                                            InvestigationActStatus.RECEIVED,
-                                                            InvestigationActStatus.PRELIMINARY,
-                                                            InvestigationActStatus.FINAL};
-
-    /**
      * Statuses of <em>act.patientReminder</em> acts that should be retained.
      */
     private static final String[] REMINDER_STATUSES = {ActStatus.COMPLETED};
+
+    /**
+     * Statuses of <em>act.patientAlerts</em> acts that should be retained.
+     */
+    private static final String[] ALERT_STATUSES = {ActStatus.COMPLETED};
 
     /**
      * Statuses of <em>act.patientDocument*</em> acts that should be retained.
@@ -64,7 +59,7 @@ public class InvoiceRules {
 
 
     /**
-     * Creates a new <tt>InvoiceRules</tt>.
+     * Constructs a {@link InvoiceRules}.
      *
      * @param service the archetype service
      */
@@ -73,8 +68,8 @@ public class InvoiceRules {
     }
 
     /**
-     * Invoked after an invoice item has been saved. Updates any reminders
-     * and documents associated with the product.
+     * Invoked after an invoice item has been saved. Updates any reminders, alerts and documents associated with the
+     * product.
      *
      * @param act the act
      */
@@ -130,9 +125,10 @@ public class InvoiceRules {
         if (!TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
             throw new IllegalArgumentException("Invalid argument 'act'");
         }
-        List<Act> toRemove = new ArrayList<Act>();
-        removeRelatedActs(act, "investigations", INVESTIGATION_STATUSES, toRemove);
+        List<Act> toRemove = new ArrayList<>();
+        removeInvestigations(act, toRemove);
         removeRelatedActs(act, "reminders", REMINDER_STATUSES, toRemove);
+        removeRelatedActs(act, "alerts", ALERT_STATUSES, toRemove);
         removeRelatedActs(act, "documents", DOCUMENT_STATUSES, toRemove);
 
         if (!toRemove.isEmpty()) {
@@ -142,6 +138,27 @@ public class InvoiceRules {
             service.save(toRemove);
             for (Act remove : toRemove) {
                 service.remove(remove);
+            }
+        }
+    }
+
+    /**
+     * Removes relationships between an invoice item and related investigations, iff the investigation is IN_PROGRESS,
+     * and doesn't have any associated results.
+     *
+     * @param item     the invoice item
+     * @param toRemove the acts to remove
+     */
+    private void removeInvestigations(FinancialAct item, List<Act> toRemove) {
+        ActBean bean = new ActBean(item, service);
+        List<DocumentAct> acts = bean.getNodeActs("investigations", DocumentAct.class);
+        for (DocumentAct act : acts) {
+            String status = act.getStatus();
+            if (ActStatus.IN_PROGRESS.equals(status) && act.getDocument() == null) {
+                ActRelationship r = bean.getRelationship(act);
+                toRemove.add(act);
+                act.removeActRelationship(r);
+                bean.removeRelationship(r);
             }
         }
     }

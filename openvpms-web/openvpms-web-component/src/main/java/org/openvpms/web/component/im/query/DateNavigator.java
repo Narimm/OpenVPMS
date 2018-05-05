@@ -23,6 +23,11 @@ public class DateNavigator {
     public static final DateNavigator WEEK = DAY;
 
     /**
+     * Next/previous navigate +1/-1 day, Next/previous term navigates +1/-1 week.
+     */
+    public static final DateNavigator FORTNIGHT = DAY;
+
+    /**
      * Next/previous navigate +1/-1 day.<br/>
      * Next term navigates to the start of the next month.<br/>
      * Previous term navigates to the start of the month, or the previous month if at the start.

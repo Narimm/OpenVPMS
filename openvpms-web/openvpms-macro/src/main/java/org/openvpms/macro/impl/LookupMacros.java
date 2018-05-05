@@ -11,19 +11,22 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro.impl;
 
+import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
+import org.openvpms.component.business.service.archetype.ReadOnlyArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.macro.MacroException;
@@ -31,6 +34,7 @@ import org.openvpms.macro.Macros;
 import org.openvpms.macro.Position;
 import org.openvpms.report.ReportFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.InitializingBean;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,7 +54,7 @@ import java.util.StringTokenizer;
  *
  * @author Tim Anderson
  */
-public class LookupMacros implements Macros, DisposableBean {
+public class LookupMacros implements Macros, InitializingBean, DisposableBean {
 
     /**
      * The macros, keyed on code
@@ -68,6 +72,16 @@ public class LookupMacros implements Macros, DisposableBean {
     private final MacroFactory factory;
 
     /**
+     * The factory for
+     */
+    private final ArchetypeFunctionsFactory functionsFactory;
+
+    /**
+     * The JXPath extension functions that macros may invoke.
+     */
+    private FunctionLibrary functions;
+
+    /**
      * The listener to monitor macro updates.
      */
     private final IArchetypeServiceListener listener;
@@ -76,7 +90,7 @@ public class LookupMacros implements Macros, DisposableBean {
      * The per-thread variables. These are required so that variables may be supplied to nested macros when they
      * are invoked via macro:eval().
      */
-    private final ThreadLocal<ScopedVariables> scopedVariables = new ThreadLocal<ScopedVariables>();
+    private final ThreadLocal<ScopedVariables> scopedVariables = new ThreadLocal<>();
 
     /**
      * The logger.
@@ -89,12 +103,14 @@ public class LookupMacros implements Macros, DisposableBean {
      * @param lookups the lookup service
      * @param service the archetype service
      * @param factory the document handlers
+     * @param functions the JXPath extension functions that macros may invoke
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public LookupMacros(ILookupService lookups, IArchetypeService service, ReportFactory factory) {
+    public LookupMacros(ILookupService lookups, IArchetypeService service, ReportFactory factory,
+                        ArchetypeFunctionsFactory functions) {
         this.service = service;
         this.factory = new MacroFactory(service, factory);
-
+        this.functionsFactory = functions;
         for (String shortName : MacroArchetypes.LOOKUP_MACROS) {
             addMacros(shortName, lookups);
         }
@@ -110,6 +126,19 @@ public class LookupMacros implements Macros, DisposableBean {
         for (String shortName : MacroArchetypes.LOOKUP_MACROS) {
             service.addListener(shortName, listener);
         }
+    }
+
+    /**
+     * Invoked by a BeanFactory after it has set all bean properties supplied
+     * <p>This method allows the bean instance to perform initialization only
+     * possible when all bean properties have been set and to throw an
+     * exception in the event of misconfiguration.
+     */
+    @Override
+    public void afterPropertiesSet() {
+        // Create a read-only archetype service to ensure that macros cannot update the database
+        // Need to create the functions here in order to support registration of MacroFunctions
+        functions = functionsFactory.create(new ReadOnlyArchetypeService(service), false);
     }
 
     /**
@@ -154,7 +183,7 @@ public class LookupMacros implements Macros, DisposableBean {
         if (m != null) {
             ScopedVariables scoped = pushVariables(variables);
             try {
-                MacroContext context = new MacroContext(macros, factory, object, scoped);
+                MacroContext context = new MacroContext(macros, factory, object, scoped, functions);
                 result = context.run(m, token.getNumericPrefix());
             } catch (MacroException exception) {
                 throw exception;
@@ -197,12 +226,36 @@ public class LookupMacros implements Macros, DisposableBean {
      * @return the text will macros substituted for their values
      */
     public String runAll(String text, Object object, Variables variables, Position position) {
+        return runAll(text, object, variables, position, false);
+    }
+
+    /**
+     * Runs all macros in the supplied text.
+     * <p/>
+     * When a macro is encountered, it will be replaced with the macro value.
+     * <p/>
+     * If a macro is preceded by a numeric expression, the value will be declared as a variable <em>$number</em>.
+     * <p/>
+     * If a macro fails to expand, the macro will be left in the text, unless {@code failOnError} is {@code true},
+     * where an exception will be thrown.
+     *
+     * @param text        the text to parse
+     * @param object      the object to evaluate macros against. May be {@code null}
+     * @param variables   variables to supply to macros. May be {@code null}
+     * @param position    tracks the cursor position. The cursor position will be moved if macros before it are expanded.
+     *                    May be {@code null}
+     * @param failOnError if {@code true}, throw an exception if a macro fails to expand
+     * @return the text will macros substituted for their values
+     * @throws MacroException if an error occurs, and {@code failOnError == true}
+     */
+    @Override
+    public String runAll(String text, Object object, Variables variables, Position position, boolean failOnError) {
         StringBuilder result = new StringBuilder();
         ScopedVariables scoped = pushVariables(variables);
         int oldPos = position != null ? position.getOldPosition() : -1;
         int index = 0;   // index into the text
         try {
-            MacroContext context = new MacroContext(macros, factory, object, scoped);
+            MacroContext context = new MacroContext(macros, factory, object, scoped, functions);
 
             StringTokenizer tokens = new StringTokenizer(text, " \t\n\r", true);
             while (tokens.hasMoreTokens()) {
@@ -216,8 +269,16 @@ public class LookupMacros implements Macros, DisposableBean {
                         value = context.run(macro, token.getNumericPrefix());
                         expanded = true;
                     } catch (Throwable exception) {
-                        log.warn(exception, exception);
-                        value = token.getText();
+                        if (failOnError) {
+                            if (exception instanceof MacroException) {
+                                throw exception;
+                            } else {
+                                throw new MacroException(exception.getMessage(), exception);
+                            }
+                        } else {
+                            log.warn(exception, exception);
+                            value = token.getText();
+                        }
                     }
                 } else {
                     value = token.getText();
@@ -429,7 +490,7 @@ public class LookupMacros implements Macros, DisposableBean {
 
     private static class ScopedVariables implements Variables {
 
-        private final List<Variables> stack = new ArrayList<Variables>();
+        private final List<Variables> stack = new ArrayList<>();
 
         public void push(Variables variables) {
             stack.add(variables);

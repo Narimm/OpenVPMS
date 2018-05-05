@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean name="documentSessionManager" class="org.openvpms.web.webdav.milton.DocumentSessionManager">
+        <constructor-arg ref="editableDocuments"/>
+
+        <!-- The maximum number of concurrent sessions, before the oldest sessions are forcibly removed -->
+        <constructor-arg name="maxSessions" value="2000"/>
+
+        <!-- The time in minutes for a WebDAV session to be inactive, before passwords are prompted for -->
+        <constructor-arg name="timeToLive" value="60"/>
+    </bean>
+
+    <bean name="lockManager" class="org.openvpms.web.webdav.milton.ResourceLockManagerImpl"/>
+
+    <bean name="editableDocuments" class="org.openvpms.web.webdav.resource.EditableDocuments">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg>
+            <list>
+                <value>act.customerDocumentAttachment</value>
+                <value>act.customerDocumentLetter</value>
+                <value>act.documentTemplate</value>
+                <value>act.patientDocumentAttachment</value>
+                <value>act.patientDocumentImage</value>
+                <value>act.patientDocumentLetter</value>
+                <value>act.patientInvestigation</value>
+                <value>act.supplierDocumentAttachment</value>
+                <value>act.supplierDocumentLetter</value>
+            </list>
+        </constructor-arg>
+    </bean>
+
+    <bean class="org.openvpms.web.webdav.milton.HttpManagerFactory">
+        <constructor-arg ref="documentSessionManager"/>
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="documentHandlers"/>
+        <constructor-arg ref="lockManager"/>
+    </bean>
+
+</beans>

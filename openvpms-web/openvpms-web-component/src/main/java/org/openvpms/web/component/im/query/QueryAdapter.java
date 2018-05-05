@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
@@ -46,7 +47,7 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
 
 
     /**
-     * Creates a new <tt>QueryAdapter</tt>.
+     * Constructs a {@link QueryAdapter}.
      *
      * @param query the query to adapt from
      * @param type  the type that this query returns
@@ -95,7 +96,7 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
     /**
      * Sets the default sort constraint.
      *
-     * @param sort the default sort cosntraint. May be <tt>null</tt>
+     * @param sort the default sort cosntraint. May be {@code null}
      */
     public void setDefaultSortConstraint(SortConstraint[] sort) {
         query.setDefaultSortConstraint(sort);
@@ -104,7 +105,7 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
     /**
      * Returns the default sort constraint
      *
-     * @return the default sort constraint. May be <tt>null</tt>
+     * @return the default sort constraint. May be {@code null}
      */
     public SortConstraint[] getDefaultSortConstraint() {
         return query.getDefaultSortConstraint();
@@ -124,7 +125,7 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
     /**
      * Performs the query.
      *
-     * @param sort the sort constraint. May be <tt>null</tt>
+     * @param sort the sort constraint. May be {@code null}
      * @return the query result set
      * @throws ArchetypeServiceException if the query fails
      */
@@ -137,12 +138,10 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
      * Determines if the query selects a particular object.
      *
      * @param object the object to check
-     * @return <tt>true</tt> if the object is selected by the query
+     * @return {@code true} if the object is selected by the query
      */
     public boolean selects(T object) {
-        Iterator<T> iterator = iterator();
-        while (iterator.hasNext()) {
-            T next = iterator.next();
+        for (T next : this) {
             if (next.equals(object)) {
                 return true;
             }
@@ -154,7 +153,7 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
      * Determines if the query selects a particular object reference.
      *
      * @param reference the object reference to check
-     * @return <tt>true</tt> if the object reference is selected by the query
+     * @return {@code true} if the object reference is selected by the query
      */
     public boolean selects(IMObjectReference reference) {
         return query.selects(reference);
@@ -175,12 +174,12 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
      * Performs the query using the default sort constraint, and adapts the
      * results to an iterator.
      *
-     * @param sort the sort constraint. May be <tt>null</tt>
+     * @param sort the sort constraint. May be {@code null}
      * @return an iterator over the results.
      * @throws ArchetypeServiceException if the query fails
      */
     public Iterator<T> iterator(SortConstraint[] sort) {
-        return new ResultSetIterator<T>(query(sort));
+        return new ResultSetIterator<>(query(sort));
     }
 
     /**
@@ -196,7 +195,7 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
     /**
      * Sets the name to query on.
      *
-     * @param name the name. May contain wildcards, or be <tt>null</tt>
+     * @param name the name. May contain wildcards, or be {@code null}
      */
     public void setValue(String name) {
         query.setValue(name);
@@ -205,10 +204,30 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
     /**
      * Returns the name being queried on.
      *
-     * @return the name. May contain wildcards, or be <tt>null</tt>
+     * @return the name. May contain wildcards, or be {@code null}
      */
     public String getValue() {
         return query.getValue();
+    }
+
+    /**
+     * Determines if substring searches should be performed by default.
+     *
+     * @param contains if {@code true}, perform substring searches, otherwise only perform them if wildcards are present
+     */
+    @Override
+    public void setContains(boolean contains) {
+        query.setContains(contains);
+    }
+
+    /**
+     * Determines if substring searches should be performed by default.
+     *
+     * @return {@code true} to perform substring searches, {@code false} to only perform them if wildcards are present
+     */
+    @Override
+    public boolean isContains() {
+        return query.isContains();
     }
 
     /**
@@ -232,7 +251,7 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
     /**
      * Determines if the query should be run automatically.
      *
-     * @param auto if <tt>true</tt> run the query automatically
+     * @param auto if {@code true} run the query automatically
      */
     public void setAuto(boolean auto) {
         query.setAuto(auto);
@@ -241,8 +260,7 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
     /**
      * Determines if the query should be run automatically.
      *
-     * @return <tt>true</tt> if the query should be run automaticaly;
-     *         otherwise <tt>false</tt>
+     * @return {@code true} if the query should be run automatically; otherwise {@code false}
      */
     public boolean isAuto() {
         return query.isAuto();
@@ -258,10 +276,9 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
     }
 
     /**
-     * Determines if dusplicate rows should be filtered.
+     * Determines if duplicate rows should be filtered.
      *
-     * @return <tt>true</tt> if duplicate rows should be removed;
-     *         otherwise <tt>false</tt>
+     * @return {@code true} if duplicate rows should be removed; otherwise {@code false}
      */
     public boolean isDistinct() {
         return query.isDistinct();
@@ -337,6 +354,16 @@ public abstract class QueryAdapter<A, T> implements Query<T> {
      */
     public Query<A> getQuery() {
         return query;
+    }
+
+    /**
+     * Returns the preferred height of the query when rendered.
+     *
+     * @return the preferred height, or {@code null} if the query doesn't have a preferred height
+     */
+    @Override
+    public Extent getHeight() {
+        return query.getHeight();
     }
 
     /**

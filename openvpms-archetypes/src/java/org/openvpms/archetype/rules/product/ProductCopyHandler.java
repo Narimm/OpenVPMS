@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
 
+import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.rules.util.MappingCopyHandler;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
@@ -85,7 +86,7 @@ public class ProductCopyHandler extends MappingCopyHandler {
     /**
      * Determines how a node should be copied.
      * <p/>
-     * This implementation excludes the quantity node from <em>entityRelationship.productStockLocation</em> when
+     * This implementation excludes the quantity node from <em>entityLink.productStockLocation</em> when
      * copying products.
      *
      * @param source     the source archetype
@@ -95,7 +96,7 @@ public class ProductCopyHandler extends MappingCopyHandler {
      */
     @Override
     public NodeDescriptor getNode(ArchetypeDescriptor source, NodeDescriptor sourceNode, ArchetypeDescriptor target) {
-        boolean isStockLocation = TypeHelper.isA(source, "entityRelationship.productStockLocation");
+        boolean isStockLocation = TypeHelper.isA(source, StockArchetypes.PRODUCT_STOCK_LOCATION_RELATIONSHIP);
         if (isStockLocation && "quantity".equals(sourceNode.getName())) {
             return null;
         }

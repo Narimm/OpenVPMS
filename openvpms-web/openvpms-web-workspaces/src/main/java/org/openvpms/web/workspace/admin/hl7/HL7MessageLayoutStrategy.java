@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.hl7;
@@ -110,11 +110,11 @@ public class HL7MessageLayoutStrategy extends AbstractLayoutStrategy {
      */
     private ComponentState getMessage(IMObject object, PropertySet properties) {
         DocumentAct act = (DocumentAct) object;
-        Document document = (Document) IMObjectHelper.getObject(act.getDocument(), null);
+        Document document = (Document) IMObjectHelper.getObject(act.getDocument());
         String content = null;
         if (document != null) {
             HL7DocumentHandler handler = new HL7DocumentHandler(ServiceHelper.getArchetypeService());
-            content = handler.getStringContent(document);
+            content = handler.toString(document);
         }
         TextArea text = TextComponentFactory.createTextArea();
         text.setStyleName("monospace");

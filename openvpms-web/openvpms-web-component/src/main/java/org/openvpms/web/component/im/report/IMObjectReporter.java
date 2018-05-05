@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.report;
@@ -21,15 +21,12 @@ import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ReportException;
 import org.openvpms.report.ReportFactory;
-import org.openvpms.web.system.ServiceHelper;
-
-import static org.openvpms.archetype.rules.doc.DocumentException.ErrorCode.NotFound;
-import static org.openvpms.report.ReportException.ErrorCode.NoTemplateForArchetype;
+import org.openvpms.web.component.im.doc.FileNameFormatter;
 
 
 /**
@@ -40,44 +37,72 @@ import static org.openvpms.report.ReportException.ErrorCode.NoTemplateForArchety
 public class IMObjectReporter<T extends IMObject> extends TemplatedReporter<T> {
 
     /**
+     * The report factory.
+     */
+    private final ReportFactory factory;
+
+    /**
      * Constructs an {@link IMObjectReporter} for a single object.
      *
-     * @param object   the object
-     * @param template the document template to use
+     * @param object    the object
+     * @param template  the document template to use
+     * @param factory   the report factory
+     * @param formatter the file name formatter
+     * @param service   the archetype service
+     * @param lookups   the lookup service
      */
-    public IMObjectReporter(T object, DocumentTemplate template) {
-        super(object, template);
+    public IMObjectReporter(T object, DocumentTemplate template, ReportFactory factory, FileNameFormatter formatter,
+                            IArchetypeService service, ILookupService lookups) {
+        super(object, template, formatter, service, lookups);
+        this.factory = factory;
     }
 
     /**
-     * Constructs an {@code IMObjectReporter} for a single object.
+     * Constructs an {@link IMObjectReporter} for a single object.
      *
-     * @param object  the object
-     * @param locator the document template locator
-     * @throws OpenVPMSException for any error
+     * @param object    the object
+     * @param locator   the document template locator
+     * @param factory   the report factory
+     * @param formatter the file name formatter
+     * @param service   the archetype service
+     * @param lookups   the lookup service
      */
-    public IMObjectReporter(T object, DocumentTemplateLocator locator) {
-        super(object, locator);
+    public IMObjectReporter(T object, DocumentTemplateLocator locator, ReportFactory factory,
+                            FileNameFormatter formatter, IArchetypeService service, ILookupService lookups) {
+        super(object, locator, formatter, service, lookups);
+        this.factory = factory;
     }
 
     /**
-     * Constructs an {@code IMObjectReporter} for a collection of objects.
+     * Constructs an {@link IMObjectReporter} for a collection of objects.
      *
-     * @param objects  the objects to print
-     * @param template the document template to use
+     * @param objects   the objects to print
+     * @param template  the document template to use
+     * @param factory   the report factory
+     * @param formatter the file name formatter
+     * @param service   the archetype service
+     * @param lookups   the lookup service
      */
-    public IMObjectReporter(Iterable<T> objects, DocumentTemplate template) {
-        super(objects, template);
+    public IMObjectReporter(Iterable<T> objects, DocumentTemplate template, ReportFactory factory,
+                            FileNameFormatter formatter, IArchetypeService service, ILookupService lookups) {
+        super(objects, template, formatter, service, lookups);
+        this.factory = factory;
     }
 
     /**
-     * Constructs an {@code IMObjectReporter} for a collection of objects.
+     * Constructs an {@link IMObjectReporter} for a collection of objects.
      *
-     * @param objects the objects to print
-     * @param locator the document template locator
+     * @param objects   the objects to print
+     * @param locator   the document template locator
+     * @param factory   the report factory
+     * @param formatter the file name formatter
+     * @param service   the archetype service
+     * @param lookups   the lookup service
      */
-    public IMObjectReporter(Iterable<T> objects, DocumentTemplateLocator locator) {
-        super(objects, locator);
+    public IMObjectReporter(Iterable<T> objects, DocumentTemplateLocator locator, ReportFactory factory,
+                            FileNameFormatter formatter, IArchetypeService service, ILookupService lookups) {
+        super(objects, locator, formatter, service, lookups);
+        this.factory = factory;
     }
 
     /**
@@ -90,16 +115,7 @@ public class IMObjectReporter<T extends IMObject> extends TemplatedReporter<T> {
      */
     @SuppressWarnings("unchecked")
     public IMReport<T> getReport() {
-        DocumentTemplate template = getTemplate();
-        if (template == null) {
-            String displayName = DescriptorHelper.getDisplayName(getShortName());
-            throw new ReportException(NoTemplateForArchetype, displayName);
-        }
         Document doc = getTemplateDocument();
-        if (doc == null) {
-            throw new DocumentException(NotFound);
-        }
-        ReportFactory factory = ServiceHelper.getBean(ReportFactory.class);
         IMReport<IMObject> report = factory.createIMObjectReport(doc);
         return (IMReport<T>) report;
     }

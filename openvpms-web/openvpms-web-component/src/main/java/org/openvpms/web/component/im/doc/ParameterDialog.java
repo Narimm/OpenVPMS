@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -72,22 +72,23 @@ public class ParameterDialog extends PopupDialog {
      */
     public ParameterDialog(String title, Set<ParameterType> parameters, IMObject object, Context context,
                            HelpContext help, Variables variables) {
-        this(title, parameters, object, context, help, variables, false);
+        this(title, parameters, object, context, help, variables, false, false);
     }
 
     /**
      * Constructs a {@link ParameterDialog}.
      *
-     * @param title      the dialog title
-     * @param parameters the report parameter types
-     * @param object     object for evaluating macros against. May be {@code null}
-     * @param context    the context
-     * @param help       the help context
-     * @param variables  the variables for macro expansion
-     * @param skip       if {@code true}, allow parameter entry to be skipped
+     * @param title           the dialog title
+     * @param parameters      the report parameter types
+     * @param object          object for evaluating macros against. May be {@code null}
+     * @param context         the context
+     * @param help            the help context
+     * @param variables       the variables for macro expansion
+     * @param skip            if {@code true}, allow parameter entry to be skipped
+     * @param largeTextFields if {@code true}, use large text fields for input, otherwise use
      */
     public ParameterDialog(String title, Set<ParameterType> parameters, IMObject object, Context context,
-                           HelpContext help, Variables variables, boolean skip) {
+                           HelpContext help, Variables variables, boolean skip, boolean largeTextFields) {
         super(title, null, (skip) ? OK_SKIP_CANCEL : OK_CANCEL, help);
         setModal(true);
         int columns = 2;
@@ -100,7 +101,7 @@ public class ParameterDialog extends PopupDialog {
                 break;
             }
         }
-        this.parameters = new ReportParameters(parameters, object, variables, columns);
+        this.parameters = new ReportParameters(parameters, object, variables, columns, largeTextFields);
         getFocusGroup().add(0, this.parameters.getFocusGroup());
         this.context = context;
         String style = (columns == 2) ? WIDE_STYLE : NARROW_STYLE;

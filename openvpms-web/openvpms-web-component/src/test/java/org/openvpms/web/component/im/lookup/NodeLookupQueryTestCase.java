@@ -11,19 +11,21 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.lookup;
 
 import org.junit.Test;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.util.ArrayList;
@@ -48,7 +50,7 @@ public class NodeLookupQueryTestCase extends AbstractAppTest {
     @Test
     public void testGetLookupsForNodeName() {
         NodeLookupQuery query = new NodeLookupQuery(CustomerArchetypes.PERSON, "title");
-        checkLookups(query);
+        checkTitles(query);
     }
 
     /**
@@ -62,17 +64,61 @@ public class NodeLookupQueryTestCase extends AbstractAppTest {
         NodeDescriptor descriptor = archetype.getNodeDescriptor("title");
         assertNotNull(descriptor);
         NodeLookupQuery query = new NodeLookupQuery(customer, descriptor);
-        checkLookups(query);
+        checkTitles(query);
     }
 
     /**
-     * Tests the {@link NodeLookupQuery#getLookups()} method.
+     * Verifies that inactive lookups are returned if they are referred to by an object.
+     */
+    @Test
+    public void testInactiveLookups() {
+        Party patient = TestHelper.createPatient(false);
+        IMObjectBean bean = new IMObjectBean(patient);
+        Lookup canine = TestHelper.getLookup(PatientArchetypes.SPECIES, "CANINE");
+        Lookup canineBreed = TestHelper.getLookup(PatientArchetypes.BREED, "BLOODHOUND", canine,
+                                                  "lookupRelationship.speciesBreed");
+        Lookup feline = TestHelper.getLookup(PatientArchetypes.SPECIES, "FELINE");
+        Lookup felineBreed = TestHelper.getLookup(PatientArchetypes.BREED, "ABYSSINIAN", feline,
+                                                  "lookupRelationship.speciesBreed");
+        bean.setValue("species", canine.getCode());
+        bean.setValue("breed", canineBreed.getCode());
+
+        NodeLookupQuery speciesQuery = new NodeLookupQuery(patient, bean.getDescriptor("species"));
+        checkLookups(speciesQuery, true, canine, feline);
+
+        NodeLookupQuery breedQuery = new NodeLookupQuery(patient, bean.getDescriptor("breed"));
+        checkLookups(breedQuery, true, canineBreed);
+        checkLookups(breedQuery, false, felineBreed);
+
+        canine.setActive(false);
+        save(canine);
+        checkLookups(speciesQuery, true, canine, feline);
+        checkLookups(breedQuery, true, canineBreed);
+        checkLookups(breedQuery, false, felineBreed);
+
+        canineBreed.setActive(false);
+        save(canineBreed);
+        checkLookups(speciesQuery, true, canine, feline);
+        checkLookups(breedQuery, true, canineBreed);
+        checkLookups(breedQuery, false, felineBreed);
+
+        // now change to the active codes, and verify the inactive codes aren't returned
+        bean.setValue("species", feline.getCode());
+        bean.setValue("breed", felineBreed.getCode());
+        checkLookups(speciesQuery, true, feline);
+        checkLookups(speciesQuery, false, canine);
+        checkLookups(breedQuery, true, felineBreed);
+        checkLookups(breedQuery, false, canineBreed);
+    }
+
+    /**
+     * Tests the {@link NodeLookupQuery#getLookups()} method against lookup.personTitle lookups.
      *
      * @param query the query to check
      */
-    private void checkLookups(NodeLookupQuery query) {
+    private void checkTitles(NodeLookupQuery query) {
         Collection<Lookup> titles = getLookupService().getLookups("lookup.personTitle");
-        List<Lookup> expected = new ArrayList<Lookup>();
+        List<Lookup> expected = new ArrayList<>();
         for (Lookup title : titles) {
             if (title.isActive()) {
                 expected.add(title);
@@ -84,6 +130,20 @@ public class NodeLookupQueryTestCase extends AbstractAppTest {
         assertEquals(expected.size(), actual.size());
         for (Lookup l : expected) {
             assertTrue(actual.contains(l));
+        }
+    }
+
+    /**
+     * Tests the {@link NodeLookupQuery#getLookups()}.
+     *
+     * @param query   the query
+     * @param exists  determines if the lookups must exist
+     * @param lookups the lookups to check
+     */
+    private void checkLookups(NodeLookupQuery query, boolean exists, Lookup... lookups) {
+        List<Lookup> actual = query.getLookups();
+        for (Lookup lookup : lookups) {
+            assertEquals(exists, actual.contains(lookup));
         }
     }
 

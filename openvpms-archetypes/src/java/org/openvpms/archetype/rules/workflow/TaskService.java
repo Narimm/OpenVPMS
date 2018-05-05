@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -35,7 +35,7 @@ public class TaskService extends AbstractScheduleService {
      * @param cache   the cache
      */
     public TaskService(IArchetypeService service, ILookupService lookupService, Ehcache cache) {
-        super(ScheduleArchetypes.TASK, service, cache, new TaskFactory(service, lookupService));
+        super(new String[]{ScheduleArchetypes.TASK}, service, cache, new TaskFactory(service, lookupService));
     }
 
 }

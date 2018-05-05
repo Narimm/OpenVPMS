@@ -11,15 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.workflow.scheduling;
 
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.bound.BoundDateTimeField;
 import org.openvpms.web.component.bound.BoundDateTimeFieldFactory;
 import org.openvpms.web.component.im.customer.CustomerParticipationEditor;
@@ -118,18 +119,20 @@ public class AbstractScheduleActEditor extends AbstractActEditor {
     /**
      * Invoked when layout has completed. All editors have been created.
      * <p/>
-     * This adds a listener to invoke {@link #onCustomerChanged()} when the customer changes.
+     * For acts with customers, this adds a listener to invoke {@link #onCustomerChanged()} ifwhen the customer changes.
      */
     @Override
     protected void onLayoutCompleted() {
-        CustomerParticipationEditor customer = getCustomerEditor();
-        PatientParticipationEditor patient = getPatientEditor();
-        customer.setPatientParticipationEditor(patient);
-        customer.addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onCustomerChanged();
-            }
-        });
+        if (getProperty("customer") != null && getProperty("patient") != null) {
+            CustomerParticipationEditor customer = getCustomerEditor();
+            PatientParticipationEditor patient = getPatientEditor();
+            customer.setPatientParticipationEditor(patient);
+            customer.addModifiableListener(new ModifiableListener() {
+                public void modified(Modifiable modifiable) {
+                    onCustomerChanged();
+                }
+            });
+        }
     }
 
     /**

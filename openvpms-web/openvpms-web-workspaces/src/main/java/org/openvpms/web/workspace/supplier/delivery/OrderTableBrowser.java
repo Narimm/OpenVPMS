@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.delivery;
@@ -24,7 +24,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.act.ActHierarchyFilter;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.AbstractFilteredResultSet;
+import org.openvpms.web.component.im.query.FilteredResultSet;
 import org.openvpms.web.component.im.query.IMObjectTableBrowser;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.query.ResultSetIterator;
@@ -97,7 +97,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
      * @return the selected order items
      */
     public List<FinancialAct> getSelectedOrderItems() {
-        List<FinancialAct> result = new ArrayList<FinancialAct>();
+        List<FinancialAct> result = new ArrayList<>();
         PagedModel model = (PagedModel) getTable().getTable().getModel();
         for (FinancialAct act : model.getSelections()) {
             if (TypeHelper.isA(act, "act.supplierOrderItem")) {
@@ -115,11 +115,11 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
     @Override
     protected ResultSet<FinancialAct> doQuery() {
         ResultSet<FinancialAct> set = super.doQuery();
-        return new AbstractFilteredResultSet<FinancialAct>(set) {
+        return new FilteredResultSet<FinancialAct>(set) {
             private Filter filter = new Filter();
 
             protected void filter(FinancialAct act, List<FinancialAct> results) {
-                List<FinancialAct> acts = filter.filter(act, act);
+                List<FinancialAct> acts = filter.filter(act);
                 if (!acts.isEmpty()) {
                     results.add(act);
                     results.addAll(acts);
@@ -162,12 +162,12 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
         /**
          * The orders.
          */
-        private List<Order> orders = new ArrayList<Order>();
+        private List<Order> orders = new ArrayList<>();
 
         /**
          * Map of acts to their corresponding orders.
          */
-        private Map<FinancialAct, Order> actsToOrders = new HashMap<FinancialAct, Order>();
+        private Map<FinancialAct, Order> actsToOrders = new HashMap<>();
 
         /**
          * Constructs a {@code PagedModel}.
@@ -192,7 +192,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
         public void setResultSet(ResultSet<FinancialAct> set) {
             orders.clear();
             actsToOrders.clear();
-            ResultSetIterator<FinancialAct> iter = new ResultSetIterator<FinancialAct>(set);
+            ResultSetIterator<FinancialAct> iter = new ResultSetIterator<>(set);
             Order order = null;
             while (iter.hasNext()) {
                 FinancialAct act = iter.next();
@@ -216,7 +216,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
          * @return the selected order items
          */
         public Set<FinancialAct> getSelections() {
-            Set<FinancialAct> result = new HashSet<FinancialAct>();
+            Set<FinancialAct> result = new HashSet<>();
             for (Order order : orders) {
                 for (FinancialAct item : order.getItems()) {
                     if (order.isSelected(item)) {
@@ -285,7 +285,7 @@ public class OrderTableBrowser extends IMObjectTableBrowser<FinancialAct> {
             /**
              * The order items, and their selection status.
              */
-            private Map<FinancialAct, Boolean> items = new LinkedHashMap<FinancialAct, Boolean>();
+            private Map<FinancialAct, Boolean> items = new LinkedHashMap<>();
 
             /**
              * Adds an order item.

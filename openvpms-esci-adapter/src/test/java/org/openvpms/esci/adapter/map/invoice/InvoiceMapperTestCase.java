@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.esci.adapter.map.invoice;
@@ -51,6 +51,8 @@ import org.openvpms.esci.ubl.common.aggregate.TaxCategoryType;
 import org.openvpms.esci.ubl.common.aggregate.TaxSchemeType;
 import org.openvpms.esci.ubl.common.aggregate.TaxSubtotalType;
 import org.openvpms.esci.ubl.common.aggregate.TaxTotalType;
+import org.openvpms.esci.ubl.common.basic.AllowanceChargeReasonType;
+import org.openvpms.esci.ubl.common.basic.AmountType;
 import org.openvpms.esci.ubl.common.basic.ChargeIndicatorType;
 import org.openvpms.esci.ubl.common.basic.LineIDType;
 import org.openvpms.esci.ubl.common.basic.NoteType;
@@ -1223,6 +1225,37 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
     }
 
     /**
+     * Verifies that an {@link ESCIAdapterException} is raised if an AllowanceCharge/ChargeIndicator element is missing.
+     */
+    @Test
+    public void testMissingAllowanceChargeChargeIndicator() {
+        Invoice invoice = createInvoice();
+        AllowanceChargeType charge = new AllowanceChargeType();
+        invoice.getAllowanceCharge().add(charge);
+        checkMappingException(invoice, "ESCIA-0100: Required element: Invoice/AllowanceCharge/ChargeIndicator missing "
+                                       + "in Invoice: 12345");
+    }
+
+    /**
+     * Verifies that an {@link ESCIAdapterException} is raised if an AllowanceCharge specifies a TaxTotal, but the
+     * TaxCategory element is missing.
+     */
+    @Test
+    public void testMissingAllowanceChargeTaxCategory() {
+        Invoice invoice = createInvoice();
+        AllowanceChargeType charge = new AllowanceChargeType();
+        ChargeIndicatorType indicator = new ChargeIndicatorType();
+        indicator.setValue(true);
+        charge.setChargeIndicator(indicator);
+        charge.setAmount(initAmount(new AmountType(), BigDecimal.ONE));
+        charge.setTaxTotal(createTaxTotal(BigDecimal.TEN, false));
+        charge.setAllowanceChargeReason(UBLHelper.initText(new AllowanceChargeReasonType(), "freight"));
+        invoice.getAllowanceCharge().add(charge);
+        checkMappingException(invoice, "ESCIA-0101: Invalid cardinality for AllowanceCharge/TaxCategory in " +
+                                       "Invoice: 12345. Expected 1 but got 0");
+    }
+
+    /**
      * Checks the delivery status of an order.
      *
      * @param order  the order
@@ -1316,7 +1349,7 @@ public class InvoiceMapperTestCase extends AbstractInvoiceTest {
      */
     private void addProductSupplierRelationship(Product product, Party supplier, String reorderCode, int packageSize,
                                                 String packageUnits, BigDecimal listPrice) {
-        ProductRules rules = new ProductRules(getArchetypeService());
+        ProductRules rules = new ProductRules(getArchetypeService(), getLookupService());
         ProductSupplier ps = rules.createProductSupplier(product, supplier);
         ps.setReorderCode(reorderCode);
         ps.setPackageSize(packageSize);

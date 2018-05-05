@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -29,17 +29,17 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-class ToAddressSelector extends AddressSelector {
-
-    /**
-     * The contact selector.
-     */
-    private MultiContactSelector selector;
+public class ToAddressSelector extends AddressSelector {
 
     /**
      * The localisation key.
      */
     private final String key;
+
+    /**
+     * The contact selector.
+     */
+    private MultiContactSelector selector;
 
     /**
      * Constructs a {@link ToAddressSelector}.
@@ -65,6 +65,20 @@ class ToAddressSelector extends AddressSelector {
     public void setSelected(Contact contact) {
         super.setSelected(contact);
         selector.setObject(contact);
+    }
+
+    /**
+     * Sets the selected contacts.
+     *
+     * @param contacts the selected contacts
+     */
+    public void setSelected(List<Contact> contacts) {
+        if (contacts.isEmpty()) {
+            setSelected((Contact) null);
+        } else {
+            setSelected(contacts.get(0));
+            selector.setObjects(contacts);
+        }
     }
 
     /**

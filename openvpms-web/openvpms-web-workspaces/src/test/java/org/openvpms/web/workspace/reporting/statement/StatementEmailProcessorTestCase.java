@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -21,7 +21,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.openvpms.archetype.component.processor.ProcessorListener;
+import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
@@ -39,8 +41,13 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.report.ReportFactory;
+import org.openvpms.report.openoffice.Converter;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.doc.DocumentTestHelper;
+import org.openvpms.web.component.im.doc.FileNameFormatter;
+import org.openvpms.web.component.im.report.ReporterFactory;
+import org.openvpms.web.component.mail.EmailTemplateEvaluator;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.OpenVPMSApp;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -86,13 +93,15 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         IMObjectBean bean = new IMObjectBean(entity);
         bean.setValue("name", "Statement");
         bean.setValue("archetype", CustomerAccountArchetypes.OPENING_BALANCE);
-        bean.setValue("emailSubject", "Statement email");
-        bean.setValue("emailText", "Statement text");
         if (entity.isNew() || helper.getDocumentAct(entity) == null) {
             DocumentTestHelper.createDocumentTemplate(entity);
-        } else {
             bean.save();
         }
+        if (bean.getNodeTargetObjectRef("email") == null) {
+            bean.addNodeTarget("email", DocumentTestHelper.createEmailTemplate("Statement Email", "Statement Text"));
+            bean.save();
+        }
+        bean.save();
     }
 
     /**
@@ -112,7 +121,6 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         save(customer);
 
         StatementRules rules = new StatementRules(practice, getArchetypeService(),
-                                                  ServiceHelper.getLookupService(),
                                                   ServiceHelper.getBean(CustomerAccountRules.class));
         assertFalse(rules.hasStatement(customer, statementDate));
         List<Act> acts = getActs(customer, statementDate);
@@ -126,9 +134,8 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         assertEquals(1, acts.size());
         checkAct(acts.get(0), invoice1.get(0), POSTED);
 
-        final List<Statement> statements = new ArrayList<Statement>();
+        final List<Statement> statements = new ArrayList<>();
         StatementProcessor processor = new StatementProcessor(statementDate, practice, getArchetypeService(),
-                                                              getLookupService(),
                                                               ServiceHelper.getBean(CustomerAccountRules.class));
         processor.addListener(new ProcessorListener<Statement>() {
             public void process(Statement statement) {
@@ -137,7 +144,18 @@ public class StatementEmailProcessorTestCase extends AbstractStatementTest {
         });
         processor.process(customer);
         assertEquals(1, statements.size());
-        StatementEmailProcessor emailProcessor = new StatementEmailProcessor(sender, practice, new LocalContext());
+        Converter converter = Mockito.mock(Converter.class);
+        EmailTemplateEvaluator evaluator = new EmailTemplateEvaluator(getArchetypeService(), getLookupService(),
+                                                                      ServiceHelper.getMacros(),
+                                                                      ServiceHelper.getBean(ReportFactory.class), converter);
+        FileNameFormatter formatter = Mockito.mock(FileNameFormatter.class);
+        DocumentHandlers handlers = ServiceHelper.getBean(DocumentHandlers.class);
+        ReportFactory factory = new ReportFactory(getArchetypeService(), getLookupService(), handlers,
+                                                  ServiceHelper.getBean(ArchetypeFunctionsFactory.class));
+        ReporterFactory reporterFactory = new ReporterFactory(factory, formatter, getArchetypeService(),
+                                                              getLookupService(), converter);
+        StatementEmailProcessor emailProcessor = new StatementEmailProcessor(sender, evaluator, reporterFactory, practice,
+                                                                             new LocalContext());
         emailProcessor.process(statements.get(0));
         Mockito.verify(sender, times(1)).send(mimeMessage);
     }

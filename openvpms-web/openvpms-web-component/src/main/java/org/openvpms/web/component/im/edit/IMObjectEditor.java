@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
 import org.openvpms.web.component.edit.Editor;
@@ -40,7 +41,7 @@ public interface IMObjectEditor extends Editor, Saveable, Deletable, Cancellable
     /**
      * Property name for event indicating that the component has changed.
      */
-    final String COMPONENT_CHANGED_PROPERTY = "component";
+    String COMPONENT_CHANGED_PROPERTY = "component";
 
     /**
      * Returns a title for the editor.
@@ -73,9 +74,9 @@ public interface IMObjectEditor extends Editor, Saveable, Deletable, Cancellable
     /**
      * Deletes the current object.
      *
-     * @return {@code true} if the object was deleted successfully
+     * @throws OpenVPMSException if the delete fails
      */
-    boolean delete();
+    void delete();
 
     /**
      * Determines if the object has been deleted.
@@ -118,6 +119,14 @@ public interface IMObjectEditor extends Editor, Saveable, Deletable, Cancellable
      * @return the property corresponding to {@code name} or {@code null} if none exists
      */
     Property getProperty(String name);
+
+    /**
+     * Creates a new instance of the editor, with the latest instance of the object to edit.
+     *
+     * @return a new instance, or {@code null} if new instances are not supported
+     * @throws OpenVPMSException if a new instance cannot be created
+     */
+    IMObjectEditor newInstance();
 
     /**
      * Add a property change listener.

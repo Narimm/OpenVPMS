@@ -11,8 +11,9 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.archetype.rules.doc;
 
 
@@ -64,6 +65,11 @@ public class DocumentArchetypes {
     public static final String IMAGE_DOCUMENT = "document.image";
 
     /**
+     * Text document.
+     */
+    public static final String TEXT_DOCUMENT = "document.text";
+
+    /**
      * Logo document act.
      */
     public static final String LOGO_ACT = "act.documentLogo";
@@ -72,4 +78,29 @@ public class DocumentArchetypes {
      * Logo participation.
      */
     public static final String LOGO_PARTICIPATION = "participation.logo";
+
+    /**
+     * System email template.
+     */
+    public static final String SYSTEM_EMAIL_TEMPLATE = "entity.documentTemplateEmailSystem";
+
+    /**
+     * User email template.
+     */
+    public static final String USER_EMAIL_TEMPLATE = "entity.documentTemplateEmailUser";
+
+    /**
+     * Appointment reminder SMS template.
+     */
+    public static final String APPOINTMENT_SMS_TEMPLATE = "entity.documentTemplateSMSAppointment";
+
+    /**
+     * Patient reminder SMS template.
+     */
+    public static final String REMINDER_SMS_TEMPLATE = "entity.documentTemplateSMSReminder";
+
+    /**
+     * Letterhead template.
+     */
+    public static final String LETTERHEAD = "entity.letterhead";
 }

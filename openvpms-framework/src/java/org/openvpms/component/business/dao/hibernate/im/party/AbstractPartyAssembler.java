@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.party;
@@ -23,6 +23,8 @@ import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityAssembler;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+
+import java.util.Set;
 
 
 /**
@@ -57,9 +59,10 @@ public abstract class AbstractPartyAssembler<T extends Party, DO extends PartyDO
      * @param context the assembly context
      */
     @Override
+    @SuppressWarnings("unchecked")
     protected void assembleDO(DO target, T source, DOState state, Context context) {
         super.assembleDO(target, source, state, context);
-        CONTACTS.assembleDO(target.getContacts(), source.getContacts(), state, context);
+        CONTACTS.assembleDO(target.getContacts(), (Set<Contact>) (Set) source.getContacts(), state, context);
     }
 
     /**
@@ -70,9 +73,10 @@ public abstract class AbstractPartyAssembler<T extends Party, DO extends PartyDO
      * @param context the assembly context
      */
     @Override
+    @SuppressWarnings("unchecked")
     protected void assembleObject(T target, DO source, Context context) {
         super.assembleObject(target, source, context);
-        CONTACTS.assembleObject(target.getContacts(), source.getContacts(), context);
+        CONTACTS.assembleObject((Set<Contact>) (Set) target.getContacts(), source.getContacts(), context);
     }
 
 }

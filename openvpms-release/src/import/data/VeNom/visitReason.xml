@@ -1,0 +1,586 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetype>
+    <data id='VENOM_7336' archetype='lookup.visitReasonVeNom' code='VENOM_7336' name='Admit for surgery'
+          description='Reason for visit' dataDictionaryId='7336'/>
+    <data id='VENOM_18772' archetype='lookup.visitReasonVeNom' code='VENOM_18772' name='Aggressive'
+          description='Reason for visit' dataDictionaryId='18772'/>
+    <data id='VENOM_18773' archetype='lookup.visitReasonVeNom' code='VENOM_18773' name='Agitated'
+          description='Reason for visit' dataDictionaryId='18773'/>
+    <data id='VENOM_18774' archetype='lookup.visitReasonVeNom' code='VENOM_18774' name='Anxious'
+          description='Reason for visit' dataDictionaryId='18774'/>
+    <data id='VENOM_18775' archetype='lookup.visitReasonVeNom' code='VENOM_18775' name='Attacked by other animal'
+          description='Reason for visit' dataDictionaryId='18775'/>
+    <data id='VENOM_18776' archetype='lookup.visitReasonVeNom' code='VENOM_18776' name='Bald'
+          description='Reason for visit' dataDictionaryId='18776'/>
+    <data id='VENOM_19026' archetype='lookup.visitReasonVeNom' code='VENOM_19026' name='Bandage problem'
+          description='Reason for visit' dataDictionaryId='19026'/>
+    <data id='VENOM_18777' archetype='lookup.visitReasonVeNom' code='VENOM_18777' name='Barking'
+          description='Reason for visit' dataDictionaryId='18777'/>
+    <data id='VENOM_18778' archetype='lookup.visitReasonVeNom' code='VENOM_18778' name='Been kicked'
+          description='Reason for visit' dataDictionaryId='18778'/>
+    <data id='VENOM_18779' archetype='lookup.visitReasonVeNom' code='VENOM_18779' name='Been run over/hit by car'
+          description='Reason for visit' dataDictionaryId='18779'/>
+    <data id='VENOM_18780' archetype='lookup.visitReasonVeNom' code='VENOM_18780' name='Been stung'
+          description='Reason for visit' dataDictionaryId='18780'/>
+    <data id='VENOM_18781' archetype='lookup.visitReasonVeNom' code='VENOM_18781' name='Begging/crying for food'
+          description='Reason for visit' dataDictionaryId='18781'/>
+    <data id='VENOM_7337' archetype='lookup.visitReasonVeNom' code='VENOM_7337' name='Behaviour advice'
+          description='Reason for visit' dataDictionaryId='7337'/>
+    <data id='VENOM_18782' archetype='lookup.visitReasonVeNom' code='VENOM_18782' name='Behaviour problem (unspecified)'
+          description='Reason for visit' dataDictionaryId='18782'/>
+    <data id='VENOM_18783' archetype='lookup.visitReasonVeNom' code='VENOM_18783' name='Being sick'
+          description='Reason for visit' dataDictionaryId='18783'/>
+    <data id='VENOM_18784' archetype='lookup.visitReasonVeNom' code='VENOM_18784' name='Being sick with blood'
+          description='Reason for visit' dataDictionaryId='18784'/>
+    <data id='VENOM_18785' archetype='lookup.visitReasonVeNom' code='VENOM_18785' name='Bitten'
+          description='Reason for visit' dataDictionaryId='18785'/>
+    <data id='VENOM_18786' archetype='lookup.visitReasonVeNom' code='VENOM_18786' name='Black or tarry motions/stools'
+          description='Reason for visit' dataDictionaryId='18786'/>
+    <data id='VENOM_18787' archetype='lookup.visitReasonVeNom' code='VENOM_18787' name='Bleeding (unspecified)'
+          description='Reason for visit' dataDictionaryId='18787'/>
+    <data id='VENOM_18788' archetype='lookup.visitReasonVeNom' code='VENOM_18788' name='Bleeding from mouth'
+          description='Reason for visit' dataDictionaryId='18788'/>
+    <data id='VENOM_18789' archetype='lookup.visitReasonVeNom' code='VENOM_18789' name='Bleeding from nose'
+          description='Reason for visit' dataDictionaryId='18789'/>
+    <data id='VENOM_18790' archetype='lookup.visitReasonVeNom' code='VENOM_18790' name='Bleeding from penis'
+          description='Reason for visit' dataDictionaryId='18790'/>
+    <data id='VENOM_18791' archetype='lookup.visitReasonVeNom' code='VENOM_18791' name='Bleeding from wound'
+          description='Reason for visit' dataDictionaryId='18791'/>
+    <data id='VENOM_18792' archetype='lookup.visitReasonVeNom' code='VENOM_18792' name='Blind'
+          description='Reason for visit' dataDictionaryId='18792'/>
+    <data id='VENOM_18793' archetype='lookup.visitReasonVeNom' code='VENOM_18793' name='Bloated'
+          description='Reason for visit' dataDictionaryId='18793'/>
+    <data id='VENOM_19029' archetype='lookup.visitReasonVeNom' code='VENOM_19029' name='Blood test'
+          description='Reason for visit' dataDictionaryId='19029'/>
+    <data id='VENOM_18794' archetype='lookup.visitReasonVeNom' code='VENOM_18794' name='Bloody eye'
+          description='Reason for visit' dataDictionaryId='18794'/>
+    <data id='VENOM_18795' archetype='lookup.visitReasonVeNom' code='VENOM_18795'
+          name='Bluish or purplish skin, gums etc. (cyanotic)' description='Reason for visit' dataDictionaryId='18795'/>
+    <data id='VENOM_7334' archetype='lookup.visitReasonVeNom' code='VENOM_7334' name='Boarding'
+          description='Reason for visit' dataDictionaryId='7334'/>
+    <data id='VENOM_18796' archetype='lookup.visitReasonVeNom' code='VENOM_18796' name='Breathing difficulty'
+          description='Reason for visit' dataDictionaryId='18796'/>
+    <data id='VENOM_18797' archetype='lookup.visitReasonVeNom' code='VENOM_18797' name='Breathing quickly'
+          description='Reason for visit' dataDictionaryId='18797'/>
+    <data id='VENOM_18798' archetype='lookup.visitReasonVeNom' code='VENOM_18798' name='Breathless'
+          description='Reason for visit' dataDictionaryId='18798'/>
+    <data id='VENOM_18799' archetype='lookup.visitReasonVeNom' code='VENOM_18799' name='Bringing up food/liquid'
+          description='Reason for visit' dataDictionaryId='18799'/>
+    <data id='VENOM_18800' archetype='lookup.visitReasonVeNom' code='VENOM_18800' name='Bruising'
+          description='Reason for visit' dataDictionaryId='18800'/>
+    <data id='VENOM_18801' archetype='lookup.visitReasonVeNom' code='VENOM_18801' name='Bumping into things'
+          description='Reason for visit' dataDictionaryId='18801'/>
+    <data id='VENOM_18802' archetype='lookup.visitReasonVeNom' code='VENOM_18802' name='Can&apos;t get up'
+          description='Reason for visit' dataDictionaryId='18802'/>
+    <data id='VENOM_18803' archetype='lookup.visitReasonVeNom' code='VENOM_18803' name='Can&apos;t keep food down'
+          description='Reason for visit' dataDictionaryId='18803'/>
+    <data id='VENOM_18804' archetype='lookup.visitReasonVeNom' code='VENOM_18804' name='Can&apos;t keep water down'
+          description='Reason for visit' dataDictionaryId='18804'/>
+    <data id='VENOM_18805' archetype='lookup.visitReasonVeNom' code='VENOM_18805' name='Can&apos;t move'
+          description='Reason for visit' dataDictionaryId='18805'/>
+    <data id='VENOM_18806' archetype='lookup.visitReasonVeNom' code='VENOM_18806' name='Change in bark, call or meow'
+          description='Reason for visit' dataDictionaryId='18806'/>
+    <data id='VENOM_19035' archetype='lookup.visitReasonVeNom' code='VENOM_19035' name='Chemotherapy'
+          description='Reason for visit' dataDictionaryId='19035'/>
+    <data id='VENOM_18807' archetype='lookup.visitReasonVeNom' code='VENOM_18807' name='Chewing feet'
+          description='Reason for visit' dataDictionaryId='18807'/>
+    <data id='VENOM_18808' archetype='lookup.visitReasonVeNom' code='VENOM_18808' name='Choking'
+          description='Reason for visit' dataDictionaryId='18808'/>
+    <data id='VENOM_18809' archetype='lookup.visitReasonVeNom' code='VENOM_18809' name='Cloudy eyes'
+          description='Reason for visit' dataDictionaryId='18809'/>
+    <data id='VENOM_18810' archetype='lookup.visitReasonVeNom' code='VENOM_18810' name='Collapsed'
+          description='Reason for visit' dataDictionaryId='18810'/>
+    <data id='VENOM_18811' archetype='lookup.visitReasonVeNom' code='VENOM_18811' name='Collapsing episodes'
+          description='Reason for visit' dataDictionaryId='18811'/>
+    <data id='VENOM_18812' archetype='lookup.visitReasonVeNom' code='VENOM_18812' name='Confused'
+          description='Reason for visit' dataDictionaryId='18812'/>
+    <data id='VENOM_18813' archetype='lookup.visitReasonVeNom' code='VENOM_18813' name='Constipated'
+          description='Reason for visit' dataDictionaryId='18813'/>
+    <data id='VENOM_18814' archetype='lookup.visitReasonVeNom' code='VENOM_18814' name='Coughing'
+          description='Reason for visit' dataDictionaryId='18814'/>
+    <data id='VENOM_18815' archetype='lookup.visitReasonVeNom' code='VENOM_18815' name='Coughing up blood'
+          description='Reason for visit' dataDictionaryId='18815'/>
+    <data id='VENOM_18816' archetype='lookup.visitReasonVeNom' code='VENOM_18816' name='Crying'
+          description='Reason for visit' dataDictionaryId='18816'/>
+    <data id='VENOM_18817' archetype='lookup.visitReasonVeNom' code='VENOM_18817' name='Cut'
+          description='Reason for visit' dataDictionaryId='18817'/>
+    <data id='VENOM_18818' archetype='lookup.visitReasonVeNom' code='VENOM_18818' name='Dead/passed away'
+          description='Reason for visit' dataDictionaryId='18818'/>
+    <data id='VENOM_18819' archetype='lookup.visitReasonVeNom' code='VENOM_18819' name='Deaf'
+          description='Reason for visit' dataDictionaryId='18819'/>
+    <data id='VENOM_18820' archetype='lookup.visitReasonVeNom' code='VENOM_18820' name='Depressed'
+          description='Reason for visit' dataDictionaryId='18820'/>
+    <data id='VENOM_18821' archetype='lookup.visitReasonVeNom' code='VENOM_18821' name='Diarrhoea'
+          description='Reason for visit' dataDictionaryId='18821'/>
+    <data id='VENOM_18822' archetype='lookup.visitReasonVeNom' code='VENOM_18822' name='Diarrhoea with blood'
+          description='Reason for visit' dataDictionaryId='18822'/>
+    <data id='VENOM_7338' archetype='lookup.visitReasonVeNom' code='VENOM_7338' name='Dietary advice'
+          description='Reason for visit' dataDictionaryId='7338'/>
+    <data id='VENOM_7335' archetype='lookup.visitReasonVeNom' code='VENOM_7335' name='Discharge'
+          description='Reason for visit' dataDictionaryId='7335'/>
+    <data id='VENOM_18823' archetype='lookup.visitReasonVeNom' code='VENOM_18823' name='Disorientated'
+          description='Reason for visit' dataDictionaryId='18823'/>
+    <data id='VENOM_18824' archetype='lookup.visitReasonVeNom' code='VENOM_18824' name='Distressed'
+          description='Reason for visit' dataDictionaryId='18824'/>
+    <data id='VENOM_18825' archetype='lookup.visitReasonVeNom' code='VENOM_18825' name='Dragging leg(s)'
+          description='Reason for visit' dataDictionaryId='18825'/>
+    <data id='VENOM_18826' archetype='lookup.visitReasonVeNom' code='VENOM_18826' name='Dribbling'
+          description='Reason for visit' dataDictionaryId='18826'/>
+    <data id='VENOM_18829' archetype='lookup.visitReasonVeNom' code='VENOM_18829' name='Drinking and urinating more'
+          description='Reason for visit' dataDictionaryId='18829'/>
+    <data id='VENOM_18827' archetype='lookup.visitReasonVeNom' code='VENOM_18827' name='Drinking less'
+          description='Reason for visit' dataDictionaryId='18827'/>
+    <data id='VENOM_18828' archetype='lookup.visitReasonVeNom' code='VENOM_18828' name='Drinking more'
+          description='Reason for visit' dataDictionaryId='18828'/>
+    <data id='VENOM_18830' archetype='lookup.visitReasonVeNom' code='VENOM_18830' name='Drooling'
+          description='Reason for visit' dataDictionaryId='18830'/>
+    <data id='VENOM_18831' archetype='lookup.visitReasonVeNom' code='VENOM_18831' name='Dropping food'
+          description='Reason for visit' dataDictionaryId='18831'/>
+    <data id='VENOM_18832' archetype='lookup.visitReasonVeNom' code='VENOM_18832' name='Dull'
+          description='Reason for visit' dataDictionaryId='18832'/>
+    <data id='VENOM_18833' archetype='lookup.visitReasonVeNom' code='VENOM_18833' name='Ear discharge'
+          description='Reason for visit' dataDictionaryId='18833'/>
+    <data id='VENOM_18834' archetype='lookup.visitReasonVeNom' code='VENOM_18834' name='Ear problem (unspecified)'
+          description='Reason for visit' dataDictionaryId='18834'/>
+    <data id='VENOM_18835' archetype='lookup.visitReasonVeNom' code='VENOM_18835'
+          name='Eaten something shouldn&apos;t have' description='Reason for visit' dataDictionaryId='18835'/>
+    <data id='VENOM_18836' archetype='lookup.visitReasonVeNom' code='VENOM_18836' name='Eating less than normal'
+          description='Reason for visit' dataDictionaryId='18836'/>
+    <data id='VENOM_18837' archetype='lookup.visitReasonVeNom' code='VENOM_18837' name='Eating more than normal'
+          description='Reason for visit' dataDictionaryId='18837'/>
+    <data id='VENOM_18838' archetype='lookup.visitReasonVeNom' code='VENOM_18838' name='Emaciated'
+          description='Reason for visit' dataDictionaryId='18838'/>
+    <data id='VENOM_19031' archetype='lookup.visitReasonVeNom' code='VENOM_19031' name='Euthanasia/Put to sleep'
+          description='Reason for visit' dataDictionaryId='19031'/>
+    <data id='VENOM_18839' archetype='lookup.visitReasonVeNom' code='VENOM_18839' name='Eye problem (unspecified)'
+          description='Reason for visit' dataDictionaryId='18839'/>
+    <data id='VENOM_18840' archetype='lookup.visitReasonVeNom' code='VENOM_18840' name='Eyes flicking/twitching'
+          description='Reason for visit' dataDictionaryId='18840'/>
+    <data id='VENOM_18841' archetype='lookup.visitReasonVeNom' code='VENOM_18841' name='Fainting episodes'
+          description='Reason for visit' dataDictionaryId='18841'/>
+    <data id='VENOM_18842' archetype='lookup.visitReasonVeNom' code='VENOM_18842' name='Feels cold'
+          description='Reason for visit' dataDictionaryId='18842'/>
+    <data id='VENOM_18843' archetype='lookup.visitReasonVeNom' code='VENOM_18843' name='Feels hot'
+          description='Reason for visit' dataDictionaryId='18843'/>
+    <data id='VENOM_18844' archetype='lookup.visitReasonVeNom' code='VENOM_18844' name='Fits/seizures/convulsions'
+          description='Reason for visit' dataDictionaryId='18844'/>
+    <data id='VENOM_18845' archetype='lookup.visitReasonVeNom' code='VENOM_18845' name='Fleas'
+          description='Reason for visit' dataDictionaryId='18845'/>
+    <data id='VENOM_7333' archetype='lookup.visitReasonVeNom' code='VENOM_7333' name='Free dental check'
+          description='Reason for visit' dataDictionaryId='7333'/>
+    <data id='VENOM_7332' archetype='lookup.visitReasonVeNom' code='VENOM_7332' name='Free flea check'
+          description='Reason for visit' dataDictionaryId='7332'/>
+    <data id='VENOM_19032' archetype='lookup.visitReasonVeNom' code='VENOM_19032' name='Further investigations'
+          description='Reason for visit' dataDictionaryId='19032'/>
+    <data id='VENOM_18846' archetype='lookup.visitReasonVeNom' code='VENOM_18846' name='Gagging'
+          description='Reason for visit' dataDictionaryId='18846'/>
+    <data id='VENOM_18847' archetype='lookup.visitReasonVeNom' code='VENOM_18847' name='Genital problem (unspecified)'
+          description='Reason for visit' dataDictionaryId='18847'/>
+    <data id='VENOM_18848' archetype='lookup.visitReasonVeNom' code='VENOM_18848' name='Groaning'
+          description='Reason for visit' dataDictionaryId='18848'/>
+    <data id='VENOM_18849' archetype='lookup.visitReasonVeNom' code='VENOM_18849' name='Gums blue/purple'
+          description='Reason for visit' dataDictionaryId='18849'/>
+    <data id='VENOM_18850' archetype='lookup.visitReasonVeNom' code='VENOM_18850' name='Gums pale/white'
+          description='Reason for visit' dataDictionaryId='18850'/>
+    <data id='VENOM_18851' archetype='lookup.visitReasonVeNom' code='VENOM_18851' name='Gums red'
+          description='Reason for visit' dataDictionaryId='18851'/>
+    <data id='VENOM_18852' archetype='lookup.visitReasonVeNom' code='VENOM_18852' name='Gums yellow'
+          description='Reason for visit' dataDictionaryId='18852'/>
+    <data id='VENOM_18855' archetype='lookup.visitReasonVeNom' code='VENOM_18855' name='Had a stroke'
+          description='Reason for visit' dataDictionaryId='18855'/>
+    <data id='VENOM_18853' archetype='lookup.visitReasonVeNom' code='VENOM_18853' name='Had an accident'
+          description='Reason for visit' dataDictionaryId='18853'/>
+    <data id='VENOM_18854' archetype='lookup.visitReasonVeNom' code='VENOM_18854' name='Hair loss'
+          description='Reason for visit' dataDictionaryId='18854'/>
+    <data id='VENOM_18856' archetype='lookup.visitReasonVeNom' code='VENOM_18856' name='Has a temperature'
+          description='Reason for visit' dataDictionaryId='18856'/>
+    <data id='VENOM_18857' archetype='lookup.visitReasonVeNom' code='VENOM_18857' name='Head tilt/to one side'
+          description='Reason for visit' dataDictionaryId='18857'/>
+    <data id='VENOM_3730' archetype='lookup.visitReasonVeNom' code='VENOM_3730' name='Health check - pre-travel'
+          description='Reason for visit' dataDictionaryId='3730'/>
+    <data id='VENOM_18858' archetype='lookup.visitReasonVeNom' code='VENOM_18858' name='Hives'
+          description='Reason for visit' dataDictionaryId='18858'/>
+    <data id='VENOM_18859' archetype='lookup.visitReasonVeNom' code='VENOM_18859' name='Hunched up'
+          description='Reason for visit' dataDictionaryId='18859'/>
+    <data id='VENOM_18860' archetype='lookup.visitReasonVeNom' code='VENOM_18860' name='In pain/discomfort'
+          description='Reason for visit' dataDictionaryId='18860'/>
+    <data id='VENOM_18861' archetype='lookup.visitReasonVeNom' code='VENOM_18861' name='Incontinent - motions/stools'
+          description='Reason for visit' dataDictionaryId='18861'/>
+    <data id='VENOM_18862' archetype='lookup.visitReasonVeNom' code='VENOM_18862' name='Incontinent - urine'
+          description='Reason for visit' dataDictionaryId='18862'/>
+    <data id='VENOM_18863' archetype='lookup.visitReasonVeNom' code='VENOM_18863' name='Itchy (unspecified)'
+          description='Reason for visit' dataDictionaryId='18863'/>
+    <data id='VENOM_18864' archetype='lookup.visitReasonVeNom' code='VENOM_18864' name='Itchy ear'
+          description='Reason for visit' dataDictionaryId='18864'/>
+    <data id='VENOM_18865' archetype='lookup.visitReasonVeNom' code='VENOM_18865' name='Itchy skin'
+          description='Reason for visit' dataDictionaryId='18865'/>
+    <data id='VENOM_15562' archetype='lookup.visitReasonVeNom' code='VENOM_15562' name='Kitten check - nurse'
+          description='Reason for visit' dataDictionaryId='15562'/>
+    <data id='VENOM_15564' archetype='lookup.visitReasonVeNom' code='VENOM_15564' name='Kitten check - vet'
+          description='Reason for visit' dataDictionaryId='15564'/>
+    <data id='VENOM_18866' archetype='lookup.visitReasonVeNom' code='VENOM_18866' name='Lame'
+          description='Reason for visit' dataDictionaryId='18866'/>
+    <data id='VENOM_18872' archetype='lookup.visitReasonVeNom' code='VENOM_18872' name='Lethargic/tired'
+          description='Reason for visit' dataDictionaryId='18872'/>
+    <data id='VENOM_18867' archetype='lookup.visitReasonVeNom' code='VENOM_18867' name='Licking (unspecified)'
+          description='Reason for visit' dataDictionaryId='18867'/>
+    <data id='VENOM_18868' archetype='lookup.visitReasonVeNom' code='VENOM_18868' name='Licking bum/back end'
+          description='Reason for visit' dataDictionaryId='18868'/>
+    <data id='VENOM_18869' archetype='lookup.visitReasonVeNom' code='VENOM_18869' name='Licking feet'
+          description='Reason for visit' dataDictionaryId='18869'/>
+    <data id='VENOM_18870' archetype='lookup.visitReasonVeNom' code='VENOM_18870' name='Licking penis'
+          description='Reason for visit' dataDictionaryId='18870'/>
+    <data id='VENOM_18871' archetype='lookup.visitReasonVeNom' code='VENOM_18871' name='Limping'
+          description='Reason for visit' dataDictionaryId='18871'/>
+    <data id='VENOM_18873' archetype='lookup.visitReasonVeNom' code='VENOM_18873' name='Loose motions/stools'
+          description='Reason for visit' dataDictionaryId='18873'/>
+    <data id='VENOM_18874' archetype='lookup.visitReasonVeNom' code='VENOM_18874' name='Losing balance'
+          description='Reason for visit' dataDictionaryId='18874'/>
+    <data id='VENOM_18875' archetype='lookup.visitReasonVeNom' code='VENOM_18875' name='Losing hair'
+          description='Reason for visit' dataDictionaryId='18875'/>
+    <data id='VENOM_18876' archetype='lookup.visitReasonVeNom' code='VENOM_18876' name='Losing weight'
+          description='Reason for visit' dataDictionaryId='18876'/>
+    <data id='VENOM_18877' archetype='lookup.visitReasonVeNom' code='VENOM_18877' name='Lump/swelling (unspecified)'
+          description='Reason for visit' dataDictionaryId='18877'/>
+    <data id='VENOM_18879' archetype='lookup.visitReasonVeNom' code='VENOM_18879' name='Lump/swelling in mouth'
+          description='Reason for visit' dataDictionaryId='18879'/>
+    <data id='VENOM_18878' archetype='lookup.visitReasonVeNom' code='VENOM_18878' name='Lump/swelling in/on ear'
+          description='Reason for visit' dataDictionaryId='18878'/>
+    <data id='VENOM_18880' archetype='lookup.visitReasonVeNom' code='VENOM_18880' name='Lump/swelling on skin'
+          description='Reason for visit' dataDictionaryId='18880'/>
+    <data id='VENOM_18881' archetype='lookup.visitReasonVeNom' code='VENOM_18881' name='Meowing'
+          description='Reason for visit' dataDictionaryId='18881'/>
+    <data id='VENOM_18882' archetype='lookup.visitReasonVeNom' code='VENOM_18882' name='Mouth problem (unspecified)'
+          description='Reason for visit' dataDictionaryId='18882'/>
+    <data id='VENOM_18883' archetype='lookup.visitReasonVeNom' code='VENOM_18883' name='Near death/possibly dying'
+          description='Reason for visit' dataDictionaryId='18883'/>
+    <data id='VENOM_18884' archetype='lookup.visitReasonVeNom' code='VENOM_18884' name='Noisy/loud breathing'
+          description='Reason for visit' dataDictionaryId='18884'/>
+    <data id='VENOM_18885' archetype='lookup.visitReasonVeNom' code='VENOM_18885' name='Nose bleed'
+          description='Reason for visit' dataDictionaryId='18885'/>
+    <data id='VENOM_18886' archetype='lookup.visitReasonVeNom' code='VENOM_18886' name='Nose discharge'
+          description='Reason for visit' dataDictionaryId='18886'/>
+    <data id='VENOM_18887' archetype='lookup.visitReasonVeNom' code='VENOM_18887' name='Nose problem (unspecified)'
+          description='Reason for visit' dataDictionaryId='18887'/>
+    <data id='VENOM_18888' archetype='lookup.visitReasonVeNom' code='VENOM_18888' name='Not breathing'
+          description='Reason for visit' dataDictionaryId='18888'/>
+    <data id='VENOM_18889' archetype='lookup.visitReasonVeNom' code='VENOM_18889' name='Not eating anything'
+          description='Reason for visit' dataDictionaryId='18889'/>
+    <data id='VENOM_18890' archetype='lookup.visitReasonVeNom' code='VENOM_18890' name='Not himself/herself'
+          description='Reason for visit' dataDictionaryId='18890'/>
+    <data id='VENOM_18891' archetype='lookup.visitReasonVeNom' code='VENOM_18891' name='NOT LISTED'
+          description='Reason for visit' dataDictionaryId='18891'/>
+    <data id='VENOM_18892' archetype='lookup.visitReasonVeNom' code='VENOM_18892' name='Not moving'
+          description='Reason for visit' dataDictionaryId='18892'/>
+    <data id='VENOM_18893' archetype='lookup.visitReasonVeNom' code='VENOM_18893' name='Not passing motions/stools'
+          description='Reason for visit' dataDictionaryId='18893'/>
+    <data id='VENOM_18894' archetype='lookup.visitReasonVeNom' code='VENOM_18894' name='Not responding'
+          description='Reason for visit' dataDictionaryId='18894'/>
+    <data id='VENOM_18895' archetype='lookup.visitReasonVeNom' code='VENOM_18895' name='Not right'
+          description='Reason for visit' dataDictionaryId='18895'/>
+    <data id='VENOM_18896' archetype='lookup.visitReasonVeNom' code='VENOM_18896' name='Not urinating'
+          description='Reason for visit' dataDictionaryId='18896'/>
+    <data id='VENOM_7339' archetype='lookup.visitReasonVeNom' code='VENOM_7339' name='Nurse appointment'
+          description='Reason for visit' dataDictionaryId='7339'/>
+    <data id='VENOM_18897' archetype='lookup.visitReasonVeNom' code='VENOM_18897' name='Obesity'
+          description='Reason for visit' dataDictionaryId='18897'/>
+    <data id='VENOM_18898' archetype='lookup.visitReasonVeNom' code='VENOM_18898' name='Off colour'
+          description='Reason for visit' dataDictionaryId='18898'/>
+    <data id='VENOM_18899' archetype='lookup.visitReasonVeNom' code='VENOM_18899' name='Off legs'
+          description='Reason for visit' dataDictionaryId='18899'/>
+    <data id='VENOM_19036' archetype='lookup.visitReasonVeNom' code='VENOM_19036' name='Other specific treatment'
+          description='Reason for visit' dataDictionaryId='19036'/>
+    <data id='VENOM_19030' archetype='lookup.visitReasonVeNom' code='VENOM_19030' name='Other test'
+          description='Reason for visit' dataDictionaryId='19030'/>
+    <data id='VENOM_18900' archetype='lookup.visitReasonVeNom' code='VENOM_18900' name='Pacing'
+          description='Reason for visit' dataDictionaryId='18900'/>
+    <data id='VENOM_18901' archetype='lookup.visitReasonVeNom' code='VENOM_18901' name='Paddling'
+          description='Reason for visit' dataDictionaryId='18901'/>
+    <data id='VENOM_18902' archetype='lookup.visitReasonVeNom' code='VENOM_18902' name='Pain on eating/chewing'
+          description='Reason for visit' dataDictionaryId='18902'/>
+    <data id='VENOM_18903' archetype='lookup.visitReasonVeNom' code='VENOM_18903' name='Pain when picked up/handled'
+          description='Reason for visit' dataDictionaryId='18903'/>
+    <data id='VENOM_18904' archetype='lookup.visitReasonVeNom' code='VENOM_18904' name='Painful (unspecified)'
+          description='Reason for visit' dataDictionaryId='18904'/>
+    <data id='VENOM_18905' archetype='lookup.visitReasonVeNom' code='VENOM_18905' name='Painful ear'
+          description='Reason for visit' dataDictionaryId='18905'/>
+    <data id='VENOM_18906' archetype='lookup.visitReasonVeNom' code='VENOM_18906' name='Painful eye'
+          description='Reason for visit' dataDictionaryId='18906'/>
+    <data id='VENOM_18907' archetype='lookup.visitReasonVeNom' code='VENOM_18907' name='Painful mouth'
+          description='Reason for visit' dataDictionaryId='18907'/>
+    <data id='VENOM_18908' archetype='lookup.visitReasonVeNom' code='VENOM_18908' name='Painful tummy'
+          description='Reason for visit' dataDictionaryId='18908'/>
+    <data id='VENOM_18909' archetype='lookup.visitReasonVeNom' code='VENOM_18909' name='Pale'
+          description='Reason for visit' dataDictionaryId='18909'/>
+    <data id='VENOM_18910' archetype='lookup.visitReasonVeNom' code='VENOM_18910' name='Panting'
+          description='Reason for visit' dataDictionaryId='18910'/>
+    <data id='VENOM_18911' archetype='lookup.visitReasonVeNom' code='VENOM_18911' name='Pawing at mouth'
+          description='Reason for visit' dataDictionaryId='18911'/>
+    <data id='VENOM_18912' archetype='lookup.visitReasonVeNom' code='VENOM_18912' name='Penis stuck out'
+          description='Reason for visit' dataDictionaryId='18912'/>
+    <data id='VENOM_18913' archetype='lookup.visitReasonVeNom' code='VENOM_18913' name='Poisoned'
+          description='Reason for visit' dataDictionaryId='18913'/>
+    <data id='VENOM_18914' archetype='lookup.visitReasonVeNom' code='VENOM_18914' name='Poor growth'
+          description='Reason for visit' dataDictionaryId='18914'/>
+    <data id='VENOM_18915' archetype='lookup.visitReasonVeNom' code='VENOM_18915' name='Poor hearing'
+          description='Reason for visit' dataDictionaryId='18915'/>
+    <data id='VENOM_18916' archetype='lookup.visitReasonVeNom' code='VENOM_18916' name='Poor quality of life'
+          description='Reason for visit' dataDictionaryId='18916'/>
+    <data id='VENOM_18917' archetype='lookup.visitReasonVeNom' code='VENOM_18917' name='Poor sight'
+          description='Reason for visit' dataDictionaryId='18917'/>
+    <data id='VENOM_18918' archetype='lookup.visitReasonVeNom' code='VENOM_18918' name='Poor weight gain'
+          description='Reason for visit' dataDictionaryId='18918'/>
+    <data id='VENOM_19027' archetype='lookup.visitReasonVeNom' code='VENOM_19027'
+          name='Post-operative problem (unspecified)' description='Reason for visit' dataDictionaryId='19027'/>
+    <data id='VENOM_19028' archetype='lookup.visitReasonVeNom' code='VENOM_19028'
+          name='Post-operative problem: wound-related' description='Reason for visit' dataDictionaryId='19028'/>
+    <data id='VENOM_3732' archetype='lookup.visitReasonVeNom' code='VENOM_3732' name='Postpartum examination'
+          description='Reason for visit' dataDictionaryId='3732'/>
+    <data id='VENOM_18919' archetype='lookup.visitReasonVeNom' code='VENOM_18919' name='Puffy ear'
+          description='Reason for visit' dataDictionaryId='18919'/>
+    <data id='VENOM_18920' archetype='lookup.visitReasonVeNom' code='VENOM_18920' name='Puffy eye'
+          description='Reason for visit' dataDictionaryId='18920'/>
+    <data id='VENOM_15566' archetype='lookup.visitReasonVeNom' code='VENOM_15566' name='Puppy check - nurse'
+          description='Reason for visit' dataDictionaryId='15566'/>
+    <data id='VENOM_15568' archetype='lookup.visitReasonVeNom' code='VENOM_15568' name='Puppy check - vet'
+          description='Reason for visit' dataDictionaryId='15568'/>
+    <data id='VENOM_7331' archetype='lookup.visitReasonVeNom' code='VENOM_7331' name='Puppy party'
+          description='Reason for visit' dataDictionaryId='7331'/>
+    <data id='VENOM_18921' archetype='lookup.visitReasonVeNom' code='VENOM_18921' name='Putting on weight'
+          description='Reason for visit' dataDictionaryId='18921'/>
+    <data id='VENOM_18922' archetype='lookup.visitReasonVeNom' code='VENOM_18922' name='Quiet'
+          description='Reason for visit' dataDictionaryId='18922'/>
+    <data id='VENOM_19033' archetype='lookup.visitReasonVeNom' code='VENOM_19033' name='Radioactive iodine treatment'
+          description='Reason for visit' dataDictionaryId='19033'/>
+    <data id='VENOM_18923' archetype='lookup.visitReasonVeNom' code='VENOM_18923' name='Rash'
+          description='Reason for visit' dataDictionaryId='18923'/>
+    <data id='VENOM_18924' archetype='lookup.visitReasonVeNom' code='VENOM_18924' name='Ravenous'
+          description='Reason for visit' dataDictionaryId='18924'/>
+    <data id='VENOM_18925' archetype='lookup.visitReasonVeNom' code='VENOM_18925' name='Red ear'
+          description='Reason for visit' dataDictionaryId='18925'/>
+    <data id='VENOM_18926' archetype='lookup.visitReasonVeNom' code='VENOM_18926' name='Red eye'
+          description='Reason for visit' dataDictionaryId='18926'/>
+    <data id='VENOM_19037' archetype='lookup.visitReasonVeNom' code='VENOM_19037' name='Re-examination/Follow-up'
+          description='Reason for visit' dataDictionaryId='19037'/>
+    <data id='VENOM_18927' archetype='lookup.visitReasonVeNom' code='VENOM_18927' name='Reluctant to exercise'
+          description='Reason for visit' dataDictionaryId='18927'/>
+    <data id='VENOM_18928' archetype='lookup.visitReasonVeNom' code='VENOM_18928' name='Reluctant to get up'
+          description='Reason for visit' dataDictionaryId='18928'/>
+    <data id='VENOM_18929' archetype='lookup.visitReasonVeNom' code='VENOM_18929' name='Reluctant to walk'
+          description='Reason for visit' dataDictionaryId='18929'/>
+    <data id='VENOM_18930' archetype='lookup.visitReasonVeNom' code='VENOM_18930' name='Restless'
+          description='Reason for visit' dataDictionaryId='18930'/>
+    <data id='VENOM_18931' archetype='lookup.visitReasonVeNom' code='VENOM_18931' name='Retching'
+          description='Reason for visit' dataDictionaryId='18931'/>
+    <data id='VENOM_18932' archetype='lookup.visitReasonVeNom' code='VENOM_18932' name='Rubbing bottom/tail/back end'
+          description='Reason for visit' dataDictionaryId='18932'/>
+    <data id='VENOM_18933' archetype='lookup.visitReasonVeNom' code='VENOM_18933' name='Rubbing ear'
+          description='Reason for visit' dataDictionaryId='18933'/>
+    <data id='VENOM_18934' archetype='lookup.visitReasonVeNom' code='VENOM_18934' name='Rubbing eye'
+          description='Reason for visit' dataDictionaryId='18934'/>
+    <data id='VENOM_18935' archetype='lookup.visitReasonVeNom' code='VENOM_18935' name='Rubbing mouth'
+          description='Reason for visit' dataDictionaryId='18935'/>
+    <data id='VENOM_18936' archetype='lookup.visitReasonVeNom' code='VENOM_18936' name='Runny eye'
+          description='Reason for visit' dataDictionaryId='18936'/>
+    <data id='VENOM_18937' archetype='lookup.visitReasonVeNom' code='VENOM_18937' name='Runny nose'
+          description='Reason for visit' dataDictionaryId='18937'/>
+    <data id='VENOM_18938' archetype='lookup.visitReasonVeNom' code='VENOM_18938' name='Scavenged '
+          description='Reason for visit' dataDictionaryId='18938'/>
+    <data id='VENOM_18939' archetype='lookup.visitReasonVeNom' code='VENOM_18939' name='Scooting'
+          description='Reason for visit' dataDictionaryId='18939'/>
+    <data id='VENOM_18940' archetype='lookup.visitReasonVeNom' code='VENOM_18940' name='Scratching bottom/tail'
+          description='Reason for visit' dataDictionaryId='18940'/>
+    <data id='VENOM_18941' archetype='lookup.visitReasonVeNom' code='VENOM_18941' name='Scratching ear'
+          description='Reason for visit' dataDictionaryId='18941'/>
+    <data id='VENOM_18942' archetype='lookup.visitReasonVeNom' code='VENOM_18942' name='Scratching head'
+          description='Reason for visit' dataDictionaryId='18942'/>
+    <data id='VENOM_18943' archetype='lookup.visitReasonVeNom' code='VENOM_18943' name='Scratching skin'
+          description='Reason for visit' dataDictionaryId='18943'/>
+    <data id='VENOM_7328' archetype='lookup.visitReasonVeNom' code='VENOM_7328' name='Senior clinic'
+          description='Reason for visit' dataDictionaryId='7328'/>
+    <data id='VENOM_18944' archetype='lookup.visitReasonVeNom' code='VENOM_18944' name='Shaking body'
+          description='Reason for visit' dataDictionaryId='18944'/>
+    <data id='VENOM_18945' archetype='lookup.visitReasonVeNom' code='VENOM_18945' name='Shaking head'
+          description='Reason for visit' dataDictionaryId='18945'/>
+    <data id='VENOM_18946' archetype='lookup.visitReasonVeNom' code='VENOM_18946' name='Shivering'
+          description='Reason for visit' dataDictionaryId='18946'/>
+    <data id='VENOM_18947' archetype='lookup.visitReasonVeNom' code='VENOM_18947' name='Short of breath'
+          description='Reason for visit' dataDictionaryId='18947'/>
+    <data id='VENOM_18948' archetype='lookup.visitReasonVeNom' code='VENOM_18948' name='Skin problem (unspecified)'
+          description='Reason for visit' dataDictionaryId='18948'/>
+    <data id='VENOM_18949' archetype='lookup.visitReasonVeNom' code='VENOM_18949' name='Slow'
+          description='Reason for visit' dataDictionaryId='18949'/>
+    <data id='VENOM_18950' archetype='lookup.visitReasonVeNom' code='VENOM_18950' name='Smelly (unspecified)'
+          description='Reason for visit' dataDictionaryId='18950'/>
+    <data id='VENOM_18952' archetype='lookup.visitReasonVeNom' code='VENOM_18952' name='Smelly ear'
+          description='Reason for visit' dataDictionaryId='18952'/>
+    <data id='VENOM_18953' archetype='lookup.visitReasonVeNom' code='VENOM_18953' name='Smelly skin'
+          description='Reason for visit' dataDictionaryId='18953'/>
+    <data id='VENOM_18951' archetype='lookup.visitReasonVeNom' code='VENOM_18951' name='Smelly/bad breath'
+          description='Reason for visit' dataDictionaryId='18951'/>
+    <data id='VENOM_18954' archetype='lookup.visitReasonVeNom' code='VENOM_18954' name='Sneezing'
+          description='Reason for visit' dataDictionaryId='18954'/>
+    <data id='VENOM_18955' archetype='lookup.visitReasonVeNom' code='VENOM_18955' name='Something stuck in throat'
+          description='Reason for visit' dataDictionaryId='18955'/>
+    <data id='VENOM_18956' archetype='lookup.visitReasonVeNom' code='VENOM_18956' name='Sore bum'
+          description='Reason for visit' dataDictionaryId='18956'/>
+    <data id='VENOM_18957' archetype='lookup.visitReasonVeNom' code='VENOM_18957' name='Sore ear'
+          description='Reason for visit' dataDictionaryId='18957'/>
+    <data id='VENOM_18958' archetype='lookup.visitReasonVeNom' code='VENOM_18958' name='Sore eye(s)'
+          description='Reason for visit' dataDictionaryId='18958'/>
+    <data id='VENOM_18959' archetype='lookup.visitReasonVeNom' code='VENOM_18959' name='Sore mouth'
+          description='Reason for visit' dataDictionaryId='18959'/>
+    <data id='VENOM_18960' archetype='lookup.visitReasonVeNom' code='VENOM_18960' name='Sore tummy'
+          description='Reason for visit' dataDictionaryId='18960'/>
+    <data id='VENOM_18961' archetype='lookup.visitReasonVeNom' code='VENOM_18961' name='Spotting urine'
+          description='Reason for visit' dataDictionaryId='18961'/>
+    <data id='VENOM_18962' archetype='lookup.visitReasonVeNom' code='VENOM_18962' name='Squinting'
+          description='Reason for visit' dataDictionaryId='18962'/>
+    <data id='VENOM_18963' archetype='lookup.visitReasonVeNom' code='VENOM_18963' name='Stiff'
+          description='Reason for visit' dataDictionaryId='18963'/>
+    <data id='VENOM_18964' archetype='lookup.visitReasonVeNom' code='VENOM_18964' name='Stiff after exercise'
+          description='Reason for visit' dataDictionaryId='18964'/>
+    <data id='VENOM_18965' archetype='lookup.visitReasonVeNom' code='VENOM_18965' name='Stools/motions/faeces abnormal'
+          description='Reason for visit' dataDictionaryId='18965'/>
+    <data id='VENOM_18966' archetype='lookup.visitReasonVeNom' code='VENOM_18966' name='Straining (unspecified)'
+          description='Reason for visit' dataDictionaryId='18966'/>
+    <data id='VENOM_18967' archetype='lookup.visitReasonVeNom' code='VENOM_18967'
+          name='Straining to pass motions/stools' description='Reason for visit' dataDictionaryId='18967'/>
+    <data id='VENOM_18968' archetype='lookup.visitReasonVeNom' code='VENOM_18968' name='Straining to urinate'
+          description='Reason for visit' dataDictionaryId='18968'/>
+    <data id='VENOM_18969' archetype='lookup.visitReasonVeNom' code='VENOM_18969' name='Struggling to breathe'
+          description='Reason for visit' dataDictionaryId='18969'/>
+    <data id='VENOM_18970' archetype='lookup.visitReasonVeNom' code='VENOM_18970' name='Struggling to eat'
+          description='Reason for visit' dataDictionaryId='18970'/>
+    <data id='VENOM_18971' archetype='lookup.visitReasonVeNom' code='VENOM_18971' name='Struggling to exercise'
+          description='Reason for visit' dataDictionaryId='18971'/>
+    <data id='VENOM_18972' archetype='lookup.visitReasonVeNom' code='VENOM_18972' name='Struggling to stand'
+          description='Reason for visit' dataDictionaryId='18972'/>
+    <data id='VENOM_18973' archetype='lookup.visitReasonVeNom' code='VENOM_18973' name='Suffering'
+          description='Reason for visit' dataDictionaryId='18973'/>
+    <data id='VENOM_7340' archetype='lookup.visitReasonVeNom' code='VENOM_7340' name='Suture removal - routine'
+          description='Reason for visit' dataDictionaryId='7340'/>
+    <data id='VENOM_18974' archetype='lookup.visitReasonVeNom' code='VENOM_18974'
+          name='Swallowed something shouldn&apos;t have' description='Reason for visit' dataDictionaryId='18974'/>
+    <data id='VENOM_18975' archetype='lookup.visitReasonVeNom' code='VENOM_18975' name='Swollen eye'
+          description='Reason for visit' dataDictionaryId='18975'/>
+    <data id='VENOM_18976' archetype='lookup.visitReasonVeNom' code='VENOM_18976' name='Swollen tummy/abdomen'
+          description='Reason for visit' dataDictionaryId='18976'/>
+    <data id='VENOM_18977' archetype='lookup.visitReasonVeNom' code='VENOM_18977' name='Thin'
+          description='Reason for visit' dataDictionaryId='18977'/>
+    <data id='VENOM_18978' archetype='lookup.visitReasonVeNom' code='VENOM_18978' name='Thirsty'
+          description='Reason for visit' dataDictionaryId='18978'/>
+    <data id='VENOM_18979' archetype='lookup.visitReasonVeNom' code='VENOM_18979' name='Throwing up'
+          description='Reason for visit' dataDictionaryId='18979'/>
+    <data id='VENOM_18980' archetype='lookup.visitReasonVeNom' code='VENOM_18980' name='Tires during exercise'
+          description='Reason for visit' dataDictionaryId='18980'/>
+    <data id='VENOM_18981' archetype='lookup.visitReasonVeNom' code='VENOM_18981' name='Tooth problem'
+          description='Reason for visit' dataDictionaryId='18981'/>
+    <data id='VENOM_18982' archetype='lookup.visitReasonVeNom' code='VENOM_18982' name='Traumatic injury'
+          description='Reason for visit' dataDictionaryId='18982'/>
+    <data id='VENOM_18983' archetype='lookup.visitReasonVeNom' code='VENOM_18983' name='Tremors'
+          description='Reason for visit' dataDictionaryId='18983'/>
+    <data id='VENOM_18984' archetype='lookup.visitReasonVeNom' code='VENOM_18984' name='Trouble breathing'
+          description='Reason for visit' dataDictionaryId='18984'/>
+    <data id='VENOM_18985' archetype='lookup.visitReasonVeNom' code='VENOM_18985' name='Trouble eating'
+          description='Reason for visit' dataDictionaryId='18985'/>
+    <data id='VENOM_18986' archetype='lookup.visitReasonVeNom' code='VENOM_18986' name='Trouble giving birth'
+          description='Reason for visit' dataDictionaryId='18986'/>
+    <data id='VENOM_18987' archetype='lookup.visitReasonVeNom' code='VENOM_18987' name='Trouble passing motions/stools'
+          description='Reason for visit' dataDictionaryId='18987'/>
+    <data id='VENOM_18988' archetype='lookup.visitReasonVeNom' code='VENOM_18988' name='Trouble passing urine'
+          description='Reason for visit' dataDictionaryId='18988'/>
+    <data id='VENOM_18989' archetype='lookup.visitReasonVeNom' code='VENOM_18989' name='Trying to be sick'
+          description='Reason for visit' dataDictionaryId='18989'/>
+    <data id='VENOM_18990' archetype='lookup.visitReasonVeNom' code='VENOM_18990' name='Trying to bring something up'
+          description='Reason for visit' dataDictionaryId='18990'/>
+    <data id='VENOM_18991' archetype='lookup.visitReasonVeNom' code='VENOM_18991' name='Twitching'
+          description='Reason for visit' dataDictionaryId='18991'/>
+    <data id='VENOM_18992' archetype='lookup.visitReasonVeNom' code='VENOM_18992' name='Unable to settle'
+          description='Reason for visit' dataDictionaryId='18992'/>
+    <data id='VENOM_18993' archetype='lookup.visitReasonVeNom' code='VENOM_18993' name='Unconscious'
+          description='Reason for visit' dataDictionaryId='18993'/>
+    <data id='VENOM_18994' archetype='lookup.visitReasonVeNom' code='VENOM_18994' name='Uncoordinated'
+          description='Reason for visit' dataDictionaryId='18994'/>
+    <data id='VENOM_18995' archetype='lookup.visitReasonVeNom' code='VENOM_18995' name='Unresponsive'
+          description='Reason for visit' dataDictionaryId='18995'/>
+    <data id='VENOM_18996' archetype='lookup.visitReasonVeNom' code='VENOM_18996' name='Unsteady'
+          description='Reason for visit' dataDictionaryId='18996'/>
+    <data id='VENOM_18997' archetype='lookup.visitReasonVeNom' code='VENOM_18997' name='Urinating abnormally'
+          description='Reason for visit' dataDictionaryId='18997'/>
+    <data id='VENOM_18998' archetype='lookup.visitReasonVeNom' code='VENOM_18998' name='Urinating more'
+          description='Reason for visit' dataDictionaryId='18998'/>
+    <data id='VENOM_18999' archetype='lookup.visitReasonVeNom' code='VENOM_18999' name='Urine looks abnormal'
+          description='Reason for visit' dataDictionaryId='18999'/>
+    <data id='VENOM_19034' archetype='lookup.visitReasonVeNom' code='VENOM_19034' name='Vaccination'
+          description='Reason for visit' dataDictionaryId='19034'/>
+    <data id='VENOM_19000' archetype='lookup.visitReasonVeNom' code='VENOM_19000' name='Vaginal discharge'
+          description='Reason for visit' dataDictionaryId='19000'/>
+    <data id='VENOM_19001' archetype='lookup.visitReasonVeNom' code='VENOM_19001' name='Very hungry'
+          description='Reason for visit' dataDictionaryId='19001'/>
+    <data id='VENOM_19002' archetype='lookup.visitReasonVeNom' code='VENOM_19002' name='Very sick'
+          description='Reason for visit' dataDictionaryId='19002'/>
+    <data id='VENOM_19003' archetype='lookup.visitReasonVeNom' code='VENOM_19003' name='Vomiting'
+          description='Reason for visit' dataDictionaryId='19003'/>
+    <data id='VENOM_19004' archetype='lookup.visitReasonVeNom' code='VENOM_19004' name='Vomiting with blood'
+          description='Reason for visit' dataDictionaryId='19004'/>
+    <data id='VENOM_19005' archetype='lookup.visitReasonVeNom' code='VENOM_19005' name='Walking funny'
+          description='Reason for visit' dataDictionaryId='19005'/>
+    <data id='VENOM_19006' archetype='lookup.visitReasonVeNom' code='VENOM_19006' name='Wasting away'
+          description='Reason for visit' dataDictionaryId='19006'/>
+    <data id='VENOM_19007' archetype='lookup.visitReasonVeNom' code='VENOM_19007' name='Weak'
+          description='Reason for visit' dataDictionaryId='19007'/>
+    <data id='VENOM_19008' archetype='lookup.visitReasonVeNom' code='VENOM_19008' name='Weak legs'
+          description='Reason for visit' dataDictionaryId='19008'/>
+    <data id='VENOM_7329' archetype='lookup.visitReasonVeNom' code='VENOM_7329' name='Weight clinic'
+          description='Reason for visit' dataDictionaryId='7329'/>
+    <data id='VENOM_19009' archetype='lookup.visitReasonVeNom' code='VENOM_19009' name='Weight gain'
+          description='Reason for visit' dataDictionaryId='19009'/>
+    <data id='VENOM_19010' archetype='lookup.visitReasonVeNom' code='VENOM_19010' name='Weight loss'
+          description='Reason for visit' dataDictionaryId='19010'/>
+    <data id='VENOM_19011' archetype='lookup.visitReasonVeNom' code='VENOM_19011' name='Wetting'
+          description='Reason for visit' dataDictionaryId='19011'/>
+    <data id='VENOM_19012' archetype='lookup.visitReasonVeNom' code='VENOM_19012' name='Whimpering'
+          description='Reason for visit' dataDictionaryId='19012'/>
+    <data id='VENOM_19013' archetype='lookup.visitReasonVeNom' code='VENOM_19013' name='Whining'
+          description='Reason for visit' dataDictionaryId='19013'/>
+    <data id='VENOM_19014' archetype='lookup.visitReasonVeNom' code='VENOM_19014' name='Wobbly'
+          description='Reason for visit' dataDictionaryId='19014'/>
+    <data id='VENOM_19015' archetype='lookup.visitReasonVeNom' code='VENOM_19015' name='Won&apos;t settle'
+          description='Reason for visit' dataDictionaryId='19015'/>
+    <data id='VENOM_19016' archetype='lookup.visitReasonVeNom' code='VENOM_19016' name='Worms'
+          description='Reason for visit' dataDictionaryId='19016'/>
+    <data id='VENOM_19017' archetype='lookup.visitReasonVeNom' code='VENOM_19017' name='Wound'
+          description='Reason for visit' dataDictionaryId='19017'/>
+    <data id='VENOM_19018' archetype='lookup.visitReasonVeNom' code='VENOM_19018' name='Wound broken down'
+          description='Reason for visit' dataDictionaryId='19018'/>
+    <data id='VENOM_19019' archetype='lookup.visitReasonVeNom' code='VENOM_19019' name='Wound infected'
+          description='Reason for visit' dataDictionaryId='19019'/>
+    <data id='VENOM_19020' archetype='lookup.visitReasonVeNom' code='VENOM_19020' name='Wound opened up'
+          description='Reason for visit' dataDictionaryId='19020'/>
+    <data id='VENOM_19021' archetype='lookup.visitReasonVeNom' code='VENOM_19021' name='Wound red'
+          description='Reason for visit' dataDictionaryId='19021'/>
+    <data id='VENOM_19022' archetype='lookup.visitReasonVeNom' code='VENOM_19022' name='Wound seeping'
+          description='Reason for visit' dataDictionaryId='19022'/>
+    <data id='VENOM_19023' archetype='lookup.visitReasonVeNom' code='VENOM_19023' name='Wound swollen'
+          description='Reason for visit' dataDictionaryId='19023'/>
+    <data id='VENOM_19024' archetype='lookup.visitReasonVeNom' code='VENOM_19024'
+          name='Yellow skin, gums, eyes etc. (jaundice)' description='Reason for visit' dataDictionaryId='19024'/>
+    <data id='VENOM_19025' archetype='lookup.visitReasonVeNom' code='VENOM_19025' name='Yelping'
+          description='Reason for visit' dataDictionaryId='19025'/>
+</archetype>

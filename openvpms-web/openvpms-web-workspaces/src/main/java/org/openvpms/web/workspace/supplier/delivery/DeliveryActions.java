@@ -11,15 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.supplier.delivery;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.component.im.edit.FinancialActions;
 
 
 /**
@@ -27,7 +28,7 @@ import org.openvpms.web.component.im.edit.ActActions;
  *
  * @author Tim Anderson
  */
-public class DeliveryActions extends ActActions<FinancialAct> {
+public class DeliveryActions extends FinancialActions<FinancialAct> {
 
     /**
      * The singleton instance.

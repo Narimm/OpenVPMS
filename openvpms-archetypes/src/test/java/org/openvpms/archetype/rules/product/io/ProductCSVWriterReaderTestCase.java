@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -19,6 +19,7 @@ package org.openvpms.archetype.rules.product.io;
 import au.com.bytecode.opencsv.CSVWriter;
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.function.date.DateFunctions;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
@@ -33,8 +34,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.jxpath.DateFunctions;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -42,6 +41,7 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -162,11 +162,10 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
      */
     @Before
     public void setUp() {
-        ILookupService lookups = getLookupService();
-        rules = new ProductPriceRules(getArchetypeService(), lookups);
+        rules = new ProductPriceRules(getArchetypeService());
         Party practice = TestHelper.getPractice();
-        taxRules = new TaxRules(practice, getArchetypeService(), lookups);
-        handlers = new DocumentHandlers();
+        taxRules = new TaxRules(practice, getArchetypeService());
+        handlers = new DocumentHandlers(getArchetypeService());
 
         Date today = DateRules.getToday();
         Date tomorrow = DateRules.getTomorrow();
@@ -233,7 +232,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
     @Test
     public void testWriteReadLatestPrices() {
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
-        Document document = writer.write(Arrays.asList(product).iterator(), true, true,
+        Document document = writer.write(Collections.singletonList(product).iterator(), true, true,
                                          new PricingGroup(groupA, false)); // exclude prices with no group
 
         ProductCSVReader reader = new ProductCSVReader(handlers, getLookupService());
@@ -262,7 +261,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
     @Test
     public void testWriteReadAllPricesForGroup() {
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
-        Document document = writer.write(Arrays.asList(product).iterator(), false, true, new
+        Document document = writer.write(Collections.singletonList(product).iterator(), false, true, new
                 PricingGroup(groupA, false));
 
         ProductCSVReader reader = new ProductCSVReader(handlers, getLookupService());
@@ -288,7 +287,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
     @Test
     public void testWriteReadAllPrices() {
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
-        Document document = writer.write(Arrays.asList(product).iterator(), false, true, PricingGroup.ALL);
+        Document document = writer.write(Collections.singletonList(product).iterator(), false, true, PricingGroup.ALL);
 
         ProductCSVReader reader = new ProductCSVReader(handlers, getLookupService());
         reader.setDateFormats(Arrays.asList(ProductCSVReader.YEAR_MONTH_DAY_FORMATS));
@@ -310,7 +309,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
         Date from = monthsMinus21;
         Date to = DateRules.getDate(from, 1, DateUnits.MONTHS);
-        Document document = writer.write(Arrays.asList(product).iterator(), from, to, true,
+        Document document = writer.write(Collections.singletonList(product).iterator(), from, to, true,
                                          new PricingGroup(groupB, false));
 
         ProductCSVReader reader = new ProductCSVReader(handlers, getLookupService());
@@ -341,7 +340,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         product.removeProductPrice(fixed2C);
         save(product);
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
-        Document document = writer.write(Arrays.asList(product).iterator(), false, true,
+        Document document = writer.write(Collections.singletonList(product).iterator(), false, true,
                                          new PricingGroup(groupA, false));
 
         ProductCSVReader reader = new ProductCSVReader(handlers, getLookupService());
@@ -371,7 +370,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         product.removeProductPrice(unit2C);
         save(product);
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
-        Document document = writer.write(Arrays.asList(product).iterator(), false, true,
+        Document document = writer.write(Collections.singletonList(product).iterator(), false, true,
                                          new PricingGroup(groupA, false));
 
         ProductCSVReader reader = new ProductCSVReader(handlers, getLookupService());
@@ -404,17 +403,17 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers) {
             @Override
             protected String getDate(Date date) {
-                return DateFunctions.format(date, "dd/MM/yy");
+                return new DateFunctions().format(date, "dd/MM/yy");
             }
         };
-        Document document = writer.write(Arrays.asList(product).iterator(), false, true, PricingGroup.ALL);
+        Document document = writer.write(Collections.singletonList(product).iterator(), false, true, PricingGroup.ALL);
         ProductCSVReader reader = new ProductCSVReader(handlers, getLookupService());
         List<SimpleDateFormat> dateFormats = reader.getDateFormats(document);
         assertEquals(3, dateFormats.size());
         assertEquals(ProductCSVReader.DAY_MONTH_YEAR_FORMATS[0], dateFormats.get(0));
         assertEquals(ProductCSVReader.YEAR_MONTH_DAY_FORMATS[0], dateFormats.get(1));
         assertEquals(ProductCSVReader.MONTH_DAY_YEAR_FORMATS[0], dateFormats.get(2));
-        reader.setDateFormats(Arrays.asList(dateFormats.get(0)));
+        reader.setDateFormats(Collections.singletonList(dateFormats.get(0)));
         ProductDataSet products = reader.read(document);
         assertEquals(1, products.getData().size());
         assertEquals(0, products.getErrors().size());
@@ -524,7 +523,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         product.addProductPrice(unit1);
 
         ProductCSVWriter writer = new ProductCSVWriter(getArchetypeService(), rules, taxRules, handlers);
-        Document document = writer.write(Arrays.asList(product).iterator(), false, true, PricingGroup.ALL);
+        Document document = writer.write(Collections.singletonList(product).iterator(), false, true, PricingGroup.ALL);
 
         ProductCSVReader reader = new ProductCSVReader(handlers, getLookupService());
         reader.setDateFormats(Arrays.asList(ProductCSVReader.YEAR_MONTH_DAY_FORMATS));

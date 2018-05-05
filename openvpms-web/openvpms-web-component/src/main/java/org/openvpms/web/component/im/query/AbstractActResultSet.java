@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -355,6 +355,18 @@ public abstract class AbstractActResultSet<T> extends AbstractIMObjectResultSet<
      * @return the status constraint, or {@code null} if there are no statuses
      */
     protected IConstraint createStatusConstraint(String[] statuses, boolean exclude) {
+        return createStatusConstraint("status", statuses, exclude);
+    }
+
+    /**
+     * Creates a status constraint.
+     *
+     * @param node     the status node
+     * @param statuses the statuses. May be {@code null}
+     * @param exclude  if {@code true}, exclude acts with the status, otherwise include them
+     * @return the status constraint, or {@code null} if there are no statuses
+     */
+    protected IConstraint createStatusConstraint(String node, String[] statuses, boolean exclude) {
         IConstraint result = null;
         if (statuses != null && statuses.length > 1) {
             IConstraintContainer constraint;
@@ -367,7 +379,7 @@ public abstract class AbstractActResultSet<T> extends AbstractIMObjectResultSet<
                 op = RelationalOp.EQ;
             }
             for (String status : statuses) {
-                constraint.add(new NodeConstraint("status", op, status));
+                constraint.add(new NodeConstraint(node, op, status));
             }
             result = constraint;
         } else if (statuses != null && statuses.length == 1) {
@@ -375,7 +387,7 @@ public abstract class AbstractActResultSet<T> extends AbstractIMObjectResultSet<
             if (exclude) {
                 op = RelationalOp.NE;
             }
-            result = new NodeConstraint("status", op, statuses[0]);
+            result = new NodeConstraint(node, op, statuses[0]);
         }
         return result;
     }

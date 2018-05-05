@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.stock;
@@ -19,6 +19,7 @@ package org.openvpms.archetype.rules.stock;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
@@ -29,13 +30,13 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 
 /**
  * Tests the {@link StockRules} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class StockRulesTestCase extends AbstractStockTest {
 
@@ -104,6 +105,30 @@ public class StockRulesTestCase extends AbstractStockTest {
     }
 
     /**
+     * Tests the {@link StockRules#getStock(IMObjectReference, IMObjectReference)} method.
+     */
+    @Test
+    public void testQueryStock() {
+        BigDecimal quantity = new BigDecimal("10.00");
+
+        Party stockLocation = createStockLocation();
+        Product product = TestHelper.createProduct();
+
+        // no product-stock location relationship to begin with
+        IMObjectReference productRef = product.getObjectReference();
+        IMObjectReference stockRef = stockLocation.getObjectReference();
+        checkEquals(BigDecimal.ZERO, rules.getStock(productRef, stockRef));
+
+        // add stock and verify it is added
+        rules.updateStock(product, stockLocation, quantity);
+        checkEquals(quantity, rules.getStock(productRef, stockRef));
+
+        // remove stock and verify it is removed
+        rules.updateStock(product, stockLocation, quantity.negate());
+        checkEquals(BigDecimal.ZERO, rules.getStock(productRef, stockRef));
+    }
+
+    /**
      * Tests the {@link StockRules#transferStock} method.
      */
     @Test
@@ -116,6 +141,24 @@ public class StockRulesTestCase extends AbstractStockTest {
         rules.transfer(product, from, to, quantity);
         checkEquals(quantity.negate(), rules.getStock(product, from));
         checkEquals(quantity, rules.getStock(product, to));
+    }
+
+    /**
+     * Tests the {@link StockRules#hasStockRelationship(Product, Party)} method.
+     */
+    @Test
+    public void testHasStock() {
+        Product product = TestHelper.createProduct();
+        Party stockLocation = createStockLocation();
+
+        assertFalse(rules.hasStockRelationship(product, stockLocation));
+
+        rules.updateStock(product, stockLocation, BigDecimal.ONE);
+        assertTrue(rules.hasStockRelationship(product, stockLocation));
+
+        // verify relationship still exists with no stock
+        rules.updateStock(product, stockLocation, BigDecimal.ZERO);
+        assertTrue(rules.hasStockRelationship(product, stockLocation));
     }
 
     /**

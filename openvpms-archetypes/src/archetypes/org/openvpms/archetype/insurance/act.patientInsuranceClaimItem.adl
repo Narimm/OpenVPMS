@@ -1,0 +1,74 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="act.patientInsuranceClaimItem.1.0" latest="true" primary="false"
+               type="org.openvpms.component.business.domain.im.act.FinancialAct" displayName="Condition">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" hidden="true" minCardinality="1" readOnly="true"
+              defaultValue="'Patient Insurance Claim Item'"/>
+        <node displayName="Treatment Start" name="startTime" path="/activityStartTime" type="java.util.Date"
+              minCardinality="1"/>
+        <node displayName="Treatment End" name="endTime" path="/activityEndTime" type="java.util.Date"
+              minCardinality="1"/>
+        <node name="reason" displayName="Diagnosis" path="/reason" type="java.lang.String" minCardinality="0">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.diagnosis*"/>
+            </assertion>
+        </node>
+        <node name="description" type="java.lang.String" path="/description" minCardinality="0" maxLength="255"/>
+        <node name="amount" path="/total"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+              defaultValue="'0.0'" readOnly="true">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
+        <node name="tax" path="/taxAmount"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="1"
+              defaultValue="'0.0'" readOnly="true">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
+        <node name="status" displayName="Treatment Status" path="/status" type="java.lang.String" minCardinality="1"
+              defaultValue="'UNRESOLVED'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="UNRESOLVED" value="Ongoing"/>
+                    <!-- condition is ongoing -->
+                    <property name="RESOLVED" value="Resolved"/>
+                    <!-- condition is resolved -->
+                    <property name="DIED" value="Died"/>
+                    <!-- animal died from the condition -->
+                    <property name="EUTHANASED" value="Euthanased"/>
+                    <!-- animal euthanased for the condition -->
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="euthanasiaReason" path="/details/euthanasiaReason" type="java.lang.String" minCardinality="0"
+              maxLength="255"/>
+        <node name="credit" path="/credit" type="java.lang.Boolean" defaultValue="false()" readOnly="true"
+              hidden="true"/>
+        <node name="items" displayName="Charges" path="/sourceActRelationships" type="java.util.HashSet"
+              baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
+              filter="actRelationship.insuranceClaimInvoiceItem" readOnly="true"/>
+        <node name="claim" path="/targetActRelationships" type="java.util.HashSet"
+              baseName="TargetActRelationship" minCardinality="0" maxCardinality="1"
+              filter="actRelationship.insuranceClaimItem" readOnly="true" hidden="true"/>
+    </archetype>
+</archetypes>

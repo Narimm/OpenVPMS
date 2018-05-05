@@ -1,0 +1,67 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="entity.onlineBookingTimesType.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.common.Entity" displayName="Online Booking Times">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="1" maxLength="100"/>
+        <node name="description" type="java.lang.String" path="/description"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="monOpen" displayName="Open Monday" path="/details/monOpen" type="java.lang.Boolean"
+              minCardinality="1" defaultValue="true()"/>
+        <node name="monStartTime" displayName="Monday Start Time" path="/details/monStartTime" type="java.util.Date"
+              minCardinality="0" defaultValue="java.sql.Timestamp.valueOf('1970-01-01 08:00:00.0')"/>
+        <node name="monEndTime" displayName="Monday End Time" path="/details/monEndTime" type="java.util.Date"
+              minCardinality="0" defaultValue="java.sql.Timestamp.valueOf('1970-01-01 17:00:00.0')"/>
+        <node name="tueOpen" displayName="Open Tuesday" path="/details/tueOpen" type="java.lang.Boolean"
+              minCardinality="1" defaultValue="true()"/>
+        <node name="tueStartTime" displayName="Tuesday Start Time" path="/details/tueStartTime" type="java.util.Date"
+              minCardinality="0" defaultValue="java.sql.Timestamp.valueOf('1970-01-01 08:00:00.0')"/>
+        <node name="tueEndTime" displayName="Tuesday End Time" path="/details/tueEndTime" type="java.util.Date"
+              minCardinality="0" defaultValue="java.sql.Timestamp.valueOf('1970-01-01 17:00:00.0')"/>
+        <node name="wedOpen" displayName="Open Wednesday" path="/details/wedOpen" type="java.lang.Boolean"
+              minCardinality="1" defaultValue="true()"/>
+        <node name="wedStartTime" displayName="Wednesday Start Time" path="/details/wedStartTime" type="java.util.Date"
+              minCardinality="0" defaultValue="java.sql.Timestamp.valueOf('1970-01-01 08:00:00.0')"/>
+        <node name="wedEndTime" displayName="Wednesday End Time" path="/details/wedEndTime" type="java.util.Date"
+              minCardinality="0" defaultValue="java.sql.Timestamp.valueOf('1970-01-01 17:00:00.0')"/>
+        <node name="thuOpen" displayName="Open Thursday" path="/details/thuOpen" type="java.lang.Boolean"
+              minCardinality="1" defaultValue="true()"/>
+        <node name="thuStartTime" displayName="Thursday Start Time" path="/details/thuStartTime" type="java.util.Date"
+              minCardinality="0" defaultValue="java.sql.Timestamp.valueOf('1970-01-01 08:00:00.0')"/>
+        <node name="thuEndTime" displayName="Thursday End Time" path="/details/thuEndTime" type="java.util.Date"
+              minCardinality="0" defaultValue="java.sql.Timestamp.valueOf('1970-01-01 17:00:00.0')"/>
+        <node name="friOpen" displayName="Open Friday" path="/details/friOpen" type="java.lang.Boolean"
+              minCardinality="1" defaultValue="true()"/>
+        <node name="friStartTime" displayName="Friday Start Time" path="/details/friStartTime" type="java.util.Date"
+              minCardinality="0" defaultValue="java.sql.Timestamp.valueOf('1970-01-01 08:00:00.0')"/>
+        <node name="friEndTime" displayName="Friday End Time" path="/details/friEndTime" type="java.util.Date"
+              minCardinality="0" defaultValue="java.sql.Timestamp.valueOf('1970-01-01 17:00:00.0')"/>
+        <node name="satOpen" displayName="Open Saturday" path="/details/satOpen" type="java.lang.Boolean"
+              minCardinality="1" defaultValue="true()"/>
+        <node name="satStartTime" displayName="Saturday Start Time" path="/details/satStartTime" type="java.util.Date"
+              minCardinality="0" defaultValue="java.sql.Timestamp.valueOf('1970-01-01 08:00:00.0')"/>
+        <node name="satEndTime" displayName="Saturday End Time" path="/details/satEndTime" type="java.util.Date"
+              minCardinality="0" defaultValue="java.sql.Timestamp.valueOf('1970-01-01 17:00:00.0')"/>
+        <node name="sunOpen" displayName="Open Sunday" path="/details/sunOpen" type="java.lang.Boolean"
+              minCardinality="1" defaultValue="true()"/>
+        <node name="sunStartTime" displayName="Sunday Start Time" path="/details/sunStartTime" type="java.util.Date"
+              minCardinality="0" defaultValue="java.sql.Timestamp.valueOf('1970-01-01 08:00:00.0')"/>
+        <node name="sunEndTime" displayName="Sunday End Time" path="/details/sunEndTime" type="java.util.Date"
+              minCardinality="0" defaultValue="java.sql.Timestamp.valueOf('1970-01-01 17:00:00.0')"/>
+    </archetype>
+</archetypes>

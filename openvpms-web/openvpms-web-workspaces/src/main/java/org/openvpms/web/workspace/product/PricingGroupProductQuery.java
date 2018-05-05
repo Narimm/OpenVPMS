@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product;
@@ -20,7 +20,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.product.PricingGroupHelper;
+import org.openvpms.web.component.im.product.ProductHelper;
 import org.openvpms.web.component.im.product.ProductQuery;
 import org.openvpms.web.component.im.util.UserHelper;
 
@@ -79,7 +79,7 @@ public class PricingGroupProductQuery extends ProductQuery {
     @Override
     protected void doLayout(Component container) {
         super.doLayout(container);
-        if (admin && PricingGroupHelper.pricingGroupsConfigured()) {
+        if (admin && ProductHelper.pricingGroupsConfigured()) {
             addPricingGroupSelector(container, false);
         }
     }

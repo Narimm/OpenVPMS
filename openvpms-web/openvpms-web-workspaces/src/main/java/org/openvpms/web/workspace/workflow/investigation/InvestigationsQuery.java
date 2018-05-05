@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.investigation;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
@@ -37,6 +38,8 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.clinician.ClinicianSelectField;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.location.LocationSelectField;
+import org.openvpms.web.component.im.lookup.LookupField;
+import org.openvpms.web.component.im.lookup.LookupFieldFactory;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
@@ -70,6 +73,11 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     public static final String[] SHORT_NAMES = new String[]{InvestigationArchetypes.PATIENT_INVESTIGATION};
 
     /**
+     * Dummy incomplete status. Finds all investigations that aren't CANCELLED and don't have a REVIEWED result status.
+     */
+    public static final String INCOMPLETE = "INCOMPLETE";
+
+    /**
      * The location selector.
      */
     private final LocationSelectField location;
@@ -85,6 +93,10 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
      */
     private final IMObjectSelector<Entity> investigationType;
 
+    /**
+     * The result status dropdown.
+     */
+    private LookupField resultStatusSelector;
 
     /**
      * The default sort constraint.
@@ -94,19 +106,28 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     /**
      * The act statuses to query..
      */
-    private static final ActStatuses STATUSES = new ActStatuses(new StatusLookupQuery(), null);
+    private static final ActStatuses STATUSES;
 
     /**
-     * Dummy incomplete status, used in the status selector.
+     * The result statuses to query..
      */
-    private static Lookup INCOMPLETE_STATUS = new Lookup(new ArchetypeId("lookup.local"), "INCOMPLETE",
+    private static final ActStatuses RESULT_STATUSES = new ActStatuses(new ResultStatusLookupQuery(), null);
+
+    /**
+     * Dummy incomplete status, used in the result status selector.
+     */
+    private static Lookup INCOMPLETE_STATUS = new Lookup(new ArchetypeId("lookup.local"), INCOMPLETE,
                                                          Messages.get("investigation.incomplete"));
 
-    /**
-     * The 'complete' investigation statuses.
-     */
-    private static final String[] COMPLETE_CODES = {ActStatus.COMPLETED, ActStatus.CANCELLED};
+    static {
+        STATUSES = new ActStatuses(PATIENT_INVESTIGATION);
+        STATUSES.setDefault((String) null);
+    }
 
+    /**
+     * The reviewed investigation status.
+     */
+    private static final String[] REVIEWED_STATUS = new String[]{"REVIEWED"};
 
     /**
      * Constructs an {@link InvestigationsQuery}.
@@ -117,13 +138,17 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         super(null, null, null, SHORT_NAMES, STATUSES, Act.class);
         setDefaultSortConstraint(DEFAULT_SORT);
         setAuto(true);
-
-        setStatus(INCOMPLETE_STATUS.getCode());
-        // TODO - shouldn't need this as its returned by StatusLookupQuery, but addStatusSelector() ignores it
+        setContains(true);
 
         location = createLocationSelector(context.getContext());
         clinician = createClinicianSelector();
         investigationType = createInvestigationTypeSelector(context);
+        resultStatusSelector = LookupFieldFactory.create(RESULT_STATUSES, true);
+        resultStatusSelector.addActionListener(new ActionListener() {
+            public void onAction(ActionEvent e) {
+                onStatusChanged();
+            }
+        });
     }
 
     /**
@@ -163,17 +188,25 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     }
 
     /**
-     * Returns the act statuses to query.
+     * Sets the result status to filter on.
+     * <p/>
+     * The {@link #INCOMPLETE} result status code can be used to return all incomplete investigations that haven't
+     * been cancelled nor reviewed.
      *
-     * @return the act statuses to query
+     * @param status the result status, or {@code null} to include all result statuses
+     */
+    public void setResultStatus(String status) {
+        resultStatusSelector.setSelected(status);
+    }
+
+    /**
+     * Returns the preferred height of the query when rendered.
+     *
+     * @return the preferred height, or {@code null} if it has no preferred height
      */
     @Override
-    protected String[] getStatuses() {
-        String[] statuses = super.getStatuses();
-        if (statuses.length == 1 && statuses[0].equals(INCOMPLETE_STATUS.getCode())) {
-            statuses = COMPLETE_CODES;
-        }
-        return statuses;
+    public Extent getHeight() {
+        return getHeight(3);
     }
 
     /**
@@ -195,29 +228,25 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     @Override
     protected void doLayout(Component container) {
         addSearchField(container);
-        super.doLayout(container);
+        addStatusSelector(container);
+        addResultStatusSelector(container);
+        addDateRange(container);
         addLocation(container);
         addClinician(container);
         addInvestigationType(container);
     }
 
     /**
-     * Invoked when a status is selected.
-     */
-    @Override
-    protected void onStatusChanged() {
-        super.onStatusChanged();
-        onQuery();
-    }
-
-    /**
-     * Determines if act statuses are being excluded.
+     * Adds a result status selector to the container.
      *
-     * @return {@code true} to exclude acts with status in {@link #getStatuses()}; otherwise include them.
+     * @param container the container
      */
-    @Override
-    protected boolean excludeStatuses() {
-        return (getStatuses() == COMPLETE_CODES);
+    protected void addResultStatusSelector(Component container) {
+        Label label = LabelFactory.create();
+        label.setText(DescriptorHelper.getDisplayName(PATIENT_INVESTIGATION, "status2"));
+        container.add(label);
+        container.add(resultStatusSelector);
+        getFocusGroup().add(resultStatusSelector);
     }
 
     /**
@@ -228,7 +257,7 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
      */
     @Override
     protected ResultSet<Act> createResultSet(SortConstraint[] sort) {
-        List<ParticipantConstraint> list = new ArrayList<ParticipantConstraint>();
+        List<ParticipantConstraint> list = new ArrayList<>();
         ParticipantConstraint supplier = getParticipantConstraint();
         if (supplier != null) {
             list.add(supplier);
@@ -240,9 +269,26 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         ParticipantConstraint[] participants = list.toArray(new ParticipantConstraint[list.size()]);
 
         Party location = (Party) this.location.getSelectedItem();
+        String[] statuses = getStatuses();
+        String resultStatus[];
+        boolean exclude = false;
+        Lookup selected = resultStatusSelector.getSelected();
+        if (selected == INCOMPLETE_STATUS) {
+            resultStatus = REVIEWED_STATUS;
+            exclude = true;
+            if (statuses.length == 0) {
+                // if 'All' status and 'Incomplete' result status is selected, exclude cancelled investigations,
+                // as these are effectively complete
+                statuses = new String[]{ActStatus.IN_PROGRESS, ActStatus.POSTED};
+            }
+        } else if (selected != null) {
+            resultStatus = new String[]{selected.getCode()};
+        } else {
+            resultStatus = new String[0];
+        }
         return new InvestigationResultSet(getArchetypeConstraint(), getValue(), participants, location,
-                                          this.location.getLocations(), getFrom(), getTo(), getStatuses(),
-                                          excludeStatuses(), getMaxResults(), sort);
+                                          this.location.getLocations(), getFrom(), getTo(), statuses,
+                                          resultStatus, exclude, getMaxResults(), sort);
     }
 
     /**
@@ -284,7 +330,7 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
      * @return a new selector
      */
     private IMObjectSelector<Entity> createInvestigationTypeSelector(LayoutContext context) {
-        IMObjectSelector<Entity> selector = new IMObjectSelector<Entity>(
+        IMObjectSelector<Entity> selector = new IMObjectSelector<>(
                 DescriptorHelper.getDisplayName(INVESTIGATION_TYPE), context, INVESTIGATION_TYPE);
         AbstractIMObjectSelectorListener<Entity> listener = new AbstractIMObjectSelectorListener<Entity>() {
             public void selected(Entity object) {
@@ -354,13 +400,13 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
         return result;
     }
 
-    private static class StatusLookupQuery extends NodeLookupQuery {
+    private static class ResultStatusLookupQuery extends NodeLookupQuery {
 
         /**
-         * Constructs an {@link StatusLookupQuery}.
+         * Constructs an {@link ResultStatusLookupQuery}.
          */
-        public StatusLookupQuery() {
-            super(InvestigationArchetypes.PATIENT_INVESTIGATION, "status");
+        public ResultStatusLookupQuery() {
+            super(PATIENT_INVESTIGATION, "status2");
         }
 
         /**

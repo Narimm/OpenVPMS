@@ -11,17 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.HL7Exception;
+import ca.uhn.hl7v2.model.v25.datatype.EI;
 import ca.uhn.hl7v2.model.v25.datatype.XPN;
 import ca.uhn.hl7v2.model.v25.segment.ORC;
 import ca.uhn.hl7v2.model.v25.segment.PID;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.finance.order.CustomerOrder;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.user.UserArchetypes;
@@ -35,7 +37,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 
-import static org.openvpms.hl7.impl.OrderState.addNote;
+import static org.openvpms.archetype.rules.finance.order.CustomerOrder.addNote;
 
 /**
  * Base class for order message processors.
@@ -80,39 +82,77 @@ abstract class OrderMessageProcessor {
      * @param state          the state
      * @return the original order
      */
-    protected Act getOrder(String orderShortName, ORC orc, ActBean bean, OrderState state) {
+    protected Act getOrder(String orderShortName, ORC orc, ActBean bean, CustomerOrder state) {
         Act result = null;
-        long id = HL7MessageHelper.getId(orc.getPlacerOrderNumber());
-
-        if (id != -1) {
-            IMObjectReference reference = new IMObjectReference(orderShortName, id);
-            result = (Act) service.get(reference);
-            Party patient = state.getPatient();
-            if (result != null && patient != null) {
-                ActBean orderBean = new ActBean(result, service);
-                IMObjectReference patientRef = orderBean.getNodeParticipantRef("patient");
-                if (patientRef != null && !ObjectUtils.equals(patient.getObjectReference(), patientRef)) {
-                    String displayName = DescriptorHelper.getDisplayName(orderShortName, service);
-                    addNote(bean, "Patient is different to that in the original " + displayName + ". Was '"
-                                  + ArchetypeQueryHelper.getName(patientRef, service) + "' (" + patientRef.getId() + ")"
-                                  + ". Now '" + patient.getName() + "' (" + patient.getId() + ")");
-                }
-            }
+        EI placerOrderNumber = orc.getPlacerOrderNumber();
+        String entityIdentifier = placerOrderNumber.getEntityIdentifier().getValue();
+        if (StringUtils.isEmpty(entityIdentifier)) {
+            addNote(bean, "No Placer Order Number specified. Order placed outside OpenVPMS");
         } else {
-            addNote(bean, "Unknown Placer Order Number: '" + orc.getPlacerOrderNumber().getEntityIdentifier() + "'");
+            long id = getOrderId(placerOrderNumber);
+            if (id >= 0) {
+                IMObjectReference reference = new IMObjectReference(orderShortName, id);
+                result = (Act) service.get(reference);
+                if (result != null) {
+                    Party patient = state.getPatient();
+                    if (patient != null) {
+                        ActBean orderBean = new ActBean(result, service);
+                        IMObjectReference patientRef = orderBean.getNodeParticipantRef("patient");
+                        if (patientRef != null && !ObjectUtils.equals(patient.getObjectReference(), patientRef)) {
+                            String displayName = DescriptorHelper.getDisplayName(orderShortName, service);
+                            addNote(bean, "Patient is different to that in the original " + displayName + ". Was '"
+                                          + ArchetypeQueryHelper.getName(patientRef, service)
+                                          + "' (" + patientRef.getId() + ")"
+                                          + ". Now '" + patient.getName() + "' (" + patient.getId() + ")");
+                        }
+                    }
+                } else {
+                    String note = "Order with Placer Order Number '" + entityIdentifier + "'";
+                    String namespaceId = placerOrderNumber.getNamespaceID().getValue();
+                    if (!StringUtils.isEmpty(namespaceId)) {
+                        note += " submitted by " + namespaceId;
+                    }
+                    note += " has no corresponding " + DescriptorHelper.getDisplayName(orderShortName);
+                    addNote(bean, note);
+                }
+            } else {
+                String note = "Order with Placer Order Number '" + entityIdentifier + "'";
+                String namespaceId = placerOrderNumber.getNamespaceID().getValue();
+                if (!StringUtils.isEmpty(namespaceId)) {
+                    note += " submitted by " + namespaceId;
+                }
+                note += " was placed outside OpenVPMS";
+                addNote(bean, note);
+            }
         }
         return result;
     }
 
     /**
-     * Creates a new {@link OrderState} using the PID segment.
+     * Returns the order identifier for a Placer Order Number.
+     * <p/>
+     * Note that as of OpenVPMS 1.9, orders originating in both Cubex and SFS use alphanumeric placer order numbers.
+     * As a result, there will be no id collisions with these systems. However if an external system uses numeric
+     * identifiers there will be a requirement to check the Sending Application (i.e. namespace id) included in
+     * the Placer Order Number to determine where it originated.
+     *
+     * @param placerOrderNumber the placer order number
+     * @return the identifier corresponding to an OpenVPMS order, or {@code -1} if it is not specified or was placed by
+     * a different system
+     */
+    protected long getOrderId(EI placerOrderNumber) {
+        return HL7MessageHelper.getId(placerOrderNumber);
+    }
+
+    /**
+     * Creates a new {@link CustomerOrder} using the PID segment.
      *
      * @param pid      the pid
      * @param location the practice location reference
      * @return a new state
      * @throws HL7Exception if the patient does not exist
      */
-    protected OrderState createState(PID pid, IMObjectReference location) throws HL7Exception {
+    protected CustomerOrder createState(PID pid, IMObjectReference location) throws HL7Exception {
         Party patient = null;
         Party customer = null;
         long id;
@@ -147,13 +187,34 @@ abstract class OrderMessageProcessor {
         return createState(patient, customer, note, location, service);
     }
 
-    protected abstract OrderState createState(Party patient, Party customer, String note,
+    /**
+     * Creates state for an order.
+     *
+     * @param patient  the patient. May be {@code null}
+     * @param customer the customer. May be {@code null}
+     * @param note     the note. May be {@code null}
+     * @param location the practice location. May be {@code null}
+     * @param service  the archetype service
+     * @return a new {@link CustomerOrder}
+     */
+    protected abstract CustomerOrder createState(Party patient, Party customer, String note,
                                               IMObjectReference location, IArchetypeService service);
 
+    /**
+     * Returns the archetype service.
+     *
+     * @return the archetype service
+     */
     protected IArchetypeService getService() {
         return service;
     }
 
+    /**
+     * Returns the clinician, given their id.
+     *
+     * @param id the clinician identifier
+     * @return the clinician identifier, or {@code null} if it is not found
+     */
     protected User getClinician(long id) {
         IMObjectReference reference = new IMObjectReference(UserArchetypes.USER, id);
         User user = (User) service.get(reference);

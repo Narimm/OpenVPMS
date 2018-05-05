@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
-import org.openvpms.web.workspace.workflow.scheduling.SchedulingHelper;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -89,7 +88,7 @@ public abstract class AbstractAppointmentGrid extends AbstractScheduleEventGrid 
      * @param rules        the appointment rules
      */
     public AbstractAppointmentGrid(Entity scheduleView, Date date, int startMins, int endMins, AppointmentRules rules) {
-        super(scheduleView, date);
+        super(scheduleView, date, rules);
         this.startMins = startMins;
         this.endMins = endMins;
         this.rules = rules;
@@ -132,22 +131,31 @@ public abstract class AbstractAppointmentGrid extends AbstractScheduleEventGrid 
     }
 
     /**
-     * Returns the no. of slots at an appointment occupies, from the specified
-     * slot.
+     * Returns the no. of slots that an event occupies, from the specified slot.
      * <p/>
-     * If the appointment begins prior to the slot, the remaining slots will
-     * be returned.
+     * If the event begins prior to the slot, the remaining slots will be returned.
      *
-     * @param appointment the appointment
-     * @param slot        the starting slot
-     * @return the no. of slots that the appointment occupies
+     * @param event    the event
+     * @param schedule the schedule
+     * @param slot     the starting slot  @return the no. of slots that the event occupies
      */
-    public int getSlots(PropertySet appointment, int slot) {
+    public int getSlots(PropertySet event, Schedule schedule, int slot) {
         Date startTime = getStartTime(slot);
-        Date endTime = appointment.getDate(ScheduleEvent.ACT_END_TIME);
+        Date endTime = event.getDate(ScheduleEvent.ACT_END_TIME);
         int startSlot = getSlot(startTime);
         int endSlot = getSlot(endTime);
-        return endSlot - startSlot;
+        int slots = endSlot - startSlot;
+        if (slots > 1 && Schedule.isBlockingEvent(event)) {
+            PropertySet next = schedule.getEventAfter(event, startTime);
+            if (next != null) {
+                Date nextStartTime = next.getDate(ScheduleEvent.ACT_START_TIME);
+                int nextStartSlot = getSlot(nextStartTime);
+                if (nextStartSlot < endSlot) {
+                    slots = nextStartSlot - startSlot;
+                }
+            }
+        }
+        return slots;
     }
 
     /**
@@ -298,7 +306,7 @@ public abstract class AbstractAppointmentGrid extends AbstractScheduleEventGrid 
      * @return the minutes from midnight for the specified time
      */
     protected int getSlotMinutes(Date time, boolean roundUp) {
-        return SchedulingHelper.getSlotMinutes(time, slotSize, roundUp);
+        return rules.getSlotMinutes(time, slotSize, roundUp);
     }
 
     /**
@@ -330,7 +338,7 @@ public abstract class AbstractAppointmentGrid extends AbstractScheduleEventGrid 
             endMins = startMins;
         }
 
-        return new Schedule(schedule, startMins, endMins, slotSize);
+        return new Schedule(schedule, null, startMins, endMins, slotSize, rules);
     }
 
     /**

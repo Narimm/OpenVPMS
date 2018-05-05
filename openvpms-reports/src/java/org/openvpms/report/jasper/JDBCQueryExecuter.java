@@ -11,26 +11,30 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
 
-import net.sf.jasperreports.engine.DefaultJasperReportsContext;
 import net.sf.jasperreports.engine.JRDataSource;
 import net.sf.jasperreports.engine.JRDataset;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JRExpression;
 import net.sf.jasperreports.engine.JRField;
 import net.sf.jasperreports.engine.JRParameter;
-import net.sf.jasperreports.engine.JRPropertiesHolder;
-import net.sf.jasperreports.engine.JRPropertiesMap;
-import net.sf.jasperreports.engine.JRRuntimeException;
+import net.sf.jasperreports.engine.JRRewindableDataSource;
 import net.sf.jasperreports.engine.JRValueParameter;
+import net.sf.jasperreports.engine.JasperReportsContext;
 import net.sf.jasperreports.engine.query.JRJdbcQueryExecuter;
+import org.apache.commons.jxpath.Functions;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.IMObjectVariables;
 import org.openvpms.component.business.service.archetype.helper.ResolvingPropertySet;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.util.PropertySet;
+import org.openvpms.report.AbstractExpressionEvaluator;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -49,17 +53,64 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
     private final PropertySet fields;
 
     /**
+     * The report fields.
+     */
+    private Map<String, JRField> reportFields = new HashMap<>();
+
+    /**
+     * The report parameters.
+     */
+    private Map<String, String> reportParameters = new HashMap<>();
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
+    /**
+     * The extension functions.
+     */
+    private final Functions functions;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(JDBCQueryExecuter.class);
+
+    /**
      * Constructs an {@link JDBCQueryExecuter}.
      *
+     * @param context    the jasper reports report context
      * @param dataset    the report data set
      * @param parameters the report parameters
      * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
      * @param service    the archetype service
+     * @param lookups    the lookup service
+     * @param functions  the extension functions
      */
-    public JDBCQueryExecuter(JRDataset dataset, Map<String, Object> parameters, Map<String, Object> fields,
-                             IArchetypeService service) {
-        super(DefaultJasperReportsContext.getInstance(), dataset, convert(dataset, parameters));
-        this.fields = (fields != null) ? new ResolvingPropertySet(fields, service) : null;
+    public JDBCQueryExecuter(JasperReportsContext context, JRDataset dataset,
+                             Map<String, ? extends JRValueParameter> parameters, ResolvingPropertySet fields,
+                             IArchetypeService service, ILookupService lookups, Functions functions) {
+        super(context, dataset, parameters);
+        this.service = service;
+        this.lookups = lookups;
+        this.functions = functions;
+        this.fields = fields;
+        for (JRField field : dataset.getFields()) {
+            if (!field.getName().startsWith("[")) {
+                reportFields.put("F." + field.getName(), field);
+            }
+        }
+        for (JRParameter parameter : dataset.getParameters()) {
+            if (parameter.isForPrompting() && !parameter.isSystemDefined()) {
+                reportParameters.put("P." + parameter.getName(), parameter.getName());
+            }
+        }
     }
 
     /**
@@ -75,12 +126,17 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
     /**
      * Wraps an {@code JRDataSource}, in order to support {@link #fields}.
      */
-    private class FieldDataSource implements JRDataSource {
+    public class FieldDataSource implements DataSource {
 
         /**
          * The data source to delegate to. May be {@code null} if the report has no SQL statement.
          */
         private JRDataSource dataSource;
+
+        /**
+         * The expression evaluator.
+         */
+        private JDBCExpressionEvaluator evaluator;
 
         /**
          * Constructs an {@link FieldDataSource}.
@@ -89,6 +145,7 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
          */
         public FieldDataSource(JRDataSource dataSource) {
             this.dataSource = dataSource;
+            evaluator = new JDBCExpressionEvaluator(dataSource, fields, service, lookups, functions);
         }
 
         /**
@@ -103,222 +160,178 @@ public class JDBCQueryExecuter extends JRJdbcQueryExecuter {
         }
 
         /**
+         * Returns the field value.
+         *
+         * @param name the field name
+         * @return the field value. May be {@code null}
+         */
+        @Override
+        public Object getFieldValue(String name) {
+            return evaluator.getValue(name);
+        }
+
+        /**
          * Gets the field value for the current position.
          *
          * @return an object containing the field value. The object type must be the field object type.
          */
         @Override
         public Object getFieldValue(JRField field) throws JRException {
-            if (fields != null && fields.exists(field.getName())) {
-                return fields.resolve(field.getName()).getValue();
-            }
-            return (dataSource != null) ? dataSource.getFieldValue(field) : null;
+            return evaluator.getValue(field);
+        }
+
+        /**
+         * Evaluates an xpath expression.
+         *
+         * @param expression the expression
+         * @return the result of the expression. May be {@code null}
+         */
+        @Override
+        public Object evaluate(String expression) {
+            return evaluator.evaluate(expression);
+        }
+
+        /**
+         * Evaluates an xpath expression against an object.
+         *
+         * @param object     the object
+         * @param expression the expression
+         * @return the result of the expression. May be {@code null}
+         */
+        @Override
+        public Object evaluate(Object object, String expression) {
+            return evaluator.evaluate(object, expression);
+        }
+
+        /**
+         * Returns a data source for a collection node.
+         *
+         * @param name the collection node name
+         * @return the data source
+         * @throws JRException for any error
+         */
+        @Override
+        public JRRewindableDataSource getDataSource(String name) throws JRException {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Returns a data source for a collection node.
+         *
+         * @param name      the collection node name
+         * @param sortNodes the list of nodes to sort on
+         * @return the data source
+         * @throws JRException for any error
+         */
+        @Override
+        public JRRewindableDataSource getDataSource(String name, String[] sortNodes) throws JRException {
+            throw new UnsupportedOperationException();
+        }
+
+        /**
+         * Returns a data source for the given jxpath expression.
+         *
+         * @param expression the expression. Must return an {@code Iterable} or {@code Iterator} returning
+         *                   {@link IMObject}s
+         * @return the data source
+         * @throws JRException for any error
+         */
+        @Override
+        public JRRewindableDataSource getExpressionDataSource(String expression) throws JRException {
+            throw new UnsupportedOperationException();
         }
     }
 
-    /**
-     * Helper to convert a map of parameters to those required by {@code JRJdbcQueryExecuter}.
-     *
-     * @param dataset    the report data set
-     * @param parameters the report parameters
-     * @return the converted parameters
-     */
-    private static Map<String, ? extends JRValueParameter> convert(JRDataset dataset, Map<String, Object> parameters) {
-        JRParameter[] list = dataset.getParameters();
-        Map<String, Parameter> result = new HashMap<String, Parameter>();
-        if (list != null) {
-            for (JRParameter parameter : list) {
-                String name = parameter.getName();
-                if (JRParameter.REPORT_PARAMETERS_MAP.equals(name)) {
-                    result.put(name, new Parameter(parameter, parameters));
+    private class JDBCExpressionEvaluator extends AbstractExpressionEvaluator<Object> {
+
+        /**
+         * The data source.
+         */
+        private final JRDataSource dataSource;
+
+        /**
+         * Constructs a {@link JDBCExpressionEvaluator}.
+         *
+         * @param fields    additional report fields. These override any in the report. May be {@code null}
+         * @param service   the archetype service
+         * @param lookups   the lookup service
+         * @param functions the JXPath extension functions
+         */
+        public JDBCExpressionEvaluator(JRDataSource dataSource, PropertySet fields, IArchetypeService service,
+                                       ILookupService lookups, Functions functions) {
+            super(new Object(), null, fields, service, lookups, functions);
+            this.dataSource = dataSource;
+        }
+
+        public Object getValue(JRField field) {
+            String expression = field.getName();
+            Object result;
+            try {
+                if (isJXPath(expression)) {
+                    result = getJXPathValue(expression);
+                } else if (isField(expression)) {
+                    result = getFieldValue(expression);
                 } else {
-                    result.put(name, new Parameter(parameter, parameters.get(name)));
+                    result = dataSource.getFieldValue(field);
                 }
+            } catch (Exception exception) {
+                log.warn("Failed to evaluate: " + expression, exception);
+                // TODO localise
+                result = "Expression Error";
             }
-        }
-        return result;
-    }
-
-    /**
-     * Helper to adapt JRParameter.
-     */
-    private static class Parameter implements JRValueParameter {
-
-        /**
-         * The underlying parameter.
-         */
-        private final JRParameter parameter;
-
-        /**
-         * The parameter value.
-         */
-        private Object value;
-
-        /**
-         * Constructs an {@link Parameter}.
-         *
-         * @param parameter the underlying parameter
-         * @param value     the parameter value. May be {@code null}
-         */
-        public Parameter(JRParameter parameter, Object value) {
-            this.parameter = parameter;
-            this.value = value;
+            return result;
         }
 
         /**
-         * Checks whether the object has any properties.
+         * Returns a node value.
          *
-         * @return whether the object has any properties
+         * @param name the node name
+         * @return {@code null}
          */
         @Override
-        public boolean hasProperties() {
-            return parameter.hasProperties();
-        }
-
-        /**
-         * Returns the parameter name.
-         *
-         * @return the parameter name
-         */
-        @Override
-        public String getName() {
-            return parameter.getName();
-        }
-
-        /**
-         * Returns the parameter description.
-         *
-         * @return the parameter description
-         */
-        @Override
-        public String getDescription() {
-            return parameter.getDescription();
-        }
-
-        /**
-         * Sets the parameter description.
-         *
-         * @param description the description
-         */
-        @Override
-        public void setDescription(String description) {
-            parameter.setDescription(description);
-        }
-
-        /**
-         * Returns the parameter value class.
-         *
-         * @return the value class
-         */
-        @Override
-        public Class getValueClass() {
-            return parameter.getValueClass();
-        }
-
-        /**
-         * Returns the parameter value class name.
-         *
-         * @return the value class name
-         */
-        @Override
-        public String getValueClassName() {
-            return parameter.getValueClassName();
-        }
-
-        /**
-         * Determines if the parameter is system defined.
-         *
-         * @return {@code true} if the parameter is system defined
-         */
-        @Override
-        public boolean isSystemDefined() {
-            return parameter.isSystemDefined();
-        }
-
-        /**
-         * Determines if the parameter is for prompting.
-         *
-         * @return {@code true} if the parameter is for prompting
-         */
-        @Override
-        public boolean isForPrompting() {
-            return parameter.isForPrompting();
-        }
-
-        /**
-         * Returns the default value expression.
-         *
-         * @return the default value expression. May be {@code null}
-         */
-        @Override
-        public JRExpression getDefaultValueExpression() {
-            return parameter.getDefaultValueExpression();
-        }
-
-        /**
-         * Returns the parameter nested value type.
-         *
-         * @return the nested value type for this parameter, or {@code null }if none set
-         */
-        @Override
-        public Class getNestedType() {
-            return parameter.getNestedType();
-        }
-
-        /**
-         * Returns the name of the parameter nested value type.
-         *
-         * @return the name of the nested value type for this parameter, or {@code null} if none set
-         */
-        @Override
-        public String getNestedTypeName() {
-            return parameter.getNestedTypeName();
-        }
-
-        /**
-         * Returns this object's properties map.
-         *
-         * @return this object's properties map
-         */
-        @Override
-        public JRPropertiesMap getPropertiesMap() {
-            return parameter.getPropertiesMap();
-        }
-
-        /**
-         * Returns the parent properties holder, whose properties are used as defaults
-         * for this object.
-         *
-         * @return the parent properties holder, or {@code null} if no parent
-         */
-        @Override
-        public JRPropertiesHolder getParentProperties() {
-            return parameter.getParentProperties();
-        }
-
-        /**
-         * Returns the value assigned to the parameter.
-         *
-         * @return the value assigned to the parameter
-         */
-        @Override
-        public Object getValue() {
-            return value;
-        }
-
-        /**
-         * Assigns the value to the parameter.
-         *
-         * @param value the value assigned to the parameter
-         */
-        @Override
-        public void setValue(Object value) {
-            this.value = value;
+        protected Object getNodeValue(String name) {
+            return null;
         }
 
         @Override
-        public Object clone() {
-            throw new JRRuntimeException("Clone not supported");
+        protected IMObjectVariables createVariables() {
+            return new IMObjectVariables(service, lookups) {
+                /**
+                 * Determines if a variable exists.
+                 *
+                 * @param name the variable name
+                 * @return {@code true} if the variable exists
+                 */
+                @Override
+                public boolean exists(String name) {
+                    return reportFields.containsKey(name) || reportParameters.containsKey(name) || super.exists(name);
+                }
+
+                /**
+                 * Returns the value of the specified variable.
+                 *
+                 * @param varName variable name
+                 * @return Object value
+                 * @throws IllegalArgumentException if there is no such variable.
+                 */
+                @Override
+                public Object getVariable(String varName) {
+                    JRField field = reportFields.get(varName);
+                    if (field != null) {
+                        try {
+                            return dataSource.getFieldValue(field);
+                        } catch (JRException e) {
+                            throw new IllegalStateException("Failed to retrieve value for field " + varName, e);
+                        }
+                    } else {
+                        String parameter = reportParameters.get(varName);
+                        if (parameter != null) {
+                            return getParameterValue(parameter);
+                        }
+                    }
+                    return super.getVariable(varName);
+                }
+            };
         }
     }
 

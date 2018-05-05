@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.party;
@@ -27,12 +25,13 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 
+import java.util.Set;
+
 
 /**
  * Assembles {@link Contact}s from {@link ContactDO}s and vice-versa.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ContactAssembler extends IMObjectAssembler<Contact, ContactDO> {
 
@@ -59,6 +58,7 @@ public class ContactAssembler extends IMObjectAssembler<Contact, ContactDO> {
      * @param context the assembly context
      */
     @Override
+    @SuppressWarnings("unchecked")
     protected void assembleDO(ContactDO target, Contact source, DOState state,
                               Context context) {
         super.assembleDO(target, source, state, context);
@@ -73,9 +73,8 @@ public class ContactAssembler extends IMObjectAssembler<Contact, ContactDO> {
         }
         target.setParty(party);
 
-        LOOKUPS.assembleDO(target.getClassifications(),
-                           source.getClassifications(),
-                           state, context);
+        LOOKUPS.assembleDO(target.getClassifications(), (Set<Lookup>) (Set) source.getClassifications(), state,
+                           context);
     }
 
     /**
@@ -86,16 +85,14 @@ public class ContactAssembler extends IMObjectAssembler<Contact, ContactDO> {
      * @param context the assembly context
      */
     @Override
-    protected void assembleObject(Contact target, ContactDO source,
-                                  Context context) {
+    @SuppressWarnings("unchecked")
+    protected void assembleObject(Contact target, ContactDO source, Context context) {
         super.assembleObject(target, source, context);
         target.setActiveStartTime(source.getActiveStartTime());
         target.setActiveEndTime(source.getActiveEndTime());
         target.setParty(getObject(source.getParty(), Party.class, context));
 
-        LOOKUPS.assembleObject(target.getClassifications(),
-                               source.getClassifications(),
-                               context);
+        LOOKUPS.assembleObject((Set<Lookup>) (Set) target.getClassifications(), source.getClassifications(), context);
     }
 
     /**

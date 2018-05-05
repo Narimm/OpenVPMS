@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetype>
@@ -30,9 +30,13 @@
     <data id="OT1" archetype="party.organisationTill" name="Main Reception Till" tillFloat="200.00"/>
     <data archetype="entityRelationship.locationTill" source="id:OL1" target="id:OT1"/>
     <data id="OS1" archetype="party.organisationSchedule" name="Main Appointment Schedule" slotSize="15"
-          slotUnits="MINUTES" allowDoubleBooking="true"/>
+          slotUnits="MINUTES" allowDoubleBooking="true">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS1" target="id:OL1"/>
+    </data>
     <data id="OS2" archetype="party.organisationSchedule" name="Main Surgery Schedule" slotSize="30"
-          slotUnits="MINUTES" allowDoubleBooking="false"/>
+          slotUnits="MINUTES" allowDoubleBooking="false">
+        <data collection="location" archetype="entityLink.scheduleLocation" source="id:OS2" target="id:OL1"/>
+    </data>
     <data id="OW1" archetype="party.organisationWorkList" name="Main Waiting List" maxSlots="100"/>
     <data id="OW2" archetype="party.organisationWorkList" name="Main Hospital List" maxSlots="50"/>
     <data id="AT1" archetype="entity.appointmentType" name="Standard Consult" description="Standard Consultation"/>
@@ -60,10 +64,11 @@
     <data archetype="lookup.uom" code="PACKET" unitCode="PA"/>
     <data archetype="lookup.uom" code="VIAL" unitCode="VI"/>
     <data archetype="lookup.uom" code="BOX" unitCode="BX"/>
-    <data archetype="lookup.uom" code="GRAMS" unitCode="GRM"/>
-    <data archetype="lookup.uom" code="LITRES" unitCode="LTR"/>
+    <data archetype="lookup.uom" code="GRAMS" unitCode="GRM" printedName="g"/>
+    <data archetype="lookup.uom" code="LITRES" unitCode="LTR" printedName="l"/>
     <data archetype="lookup.uom" code="AMPOULE" unitCode="AM"/>
-    <data archetype="lookup.uom" code="MLS" unitCode="MLT"/>
+    <data archetype="lookup.uom" code="MG" unitCode="MGM" printedName="mg"/>
+    <data archetype="lookup.uom" code="MLS" unitCode="MLT" printedName="ml"/>
     <data archetype="lookup.uom" code="TUBE" unitCode="TU"/>
     <data archetype="lookup.customerType" code="SMALL_ANIMAL"/>
     <data archetype="lookup.customerType" code="LARGE_ANIMAL"/>
@@ -779,5 +784,17 @@
           name="Document name - supplier full name - today's date"
           description="Valid for supplier documents only"
           expression="concat($file, ' - ', party:getPartyFullName($supplier), ' - ', date:format(java.util.Date.new(), 'd MMM yyyy'))"/>
-
+    <data id="ART1" archetype="entity.documentTemplateSMSAppointment"
+          name="Default Appointment Reminder SMS Template"
+          description="&lt;patient&gt;'s appointment at &lt;location&gt; is confirmed for &lt;date/time&gt;. Call us on &lt;phone&gt; if you need to change the appointment"
+          contentType="XPATH"
+          content="concat(expr:if(expr:var('patient.name') != '', concat(expr:var('patient.name'), &quot;&apos;s&quot;), 'Your'),
+' appointment at ' , $location.name,' is confirmed for ', date:formatDate($appointment.startTime, 'short'), ' @ ', date:formatTime($appointment.startTime, 'short'), $nl,
+'Call us on ', party:getTelephone($location), ' if you need to change the appointment')"/>
+    <data archetype="entityLink.organisationSMSAppointment" source="id:OP1" target="id:ART1"/>
+    <data id="PRT1" archetype="entity.documentTemplateSMSReminder"
+          name="Sample Vaccination Reminder SMS Template"
+          description="&lt;patient&gt; is due for a vaccination at &lt;location&gt;. Call us on &lt;phone&gt; to make an appointment"
+          contentType="XPATH"
+          content="concat($patient.name, ' is due for a vaccination at ', $location.name, '.', $nl, 'Please contact us on ',  party:getTelephone($location), ' to make an appointment')"/>
 </archetype>

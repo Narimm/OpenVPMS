@@ -1,0 +1,75 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="entity.preferenceGroupScheduling.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.common.Entity" displayName="Scheduling">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="0" maxLength="100" hidden="true"
+              defaultValue="'Scheduling Preferences'"/>
+        <node name="description" type="java.lang.String" path="/description" hidden="true" minCardinality="0"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()" hidden="true"/>
+        <node name="view" displayName="Schedule View" path="/details/view"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference"
+              minCardinality="0" maxCardinality="1" filter="entity.organisationScheduleView"/>
+        <node name="schedule" path="/details/schedule"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference"
+              minCardinality="0" maxCardinality="1" filter="party.organisationSchedule"/>
+        <node name="clinician" path="/details/clinician"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference"
+              minCardinality="0" maxCardinality="1" filter="security.user"/>
+        <node name="highlight" path="/details/highlight" type="java.lang.String" minCardinality="0">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="EVENT_TYPE" value="Event Type"/>
+                    <property name="CLINICIAN" value="Clinician"/>
+                    <property name="STATUS" value="Status"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="time" path="/details/time" type="java.lang.String" minCardinality="1"
+              defaultValue="'ALL'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="ALL" value="All"/>
+                    <property name="AM_PM" value="Now (AM/PM)"/>
+                    <property name="M_A_E" value="Now (Morning/Afternoon/Evening)"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="dates" path="/details/dates" type="java.lang.String" minCardinality="1" defaultValue="'FORTNIGHT'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="DAY" value="Day"/>
+                    <property name="WEEK" value="Week"/>
+                    <property name="FORTNIGHT" value="Fortnight"/>
+                    <property name="MONTH" value="Month"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="show" path="/details/show" type="java.lang.String" minCardinality="1" defaultValue="'ALL'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="ALL" value="All"/>
+                    <property name="CAGE" value="Cage"/>
+                    <property name="SUMMARY" value="Summary"/>
+                    <property name="CHECKIN" value="Check-Ins"/>
+                    <property name="CHECKOUT" value="Check-Outs"/>
+                </propertyList>
+            </assertion>
+        </node>
+    </archetype>
+</archetypes>

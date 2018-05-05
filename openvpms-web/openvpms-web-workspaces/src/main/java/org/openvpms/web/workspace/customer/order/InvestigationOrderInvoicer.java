@@ -11,21 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.order;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
-import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.property.Validator;
-import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditor;
+import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
-import org.openvpms.web.workspace.patient.history.PatientInvestigationActEditor;
+import org.openvpms.web.workspace.patient.mr.PatientInvestigationActEditor;
 
 /**
  * This class is responsible for cancelling investigations associated with from
@@ -47,6 +46,16 @@ public class InvestigationOrderInvoicer extends OrderInvoicer {
      */
     public InvestigationOrderInvoicer(FinancialAct act, OrderRules rules) {
         super(act, rules);
+    }
+
+    /**
+     * Determines if an order/return must charged via an editor.
+     *
+     * @return {@code true} if an editor is required
+     */
+    @Override
+    public boolean requiresEdit() {
+        return true;
     }
 
     @Override
@@ -83,7 +92,7 @@ public class InvestigationOrderInvoicer extends OrderInvoicer {
             return super.validate(validator) && validateRequired(validator, "sourceInvestigation", investigation);
         }
 
-        public void charge(AbstractCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor) {
+        public void charge(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor) {
             if (!isOrder()) {
                 PatientInvestigationActEditor investigation = itemEditor.getInvestigation(this.investigation);
                 if (investigation != null) {
@@ -92,9 +101,5 @@ public class InvestigationOrderInvoicer extends OrderInvoicer {
             }
         }
 
-        @Override
-        protected String[] getProductArchetypes() {
-            return new String[]{ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE, ProductArchetypes.SERVICE};
-        }
     }
 }

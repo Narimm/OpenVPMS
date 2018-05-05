@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -19,16 +19,28 @@ package org.openvpms.web.workspace.customer.estimate;
 import org.openvpms.archetype.rules.act.EstimateActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
+import org.openvpms.web.component.im.edit.act.TemplateProductListener;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditor;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.charge.AbstractInvoicer;
+import org.openvpms.web.workspace.customer.charge.ChargeItemRelationshipCollectionEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
+import org.openvpms.web.workspace.patient.charge.TemplateChargeItems;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -80,43 +92,175 @@ public class EstimateInvoicer extends AbstractInvoicer {
      * @param estimate the estimate to invoice
      * @param editor   the editor to add invoice items to
      */
-    public void invoice(Act estimate, AbstractCustomerChargeActEditor editor) {
-        ActBean bean = new ActBean(estimate);
-        ActRelationshipCollectionEditor items = editor.getItems();
+    public void invoice(Act estimate, CustomerChargeActEditor editor) {
+        InvoicingStrategy strategy = createStrategy(estimate, editor);
+        strategy.invoice();
+    }
 
-        for (Act estimationItem : bean.getNodeActs("items")) {
-            ActBean itemBean = new ActBean(estimationItem);
+    /**
+     * Creates a strategy for invoicing an estimate.
+     *
+     * @param estimate the estimate to invoice
+     * @param editor   the invoice editor
+     * @return a new strategy
+     */
+    protected InvoicingStrategy createStrategy(Act estimate, CustomerChargeActEditor editor) {
+        return new InvoicingStrategy(estimate, editor);
+    }
+
+    /**
+     * Strategy for invoicing estimates.
+     */
+    protected class InvoicingStrategy {
+
+        /**
+         * The estimate to invoice.
+         */
+        private final Act estimate;
+
+        /**
+         * The invoice editor.
+         */
+        private final CustomerChargeActEditor editor;
+
+        /**
+         * Collects template products to their corresponding charge items.
+         */
+        private Map<Product, List<Act>> templateItems = new HashMap<>();
+
+        /**
+         * Constructs an {@link InvoicingStrategy}.
+         *
+         * @param estimate the estimate to invoice
+         * @param editor   the editor to add invoice items to
+         */
+        public InvoicingStrategy(Act estimate, CustomerChargeActEditor editor) {
+            this.estimate = estimate;
+            this.editor = editor;
+        }
+
+        /**
+         * Invoices the estimate.
+         */
+        public void invoice() {
+            ActBean bean = new ActBean(estimate);
+            ActRelationshipCollectionEditor items = getItems();
+
+            int outOfStock = 0;
+            for (Act estimationItem : bean.getNodeActs("items")) {
+                CustomerChargeActItemEditor itemEditor = invoice(estimationItem);
+                if (itemEditor != null) {
+                    BigDecimal stock = itemEditor.getStock();
+                    if (stock != null && stock.compareTo(BigDecimal.ZERO) <= 0) {
+                        outOfStock++;
+                    }
+                }
+            }
+            items.refresh();
+
+            if (!templateItems.isEmpty()) {
+                notifyTemplateExpansion(templateItems);
+            }
+
+            ActRelationshipCollectionEditor customerNotes = editor.getCustomerNotes();
+            if (customerNotes != null) {
+                for (Act note : bean.getNodeActs("customerNotes")) {
+                    IMObjectEditor noteEditor = customerNotes.getEditor(note);
+                    noteEditor.getComponent();
+                    customerNotes.addEdited(noteEditor);
+                }
+            }
+            ActRelationshipCollectionEditor documents = editor.getDocuments();
+            if (documents != null) {
+                for (Act document : bean.getNodeActs("documents")) {
+                    IMObjectEditor documentsEditor = documents.getEditor(document);
+                    documentsEditor.getComponent();
+                    documents.addEdited(documentsEditor);
+                }
+            }
+            if (outOfStock != 0) {
+                AlertListener listener = editor.getAlertListener();
+                if (listener != null) {
+                    listener.onAlert(Messages.format("customer.charge.outofstock", outOfStock));
+                }
+            }
+        }
+
+        /**
+         * Invoices an estimate item.
+         *
+         * @param item the estimate item
+         * @return the item editor, or {@code null} if the item wasn't invoiced
+         */
+        protected CustomerChargeActItemEditor invoice(Act item) {
+            ActBean itemBean = new ActBean(item);
             CustomerChargeActItemEditor itemEditor = getItemEditor(editor);
             itemEditor.setPatientRef(itemBean.getNodeParticipantRef("patient"));
-            itemEditor.setQuantity(itemBean.getBigDecimal("highQty"));
             itemEditor.setPrint(itemBean.getBoolean("print", true));
 
             // NOTE: setting the product can trigger popups - want the popups to get the correct
             // property values from above
-            itemEditor.setProduct(itemBean.getNodeParticipantRef("product"),
-                                  itemBean.getNodeParticipantRef("template"));
+            itemEditor.setMinimumQuantity(itemBean.getBigDecimal("lowQty"));
+            IMObjectReference templateRef = itemBean.getNodeParticipantRef("template");
+            IMObjectReference product = itemBean.getNodeParticipantRef("product");
+            setProduct(itemEditor, product, templateRef);
+            itemEditor.setQuantity(itemBean.getBigDecimal("highQty")); // replaces any doses
 
             itemEditor.setFixedPrice(itemBean.getBigDecimal("fixedPrice"));
             itemEditor.setUnitPrice(itemBean.getBigDecimal("highUnitPrice"));
             itemEditor.setDiscount(itemBean.getBigDecimal("highDiscount"));
+            return itemEditor;
         }
-        items.refresh();
-        ActRelationshipCollectionEditor customerNotes = editor.getCustomerNotes();
-        if (customerNotes != null) {
-            for (Act note : bean.getNodeActs("customerNotes")) {
-                IMObjectEditor noteEditor = customerNotes.getEditor(note);
-                noteEditor.getComponent();
-                customerNotes.addEdited(noteEditor);
-            }
-        }
-        ActRelationshipCollectionEditor documents = editor.getDocuments();
-        if (documents != null) {
-            for (Act document : bean.getNodeActs("documents")) {
-                IMObjectEditor documentsEditor = documents.getEditor(document);
-                documentsEditor.getComponent();
-                documents.addEdited(documentsEditor);
-            }
-        }
-    }
 
+        /**
+         * Sets the product.
+         *
+         * @param itemEditor  the item editor
+         * @param productRef  the product reference
+         * @param templateRef the template reference. May be {@code null}
+         */
+        protected void setProduct(CustomerChargeActItemEditor itemEditor, IMObjectReference productRef,
+                                  IMObjectReference templateRef) {
+            itemEditor.setProduct(productRef, templateRef);
+            Product template = itemEditor.getTemplate();
+            if (template != null) {
+                List<Act> items = templateItems.get(template);
+                if (items == null) {
+                    items = new ArrayList<>();
+                    templateItems.put(template, items);
+                }
+                items.add(itemEditor.getObject());
+            }
+        }
+
+        /**
+         * Notifies that a one or more expanded templates were encountered when invoicing the estimate.
+         *
+         * @param items the map of items to their corresponding template products
+         */
+        protected void notifyTemplateExpansion(Map<Product, List<Act>> items) {
+            List<TemplateChargeItems> templates = getItems().getTemplates();
+            for (Map.Entry<Product, List<Act>> entry : items.entrySet()) {
+                Product template = entry.getKey();
+                List<Act> acts = entry.getValue();
+                templates.add(new TemplateChargeItems(template, acts));
+            }
+            TemplateProductListener listener = getItems().getTemplateProductListener();
+            if (listener != null) {
+                for (Map.Entry<Product, List<Act>> entry : items.entrySet()) {
+                    listener.expanded(entry.getKey());
+                }
+            }
+        }
+
+        /**
+         * Returns the items collection editor.
+         *
+         * @return the items collection editor
+         */
+        protected ChargeItemRelationshipCollectionEditor getItems() {
+            return editor.getItems();
+        }
+
+    }
 }

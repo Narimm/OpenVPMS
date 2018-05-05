@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.lookup;
@@ -26,11 +26,12 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertion;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionFactory;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -62,6 +63,10 @@ public class NodeLookupQuery extends AbstractLookupQuery {
      */
     private NodeDescriptor descriptor;
 
+    /**
+     * The codes to include. If null or empty, indicates all codes.
+     */
+    private final String[] codes;
 
     /**
      * Constructs a {@link NodeLookupQuery} for an archetype and node.
@@ -70,9 +75,19 @@ public class NodeLookupQuery extends AbstractLookupQuery {
      * @param node      the node name
      */
     public NodeLookupQuery(String shortName, String node) {
+        this(shortName, node, (String[]) null);
+    }
+
+    /**
+     * Constructs a {@link NodeLookupQuery} for an archetype and node.
+     *
+     * @param shortName the archetype short name
+     * @param node      the node name
+     */
+    public NodeLookupQuery(String shortName, String node, String... codes) {
         this.shortName = shortName;
         this.node = node;
-
+        this.codes = codes;
     }
 
     /**
@@ -94,6 +109,7 @@ public class NodeLookupQuery extends AbstractLookupQuery {
     public NodeLookupQuery(IMObject object, NodeDescriptor descriptor) {
         this.object = object;
         this.descriptor = descriptor;
+        this.codes = null;
     }
 
     /**
@@ -109,10 +125,22 @@ public class NodeLookupQuery extends AbstractLookupQuery {
             NodeDescriptor node = getDescriptor();
             if (node != null) {
                 LookupAssertion assertion = LookupAssertionFactory.create(node, service, lookupService);
+                List<Lookup> lookups;
                 if (object != null) {
-                    result = filter(assertion.getLookups(object));
+                    lookups = new ArrayList<>(assertion.getLookups(object));
                 } else {
-                    result = filter(assertion.getLookups());
+                    lookups = assertion.getLookups();
+                }
+                if (codes != null && codes.length > 0) {
+                    result = new ArrayList<>();
+                    for (String code : codes) {
+                        Lookup lookup = getLookup(code, lookups);
+                        if (lookup != null) {
+                            result.add(lookup);
+                        }
+                    }
+                } else {
+                    result = lookups;
                 }
             }
         } catch (OpenVPMSException error) {

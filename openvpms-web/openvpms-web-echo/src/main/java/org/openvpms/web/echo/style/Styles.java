@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.style;
@@ -66,6 +66,11 @@ public final class Styles {
     public static final String LARGE_INSET = "Inset.Large";
 
     /**
+     * Small inset style name.
+     */
+    public static final String SMALL_INSET = "Inset.Small";
+
+    /**
      * Cell spacing style name.
      */
     public static final String CELL_SPACING = "CellSpacing";
@@ -114,4 +119,9 @@ public final class Styles {
      * An extent to fill the available width.
      */
     public static final Extent FULL_WIDTH = new Extent(100, Extent.PERCENT);
+
+    /**
+     * An extent to fill the available height.
+     */
+    public static final Extent FULL_HEIGHT = FULL_WIDTH;
 }

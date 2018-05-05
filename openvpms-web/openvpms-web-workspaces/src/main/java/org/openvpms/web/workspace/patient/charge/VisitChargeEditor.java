@@ -11,29 +11,25 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.charge;
 
-import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
-import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
-import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
-import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.im.act.ActHelper;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
@@ -42,10 +38,9 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditor;
+import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
 
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -55,7 +50,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
+public class VisitChargeEditor extends CustomerChargeActEditor {
 
     /**
      * The event to link charge items to.
@@ -78,7 +73,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude("amount", "tax", "printed");
 
     /**
-     * Constructs a {@code VisitChargeActEditor}.
+     * Constructs a {@link VisitChargeEditor}.
      *
      * @param act     the act to edit
      * @param event   the event to link charge items to
@@ -94,7 +89,7 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
      * @param act            the act to edit
      * @param event          the event to link charge items to
      * @param context        the layout context
-     * @param addDefaultItem if{@code true} add a default item if the act has none
+     * @param addDefaultItem if {@code true} add a default item if the act has none
      */
     public VisitChargeEditor(FinancialAct act, Act event, LayoutContext context, boolean addDefaultItem) {
         super(act, null, context, addDefaultItem);
@@ -113,6 +108,17 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
      */
     public Act getEvent() {
         return event;
+    }
+
+    /**
+     * Creates a new instance of the editor, with the latest instance of the object to edit.
+     *
+     * @return a new instance
+     * @throws OpenVPMSException if a new instance cannot be created
+     */
+    @Override
+    public IMObjectEditor newInstance() {
+        return new VisitChargeEditor(reload(getObject()), reload(event), getLayoutContext(), getAddDefaultIem());
     }
 
     /**
@@ -173,23 +179,6 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     }
 
     /**
-     * Save any edits.
-     * <p/>
-     * For invoices, this links items to their corresponding clinical events, creating events as required, and marks
-     * matching reminders completed.
-     *
-     * @return {@code true} if the save was successful
-     */
-    @Override
-    protected boolean doSave() {
-        boolean result = super.doSave();
-        if (result) {
-            addTemplateNotes();
-        }
-        return result;
-    }
-
-    /**
      * Links the charge items to their corresponding clinical events.
      *
      * @param changes the patient history changes
@@ -197,11 +186,12 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     @Override
     protected void linkToEvents(PatientHistoryChanges changes) {
         List<Act> items = getItems().getPatientActs();
-        event = IMObjectHelper.reload(event); // make sure the most recent instance is being used
-        if (event != null && !items.isEmpty()) {
+        if (!items.isEmpty()) {
+            event = reload(event); // make sure the most recent instance is being used
             changes.addEvent(event);
             ChargeItemEventLinker linker = new ChargeItemEventLinker(ServiceHelper.getArchetypeService());
             linker.prepare(event, items, changes);
+            addTemplateNotes(linker, changes);
         }
     }
 
@@ -221,42 +211,11 @@ public class VisitChargeEditor extends AbstractCustomerChargeActEditor {
     private void calculateVisitTotals() {
         VisitChargeItemRelationshipCollectionEditor items = getItems();
         List<Act> acts = items.getCurrentPatientActs();
-        BigDecimal total = ActHelper.sum((Act) getObject(), acts, "total");
+        BigDecimal total = ActHelper.sum(getObject(), acts, "total");
         visitTotal.setValue(total);
 
-        BigDecimal tax = ActHelper.sum((Act) getObject(), acts, "tax");
+        BigDecimal tax = ActHelper.sum(getObject(), acts, "tax");
         visitTax.setValue(tax);
-    }
-
-    /**
-     * Creates <em>act.patientClinicalNote</em> acts for any notes associated with template products, linking them to
-     * the event.
-     */
-    private void addTemplateNotes() {
-        List<TemplateChargeItems> templates = getItems().getTemplates();
-        if (event != null && !templates.isEmpty()) {
-            List<Act> items = getItems().getPatientActs();
-            MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
-            for (TemplateChargeItems template : templates) {
-                Act item = template.findFirst(items);
-                if (item != null) {
-                    String visitNote = template.getVisitNote();
-                    if (!StringUtils.isEmpty(visitNote)) {
-                        ActBean bean = new ActBean(item);
-                        Date itemStartTime = bean.getDate("startTime");
-                        Date startTime = getStartTime();
-                        if (DateRules.getDate(itemStartTime).compareTo(DateRules.getDate(startTime)) != 0) {
-                            // use the item start time if its date is different to that of the invoice
-                            startTime = itemStartTime;
-                        }
-                        User clinician = (User) getObject(bean.getNodeParticipantRef("clinician"));
-                        User author = (User) getObject(bean.getNodeParticipantRef("author"));
-                        rules.addNote(event, startTime, visitNote, clinician, author);
-                    }
-                }
-            }
-            getItems().clearTemplates();
-        }
     }
 
     private class VisitChargeLayoutStrategy extends ActLayoutStrategy {

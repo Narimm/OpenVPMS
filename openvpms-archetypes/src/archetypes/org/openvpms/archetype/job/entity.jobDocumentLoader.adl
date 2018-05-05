@@ -11,15 +11,15 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
     <archetype name="entity.jobDocumentLoader.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.common.Entity"
-               displayName="Job Configuration: Document Loader">
+               displayName="Document Loader">
         <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
-        <node name="name" path="/name" type="java.lang.String" minCardinality="1"/>
+        <node name="name" path="/name" type="java.lang.String" minCardinality="1"  maxLength="100"/>
         <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="class" path="/details/class" type="java.lang.String" minCardinality="1" readOnly="true"
@@ -28,6 +28,8 @@
               minCardinality="1"/>
         <node name="targetDir" displayName="Destination Directory" path="/details/targetDir" type="java.lang.String"
               minCardinality="1"/>
+        <node name="errorDir" displayName="Error Directory" path="/details/errorDir" type="java.lang.String"
+              minCardinality="0"/>
         <node name="idPattern" path="/details/idPattern" type="java.lang.String" minCardinality="1"
               defaultValue="'[^\d]*(\d+).*'"/>
         <node name="overwrite" path="/details/overwrite" type="java.lang.Boolean"

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.esci.adapter.map.invoice;
@@ -472,7 +472,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         InvoiceMapperImpl mapper = new InvoiceMapperImpl();
         Currencies currencies = new Currencies(service, lookups);
         mapper.setPracticeRules(new PracticeRules(service, currencies));
-        mapper.setProductRules(new ProductRules(service));
+        mapper.setProductRules(new ProductRules(service, lookups));
         mapper.setLookupService(lookups);
         mapper.setCurrencies(currencies);
         mapper.setArchetypeService(service);

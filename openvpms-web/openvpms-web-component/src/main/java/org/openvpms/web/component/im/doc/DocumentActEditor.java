@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -23,6 +23,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
@@ -37,6 +38,7 @@ import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.system.ServiceHelper;
 
 import static org.openvpms.web.component.im.doc.DocumentActLayoutStrategy.DOCUMENT;
 import static org.openvpms.web.component.im.doc.DocumentActLayoutStrategy.VERSIONS;
@@ -81,8 +83,8 @@ public class DocumentActEditor extends AbstractActEditor {
         super(act, parent, context);
         Property document = getProperty(DOCUMENT);
         if (document != null) {
-            docEditor = new VersioningDocumentEditor(document, context.getContext(),
-                                                     context.getHelpContext().topic("document"));
+            HelpContext help = context.getHelpContext().topic("document");
+            docEditor = new VersioningDocumentEditor(document, new DefaultLayoutContext(context, help));
             ModifiableListener listener = new ModifiableListener() {
                 public void modified(Modifiable modifiable) {
                     onDocumentUpdate();
@@ -190,29 +192,24 @@ public class DocumentActEditor extends AbstractActEditor {
     /**
      * Save any edits.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected boolean doSave() {
-        boolean saved = saveObject();
-        if (saved) {
-            saved = saveChildren();
-        }
-        return saved;
+    protected void doSave() {
+        saveObject();
+        saveChildren();
     }
 
     /**
      * Deletes the object.
      *
-     * @return {@code true} if the delete was successful
+     * @throws OpenVPMSException if the delete fails
      */
     @Override
-    protected boolean doDelete() {
-        boolean deleted = deleteObject();
-        if (deleted) {
-            deleted = deleteChildren();
-        }
-        if (deleted && versionsEditor != null) {
+    protected void doDelete() {
+        deleteObject();
+        deleteChildren();
+        if (versionsEditor != null) {
             // delete the prior versions. Need to jump through some hoops to do this to avoid stale object errors
             // TODO - ideally this would be done from within a delete rule
             for (Act act : versionsEditor.getActs()) {
@@ -221,15 +218,11 @@ public class DocumentActEditor extends AbstractActEditor {
                     if (act != null) {
                         DefaultLayoutContext context = new DefaultLayoutContext(getLayoutContext());
                         IMObjectEditor editor = versionsEditor.createEditor(act, context);
-                        deleted = editor.delete();
-                        if (!deleted) {
-                            break;
-                        }
+                        editor.delete();
                     }
                 }
             }
         }
-        return deleted;
     }
 
     /**
@@ -283,7 +276,7 @@ public class DocumentActEditor extends AbstractActEditor {
 
     /**
      * Invoked when the document template updates.
-     * <p/>
+     * <p>
      * If the template is different to the prior instance, and there is a document node, the template will be used
      * to generate a new document.
      */
@@ -300,7 +293,7 @@ public class DocumentActEditor extends AbstractActEditor {
 
     /**
      * Generates the document.
-     * <p/>
+     * <p>
      * If the act supports versioning, any existing saved document will be copied to new version act.
      */
     private void generateDoc() {
@@ -312,7 +305,8 @@ public class DocumentActEditor extends AbstractActEditor {
                 docEditor.setDocument(document);
             }
         };
-        final DocumentGenerator generator = new DocumentGenerator(act, context, help, listener);
+        DocumentGeneratorFactory factory = ServiceHelper.getBean(DocumentGeneratorFactory.class);
+        DocumentGenerator generator = factory.create(act, context, help, listener);
         generator.generate();
     }
 
@@ -325,7 +319,7 @@ public class DocumentActEditor extends AbstractActEditor {
     private boolean versionOldDocument(IMObjectReference reference) {
         boolean versioned = false;
         if (reference != null && !reference.isNew() && versionsEditor != null) {
-            DocumentRules rules = new DocumentRules();
+            DocumentRules rules = new DocumentRules(ServiceHelper.getArchetypeService());
             DocumentAct version = rules.createVersion((DocumentAct) getObject());
             if (version != null) {
                 versionsEditor.add(version);
@@ -342,19 +336,17 @@ public class DocumentActEditor extends AbstractActEditor {
          * Constructs a {@code VersioningDocumentEditor}.
          *
          * @param property the property being edited
-         * @param context  the context
-         * @param help     the help
+         * @param context  the layout context
          */
-        public VersioningDocumentEditor(Property property, Context context, HelpContext help) {
-            super(property, context, help);
+        public VersioningDocumentEditor(Property property, LayoutContext context) {
+            super(property, context);
         }
 
         /**
          * Sets the document.
          *
          * @param document the new document
-         * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException
-         *          for any error
+         * @throws org.openvpms.component.business.service.archetype.ArchetypeServiceException for any error
          */
         @Override
         public void setDocument(Document document) {

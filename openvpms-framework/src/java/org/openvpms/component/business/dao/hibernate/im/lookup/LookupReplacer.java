@@ -1,21 +1,20 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2009 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.component.business.dao.hibernate.im.lookup;
 
-import org.hibernate.Cache;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
@@ -26,6 +25,7 @@ import org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.document.DocumentDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDOImpl;
+import org.openvpms.component.business.dao.hibernate.im.entity.EntityLinkDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.party.ContactDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.party.PartyDOImpl;
@@ -38,6 +38,7 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
@@ -65,8 +66,7 @@ import java.util.Map;
  * <li>no validation is performed on updated objects</li>
  * </ol>
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class LookupReplacer {
 
@@ -136,6 +136,7 @@ public class LookupReplacer {
                    EntityIdentityDOImpl.class);
         addMapping(EntityRelationship.class, "entity_relationships", "entity_relationship_details",
                    "entity_relationship_id", EntityRelationshipDOImpl.class);
+        addMapping(EntityLink.class, "entity_links", "entity_link_details", "id", EntityLinkDOImpl.class);
         addMapping(Lookup.class, "lookups", "lookup_details", "lookup_id", LookupDOImpl.class);
         addMapping(LookupRelationship.class, "lookup_relationships", "lookup_relationship_details",
                    "lookup_relationship_id", LookupRelationshipDOImpl.class);
@@ -427,9 +428,8 @@ public class LookupReplacer {
      * @param factory           the session factory
      */
     private void clearCaches(Class[] persistentClasses, SessionFactory factory) {
-        Cache cache = factory.getCache();
         for (Class persistentClass : persistentClasses) {
-            cache.evictEntityRegion(persistentClass);
+            factory.evict(persistentClass);
         }
     }
 

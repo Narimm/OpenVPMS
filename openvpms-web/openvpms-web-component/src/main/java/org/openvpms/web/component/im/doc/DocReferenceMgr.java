@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -46,10 +46,24 @@ class DocReferenceMgr {
     /**
      * The set of references to manage.
      */
-    private LinkedList<IMObjectReference> references = new LinkedList<IMObjectReference>();
+    private LinkedList<IMObjectReference> references = new LinkedList<>();
 
     /**
-     * Constructs a {@code DocReferenceMgr}.
+     * Determines if all documents should be deleted.
+     */
+    private boolean deleteAll;
+
+    /**
+     * Constructs a {@link DocReferenceMgr}.
+     *
+     * @param context the context
+     */
+    public DocReferenceMgr(Context context) {
+        this(null, context);
+    }
+
+    /**
+     * Constructs a {@link DocReferenceMgr}.
      *
      * @param original the original reference. May be {@code null}
      * @param context  the context
@@ -69,6 +83,18 @@ class DocReferenceMgr {
      */
     public void add(IMObjectReference reference) {
         references.add(reference);
+        setDeleteAll(false);
+    }
+
+    /**
+     * Determines if all documents should be deleted.
+     * <p/>
+     * If {@code true} and a document is subsequently added, the flag will be set {@code false}.
+     *
+     * @param all if {@code true}, delete all documents, otherwise delete all but the last
+     */
+    public void setDeleteAll(boolean all) {
+        this.deleteAll = all;
     }
 
     /**
@@ -81,12 +107,13 @@ class DocReferenceMgr {
     }
 
     /**
-     * Commits the changes. Every document bar the most recent will be removed.
+     * Commits the changes.
      *
      * @throws ArchetypeServiceException for any error
      */
     public void commit() {
-        while (references.size() > 1) {
+        int size = (deleteAll) ? 0 : 1;
+        while (references.size() > size) {
             delete(references.removeFirst());
         }
     }

@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2017-06-07T08:17:21 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Patient Sales Alert Check" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="68447283-bda8-49ec-92d5-f44d2919d124">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
+	<parameter name="lastDays" class="java.lang.Integer">
+		<parameterDescription><![CDATA[Sales in last days]]></parameterDescription>
+		<defaultValueExpression><![CDATA[35]]></defaultValueExpression>
+	</parameter>
+	<parameter name="alertSelect" class="java.lang.String">
+		<parameterDescription><![CDATA[Alert type]]></parameterDescription>
+	</parameter>
+	<parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+		<parameterDescription><![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<parameter name="showDetail" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Show sales detail]]></parameterDescription>
+		<defaultValueExpression><![CDATA[false]]></defaultValueExpression>
+	</parameter>
+	<parameter name="Explain" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Display explanation if set]]></parameterDescription>
+		<defaultValueExpression><![CDATA[false]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[select alert.name as alert, e.name as prodName, pat.name as patientName, pat.entity_id as patientID, 
+  pa.activity_start_time saleDate,cust.entity_id as custID, cd1.value as lastName
+from   entities e
+join products p on e.entity_id = p.product_id
+join entity_links r2
+       on e.entity_id = r2.source_id and r2.arch_short_name = "entityLink.productAlert"
+join entities alert
+       on r2.target_id = alert.entity_id
+
+join participations pa on pa.entity_id = e.entity_id 
+  and pa.arch_short_name = 'participation.product' 
+  and pa.act_arch_short_name = 'act.customerAccountInvoiceItem'
+  and pa.activity_start_time > DATE_SUB(CURDATE(), INTERVAL  $P{lastDays}  DAY)
+join participations pp on pp.act_id = pa.act_id and pp.arch_short_name = 'participation.patient'
+join entities pat on pat.entity_id = pp.entity_id
+join entity_relationships er on er.target_id = pat.entity_id 
+  and er.arch_short_name = 'entityRelationship.patientOwner'
+  and isnull(er.active_end_time) 
+join entities cust on cust.entity_id = er.source_id
+join entity_details cd1 on cd1.entity_id = cust.entity_id and cd1.name = 'lastName'
+
+where alert.name like concat(ifnull($P{alertSelect},""),"%")
+and pat.active = 1
+and cust.active = 1
+and NOT EXISTS ( select palt.*
+from participations pal 
+join acts al on al.act_id = pal.act_id
+join participations palt on palt.act_id = al.act_id and palt.arch_short_name = 'participation.patientAlertType'
+left join entities alt on alt.entity_id = palt.entity_id
+where pal.entity_id = pat.entity_id
+  and pal.act_arch_short_name = 'act.patientAlert'
+  and al.status = 'IN_PROGRESS'
+  and alt.name = alert.name
+)
+order by cd1.value asc, cust.entity_id asc, pat.name asc, alert.name asc, e.name asc, pa.activity_start_time desc]]>
+	</queryString>
+	<field name="alert" class="java.lang.String"/>
+	<field name="prodName" class="java.lang.String"/>
+	<field name="patientName" class="java.lang.String"/>
+	<field name="patientID" class="java.lang.Long"/>
+	<field name="saleDate" class="java.sql.Timestamp"/>
+	<field name="custID" class="java.lang.Long"/>
+	<field name="lastName" class="java.lang.String"/>
+	<group name="patient">
+		<groupExpression><![CDATA[$F{patientID}]]></groupExpression>
+	</group>
+	<group name="alertGroup" keepTogether="true">
+		<groupExpression><![CDATA[$F{alert}]]></groupExpression>
+		<groupHeader>
+			<band height="15">
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement key="textField-14" isPrintRepeatedValues="false" x="0" y="2" width="144" height="13" uuid="7ffe8f93-9bb9-4277-8ef8-a344f90dbc1a">
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textFieldExpression><![CDATA[$F{patientName}+" "+$F{lastName}+" ("+$F{patientID}.toString()+")"]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="150" y="2" width="109" height="13" isRemoveLineWhenBlank="true" uuid="1a656bf4-c12e-47b2-8f7c-12175b6788c1">
+						<printWhenExpression><![CDATA[!$P{showDetail}]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Left"/>
+					<textFieldExpression><![CDATA[$F{alert}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+					<reportElement key="textField-17" x="262" y="2" width="199" height="13" uuid="804f9304-f28d-414b-bc50-5fbc13cbb1b7">
+						<printWhenExpression><![CDATA[!$P{showDetail}]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textFieldExpression><![CDATA[$F{prodName}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="alertGroup" pattern="dd/MM/yyyy" isBlankWhenNull="false">
+					<reportElement key="textField-17" x="470" y="2" width="63" height="13" uuid="8190b628-7b39-4c97-8f0d-722d20c0bf41">
+						<printWhenExpression><![CDATA[!$P{showDetail}]]></printWhenExpression>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{saleDate})]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<group name="saleDate">
+		<groupExpression><![CDATA[$F{saleDate}]]></groupExpression>
+	</group>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band height="63" splitType="Stretch">
+			<staticText>
+				<reportElement key="staticText-1" x="130" y="0" width="274" height="24" uuid="6308927b-cd95-4a18-9973-c7d2c322c51f"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="18" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[Patient Sales Alert Check]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField" x="93" y="40" width="51" height="18" uuid="18cb1282-9451-4597-81ce-2b18b4fb63bc"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textFieldExpression><![CDATA[$P{lastDays}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-9" x="0" y="40" width="92" height="18" uuid="879b7bff-ac3e-44c0-b440-4601b571a057"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<text><![CDATA[Sales in last days:]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-1" x="358" y="36" width="100" height="18" uuid="8b61e3a1-e4ad-495b-8239-7171a8f88afb"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField-2" x="462" y="36" width="73" height="18" uuid="c2531e28-b4ed-4631-9255-e4a63b8b1002"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="435" y="0" width="100" height="11" uuid="768be721-9640-4025-818a-418ed3b5aeef"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-9" x="190" y="40" width="79" height="18" uuid="a40ebf7d-7aeb-46dc-8d8e-5a701b844fbf"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<text><![CDATA[Alert select:]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField" x="270" y="40" width="51" height="18" uuid="f73e8907-66b5-4768-89ae-7f17fbbe97af"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textFieldExpression><![CDATA[($P{alertSelect}==null)?"%":$P{alertSelect}+"%"]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageHeader>
+	<columnHeader>
+		<band height="25" splitType="Stretch">
+			<line>
+				<reportElement key="line-1" x="0" y="23" width="535" height="1" uuid="e9a601d6-d0d9-4147-9d2b-4f0c2ed4f455"/>
+			</line>
+			<staticText>
+				<reportElement key="staticText-27" x="0" y="3" width="144" height="17" uuid="25c93f8e-8691-4a3f-bbbe-faeed2a1757d">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Patient]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-29" x="468" y="3" width="65" height="17" uuid="cc210e47-b6bb-49ee-bf4a-0986c40381d8"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Date Sold]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="150" y="3" width="97" height="17" uuid="256a3d5f-ff63-4779-9988-fbc6cc682384"/>
+				<textElement textAlignment="Left">
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Alert NOT SET]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-29" x="262" y="3" width="199" height="17" uuid="28daae43-65b6-403f-b949-25c60bf38577"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font isBold="true"/>
+				</textElement>
+				<text><![CDATA[Product]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="15" splitType="Stretch">
+			<printWhenExpression><![CDATA[$P{showDetail}]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-17" x="262" y="2" width="199" height="13" uuid="43fda995-7e63-4775-b525-5a75aac9e4d2"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textFieldExpression><![CDATA[$F{prodName}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+				<reportElement key="textField-17" x="470" y="2" width="63" height="13" uuid="4b6cb1b9-9ad5-4c77-bd77-c7df3f0c3427"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{saleDate})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="150" y="2" width="109" height="13" isRemoveLineWhenBlank="true" uuid="6eb5d270-50a9-423d-be50-8760d1d001dd"/>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression><![CDATA[$F{alert}]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<summary>
+		<band height="190" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="5" width="535" height="45" uuid="ecbafba2-d985-4515-9185-9c5a4c03f76b">
+					<printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+				</textElement>
+				<text><![CDATA[All OK - all patients who should have the selected alerts from product sales in the specified preceding days already have them set]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="2" y="52" width="532" height="138" uuid="91f6814d-50cd-440c-b75d-48671c17e13c">
+					<printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
+				</reportElement>
+				<textElement verticalAlignment="Top"/>
+				<text><![CDATA[This report looks for sales of items in the specified 'Sales in Last Days' period that have an Alert set for the product, and where the patient DOES NOT have the corresponding alert set and in progress.
+
+Leaving the 'Alert type' parameter blank will check all, or you can limit the Product Alerts to check by entering say 'blood t' which will look only for Products with alerts starting 'blood t'. The selection is case insensitive.
+Checking the 'Show sales detail' box will list each sale; leaving it unchecked will only the most recent sale for each Product Alert for each Patient.
+The output is ordered by Customer last name, Patient name, Alert, Product name, Date sold (descending).
+The Patient column shows Patient-name Customer-last-name (Patient-ID).]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -59,8 +59,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      */
     @Test
     public void testUpdateFromMedication() {
-        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION,
-                                                   null);
+        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION, null);
         checkUpdateFromProduct(product);
     }
 
@@ -101,7 +100,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
         // now save with a custom unit price, and verify it doesn't get
         // overwritten when the product saves.
-        Set<ProductPrice> prices = product.getProductPrices();
+        Set<org.openvpms.component.model.product.ProductPrice> prices = product.getProductPrices();
         ProductPrice unit = prices.toArray(new ProductPrice[prices.size()])[0];
         unit.setPrice(new BigDecimal("1.35"));
         save(product);
@@ -109,8 +108,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
     }
 
     /**
-     * Tests update when a newly created product is saved with a relationship
-     * to an existing supplier.
+     * Tests update when a newly created product is saved with a relationship to an existing supplier.
      */
     @Test
     public void testSaveNewProduct() {
@@ -120,8 +118,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
 
     /**
-     * Tests update when an existing product is saved with a relationship
-     * to a new supplier.
+     * Tests update when an existing product is saved with a relationship to a new supplier.
      */
     @Test
     public void testSaveNewSupplier() {
@@ -171,10 +168,12 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
     }
 
     /**
-     * Verifies that if the currency has a minimum price, prices are rounded to it.
+     * Verifies that if the currency has a minimum price, prices are NOT rounded to it.
+     * <p/>
+     * The minimum price only takes effect when calculating the tax-inclusive price? TODO
      */
     @Test
-    public void testRoundPrice() {
+    public void testMinPrice() {
         Product product1 = TestHelper.createProduct(ProductArchetypes.MEDICATION, null);
         Product product2 = TestHelper.createProduct(ProductArchetypes.MEDICATION, null);
         ProductPrice price1 = addUnitPrice(product1, BigDecimal.ZERO, BigDecimal.ONE);
@@ -193,11 +192,76 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         bean.setValue("minPrice", new BigDecimal("0.20"));
         bean.save();
 
-        addProductSupplier(product2, supplier, 30, "10.00", "20.00", true);
+        addProductSupplier(product2, supplier, 30, "12.00", "22.00", true);
         save(product2, supplier);
 
         price2 = get(price2);
-        checkPrice(price2, new BigDecimal("0.67"), new BigDecimal("1.40"));
+        checkPrice(price2, new BigDecimal("0.73"), new BigDecimal("1.46"));
+    }
+
+    /**
+     * Verifies that a product-supplier relationship can be saved with a null list price, and prices don't update.
+     */
+    @Test
+    public void testSaveProductSupplierWithNullListPrice() {
+        BigDecimal cost = BigDecimal.ONE;
+        BigDecimal markup = BigDecimal.valueOf(100);
+        BigDecimal price = BigDecimal.valueOf(2);
+        BigDecimal maxDiscount = BigDecimal.valueOf(100);
+
+        Product product = TestHelper.createProduct(ProductArchetypes.MEDICATION, null);
+        Party supplier = TestHelper.createSupplier();
+
+        // add some prices
+        ProductPrice unit1 = createUnitPrice(price, cost, markup, maxDiscount, null, getYesterday()); // inactive
+        ProductPrice unit2 = createUnitPrice(price, cost, markup, maxDiscount, getToday(), null);     // active
+        ProductPrice unit3 = createUnitPrice(price, cost, markup, maxDiscount, (Date) null, null);    // active
+        ProductPrice unit4 = createUnitPrice(price, cost, markup, maxDiscount, getTomorrow(), null);  // inactive
+        product.addProductPrice(unit1);
+        product.addProductPrice(unit2);
+        product.addProductPrice(unit3);
+        product.addProductPrice(unit4);
+
+        // create a product-supplier relationship.
+        int packageSize = 30;
+        ProductRules rules = new ProductRules(getArchetypeService(), getLookupService());
+        ProductSupplier ps = rules.createProductSupplier(product, supplier);
+        ps.setPackageUnits(PACKAGE_UNITS);
+        ps.setPackageSize(packageSize);
+        ps.setAutoPriceUpdate(true);
+        ps.setNettPrice(new BigDecimal("10.00"));
+        ps.setListPrice(new BigDecimal("20.00"));
+        save(product, supplier);
+
+        // verify that the expected prices have updated
+        BigDecimal newCost1 = new BigDecimal("0.67");
+        BigDecimal newPrice1 = new BigDecimal("1.34");
+        checkPrice(unit1, cost, price);              // inactive, so shouldn't update
+        checkPrice(unit2, newCost1, newPrice1);
+        checkPrice(unit3, newCost1, newPrice1);
+        checkPrice(unit4, cost, price);              // inactive, so shouldn't update
+
+        // now update the product supplier relationship, this time setting the list price to null.
+        ps.setListPrice(null);
+        save(product);
+
+        // prices should be the same
+        checkPrice(unit1, cost, price);
+        checkPrice(unit2, newCost1, newPrice1);
+        checkPrice(unit3, newCost1, newPrice1);
+        checkPrice(unit4, cost, price);
+
+        // now update the list price to a valid value
+        ps.setListPrice(new BigDecimal("22.00"));
+        save(product);
+
+        // unit2 and unit3 should have updated
+        BigDecimal newCost2 = new BigDecimal("0.73");
+        BigDecimal newPrice2 = new BigDecimal("1.46");
+        checkPrice(unit1, cost, price);
+        checkPrice(unit2, newCost2, newPrice2);
+        checkPrice(unit3, newCost2, newPrice2);
+        checkPrice(unit4, cost, price);
     }
 
     /**
@@ -243,8 +307,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
     }
 
     /**
-     * Verifies that prices are updated correctly when relationships are
-     * created between products and suppliers.
+     * Verifies that prices are updated correctly when relationships are created between products and suppliers.
      *
      * @param newProduct       if {@code true} the product is not saved prior to adding the relationship
      * @param newSupplier      if {@code true} the supplier is not saved prior to adding the relationship
@@ -272,16 +335,13 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
 
         // create a product-supplier relationship.
         int packageSize = 30;
-        ProductRules rules = new ProductRules(getArchetypeService());
+        ProductRules rules = new ProductRules(getArchetypeService(), getLookupService());
         ProductSupplier ps = rules.createProductSupplier(product, supplier);
         ps.setPackageUnits(PACKAGE_UNITS);
         ps.setPackageSize(packageSize);
         ps.setAutoPriceUpdate(true);
         ps.setNettPrice(new BigDecimal("10.00"));
         ps.setListPrice(new BigDecimal("20.00"));
-        product.addEntityRelationship(ps.getRelationship());
-        supplier.addEntityRelationship(ps.getRelationship());
-
         if (newProduct) {
             assertTrue(product.isNew());
         } else {
@@ -371,7 +431,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
     private void checkPrice(Product product, BigDecimal cost,
                             BigDecimal price) {
         product = get(product); // reload product
-        Set<ProductPrice> prices = product.getProductPrices();
+        Set<org.openvpms.component.model.product.ProductPrice> prices = product.getProductPrices();
         assertEquals(1, prices.size());
         ProductPrice p = prices.toArray(new ProductPrice[prices.size()])[0];
         IMObjectBean bean = new IMObjectBean(p);
@@ -388,7 +448,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      * @return the corresponding product supplier, or {@code null} if none is found
      */
     private ProductSupplier getProductSupplier(Product product, Party supplier, int packageSize) {
-        ProductRules rules = new ProductRules(getArchetypeService());
+        ProductRules rules = new ProductRules(getArchetypeService(), getLookupService());
         return rules.getProductSupplier(product, supplier, null, packageSize, PACKAGE_UNITS);
     }
 
@@ -400,7 +460,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
      * @return the new relationship
      */
     private ProductSupplier addProductSupplier(Product product, Party supplier) {
-        ProductRules rules = new ProductRules(getArchetypeService());
+        ProductRules rules = new ProductRules(getArchetypeService(), getLookupService());
         ProductSupplier ps = rules.createProductSupplier(product, supplier);
         ps.setPackageUnits(PACKAGE_UNITS);
         return ps;

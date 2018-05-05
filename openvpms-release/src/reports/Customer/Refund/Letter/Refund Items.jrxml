@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Receipt Items" pageWidth="612" pageHeight="792" columnWidth="554" leftMargin="0" rightMargin="58" topMargin="0" bottomMargin="0" uuid="7ced4111-cebe-479f-a85d-74408b083b33">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="100"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="org.openvpms.component.business.domain.im.party.Party"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
+	<field name="target.name" class="java.lang.String">
+		<fieldDescription><![CDATA[Payment Type Name]]></fieldDescription>
+	</field>
+	<field name="target.amount" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[Payment Amount]]></fieldDescription>
+	</field>
+	<field name="target.shortName" class="java.lang.String"/>
+	<field name="target.creditCard" class="java.lang.String"/>
+	<field name="target.roundedAmount" class="java.math.BigDecimal"/>
+	<field name="target.bank" class="java.lang.String"/>
+	<field name="target.bsb" class="java.lang.String"/>
+	<field name="target.drawer" class="java.lang.String"/>
+	<field name="target.cashout" class="java.math.BigDecimal"/>
+	<field name="target.total" class="java.math.BigDecimal"/>
+	<field name="target.paymentType" class="java.lang.String"/>
+	<variable name="SUM_target.amount" class="java.math.BigDecimal" resetType="Page" calculation="Sum">
+		<variableExpression><![CDATA[$F{target.amount}]]></variableExpression>
+	</variable>
+	<variable name="isCreditCard" class="java.lang.Boolean">
+		<variableExpression><![CDATA[new Boolean($F{target.shortName}.contains("Credit"))]]></variableExpression>
+	</variable>
+	<variable name="isCash" class="java.lang.Boolean">
+		<variableExpression><![CDATA[new Boolean($F{target.shortName}.contains("Cash"))]]></variableExpression>
+	</variable>
+	<variable name="isCheque" class="java.lang.Boolean">
+		<variableExpression><![CDATA[new Boolean($F{target.shortName}.contains("Cheque"))]]></variableExpression>
+	</variable>
+	<variable name="isEFT" class="java.lang.Boolean">
+		<variableExpression><![CDATA[new Boolean($F{target.shortName}.contains("EFT"))]]></variableExpression>
+	</variable>
+	<variable name="isDiscount" class="java.lang.Boolean">
+		<variableExpression><![CDATA[new Boolean($F{target.shortName}.contains("Discount"))]]></variableExpression>
+	</variable>
+	<variable name="isOther" class="java.lang.Boolean">
+		<variableExpression><![CDATA[new Boolean($F{target.shortName}.contains("Other"))]]></variableExpression>
+	</variable>
+	<variable name="dblCashOut" class="java.lang.Double">
+		<variableExpression><![CDATA[/*$V{isEFT}?$F{target.cashout}.doubleValue():0.0*/
+0.0]]></variableExpression>
+	</variable>
+	<variable name="dEFT" class="java.lang.String">
+		<variableExpression><![CDATA[$V{isEFT}?(($V{dblCashOut}!=0.0)?
+	("Cash Out: "+NumberFormat.getCurrencyInstance($P{REPORT_LOCALE}).format($F{target.cashout})
+		+" Total: "+NumberFormat.getCurrencyInstance($P{REPORT_LOCALE}).format($F{target.total}) 	):""
+):""]]></variableExpression>
+	</variable>
+	<variable name="dCash" class="java.lang.String">
+		<variableExpression><![CDATA[$V{isCash}?(((($F{target.roundedAmount}.compareTo($F{target.amount}) !=0))?
+	("RoundedAmt: "+NumberFormat.getCurrencyInstance($P{REPORT_LOCALE}).format($F{target.roundedAmount})+"  "):"")
+):""]]></variableExpression>
+	</variable>
+	<variable name="dCheque" class="java.lang.String">
+		<variableExpression><![CDATA[$V{isCheque}?(($F{target.bank}!=null?$F{target.bank}:"unspecified bank")+" "+($F{target.bsb}!=null?" - "+$F{target.bsb}:"")+" "+($F{target.drawer}!=null?(" :"+$F{target.drawer}):"")):""]]></variableExpression>
+	</variable>
+	<variable name="dCreditCard" class="java.lang.String">
+		<variableExpression><![CDATA[$V{isCreditCard}?(($F{target.creditCard}!=null?$F{target.creditCard}:"unspecified card")):""]]></variableExpression>
+	</variable>
+	<variable name="TYPE" class="java.lang.String">
+		<variableExpression><![CDATA[$V{isCash}?"Cash":($V{isCheque}?"Cheque":($V{isCreditCard}?"Credit Card":($V{isEFT}?"EFT":($V{isOther}?"Other":($V{isDiscount}?"Discount":"??")))))]]></variableExpression>
+	</variable>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band splitType="Stretch"/>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band height="27" splitType="Stretch">
+			<line>
+				<reportElement key="line-1" x="0" y="0" width="554" height="1" uuid="c9c49a99-c05f-48c5-9646-72b8fe6fab32">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+			</line>
+			<line>
+				<reportElement key="line-2" x="0" y="24" width="554" height="1" uuid="6f9d5320-fed3-4613-8ed3-e6b96e1d13f2">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+			</line>
+			<staticText>
+				<reportElement key="staticText-7" x="19" y="3" width="101" height="18" uuid="dd195173-39f1-4266-b1ca-8c5d21f91571"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="11" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Refund Type]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-8" x="133" y="3" width="56" height="18" uuid="a08566cd-3b31-4e79-8059-8445d1a917f1"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Amount]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-8" x="207" y="3" width="148" height="18" uuid="7a8369c9-4e68-4a5a-ad13-aee763365c23"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="11" isBold="false"/>
+				</textElement>
+				<text><![CDATA[Details]]></text>
+			</staticText>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="29" splitType="Stretch">
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="133" y="6" width="56" height="17" uuid="8e9f0061-63df-40d7-90bf-77b164b10416"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA[$F{target.amount}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="21" y="6" width="102" height="17" uuid="1a58e4ea-bc69-4753-a6e9-79930f141547"/>
+				<textFieldExpression><![CDATA[$V{TYPE}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="207" y="6" width="344" height="17" uuid="bddb1adf-bb23-491e-a7cf-94a739749eeb"/>
+				<textFieldExpression><![CDATA[$V{isCash}?$V{dCash}:($V{isCheque}?$V{dCheque}:($V{isCreditCard}?$V{dCreditCard}:($V{isEFT}?$V{dEFT}:($V{isOther}?$F{target.paymentType}:""))))]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="24" splitType="Stretch">
+			<line>
+				<reportElement key="line-3" x="0" y="1" width="554" height="1" uuid="612f6f4b-8e3b-4c61-a101-22d9b09aebf1">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+			</line>
+			<staticText>
+				<reportElement key="staticText-11" x="52" y="6" width="48" height="18" uuid="911ac439-540b-4611-91e3-296f9a7ba17c"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="11" isBold="false"/>
+				</textElement>
+				<text><![CDATA[TOTAL]]></text>
+			</staticText>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField" x="100" y="6" width="90" height="18" uuid="ac127e1c-064a-4293-a7d1-bef1a1f862b9"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="11" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SUM_target.amount}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band splitType="Stretch"/>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>

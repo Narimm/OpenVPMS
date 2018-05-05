@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper.sort;
@@ -27,11 +27,11 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectRefConstraint;
@@ -114,10 +114,10 @@ public class IMObjectSorter {
         } else if ("name".equals(name)) {
             comparator = getNameComparator();
         } else {
-            comparator = new TransformingComparator<T, Object>(new NodeTransformer<T>(name));
+            comparator = new TransformingComparator<>(new NodeTransformer<T>(name));
         }
         if (!ascending) {
-            comparator = new ReverseComparator<T>(comparator);
+            comparator = new ReverseComparator<>(comparator);
         }
         Collections.sort(list, comparator);
         return list;
@@ -159,10 +159,7 @@ public class IMObjectSorter {
          */
         @Override
         public int compare(T o1, T o2) {
-            // TODO - use Long.compare() from Java 1.7 when demo site updated
-            long x = o1.getId();
-            long y = o2.getId();
-            return (x < y) ? -1 : (x == y) ? 0 : 1;
+            return Long.compare(o1.getId(), o2.getId());
         }
     }
 
@@ -279,7 +276,7 @@ public class IMObjectSorter {
      * @param reference the object reference. May be {@code null}
      * @return the name or {@code null} if none exists
      */
-    private String getName(IMObjectReference reference) {
+    private String getName(Reference reference) {
         if (reference != null) {
             ArchetypeQuery query = new ArchetypeQuery(new ObjectRefConstraint("o", reference));
             query.add(new NodeSelectConstraint("o.name"));

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -57,6 +57,11 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
     private final T object;
 
     /**
+     * Parameters available to expressions as variables. May be {@code null}
+     */
+    private final Parameters parameters;
+
+    /**
      * Additional report fields. May be {@code null}.
      */
     private final PropertySet fields;
@@ -90,15 +95,17 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
     /**
      * Constructs an {@link AbstractExpressionEvaluator}.
      *
-     * @param object    the object
-     * @param fields    additional report fields. These override any in the report. May be {@code null}
-     * @param service   the archetype service
-     * @param lookups   the lookup service
-     * @param functions the JXPath extension functions
+     * @param object     the object
+     * @param parameters parameters available to expressions as variables. May be {@code null}
+     * @param fields     additional report fields. These override any in the report. May be {@code null}
+     * @param service    the archetype service
+     * @param lookups    the lookup service
+     * @param functions  the JXPath extension functions
      */
-    public AbstractExpressionEvaluator(T object, PropertySet fields, IArchetypeService service,
-                                       ILookupService lookups, Functions functions) {
+    public AbstractExpressionEvaluator(T object, Parameters parameters, PropertySet fields,
+                                       IArchetypeService service, ILookupService lookups, Functions functions) {
         this.object = object;
+        this.parameters = parameters;
         this.fields = fields;
         this.service = service;
         this.lookups = lookups;
@@ -106,8 +113,17 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
     }
 
     /**
+     * Returns the object.
+     *
+     * @return the object
+     */
+    public T getObject() {
+        return object;
+    }
+
+    /**
      * Returns the value of an expression.
-     * If the expression is of the form [expr] it will be evaluated using {@link #evaluate(String)} else it will be
+     * If the expression is of the form [expr] it will be evaluated using {@link #getJXPathValue(String)} else it will be
      * evaluated using {@link #getNodeValue(String)}.
      *
      * @param expression the expression
@@ -116,15 +132,12 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
     public Object getValue(String expression) {
         Object result;
         try {
-            if (expression.startsWith("[") && expression.endsWith("]")) {
-                String eval = expression.substring(1, expression.length() - 1);
-                result = evaluate(eval);
+            if (isJXPath(expression)) {
+                result = getJXPathValue(expression);
+            } else if (isField(expression)) {
+                result = getFieldValue(expression);
             } else {
-                if (fields != null && fields.exists(expression)) {
-                    result = getFieldValue(expression);
-                } else {
-                    result = getNodeValue(expression);
-                }
+                result = getNodeValue(expression);
             }
         } catch (Exception exception) {
             log.warn("Failed to evaluate: " + expression, exception);
@@ -132,6 +145,28 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
             result = "Expression Error";
         }
         return result;
+    }
+
+    /**
+     * Evaluates an xpath expression.
+     *
+     * @param expression the expression
+     * @return the result of the expression
+     */
+    public Object evaluate(String expression) {
+        return getContext().getValue(expression);
+    }
+
+    /**
+     * Evaluates an xpath against an object.
+     *
+     * @param object     the object
+     * @param expression the expression
+     * @return the result of the expression
+     */
+    @Override
+    public Object evaluate(Object object, String expression) {
+        return getContext(object).getValue(expression);
     }
 
     /**
@@ -164,24 +199,12 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
     /**
      * Evaluates an expression.
      *
-     * @param expression the expression to evaluate
+     * @param expression the expression to evaluate. Must be of the form {@code [expr]}
      * @return the value of the expression
      */
-    protected Object evaluate(String expression) {
-        if (context == null) {
-            context = JXPathHelper.newContext(object, functions);
-            if (fields != null) {
-                IMObjectVariables variables = new IMObjectVariables(service, lookups);
-                for (String name : fields.getNames()) {
-                    Object value = fields.get(name);
-                    if (value != null) {
-                        variables.add(name, value);
-                    }
-                }
-                context.setVariables(variables);
-            }
-        }
-        return context.getValue(expression);
+    protected Object getJXPathValue(String expression) {
+        String eval = expression.substring(1, expression.length() - 1);
+        return evaluate(eval);
     }
 
     /**
@@ -203,21 +226,50 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
     }
 
     /**
-     * Returns the object.
-     *
-     * @return the object
-     */
-    protected T getObject() {
-        return object;
-    }
-
-    /**
      * Returns the archetype service.
      *
      * @return the archetype service
      */
     protected IArchetypeService getService() {
         return service;
+    }
+
+    /**
+     * Returns the lookup service.
+     *
+     * @return the lookup service
+     */
+    protected ILookupService getLookups() {
+        return lookups;
+    }
+
+    /**
+     * Determines if an expression refers to a field.
+     *
+     * @param expression the expression
+     * @return {@code true} if the expression refers to a field
+     */
+    protected boolean isField(String expression) {
+        return fields != null && fields.exists(expression);
+    }
+
+    /**
+     * Determines if an expression is an xpath expression.
+     *
+     * @param expression the expression
+     * @return {@code true} if the expression has a leading [ and trailing ]
+     */
+    protected boolean isJXPath(String expression) {
+        return expression.startsWith("[") && expression.endsWith("]");
+    }
+
+    /**
+     * Creates variables to evaluate expressions against.
+     *
+     * @return new variables
+     */
+    protected IMObjectVariables createVariables() {
+        return parameters != null && !parameters.isEmpty() ? new Variables() : new IMObjectVariables(service, lookups);
     }
 
     /**
@@ -287,6 +339,41 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
     }
 
     /**
+     * Returns the context to evaluate expressions with.
+     *
+     * @return the context
+     */
+    private JXPathContext getContext() {
+        if (context == null) {
+            context = getContext(object);
+        }
+        return context;
+    }
+
+    /**
+     * Returns the context to evaluate expressions with.
+     *
+     * @param object the object to evaluate against
+     * @return the context
+     */
+    private JXPathContext getContext(Object object) {
+        JXPathContext context = JXPathHelper.newContext(object, functions);
+        if (fields != null || parameters != null) {
+            IMObjectVariables variables = createVariables();
+            if (fields != null) {
+                for (String name : fields.getNames()) {
+                    Object value = fields.get(name);
+                    if (value != null) {
+                        variables.add(name, value);
+                    }
+                }
+            }
+            context.setVariables(variables);
+        }
+        return context;
+    }
+
+    /**
      * Returns the value of a {@link PropertyState}, handling collection nodes.
      *
      * @param state the state
@@ -325,4 +412,41 @@ public abstract class AbstractExpressionEvaluator<T> implements ExpressionEvalua
         }
         return result;
     }
+
+    /**
+     * Variables that include report parameters.
+     */
+    protected class Variables extends IMObjectVariables {
+        public Variables() {
+            super(service, lookups);
+        }
+
+        /**
+         * Determines if a variable exists.
+         *
+         * @param name the variable name
+         * @return {@code true} if the variable exists
+         */
+        @Override
+        public boolean exists(String name) {
+            return super.exists(name) || parameters.exists(name);
+        }
+
+        /**
+         * Returns the value of the specified variable.
+         *
+         * @param varName variable name
+         * @return Object value
+         * @throws IllegalArgumentException if there is no such variable.
+         */
+        @Override
+        public Object getVariable(String varName) {
+            if (parameters.exists(varName)) {
+                return parameters.get(varName);
+            } else {
+                return super.getVariable(varName);
+            }
+        }
+    }
+
 }

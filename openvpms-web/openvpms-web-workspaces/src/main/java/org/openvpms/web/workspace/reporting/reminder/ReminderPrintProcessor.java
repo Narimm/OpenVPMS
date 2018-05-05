@@ -1,37 +1,45 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
 
-import org.openvpms.archetype.rules.doc.DocumentTemplate;
+import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.IMPrinter;
+import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
-import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
-import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
-import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.component.im.report.StaticDocumentTemplateLocator;
 import org.openvpms.web.component.print.PrinterListener;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.workspace.customer.CustomerMailContext;
+import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -40,7 +48,17 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-class ReminderPrintProcessor extends AbstractReminderProcessor {
+public class ReminderPrintProcessor extends GroupedReminderProcessor {
+
+    /**
+     * The printer factory.
+     */
+    private final IMPrinterFactory factory;
+
+    /**
+     * The help context.
+     */
+    private final HelpContext help;
 
     /**
      * Determines if a print dialog is being displayed.
@@ -60,42 +78,57 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
     /**
      * The listener for printer events.
      */
-    private final PrinterListener listener;
+    private PrinterListener listener;
 
     /**
-     * The mail context, used when printing interactively. May be {@code null}
-     */
-    private final MailContext mailContext;
-
-    /**
-     * The help context.
-     */
-    private final HelpContext help;
-
-    /**
-     * Constructs a {@code ReminderPrintProcessor}.
+     * Constructs a {@link ReminderPrintProcessor}.
      *
-     * @param groupTemplate the grouped reminder document template
-     * @param listener      the listener for printer events
-     * @param context       the context
-     * @param mailContext   the mail context, used when printing interactively. May be {@code null}
      * @param help          the help context
+     * @param reminderTypes the reminder types
+     * @param reminderRules the reminder rules
+     * @param patientRules  the patient rules
+     * @param practice      the practice
+     * @param service       the archetype service
+     * @param config        the reminder configuration
+     * @param factory       the printer factory
+     * @param logger        the communication logger. May be {@code null}
      */
-    public ReminderPrintProcessor(DocumentTemplate groupTemplate, PrinterListener listener, Context context,
-                                  MailContext mailContext, HelpContext help) {
-        super(groupTemplate, context);
-        this.listener = listener;
-        this.mailContext = mailContext;
+    public ReminderPrintProcessor(HelpContext help, ReminderTypes reminderTypes, ReminderRules reminderRules,
+                                  PatientRules patientRules, Party practice, IArchetypeService service,
+                                  ReminderConfiguration config, IMPrinterFactory factory, CommunicationLogger logger) {
+        super(reminderTypes, reminderRules, patientRules, practice, service, config, logger);
+        this.factory = factory;
         this.help = help;
     }
 
     /**
-     * Determines if reminders are being printed interactively, or in the background.
+     * Returns the reminder item archetype that this processes.
      *
-     * @return {@code true} if reminders are being printed interactively, or {@code false} if they are being
-     *         printed in the background
+     * @return the archetype
      */
-    public boolean isInteractive() {
+    @Override
+    public String getArchetype() {
+        return ReminderArchetypes.PRINT_REMINDER;
+    }
+
+    /**
+     * Registers a listener for printer events.
+     * <p>
+     * This must be registered prior to processing any reminders.
+     *
+     * @param listener the listener
+     */
+    public void setListener(PrinterListener listener) {
+        this.listener = listener;
+    }
+
+    /**
+     * Determines if reminder processing is performed asynchronously.
+     *
+     * @return {@code true} if reminder processing is performed asynchronously
+     */
+    @Override
+    public boolean isAsynchronous() {
         return alwaysInteractive || interactive;
     }
 
@@ -110,107 +143,139 @@ class ReminderPrintProcessor extends AbstractReminderProcessor {
     }
 
     /**
-     * Processes a list of reminder events.
+     * Processes reminders.
      *
-     * @param events    the events
-     * @param shortName the report archetype short name, used to select the document template if none specified
-     * @param template  the document template to use. May be {@code null}
+     * @param reminders the reminder state
      */
-    protected void process(List<ReminderEvent> events, String shortName, DocumentTemplate template) {
-        Context context = getContext();
-        DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(template, shortName, context);
+    @Override
+    public void process(PatientReminders reminders) {
+        GroupedReminders groupedReminders = (GroupedReminders) reminders;
+        DocumentTemplateLocator locator = new StaticDocumentTemplateLocator(groupedReminders.getTemplate());
+        List<ReminderEvent> events = reminders.getReminders();
+        Context context = reminders.createContext(getPractice());
         if (events.size() > 1) {
-            List<ObjectSet> sets = createObjectSets(events);
-            IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(sets, locator, context);
-            print(printer);
+            List<ObjectSet> sets = reminders.getObjectSets(events);
+            IMPrinter<ObjectSet> printer = factory.createObjectSetReportPrinter(sets, locator, context);
+            print(printer, context);
         } else {
-            List<Act> acts = new ArrayList<Act>();
-            for (ReminderEvent event : events) {
-                acts.add(event.getReminder());
-            }
-            IMPrinter<Act> printer = new IMObjectReportPrinter<Act>(acts, locator, context);
-            print(printer);
+            Act reminder = events.get(0).getReminder();
+            IMPrinter<Act> printer = factory.createIMObjectReportPrinter(reminder, locator, context);
+            print(printer, context);
+        }
+    }
+
+    /**
+     * Returns the contact archetype.
+     *
+     * @return the contact archetype
+     */
+    @Override
+    protected String getContactArchetype() {
+        return ContactArchetypes.LOCATION;
+    }
+
+    /**
+     * Logs reminder communications.
+     *
+     * @param state  the reminder state
+     * @param logger the communication logger
+     */
+    @Override
+    protected void log(PatientReminders state, CommunicationLogger logger) {
+        GroupedReminders reminders = (GroupedReminders) state;
+        Party customer = reminders.getCustomer();
+        Contact contact = reminders.getContact();
+        Party location = reminders.getLocation();
+        String subject = Messages.get("reminder.log.mail.subject");
+        for (ReminderEvent reminder : state.getReminders()) {
+            String notes = getNote(reminder);
+            Party patient = reminder.getPatient();
+            logger.logMail(customer, patient, contact.getDescription(), subject, COMMUNICATION_REASON, null, notes,
+                           location);
+        }
+    }
+
+    /**
+     * Invoked when reminders are printed.
+     *
+     * @param printer the printer
+     */
+    protected void onPrinted(String printer) {
+        if (fallbackPrinter == null) {
+            fallbackPrinter = printer;
+        }
+        if (listener != null) {
+            listener.printed(printer);
+        }
+    }
+
+    /**
+     * Invoked when printing is cancelled.
+     */
+    protected void onPrintCancelled() {
+        if (listener != null) {
+            listener.cancelled();
+        }
+    }
+
+    /**
+     * Invoked when printing is skipped.
+     */
+    protected void onPrintSkipped() {
+        if (listener != null) {
+            listener.skipped();
+        }
+    }
+
+    /**
+     * Invoked when printing fails.
+     */
+    protected void onPrintFailed(Throwable cause) {
+        if (listener != null) {
+            listener.failed(cause);
         }
     }
 
     /**
      * Performs a print.
-     * <p/>
+     * <p>
      * If a printer is configured, the print will occur in the background, otherwise a print dialog will be popped up.
      *
      * @param printer the printer
+     * @param context the context
      */
-    private <T> void print(IMPrinter<T> printer) {
-        final InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<T>(printer, getContext(), help);
+    protected <T> void print(IMPrinter<T> printer, Context context) {
+        final InteractiveIMPrinter<T> iPrinter = new InteractiveIMPrinter<>(printer, context, help);
         String printerName = printer.getDefaultPrinter();
         if (printerName == null) {
             printerName = fallbackPrinter;
         }
         interactive = alwaysInteractive || printerName == null;
         iPrinter.setInteractive(interactive);
-        iPrinter.setMailContext(mailContext);
+        iPrinter.setMailContext(new CustomerMailContext(context, help));
 
-        if (interactive) {
-            // register a listener to grab the selected printer, to avoid popping up a print dialog each time
-            PrinterListener l = new DelegatingPrinterListener(listener) {
-                public void printed(String printer) {
-                    fallbackPrinter = printer;
-                    super.printed(printer);
-                }
-            };
-            iPrinter.setListener(l);
-        } else {
-            iPrinter.setListener(listener);
-        }
+        iPrinter.setListener(new PrinterListener() {
+            @Override
+            public void printed(String printer) {
+                onPrinted(printer);
+            }
+
+            @Override
+            public void cancelled() {
+                onPrintCancelled();
+            }
+
+            @Override
+            public void skipped() {
+                onPrintSkipped();
+            }
+
+            @Override
+            public void failed(Throwable cause) {
+                onPrintFailed(cause);
+            }
+        });
         iPrinter.print(printerName);
     }
 
-    private static class DelegatingPrinterListener implements PrinterListener {
-
-        /**
-         * The listener to delegate to.
-         */
-        private final PrinterListener listener;
-
-        /**
-         * Creates a new {@code DelegatingPrinterListener}.
-         *
-         * @param listener the listener to delegate to
-         */
-        public DelegatingPrinterListener(PrinterListener listener) {
-            this.listener = listener;
-        }
-
-        /**
-         * Notifies of a successful print.
-         *
-         * @param printer the printer that was used. May be {@code null}
-         */
-        public void printed(String printer) {
-            listener.printed(printer);
-        }
-
-        /**
-         * Notifies that the print was cancelled.
-         */
-        public void cancelled() {
-            listener.cancelled();
-        }
-
-        /**
-         * Notifies that the print was skipped.
-         */
-        public void skipped() {
-            listener.skipped();
-        }
-
-        /**
-         * Invoked when a print fails.
-         *
-         * @param cause the reason for the failure
-         */
-        public void failed(Throwable cause) {
-            listener.failed(cause);
-        }
-    }
 }

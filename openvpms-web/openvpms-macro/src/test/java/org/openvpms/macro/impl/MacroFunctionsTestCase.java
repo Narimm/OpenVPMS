@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro.impl;
@@ -22,13 +22,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.function.factory.DefaultArchetypeFunctionsFactory;
+import org.openvpms.archetype.rules.contact.AddressFormatter;
+import org.openvpms.archetype.rules.contact.BasicAddressFormatter;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
-import org.openvpms.macro.Macros;
 import org.openvpms.report.ReportFactory;
 
 import static org.junit.Assert.assertEquals;
@@ -44,7 +46,7 @@ public class MacroFunctionsTestCase extends ArchetypeServiceTest {
     /**
      * The macros.
      */
-    private Macros macros;
+    private LookupMacros macros;
 
     /**
      * The JXPath extension functions factory.
@@ -60,17 +62,21 @@ public class MacroFunctionsTestCase extends ArchetypeServiceTest {
         MacroTestHelper.createMacro("numbertest", "concat('input number: ', $number)");
 
         final IArchetypeService service = getArchetypeService();
-        functions = new DefaultArchetypeFunctionsFactory(service, getLookupService(), null, null) {
+        final ILookupService lookups = getLookupService();
+        AddressFormatter formatter = new BasicAddressFormatter(service, lookups);
+        functions = new DefaultArchetypeFunctionsFactory(service, lookups, null, null, formatter, null) {
             @Override
-            public FunctionLibrary create(IArchetypeService service) {
-                FunctionLibrary library = super.create(service);
+            public FunctionLibrary create(IArchetypeService service, boolean cache) {
+                FunctionLibrary library = super.create(service, cache);
                 library.addFunctions(create("macro", new MacroFunctions(macros)));
                 return library;
             }
         };
 
-        ReportFactory factory = new ReportFactory(service, getLookupService(), new DocumentHandlers(), functions);
-        macros = new LookupMacros(getLookupService(), service, factory);
+        ReportFactory factory = new ReportFactory(service, lookups, new DocumentHandlers(service),
+                                                  functions);
+        macros = new LookupMacros(lookups, service, factory, functions);
+        macros.afterPropertiesSet();
     }
 
     /**

@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.AcknowledgmentCode;
 import ca.uhn.hl7v2.HL7Exception;
+import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.llp.LLPException;
 import ca.uhn.hl7v2.model.Message;
 import org.mockito.Mockito;
@@ -46,12 +47,12 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
     /**
      * The queued messages.
      */
-    private List<Message> messages = new ArrayList<Message>();
+    private List<Message> messages = new ArrayList<>();
 
     /**
      * The processed messages.
      */
-    private List<DocumentAct> acts = new ArrayList<DocumentAct>();
+    private List<DocumentAct> acts = new ArrayList<>();
 
     /**
      * Optional timestamp to assign to messages.
@@ -89,6 +90,11 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
     private HL7Exception acknowledgmentException;
 
     /**
+     * Determines if sending is simulated or not.
+     */
+    private boolean simulateSend = true;
+
+    /**
      * Constructs an {@link TestMessageDispatcher} using mock connectors.
      *
      * @param service the archetype service
@@ -104,6 +110,17 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
     }
 
     /**
+     * Determines if message sends are simulated or not.
+     * <p/>
+     * Defaults to {@code true}
+     *
+     * @param simulate if {@code true} simulate sends, otherwise send them via TCP/IP
+     */
+    public void setSimulateSend(boolean simulate) {
+        simulateSend = simulate;
+    }
+
+    /**
      * Constructs a {@link TestMessageDispatcher}.
      *
      * @param service    the message service
@@ -112,6 +129,19 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
      */
     public TestMessageDispatcher(MessageService service, ConnectorsImpl connectors, PracticeRules rules) {
         super(service, connectors, rules);
+    }
+
+    /**
+     * Constructs a {@link TestMessageDispatcher}.
+     *
+     * @param service    the message service
+     * @param connectors the connectors
+     * @param rules      the practice rules
+     * @param context    the message context
+     */
+    public TestMessageDispatcher(MessageService service, ConnectorsImpl connectors, PracticeRules rules,
+                                 HapiContext context) {
+        super(service, connectors, rules, context);
     }
 
     /**
@@ -238,6 +268,9 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
     protected Message send(Message message, MLLPSender sender) throws HL7Exception, LLPException, IOException {
         if (exceptionOnSend) {
             throw new IOException("simulated send exception");
+        }
+        if (!simulateSend) {
+            return super.send(message, sender);
         }
         return (acknowledgmentCode == null) ? message.generateACK()
                                             : message.generateACK(acknowledgmentCode, acknowledgmentException);

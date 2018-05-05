@@ -11,28 +11,28 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.problem;
 
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.im.act.ActHierarchyFilter;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
+import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * Filters patient problems.
- * <p/>
+ * <p>
  * This enables specific problems items to by included by archetype.
  *
  * @author Tim Anderson
@@ -40,126 +40,78 @@ import java.util.TreeMap;
 public class ProblemFilter extends ActHierarchyFilter<Act> {
 
     /**
-     * The comparator to sort items.
+     * The search criteria.
      */
-    private final Comparator<Act> comparator;
-
-    /**
-     * Act event nodes.
-     */
-    private static final String[] EVENT_NODES = new String[]{"event", "events"};
+    private final Predicate<Act> search;
 
     /**
      * Constructs an {@link ProblemFilter}.
      *
      * @param shortNames the act short names
+     * @param search     the search criteria. May be {@code null}
      * @param ascending  if {@code true} sort items on ascending timestamp; otherwise sort on descending timestamp
      */
-    public ProblemFilter(String[] shortNames, boolean ascending) {
+    public ProblemFilter(String[] shortNames, Predicate<Act> search, boolean ascending) {
         super(shortNames, true);
-        comparator = getComparator(ascending);
+        this.search = search;
+        setSortItemsAscending(ascending);
+    }
+
+    /**
+     * Returns a comparator to sort the children of an act.
+     *
+     * @param act the parent act
+     * @return the comparator to sort the act's children
+     */
+    @Override
+    public Comparator<Act> getComparator(Act act) {
+        if (TypeHelper.isA(act, PatientArchetypes.PATIENT_MEDICATION, PatientArchetypes.CLINICAL_NOTE)) {
+            return super.getComparator(true);
+        }
+        return super.getComparator(act);
     }
 
     /**
      * Filters child acts.
      *
-     * @param parent   the top level act
+     * @param parent   the parent act
      * @param children the child acts
+     * @param acts     the set of visited acts, keyed on reference
      * @return the filtered acts
      */
     @Override
-    protected List<Act> filter(Act parent, List<Act> children) {
-        List<Act> result = new ArrayList<Act>();
-        Map<Act, List<Act>> actsByEvent = new TreeMap<Act, List<Act>>(comparator);
-        List<Act> actsWithoutEvents = new ArrayList<Act>();
-        Map<IMObjectReference, Act> events = new HashMap<IMObjectReference, Act>();  // cache of events
-
-        if (!children.isEmpty()) {
-            for (Act act : children) {
-                ActBean bean = new ActBean(act);
-                List<Act> actEvents = getEvents(bean, events);
-                if (!actEvents.isEmpty()) {
-                    for (Act event : actEvents) {
-                        List<Act> list = actsByEvent.get(event);
-                        if (list == null) {
-                            list = new ArrayList<Act>();
-                            actsByEvent.put(event, list);
-                        }
-                        list.add(act);
-                    }
-                } else {
-                    actsWithoutEvents.add(act);
-                }
-            }
-        }
-        addActs(result, actsWithoutEvents);
-        if (actsByEvent.isEmpty()) {
-            // no events for child items, so add these from the problem
-            ActBean bean = new ActBean(parent);
-            addActs(result, getEvents(bean, events));
+    protected List<Act> filter(Act parent, List<Act> children, Map<IMObjectReference, Act> acts) {
+        List<Act> result;
+        if (search == null) {
+            result = children;
         } else {
-            addActsByEvent(result, actsByEvent);
-        }
-        return result;
-    }
-
-    /**
-     * Adds acts to the list, sorting them first.
-     *
-     * @param list the list to add to
-     * @param acts the acts to add
-     */
-    private void addActs(List<Act> list, List<Act> acts) {
-        if (acts.size() > 1) {
-            Collections.sort(acts, comparator);
-        }
-        list.addAll(acts);
-    }
-
-    /**
-     * Adds acts to a list, grouped by their events.
-     *
-     * @param list        the list to add to
-     * @param actsByEvent a map of the events to their corresponding items
-     */
-    private void addActsByEvent(List<Act> list, Map<Act, List<Act>> actsByEvent) {
-        for (Map.Entry<Act, List<Act>> entry : actsByEvent.entrySet()) {
-            list.add(entry.getKey());
-            List<Act> acts = entry.getValue();
-            addActs(list, acts);
-        }
-    }
-
-
-    /**
-     * Returns the events associated with an act.
-     *
-     * @param bean   the act bean
-     * @param events the event cache
-     * @return the corresponding event, or {@code null} if none is found
-     */
-    private List<Act> getEvents(ActBean bean, Map<IMObjectReference, Act> events) {
-        List<Act> result = new ArrayList<Act>();
-        List<IMObjectReference> refs = Collections.emptyList();
-        for (String node : EVENT_NODES) {
-            if (bean.hasNode(node)) {
-                refs = bean.getNodeSourceObjectRefs(node);
-                break;
-            }
-        }
-        for (IMObjectReference ref : refs) {
-            Act event = events.get(ref);
-            if (event == null) {
-                event = (Act) IMObjectHelper.getObject(ref, null);
-                if (event != null) {
-                    events.put(ref, event);
+            result = new ArrayList<>();
+            for (Act act : children) {
+                // events always match, so that the child acts can be searched.
+                if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT) || search.test(act)) {
+                    result.add(act);
                 }
             }
-            if (event != null) {
-                result.add(event);
-            }
         }
         return result;
+    }
+
+    /**
+     * Returns the immediate children of an act.
+     *
+     * @param act  the parent act
+     * @param acts a cache of the visited acts, keyed on reference
+     * @return the immediate children of {@code act}
+     */
+    @Override
+    protected Set<Act> getChildren(Act act, Map<IMObjectReference, Act> acts) {
+        Set<Act> children = super.getChildren(act, acts);
+        if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_PROBLEM)) {
+            ActBean bean = new ActBean(act);
+            Set<Act> events = getActs(bean.getNodeSourceObjectRefs("events"), acts);
+            children.addAll(events);
+        }
+        return children;
     }
 
 }

@@ -1,0 +1,436 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Batch Use Report" pageWidth="792" pageHeight="612" orientation="Landscape" whenNoDataType="AllSectionsNoDetail" columnWidth="754" leftMargin="19" rightMargin="19" topMargin="21" bottomMargin="21" uuid="ab7e30b2-1928-49fe-9bc6-2783dd3c7e0b">
+	<property name="ireport.zoom" value="1.0"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="OpenVPMS"/>
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<style name="Base" isDefault="true" hTextAlign="Left" vTextAlign="Middle" fontName="DejaVu Sans" fontSize="10"/>
+	<parameter name="Product Name" class="java.lang.String">
+		<parameterDescription><![CDATA[Product Name]]></parameterDescription>
+	</parameter>
+	<parameter name="Batch Number" class="java.lang.String">
+		<parameterDescription><![CDATA[Batch Number]]></parameterDescription>
+	</parameter>
+	<parameter name="Manufacturer" class="java.lang.String">
+		<parameterDescription><![CDATA[Manufacturer]]></parameterDescription>
+	</parameter>
+	<parameter name="Explain" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Display explanation]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
+	<queryString language="SQL">
+		<![CDATA[select  e.entity_id as batch_id, e.name as batch_number, product.entity_id as product_id, product.name as product,
+     pl.active_end_time as expiry_date,
+    m.entity_id as manufacturer_id, m.name as manufacturer_name,
+    a.activity_start_time as charge_date, patient.entity_id as patient_id, patient.name as patient_name, customer.entity_id as customer_id,
+    customer.name as customer_name,customer.description as customer_description
+from entities e
+left join entity_links pl on e.entity_id = pl.source_id and pl.arch_short_name  = "entityLink.batchProduct"
+left join entities product on pl.target_id = product.entity_id
+left join entity_links ml on e.entity_id = ml.source_id and ml.arch_short_name  = "entityLink.batchManufacturer"
+left join entities m on ml.target_id = m.entity_id
+left join participations bp on bp.entity_id = e.entity_id and bp.arch_short_name = "participation.productBatch"
+left join acts a on a.act_id = bp.act_id and a.arch_short_name = "act.customerAccountInvoiceItem"
+left join participations p on p.act_id = a.act_id and p.arch_short_name = "participation.patient"
+left join entities patient on p.entity_id = patient.entity_id
+left join entity_relationships r on patient.entity_id = r.target_id
+    and r.arch_short_name = "entityRelationship.patientOwner"
+    and r.active_start_time <= a.activity_start_time
+    and (r.active_end_time >= a.activity_start_time or r.active_end_time is null)
+left join entities customer on r.source_id = customer.entity_id
+where e.arch_short_name = "entity.productBatch"
+ and e.name like concat(ifnull( $P{Batch Number},""),"%")
+ and ifnull(m.name,'-') like concat(ifnull( $P{Manufacturer}  ,""),"%")
+ and product.name like concat(ifnull( $P{Product Name},""),"%") 
+ order by product.name, m.name, e.name, e.entity_id, charge_date]]>
+	</queryString>
+	<field name="batch_id" class="java.lang.Long"/>
+	<field name="batch_number" class="java.lang.String"/>
+	<field name="product_id" class="java.lang.Long"/>
+	<field name="product" class="java.lang.String"/>
+	<field name="expiry_date" class="java.sql.Timestamp"/>
+	<field name="manufacturer_id" class="java.lang.Long"/>
+	<field name="manufacturer_name" class="java.lang.String"/>
+	<field name="charge_date" class="java.sql.Timestamp"/>
+	<field name="patient_id" class="java.lang.Long"/>
+	<field name="patient_name" class="java.lang.String"/>
+	<field name="customer_id" class="java.lang.Long"/>
+	<field name="customer_name" class="java.lang.String"/>
+	<field name="customer_description" class="java.lang.String"/>
+	<variable name="currentPage" class="java.lang.Integer" resetType="Page">
+		<variableExpression><![CDATA[$V{PAGE_NUMBER}]]></variableExpression>
+		<initialValueExpression><![CDATA[1]]></initialValueExpression>
+	</variable>
+	<group name="Batch" isReprintHeaderOnEachPage="true" minHeightToStartNewPage="82">
+		<groupExpression><![CDATA[$F{batch_id}]]></groupExpression>
+		<groupHeader>
+			<band height="41">
+				<textField>
+					<reportElement x="334" y="19" width="75" height="15" uuid="45802936-54e9-4604-a800-32a1d0f03d83"/>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{batch_id}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="87" y="19" width="209" height="15" uuid="0888f775-307a-4398-b7c4-ec2d2dbef624">
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{batch_number}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="334" y="3" width="75" height="16" uuid="a2350fd1-c263-4b1c-ab98-12e9ae3d78d6"/>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{product_id}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="88" y="3" width="208" height="16" uuid="499791e7-b449-46a9-821d-ca3321bc2453"/>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{product}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM/dd/yyyy" isBlankWhenNull="true">
+					<reportElement x="527" y="19" width="75" height="15" uuid="8822f2f4-8609-4d84-a901-c2253766ad4a"/>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{expiry_date}==null)?"--None--":DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{expiry_date})]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement x="0" y="0" width="754" height="1" uuid="9c07f5a7-4231-4254-a53e-7f45ef8a8915"/>
+				</line>
+				<staticText>
+					<reportElement x="1" y="19" width="86" height="15" uuid="eeaea430-4ac8-40bd-8123-57488cc546ca">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Batch Number:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="303" y="3" width="28" height="16" uuid="18b86269-87d7-40da-bbfe-fbb96eb39adc"/>
+					<textElement textAlignment="Right">
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[ID: ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="1" y="3" width="86" height="16" uuid="2415f918-5ea4-49d7-a46d-301b300c109e">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Product Name:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="449" y="19" width="75" height="15" uuid="b842fa03-3702-4bbb-8c8c-9fd3fc11c486"/>
+					<textElement textAlignment="Right">
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Batch Expiry:]]></text>
+				</staticText>
+				<textField isBlankWhenNull="true">
+					<reportElement x="528" y="3" width="206" height="16" uuid="7268188c-0b42-45c8-a752-c7c8b16b8f44"/>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{manufacturer_name}==null)?"--None--":$F{manufacturer_name}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="431" y="3" width="94" height="16" uuid="f8880eb4-65b5-43e9-886b-a17abf2bb375"/>
+					<textElement textAlignment="Right">
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Manufacturer:]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="303" y="19" width="28" height="15" uuid="b3a6ef74-7e69-4ae7-a7ed-f261303e8cc0"/>
+					<textElement textAlignment="Right">
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[ID: ]]></text>
+				</staticText>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="21">
+				<staticText>
+					<reportElement x="24" y="0" width="176" height="21" uuid="95ef3f0e-fb62-4a65-b990-f3845e470d4f">
+						<printWhenExpression><![CDATA[$V{Batch_COUNT} <= 1]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Center">
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[No use of above batch recorded]]></text>
+				</staticText>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="Detail" isReprintHeaderOnEachPage="true" minHeightToStartNewPage="42">
+		<groupExpression><![CDATA[$F{charge_date}!=null]]></groupExpression>
+		<groupHeader>
+			<band height="19">
+				<printWhenExpression><![CDATA[$F{charge_date}!=null]]></printWhenExpression>
+				<staticText>
+					<reportElement x="1" y="2" width="74" height="17" uuid="928ffee5-e6e9-4974-a2ed-53d2a8762e32">
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+						<printWhenExpression><![CDATA[$V{Batch_COUNT}>1]]></printWhenExpression>
+					</reportElement>
+					<textElement>
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Charge Date]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="85" y="2" width="156" height="17" uuid="4f3717b3-1c8a-4ff8-9b66-db5543a823a2"/>
+					<textElement>
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Customer Name (ID)]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="254" y="2" width="320" height="17" uuid="ff17ec81-d1bc-4840-9943-95f286b1b221"/>
+					<textElement>
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Contact details]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="583" y="2" width="162" height="17" uuid="81b7227c-3bf2-420e-a50b-6239bc7db348"/>
+					<textElement>
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Patient Name (ID)]]></text>
+				</staticText>
+				<line>
+					<reportElement x="0" y="0" width="754" height="1" forecolor="#999999" uuid="0e145066-6c99-458e-9e6d-e423398732c9">
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					</reportElement>
+				</line>
+			</band>
+		</groupHeader>
+	</group>
+	<title>
+		<band height="62" splitType="Stretch">
+			<staticText>
+				<reportElement key="staticText-1" x="241" y="1" width="273" height="25" uuid="487a1535-ee6b-43c6-be07-154aec3b6ab8"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Center">
+					<font size="18" isBold="true" isUnderline="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Batch Use Report]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-35" x="-1" y="38" width="85" height="18" uuid="94c6f6e7-0c20-41f2-98ed-82a092a86bbc"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Product Name: ]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="87" y="38" width="94" height="18" uuid="31e35ace-18b2-46aa-8845-55933bd816f9"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($P{Product Name}==null)?"%":$P{Product Name}+"%"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-35" x="372" y="38" width="95" height="18" uuid="03a8d3e3-2c11-4062-af38-2408d5c13ba4"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Batch Number: ]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="470" y="38" width="94" height="18" uuid="8bb2e27a-c90d-4f70-b619-46e167454d23"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($P{Batch Number}==null)?"%":$P{Batch Number}+"%"]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="668" y="0" width="84" height="11" uuid="b328f525-d367-4fbd-b1ad-5582dd2297f9"/>
+				<textElement textAlignment="Right">
+					<font size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-35" x="185" y="38" width="86" height="18" uuid="9886832b-d49e-4b90-8288-558c5e1b75e0"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Manufacturer: ]]></text>
+			</staticText>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField" x="274" y="38" width="94" height="18" uuid="7c8b49b8-acd3-40dc-a29c-f4633ea31d2b"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($P{Manufacturer}==null)?"%":$P{Manufacturer}+"%"]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="false">
+				<reportElement key="textField-1" x="612" y="11" width="80" height="19" uuid="b1c6cb3e-44cc-4e03-9f46-2d6f83c79919"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER} + " of "]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report" isBlankWhenNull="false">
+				<reportElement key="textField-2" x="696" y="11" width="58" height="19" uuid="c9fca992-f6cb-4d3b-999f-58542172f338"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER} + ""]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band height="6" splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+		<band height="14">
+			<printWhenExpression><![CDATA[$F{charge_date}!=null]]></printWhenExpression>
+			<textField isBlankWhenNull="true">
+				<reportElement x="85" y="0" width="156" height="13" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="b1e69021-1618-49bd-8672-aba1077fbd14"/>
+				<textElement textAlignment="Left">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{customer_name}+" ("+$F{customer_id}.toString()+")"]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yyyy" isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="1" y="0" width="74" height="13" isRemoveLineWhenBlank="true" uuid="df92110d-34bb-4fef-8d4c-fd0e343b816e">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Left">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{charge_date}==null)?"":DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{charge_date})]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="254" y="0" width="320" height="13" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="81d7fff4-f56c-4a5d-915d-d9c853ea4737"/>
+				<textElement textAlignment="Left">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{customer_description}.replace( '\n', ' ' )]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="583" y="0" width="161" height="13" isRemoveLineWhenBlank="true" isPrintWhenDetailOverflows="true" uuid="24fdecf4-28c9-4fcd-8f29-cc0443b5452b"/>
+				<textElement textAlignment="Left">
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{patient_name}+" ("+$F{patient_id}.toString()+")"]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<summary>
+		<band height="107" splitType="Stretch">
+			<staticText>
+				<reportElement x="113" y="5" width="277" height="21" isRemoveLineWhenBlank="true" uuid="6ded8d13-cfce-45e1-85b4-b057bd0a6a70">
+					<printWhenExpression><![CDATA[new Boolean($V{REPORT_COUNT}.intValue()==0)]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center">
+					<font size="14" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[No Data Found - Check Parameters]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="5" y="33" width="747" height="72" isRemoveLineWhenBlank="true" uuid="741039ab-2c36-45df-bf49-0b7a7de9b3d3">
+					<printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
+				</reportElement>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[This report shows the product batches and their usage.
+The selection fields entered have % added so that leaving them blank will find all, and entering say product name 'n' will include all products with names starting 'n' or 'N', and entering batch number '%sp' will find all batch with numbers containing 'sp'. The selection is case-insensitive.
+For Manufacturer selection, omitting the selection will include products with no manufacturer set, and using the selection '-' will find only those with no manufacturer.
+The data is ordered by Product Name, Manufacturer, Batch Number, then Charge Date.
+]]></text>
+			</staticText>
+		</band>
+	</summary>
+</jasperReport>

@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 6.2.0.final using JasperReports Library version 6.2.0  -->
+<!-- 2016-03-05T15:42:02 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice Items" pageWidth="612" pageHeight="792" columnWidth="612" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="0d884615-14c1-48b1-801d-fc1e1707caca">
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="39"/>
+	<property name="ireport.y" value="0"/>
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<field name="target.patient.entity.name" class="java.lang.String"/>
+	<field name="target.product.entity" class="java.lang.Object"/>
+	<field name="target.quantity" class="java.math.BigDecimal"/>
+	<field name="target.total" class="java.math.BigDecimal"/>
+	<field name="target.product.entity.name" class="java.lang.String"/>
+	<field name="target.product.entity.displayName" class="java.lang.String"/>
+	<field name="target.product.entity.printedName" class="java.lang.String"/>
+	<field name="target.discount" class="java.math.BigDecimal"/>
+	<field name="target.startTime" class="java.sql.Timestamp"/>
+	<field name="target.patient.entity.id" class="java.lang.Long"/>
+	<field name="target.patient.entity.species" class="java.lang.String"/>
+	<field name="target.patient.entity.breed" class="java.lang.String"/>
+	<field name="target.patient.entity.dateOfBirth" class="java.util.Date"/>
+	<field name="target.patient.entity.sex" class="java.lang.String"/>
+	<field name="target.patient.entity" class="java.lang.Long"/>
+	<field name="target.clinician.entity.name" class="java.lang.String"/>
+	<field name="[party:getPatientWeight(openvpms:get(., &quot;target&quot;))]" class="java.lang.String"/>
+	<field name="target.tax" class="java.math.BigDecimal">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="target.template" class="java.lang.Object"/>
+	<field name="target.template.entity.name" class="java.lang.String"/>
+	<field name="target.template.entity.printedName" class="java.lang.String"/>
+	<field name="target.template.entity.printAggregate" class="java.lang.Boolean"/>
+	<field name="target.print" class="java.lang.Boolean"/>
+	<sortField name="target.patient.entity.name"/>
+	<sortField name="noTemplate" type="Variable"/>
+	<sortField name="target.template.entity.name"/>
+	<sortField name="target.startTime"/>
+	<variable name="patientTotal" class="java.math.BigDecimal" resetType="Group" resetGroup="patientGroup" calculation="Sum">
+		<variableExpression><![CDATA[$F{target.total}.subtract( $F{target.tax} )]]></variableExpression>
+	</variable>
+	<variable name="SUM_target.discount" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{target.discount}]]></variableExpression>
+	</variable>
+	<variable name="SUM_target.total.total" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{target.total}.subtract( $F{target.tax} )]]></variableExpression>
+	</variable>
+	<variable name="SUM_target.taxAmount.total" class="java.math.BigDecimal" calculation="Sum">
+		<variableExpression><![CDATA[$F{target.tax}]]></variableExpression>
+	</variable>
+	<variable name="templateTotal" class="java.math.BigDecimal" resetType="Group" resetGroup="templateGroup" calculation="Sum">
+		<variableExpression><![CDATA[$F{target.total}.subtract( $F{target.tax} )]]></variableExpression>
+	</variable>
+	<variable name="templateTax" class="java.math.BigDecimal" resetType="Group" resetGroup="templateGroup" calculation="Sum">
+		<variableExpression><![CDATA[$F{target.tax}]]></variableExpression>
+	</variable>
+	<variable name="noTemplate" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$F{target.template} == null]]></variableExpression>
+	</variable>
+	<group name="patientGroup">
+		<groupExpression><![CDATA[$F{target.patient.entity.name}]]></groupExpression>
+		<groupHeader>
+			<band height="34">
+				<staticText>
+					<reportElement key="staticText-10" x="0" y="6" width="40" height="13" uuid="0c557d8d-c198-4cd5-b6d5-69a4ac5296e6">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right" verticalAlignment="Top">
+						<font size="10" isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Patient: ]]></text>
+				</staticText>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField-1" x="40" y="6" width="170" height="13" uuid="5fed7579-5046-43b0-a7fa-b0d9adb3dd4d">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement>
+						<font size="10" isBold="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{target.patient.entity.name}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement key="staticText" x="15" y="19" width="25" height="13" uuid="8bf65ef3-594b-4843-9933-7756ff670bbd">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement textAlignment="Right">
+						<font size="9" isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[ID: ]]></text>
+				</staticText>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField" x="40" y="19" width="82" height="13" uuid="0c2c2e58-c6c9-4c88-a3bf-55b7607f2dc6"/>
+					<textElement textAlignment="Left">
+						<font isBold="false" isItalic="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{target.patient.entity.id}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField" x="282" y="6" width="136" height="13" uuid="2b4ac435-fec7-42ba-997a-1704118c74e8"/>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{target.patient.entity.species}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement key="staticText" x="233" y="6" width="49" height="13" uuid="58e29147-fd94-4c62-a1a5-f999b4d3c981"/>
+					<textElement textAlignment="Right">
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Species: ]]></text>
+				</staticText>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField" x="282" y="19" width="136" height="13" uuid="2ceb1853-c5ac-45a4-ae13-20db22947956"/>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{target.patient.entity.breed}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement key="staticText" x="233" y="19" width="49" height="13" uuid="a0125c86-f5b0-4149-b1ef-464945028b7f"/>
+					<textElement textAlignment="Right">
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Breed: ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText" x="430" y="6" width="50" height="13" uuid="fdd130d0-f723-4d9d-a575-3c687d74350d"/>
+					<textElement textAlignment="Right">
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Weight: ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText" x="430" y="19" width="50" height="13" uuid="3b97a42e-fecd-4a51-8aec-915cc2e933dd"/>
+					<textElement textAlignment="Right">
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Birthday: ]]></text>
+				</staticText>
+				<staticText>
+					<reportElement key="staticText" x="136" y="19" width="25" height="13" uuid="ba27c637-db01-41a8-90aa-32e454fc9d90"/>
+					<textElement textAlignment="Right">
+						<font isBold="true"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Sex: ]]></text>
+				</staticText>
+				<textField isBlankWhenNull="false">
+					<reportElement key="textField" x="161" y="19" width="49" height="13" uuid="48c45f3b-1cca-481a-a018-5991d098b1ca">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{target.patient.entity.sex}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="480" y="6" width="72" height="13" uuid="754b8fde-2bbc-4c9e-9c27-d4bd7d60ebb4">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{[party:getPatientWeight(openvpms:get(., "target"))]}]]></textFieldExpression>
+				</textField>
+				<textField pattern="MM/dd/yyyy" isBlankWhenNull="false">
+					<reportElement key="textField" x="480" y="19" width="72" height="13" uuid="d9965bd6-7026-4599-b762-6f7807ed985f">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{target.patient.entity.dateOfBirth}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement key="line-2" x="1" y="0" width="552" height="1" uuid="5df69a11-6370-414d-b32c-c04ad39822ab">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+				</line>
+			</band>
+		</groupHeader>
+		<groupFooter>
+			<band height="19">
+				<staticText>
+					<reportElement key="staticText-11" x="385" y="2" width="80" height="13" uuid="804f5bec-d681-4e98-ba40-701fc8eb80eb">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="10" isBold="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<text><![CDATA[Sub Total]]></text>
+				</staticText>
+				<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+					<reportElement key="textField-6" x="480" y="2" width="61" height="13" uuid="6a55f602-d998-43ed-97ff-3611ef09cf89"/>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement textAlignment="Right">
+						<font size="10" isBold="false"/>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{patientTotal}]]></textFieldExpression>
+				</textField>
+				<line>
+					<reportElement key="line-3" x="0" y="1" width="552" height="1" uuid="6c291d3c-ac64-4dd5-a72b-ec1b3afd1b2c">
+						<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+					</reportElement>
+				</line>
+			</band>
+		</groupFooter>
+	</group>
+	<group name="templateGroup">
+		<groupExpression><![CDATA[$F{target.template}]]></groupExpression>
+		<groupHeader>
+			<band height="15" splitType="Stretch">
+				<property name="local_mesure_unitheight" value="pixel"/>
+				<property name="com.jaspersoft.studio.unit.height" value="px"/>
+				<printWhenExpression><![CDATA[$F{target.template} != null]]></printWhenExpression>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+					<reportElement key="textField-4" x="199" y="1" width="219" height="13" uuid="b94badfa-b4a7-4264-a130-334cc982fa59">
+						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					</reportElement>
+					<box>
+						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+						<bottomPen lineWidth="0.0" lineColor="#000000"/>
+						<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					</box>
+					<textElement verticalAlignment="Middle">
+						<font size="10"/>
+					</textElement>
+					<textFieldExpression><![CDATA[($F{target.template.entity.printedName} == null) ? $F{target.template.entity.name}: $F{target.template.entity.printedName}]]></textFieldExpression>
+				</textField>
+				<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
+					<reportElement key="textField-7" isPrintRepeatedValues="false" x="0" y="1" width="50" height="13" uuid="f9d8a2f9-ca73-4401-8c9a-4b9033609c45">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement verticalAlignment="Middle">
+						<font size="10"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{target.startTime}]]></textFieldExpression>
+				</textField>
+				<textField evaluationTime="Group" evaluationGroup="templateGroup" pattern="¤ #,##0.00">
+					<reportElement x="480" y="1" width="61" height="13" uuid="7c1788e0-7efd-4524-a8a0-ffe225b2ef27">
+						<property name="local_mesure_unitheight" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.height" value="px"/>
+						<property name="local_mesure_unity" value="pixel"/>
+						<property name="com.jaspersoft.studio.unit.y" value="px"/>
+						<printWhenExpression><![CDATA[$F{target.template.entity.printAggregate}]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Right" verticalAlignment="Middle">
+						<font size="10"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$V{templateTotal}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="541" y="1" width="11" height="13" uuid="958191d1-eef1-4b40-8c8a-a05f8ef107df">
+						<printWhenExpression><![CDATA[$V{templateTax}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
+					</reportElement>
+					<textElement textAlignment="Center"/>
+					<text><![CDATA[*]]></text>
+				</staticText>
+				<textField isBlankWhenNull="true">
+					<reportElement isPrintRepeatedValues="false" x="60" y="1" width="131" height="13" uuid="796ee561-36c5-4504-a405-86550a2f4fcb">
+						<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					</reportElement>
+					<textElement>
+						<paragraph lineSpacing="Single"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{target.clinician.entity.name}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band height="2"/>
+	</title>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band height="19">
+			<staticText>
+				<reportElement key="staticText-7" x="0" y="0" width="87" height="16" uuid="63254ad1-f85a-44fe-8636-52ae415ef6d7">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement verticalAlignment="Middle">
+					<font size="10" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Service Provided:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-8" x="488" y="0" width="53" height="16" uuid="eae9e2e2-635d-4871-a4d1-f0afc6c84a94"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="10" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Amount]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-9" x="424" y="0" width="47" height="16" uuid="1ebe22f7-4100-4217-b063-b2653936eaa1"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right" verticalAlignment="Middle">
+					<font size="10" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Quantity]]></text>
+			</staticText>
+			<line>
+				<reportElement key="line-1" x="0" y="0" width="552" height="1" uuid="af4010f6-5c38-4af9-9057-3c69e0f62263">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+			</line>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="14">
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-2" x="480" y="1" width="61" height="13" uuid="df7f1365-406a-4052-ae56-ed7671cb63dd">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{target.total}.subtract( $F{target.tax} )]]></textFieldExpression>
+			</textField>
+			<textField pattern="###0.###" isBlankWhenNull="false">
+				<reportElement key="textField-3" x="424" y="1" width="47" height="13" uuid="383ede68-dab5-458a-ae16-60f6533f9819"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{target.quantity}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="false">
+				<reportElement key="textField-4" x="199" y="1" width="219" height="13" uuid="b7440120-4e8e-43c6-bd77-9552a7565e59"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="10"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{target.product.entity.printedName} == null) ? $F{target.product.entity.name}: $F{target.product.entity.printedName}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement isPrintRepeatedValues="false" x="60" y="1" width="131" height="13" uuid="2e378aee-68e3-44ed-960a-7d6df4e9e5b5">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{target.clinician.entity.name}]]></textFieldExpression>
+			</textField>
+			<textField pattern="MM/dd/yy" isBlankWhenNull="false">
+				<reportElement key="textField-7" isPrintRepeatedValues="false" x="0" y="1" width="50" height="13" uuid="76b83288-68cc-4d85-b01b-a90ca0622836">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{target.startTime}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="541" y="1" width="11" height="13" uuid="5f9e0efe-a9c3-4b86-9ed8-172e91cd574a">
+					<printWhenExpression><![CDATA[$F{target.tax}.compareTo(BigDecimal.ZERO)!=0]]></printWhenExpression>
+				</reportElement>
+				<textElement textAlignment="Center"/>
+				<text><![CDATA[*]]></text>
+			</staticText>
+		</band>
+	</detail>
+	<columnFooter>
+		<band height="47">
+			<line>
+				<reportElement key="line-3" x="1" y="0" width="552" height="1" uuid="e530f340-bace-431a-83ec-d5644769be0d">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+			</line>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-6" x="471" y="27" width="70" height="16" uuid="a19f287f-9975-4a78-8ceb-edbe5568f2aa"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="12" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SUM_target.total.total}.add
+($V{SUM_target.taxAmount.total})]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-11" x="376" y="27" width="89" height="16" uuid="5dcf517f-22c1-44a4-87b8-824ccd7253f9"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="SansSerif" size="12" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[TOTAL]]></text>
+			</staticText>
+			<staticText>
+				<reportElement key="staticText-11" x="376" y="1" width="89" height="13" uuid="b7fd540c-94c3-4ee6-87df-f2ae96dde7e6">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Invoice Total]]></text>
+			</staticText>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-6" x="471" y="1" width="70" height="13" uuid="cba97c12-ce9f-41a8-9b51-20cec3a1d883"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SUM_target.total.total}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-11" x="376" y="14" width="89" height="13" uuid="63225585-11a0-4194-a5be-8798d864c1c7">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Tax Total]]></text>
+			</staticText>
+			<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-6" x="471" y="14" width="70" height="13" uuid="90fa8c85-38c8-4e5f-a39a-06d8732c8bd6"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font size="10" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{SUM_target.taxAmount.total}]]></textFieldExpression>
+			</textField>
+		</band>
+	</columnFooter>
+	<pageFooter>
+		<band/>
+	</pageFooter>
+	<summary>
+		<band/>
+	</summary>
+</jasperReport>

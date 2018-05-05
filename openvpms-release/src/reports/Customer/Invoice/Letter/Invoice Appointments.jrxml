@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice Appointments" pageWidth="612" pageHeight="792" columnWidth="554" leftMargin="0" rightMargin="58" topMargin="0" bottomMargin="0" uuid="73d919ae-324c-40b9-9464-15331ebe71c4">
+	<property name="ireport.scriptlethandling" value="0"/>
+	<property name="ireport.encoding" value="UTF-8"/>
+	<property name="ireport.zoom" value="1.5"/>
+	<property name="ireport.x" value="0"/>
+	<property name="ireport.y" value="0"/>
+	<property name="com.jaspersoft.studio.unit." value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+	<property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+	<import value="net.sf.jasperreports.engine.*"/>
+	<import value="java.util.*"/>
+	<import value="org.openvpms.component.business.domain.im.party.Party"/>
+	<import value="net.sf.jasperreports.engine.data.*"/>
+	<style name="Base" isDefault="true" hTextAlign="Left" hImageAlign="Left" vTextAlign="Middle" vImageAlign="Middle" fontName="DejaVu Sans" fontSize="9"/>
+	<parameter name="MaxLines" class="java.lang.Integer" isForPrompting="false">
+		<parameterDescription><![CDATA[Max number of reminders to show]]></parameterDescription>
+		<defaultValueExpression><![CDATA[100]]></defaultValueExpression>
+	</parameter>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="patient.entity.name" class="java.lang.String"/>
+	<field name="appointmentType.entity.name" class="java.lang.String"/>
+	<field name="startTime" class="java.util.Date"/>
+	<field name="reason" class="java.lang.String"/>
+	<field name="endTime" class="java.util.Date"/>
+	<sortField name="startTime"/>
+	<variable name="NotShown" class="java.lang.Integer">
+		<variableExpression><![CDATA[$V{REPORT_COUNT}-$P{MaxLines}]]></variableExpression>
+	</variable>
+	<variable name="startDate" class="java.lang.String">
+		<variableExpression><![CDATA[DateFormat.getDateInstance().format($F{startTime})]]></variableExpression>
+	</variable>
+	<variable name="endDate" class="java.lang.String">
+		<variableExpression><![CDATA[DateFormat.getDateInstance().format($F{endTime})]]></variableExpression>
+	</variable>
+	<variable name="sameDay" class="java.lang.Boolean">
+		<variableExpression><![CDATA[$V{startDate}.compareTo( $V{endDate} )==0]]></variableExpression>
+	</variable>
+	<background>
+		<band/>
+	</background>
+	<title>
+		<band/>
+	</title>
+	<pageHeader>
+		<band/>
+	</pageHeader>
+	<columnHeader>
+		<band height="24">
+			<staticText>
+				<reportElement key="staticText-7" x="6" y="7" width="82" height="15" uuid="ecac411d-c97a-410c-8e71-686d96a05307">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="9" isBold="true"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Appointments]]></text>
+			</staticText>
+			<textField evaluationTime="Report">
+				<reportElement key="staticText-7" x="93" y="7" width="92" height="15" uuid="eedb0b8e-726b-48b6-b792-17784ddcab86">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Left">
+					<font size="9" isBold="false"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$V{REPORT_COUNT}>3?"(next 3 only)":""]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement key="line-2" x="0" y="5" width="554" height="1" uuid="1c60e220-b144-4fa0-9809-19dadc618a8f">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
+			</line>
+			<line>
+				<reportElement key="line-2" x="0" y="23" width="554" height="1" uuid="adc4061b-90a8-4697-a1f5-c77623621c52">
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
+			</line>
+		</band>
+	</columnHeader>
+	<detail>
+		<band height="13" splitType="Prevent">
+			<printWhenExpression><![CDATA[$V{REPORT_COUNT}<4]]></printWhenExpression>
+			<textField pattern="">
+				<reportElement x="83" y="0" width="144" height="12" uuid="c6cd75b1-c110-4dfd-a019-ab8f0f41a0e3">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Left">
+					<font size="9"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getTimeInstance(DateFormat.SHORT,  $P{REPORT_LOCALE}).format($F{startTime})
++" - "+($V{sameDay}?DateFormat.getTimeInstance(DateFormat.SHORT,  $P{REPORT_LOCALE}).format($F{endTime}):
+DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT,  $P{REPORT_LOCALE}).format($F{endTime}))]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="216" y="0" width="123" height="12" isPrintWhenDetailOverflows="true" uuid="b007ebbd-7dfb-472d-b98a-4661ac0446bc">
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font size="9"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[($F{patient.entity.name}==null)?"(no patient)":$F{patient.entity.name}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="360" y="0" width="194" height="12" uuid="63338b14-bc9d-4884-a4e6-eee1333ce9e8">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
+				<textElement>
+					<font size="9"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{appointmentType.entity.name}+($F{reason}==null?"":(" ["+$F{reason}+"]"))]]></textFieldExpression>
+			</textField>
+			<textField pattern="">
+				<reportElement x="6" y="0" width="67" height="12" uuid="1ca62789-1771-4ab0-913f-061aa002d3f4">
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+				</reportElement>
+				<textElement textAlignment="Left">
+					<font size="9"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{startTime})]]></textFieldExpression>
+			</textField>
+		</band>
+	</detail>
+	<pageFooter>
+		<band/>
+	</pageFooter>
+	<summary>
+		<band/>
+	</summary>
+</jasperReport>

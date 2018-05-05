@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -19,22 +19,22 @@ package org.openvpms.web.workspace.customer;
 import org.apache.commons.collections.ComparatorUtils;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.object.IMObject;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextMailContext;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.query.Browser;
+import org.openvpms.web.component.im.query.MultiSelectBrowser;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.AddressFormatter;
-import org.openvpms.web.component.mail.AttachmentBrowserFactory;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.ToAddressFormatter;
 import org.openvpms.web.echo.help.HelpContext;
@@ -48,6 +48,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.openvpms.component.model.bean.Policies.active;
+
 
 /**
  * An {@link MailContext} that uses an {@link Context} to returns 'from' addresses from the practice location or
@@ -58,7 +60,16 @@ import java.util.Set;
 public class CustomerMailContext extends ContextMailContext {
 
     /**
-     * Constructs a {@code CustomerMailContext}.
+     * Constructs a {@link CustomerMailContext}.
+     *
+     * @param context the context
+     */
+    public CustomerMailContext(Context context) {
+        super(context);
+    }
+
+    /**
+     * Constructs a {@link CustomerMailContext} that registers an attachment browser.
      *
      * @param context the context
      * @param help    the help context
@@ -67,17 +78,66 @@ public class CustomerMailContext extends ContextMailContext {
         super(context);
         final DefaultLayoutContext layout = new DefaultLayoutContext(context, help);
 
-        setAttachmentBrowserFactory(new AttachmentBrowserFactory() {
-            public Browser<Act> createBrowser(MailContext context) {
-                Browser<Act> result = null;
-                Party customer = getContext().getCustomer();
-                Party patient = getContext().getPatient();
-                if (customer != null || patient != null) {
-                    result = new CustomerPatientDocumentBrowser(customer, patient, layout);
-                }
-                return result;
+        setAttachmentBrowserFactory(mailContext -> {
+            MultiSelectBrowser<Act> result = null;
+            Party customer = getContext().getCustomer();
+            Party patient = getContext().getPatient();
+            if (customer != null || patient != null) {
+                result = new CustomerPatientDocumentBrowser(customer, patient, layout);
             }
+            return result;
         });
+    }
+
+    /**
+     * Returns the customer.
+     *
+     * @return the customer. May be {@code null}
+     */
+    public Party getCustomer() {
+        return getContext().getCustomer();
+    }
+
+    /**
+     * Returns the patient.
+     *
+     * @return the patient. May be {@code null}
+     */
+    public Party getPatient() {
+        return getContext().getPatient();
+    }
+
+    /**
+     * Returns the practice location.
+     *
+     * @return the practice location. May be {@code null}
+     */
+    public Party getLocation() {
+        return getContext().getLocation();
+    }
+
+    /**
+     * Returns the available 'to' email addresses.
+     *
+     * @return the 'to' email addresses
+     */
+    public List<Contact> getToAddresses() {
+        List<Contact> contacts = new ArrayList<>();
+        getToAddresses(contacts);
+        if (contacts.size() > 1) {
+            sort(contacts);
+        }
+        return contacts;
+    }
+
+    /**
+     * Returns a formatter to format 'to' addresses.
+     *
+     * @return the 'to' address formatter
+     */
+    @Override
+    public AddressFormatter getToAddressFormatter() {
+        return new ReferringAddressFormatter();
     }
 
     /**
@@ -116,30 +176,29 @@ public class CustomerMailContext extends ContextMailContext {
     }
 
     /**
-     * Returns the available 'to' email addresses.
+     * Collects to available 'to' email addresses.
      *
-     * @return the 'to' email addresses
+     * @param addresses the list to collect addresses in
      */
-    public List<Contact> getToAddresses() {
-        List<Contact> result = new ArrayList<Contact>();
-        result.addAll(ContactHelper.getEmailContacts(getContext().getCustomer()));
+    protected void getToAddresses(List<Contact> addresses) {
+        addresses.addAll(ContactHelper.getEmailContacts(getContext().getCustomer()));
         Party patient = getContext().getPatient();
         if (patient != null) {
             EntityBean bean = new EntityBean(patient);
-            Set<IMObjectReference> practices = new HashSet<IMObjectReference>();
+            Set<Reference> practices = new HashSet<>();
             // tracks processed practices to avoid retrieving them more than once
 
-            for (Entity referral : bean.getNodeTargetEntities("referrals")) {
+            for (IMObject referral : bean.getTargets("referrals", active())) {
                 if (referral instanceof Party) {
-                    result.addAll(ContactHelper.getEmailContacts((Party) referral));
+                    addresses.addAll(ContactHelper.getEmailContacts((Party) referral));
                     if (TypeHelper.isA(referral, SupplierArchetypes.SUPPLIER_VET)) {
                         // add any contacts of the practices that the vet belongs to
-                        EntityBean vet = new EntityBean(referral);
-                        for (IMObjectReference ref : vet.getNodeSourceEntityRefs("practices")) {
+                        IMObjectBean vet = new IMObjectBean(referral);
+                        for (Reference ref : vet.getSourceRefs("practices")) {
                             if (!practices.contains(ref)) {
                                 Party practice = (Party) IMObjectHelper.getObject(ref, getContext());
                                 if (practice != null) {
-                                    result.addAll(ContactHelper.getEmailContacts(practice));
+                                    addresses.addAll(ContactHelper.getEmailContacts(practice));
                                     practices.add(ref);
                                 }
                             }
@@ -148,20 +207,6 @@ public class CustomerMailContext extends ContextMailContext {
                 }
             }
         }
-        if (result.size() > 1) {
-            sort(result);
-        }
-        return result;
-    }
-
-    /**
-     * Returns a formatter to format 'to' addresses.
-     *
-     * @return the 'to' address formatter
-     */
-    @Override
-    public AddressFormatter getToAddressFormatter() {
-        return new ReferringAddressFormatter();
     }
 
     /**

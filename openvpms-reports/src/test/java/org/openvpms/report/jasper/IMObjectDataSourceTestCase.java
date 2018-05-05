@@ -11,25 +11,31 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
 
+import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
 import org.apache.commons.jxpath.Functions;
 import org.junit.Test;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.doc.DocumentHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.ResolvingPropertySet;
+import org.openvpms.component.system.common.util.PropertySet;
+import org.openvpms.report.Parameters;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -42,7 +48,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Tim Anderson
  */
-public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCase {
+public class IMObjectDataSourceTestCase extends AbstractDataSourceTest<IMObject> {
 
     /**
      * Tests basic data source functionality.
@@ -72,7 +78,7 @@ public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCa
         // create a new act and associate an image with it
         ActBean act = createAct("act.patientDocumentImage");
         File file = new File("src/test/images/openvpms.gif");
-        Document doc = DocumentHelper.create(file, "image/gif", handlers);
+        Document doc = DocumentHelper.create(file, "image/gif", applicationContext.getBean(DocumentHandlers.class));
         getArchetypeService().save(doc);
         act.setValue("document", doc.getObjectReference());
         IMObjectDataSource ds = createDataSource(act.getAct());
@@ -93,22 +99,6 @@ public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCa
     }
 
     /**
-     * Tests the {@link IMObjectDataSource#getExpressionDataSource(String)} method.
-     *
-     * @throws Exception for any error
-     */
-    @Test
-    public void testExpressionDataSource() throws Exception {
-        IMObject object = TestHelper.createCustomer(false);
-
-        Map<String, Object> fields = new HashMap<String, Object>();
-        fields.put("Globals.A", "A");
-        fields.put("Globals.1", 1);
-        IMObjectDataSource ds = createDataSource(object, fields);
-        checkExpressionDataSource(ds, new ResolvingPropertySet(fields, getArchetypeService()));
-    }
-
-    /**
      * Tests fields.
      *
      * @throws Exception for any error
@@ -116,7 +106,7 @@ public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCa
     @Test
     public void testFields() throws Exception {
         IMObject object = createCustomer("Foo", "Bar");
-        Map<String, Object> fields = new HashMap<String, Object>();
+        Map<String, Object> fields = new HashMap<>();
         fields.put("fieldA", "A");
         fields.put("field.B", "B");
         fields.put("field1", 1);
@@ -149,7 +139,56 @@ public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCa
         assertEquals("Bar", ds.getFieldValue(exprCustomerLastName));
 
         assertFalse(ds.next());
+    }
 
+    /**
+     * Tests the {@link IMObjectDataSource#getDataSource(String)} method.
+     */
+    @Test
+    public void testGetDataSource() throws JRException {
+        Party customer = TestHelper.createCustomer();
+        Party patient = TestHelper.createPatient(customer);
+        patient.setName("Fido");
+        save(patient);
+
+        IMObjectDataSource ds = createDataSource(customer, new HashMap<String, Object>());
+        DataSource patients = (DataSource) ds.getDataSource("patients");
+        assertTrue(patients.next());
+
+        assertEquals("Fido", patients.getFieldValue("target.name"));
+        assertFalse(patients.next());
+    }
+
+
+    /**
+     * Creates a new data source.
+     *
+     * @param objects    the objects
+     * @param parameters the parameters
+     * @param fields     the fields
+     * @param handlers   the document handlers
+     * @param functions  the functions
+     * @return a new data source
+     */
+    @Override
+    protected DataSource createDataSource(List<IMObject> objects, Parameters parameters, PropertySet fields,
+                                          DocumentHandlers handlers, Functions functions) {
+        if (objects.size() != 1) {
+            throw new IllegalArgumentException("Argument 'objects' must contain a single element");
+        }
+        return new IMObjectDataSource(objects.get(0), parameters, fields, getArchetypeService(), getLookupService(),
+                                      handlers, functions);
+    }
+
+    /**
+     * Creates a collection of customers to pass to the data source.
+     *
+     * @param customers the customers
+     * @return a collection to pass to the data source
+     */
+    @Override
+    protected List<IMObject> createCollection(Party... customers) {
+        return Arrays.<IMObject>asList(customers);
     }
 
     /**
@@ -171,7 +210,8 @@ public class IMObjectDataSourceTestCase extends AbstractIMObjectDataSourceTestCa
      */
     private IMObjectDataSource createDataSource(IMObject object, Map<String, Object> fields) {
         Functions functions = applicationContext.getBean(Functions.class);
-        return new IMObjectDataSource(object, fields, getArchetypeService(), getLookupService(), handlers,
+        DocumentHandlers handlers = applicationContext.getBean(DocumentHandlers.class);
+        return new IMObjectDataSource(object, null, fields, getArchetypeService(), getLookupService(), handlers,
                                       functions);
     }
 

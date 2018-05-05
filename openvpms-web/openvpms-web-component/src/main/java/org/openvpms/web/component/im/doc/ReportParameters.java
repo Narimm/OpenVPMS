@@ -20,6 +20,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.system.common.util.Variables;
@@ -71,25 +72,27 @@ public class ReportParameters {
     private final FocusGroup focus = new FocusGroup(getClass().getSimpleName());
 
     /**
-     * Constructs a {@code ReportParameters}.
+     * Constructs a {@link ReportParameters}.
      *
      * @param parameters the parameters
      * @param variables  the variables for macro expansion
      * @param columns    the number of columns to display the parameters in
      */
     public ReportParameters(Set<ParameterType> parameters, Variables variables, int columns) {
-        this(parameters, null, variables, columns);
+        this(parameters, null, variables, columns, false);
     }
 
     /**
-     * Constructs  a {@code ReportParameters}.
+     * Constructs  a {@link ReportParameters}.
      *
-     * @param parameters the parameters
-     * @param context    the parameter context, used for macro support. May be {@code null}
-     * @param variables  the variables for macro expansion
-     * @param columns    the number of columns to display the parameters in
+     * @param parameters      the parameters
+     * @param context         the parameter context, used for macro support. May be {@code null}
+     * @param variables       the variables for macro expansion
+     * @param columns         the number of columns to display the parameters in
+     * @param largeTextFields if {@code true}, use large text fields for multi-line input
      */
-    public ReportParameters(Set<ParameterType> parameters, IMObject context, Variables variables, int columns) {
+    public ReportParameters(Set<ParameterType> parameters, IMObject context, Variables variables, int columns,
+                            boolean largeTextFields) {
         properties = createProperties(parameters, context, variables);
         if (properties.size() > 0) {
             Grid grid;
@@ -101,7 +104,7 @@ public class ReportParameters {
                 grid = GridFactory.create(columns * 2);
             }
             grid.setWidth(Styles.FULL_WIDTH);
-            PropertyComponentFactory factory = ComponentFactory.INSTANCE;
+            PropertyComponentFactory factory = new ComponentFactory(largeTextFields);
             for (Property property : properties) {
                 if (property.isBoolean() || property.isString() || property.isNumeric() || property.isDate()) {
                     Component component = factory.create(property);
@@ -183,7 +186,7 @@ public class ReportParameters {
         for (ParameterType type : parameters) {
             if (!type.isSystem()) {
                 SimpleProperty property = new SimpleProperty(type.getName(), type.getType());
-                if (type.getDescription() != null) {
+                if (!StringUtils.isEmpty(type.getDescription())) {
                     property.setDisplayName(type.getDescription());
                 }
                 if (property.isBoolean() || property.isString() || property.isNumeric() || property.isDate()) {
@@ -207,16 +210,16 @@ public class ReportParameters {
     private static class ComponentFactory extends AbstractPropertyComponentFactory {
 
         /**
-         * The singleton instance.
+         * The no. of rows for text areas.
          */
-        public static ComponentFactory INSTANCE = new ComponentFactory();
-
+        private final int rows;
 
         /**
-         * Constructs a {@code ComponentFactory}.
+         * Constructs a {@link ComponentFactory}.
          */
-        private ComponentFactory() {
+        private ComponentFactory(boolean largeTextFields) {
             super(Styles.DEFAULT);
+            rows = largeTextFields ? 5 : 2;
         }
 
         /**
@@ -230,7 +233,7 @@ public class ReportParameters {
         protected Component createString(Property property, int columns) {
             Component result;
             if (property.getMaxLength() == -1 || property.getMaxLength() > NodeDescriptor.DEFAULT_MAX_LENGTH) {
-                TextArea text = BoundTextComponentFactory.createTextArea(property, columns, 2);
+                TextArea text = BoundTextComponentFactory.createTextArea(property, columns, rows);
                 text.setWidth(new Extent(95, Extent.PERCENT));
                 // 100% doesn't respect insets unless 'box-sizing: border-box' is used
                 result = text;

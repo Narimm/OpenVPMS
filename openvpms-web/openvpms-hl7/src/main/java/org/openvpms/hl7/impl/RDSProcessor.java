@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -26,7 +26,8 @@ import ca.uhn.hl7v2.model.v25.segment.PID;
 import ca.uhn.hl7v2.model.v25.segment.RXD;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
-import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
+import org.openvpms.archetype.rules.finance.order.CustomerOrder;
+import org.openvpms.archetype.rules.finance.order.CustomerPharmacyOrder;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -45,7 +46,7 @@ import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static org.openvpms.hl7.impl.OrderState.addNote;
+import static org.openvpms.archetype.rules.finance.order.CustomerOrder.addNote;
 
 /**
  * Processes RDS messages.
@@ -63,8 +64,9 @@ public class RDSProcessor extends OrderMessageProcessor {
     /**
      * Constructs a {@link RDSProcessor}.
      *
-     * @param service the archetype service
-     * @param rules   the patient rules
+     * @param service   the archetype service
+     * @param rules     the patient rules
+     * @param userRules the user rules
      */
     public RDSProcessor(IArchetypeService service, PatientRules rules, UserRules userRules) {
         super(service, rules, userRules);
@@ -83,7 +85,7 @@ public class RDSProcessor extends OrderMessageProcessor {
             throw new HL7Exception("RDS O13 message contains no order group");
         }
         PID pid = message.getPATIENT().getPID();
-        OrderState state = createState(pid, location);
+        CustomerOrder state = createState(pid, location);
         for (int i = 0; i < message.getORDERReps(); ++i) {
             RDS_O13_ORDER group = message.getORDER(i);
             addItem(group, state);
@@ -91,9 +93,20 @@ public class RDSProcessor extends OrderMessageProcessor {
         return state.getActs();
     }
 
+    /**
+     * Creates state for an order.
+     *
+     * @param patient  the patient. May be {@code null}
+     * @param customer the customer. May be {@code null}
+     * @param note     the note. May be {@code null}
+     * @param location the practice location. May be {@code null}
+     * @param service  the archetype service
+     * @return a new {@link CustomerOrder}
+     */
     @Override
-    protected State createState(Party patient, Party customer, String note, IMObjectReference location, IArchetypeService service) {
-        return new State(patient, customer, note, location, service);
+    protected CustomerPharmacyOrder createState(Party patient, Party customer, String note, IMObjectReference location,
+                                IArchetypeService service) {
+        return new CustomerPharmacyOrder(patient, customer, note, location, service);
     }
 
     /**
@@ -102,7 +115,7 @@ public class RDSProcessor extends OrderMessageProcessor {
      * @param group the order group
      * @param state the state
      */
-    private void addItem(RDS_O13_ORDER group, OrderState state) {
+    private void addItem(RDS_O13_ORDER group, CustomerOrder state) {
         BigDecimal quantity = getQuantity(group);
         ActBean bean;
         ActBean itemBean;
@@ -212,7 +225,7 @@ public class RDSProcessor extends OrderMessageProcessor {
      * @param itemBean the item
      * @param state    the state
      */
-    private FinancialAct addInvoiceItem(ORC orc, ActBean bean, ActBean itemBean, OrderState state) {
+    private FinancialAct addInvoiceItem(ORC orc, ActBean bean, ActBean itemBean, CustomerOrder state) {
         FinancialAct invoiceItem = (FinancialAct) getOrder(CustomerAccountArchetypes.INVOICE_ITEM, orc, bean, state);
         if (invoiceItem != null) {
             itemBean.setValue("sourceInvoiceItem", invoiceItem.getObjectReference());
@@ -243,37 +256,4 @@ public class RDSProcessor extends OrderMessageProcessor {
         }
     }
 
-    private class State extends OrderState {
-
-        /**
-         * Constructs a {@link OrderState}.
-         *
-         * @param patient  the patient. May be {@code null}
-         * @param customer the customer. May be {@code null}
-         * @param note     the note. May be {@code null}
-         * @param location the practice location. May be {@code null}
-         * @param service  the archetype service
-         */
-        public State(Party patient, Party customer, String note, IMObjectReference location,
-                     IArchetypeService service) {
-            super(patient, customer, note, location, service);
-        }
-
-        public ActBean createOrderItem() {
-            return createItem(OrderArchetypes.PHARMACY_ORDER_ITEM, getOrder());
-        }
-
-        public ActBean createReturnItem() {
-            return createItem(OrderArchetypes.PHARMACY_RETURN_ITEM, getReturn());
-        }
-
-        protected ActBean createOrder() {
-            return createParent(OrderArchetypes.PHARMACY_ORDER);
-        }
-
-        protected ActBean createReturn() {
-            return createParent(OrderArchetypes.PHARMACY_RETURN);
-        }
-
-    }
 }

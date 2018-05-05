@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.batch;
@@ -27,11 +27,9 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.product.ProductBatchResultSet;
@@ -62,9 +60,9 @@ public class ProductBatchResultSetTestCase extends ArchetypeServiceTest {
         Product product = TestHelper.createProduct();
         Date tomorrow = DateRules.getTomorrow();
         Date today = DateRules.getToday();
-        Entity batch1 = createBatch("batch1", product, today);
-        Entity batch2 = createBatch("batch2", product, tomorrow);
-        Entity batch3 = createBatch("batch3", product, null);
+        Entity batch1 = ProductTestHelper.createBatch("batch1", product, today);
+        Entity batch2 = ProductTestHelper.createBatch("batch2", product, tomorrow);
+        Entity batch3 = ProductTestHelper.createBatch("batch3", product, null);
 
         // no filter on expiry
         checkExpiry(null, null, true, batch1, batch2, batch3);
@@ -91,10 +89,10 @@ public class ProductBatchResultSetTestCase extends ArchetypeServiceTest {
         Party location1 = ProductTestHelper.createStockLocation();
         Party location2 = ProductTestHelper.createStockLocation();
 
-        Entity batch1 = createBatch("batch1", product, null, location1);
-        Entity batch2 = createBatch("batch2", product, null, location2);
-        Entity batch3 = createBatch("batch3", product, null);
-        Entity batch4 = createBatch("batch4", product, null, location1, location2);
+        Entity batch1 = ProductTestHelper.createBatch("batch1", product, null, location1);
+        Entity batch2 = ProductTestHelper.createBatch("batch2", product, null, location2);
+        Entity batch3 = ProductTestHelper.createBatch("batch3", product, null);
+        Entity batch4 = ProductTestHelper.createBatch("batch4", product, null, location1, location2);
 
         checkStockLocation(location1, null, true, batch1, batch3, batch4);
         checkStockLocation(location1, null, false, batch2);
@@ -116,7 +114,7 @@ public class ProductBatchResultSetTestCase extends ArchetypeServiceTest {
         Date date1 = DateRules.getToday();
         Date date2 = DateRules.getYesterday();
         Date date3 = DateRules.getPreviousDate(date2);
-        Entity batch1 = createBatch("batch1", product, null);
+        Entity batch1 = ProductTestHelper.createBatch("batch1", product, null);
         addStockLocation(batch1, location, date2);  // relationship inactive after date2
 
         checkStockLocation(location, null, true, batch1);
@@ -131,8 +129,8 @@ public class ProductBatchResultSetTestCase extends ArchetypeServiceTest {
     @Test
     public void testQueryOnManufacturer() {
         Product product = TestHelper.createProduct();
-        Entity batch1 = createBatch("batch1", product, null);
-        Entity batch2 = createBatch("batch2", product, null);
+        Entity batch1 = ProductTestHelper.createBatch("batch1", product, null);
+        Entity batch2 = ProductTestHelper.createBatch("batch2", product, null);
         Party man1 = addManufacturer(batch1);
         addManufacturer(batch2);
 
@@ -147,8 +145,8 @@ public class ProductBatchResultSetTestCase extends ArchetypeServiceTest {
     public void testSortOnName() {
         Product product = TestHelper.createProduct();
         Date expiry = DateRules.getTomorrow();
-        Entity batch1 = createBatch("batch1", product, expiry);
-        Entity batch2 = createBatch("batch2", product, expiry);
+        Entity batch1 = ProductTestHelper.createBatch("batch1", product, expiry);
+        Entity batch2 = ProductTestHelper.createBatch("batch2", product, expiry);
 
         SortConstraint[] sort = {Constraints.sort("name")};
         ProductBatchResultSet set = new ProductBatchResultSet(shortName(ProductArchetypes.PRODUCT_BATCH),
@@ -162,8 +160,8 @@ public class ProductBatchResultSetTestCase extends ArchetypeServiceTest {
     @Test
     public void testSortOnExpiryDate() {
         Product product = TestHelper.createProduct();
-        Entity batch1 = createBatch("batch1", product, DateRules.getTomorrow());
-        Entity batch2 = createBatch("batch2", product, DateRules.getToday());
+        Entity batch1 = ProductTestHelper.createBatch("batch1", product, DateRules.getTomorrow());
+        Entity batch2 = ProductTestHelper.createBatch("batch2", product, DateRules.getToday());
 
         SortConstraint[] sort = {new VirtualNodeSortConstraint("expiryDate", true)};
         ProductBatchResultSet set = new ProductBatchResultSet(shortName(ProductArchetypes.PRODUCT_BATCH),
@@ -178,13 +176,34 @@ public class ProductBatchResultSetTestCase extends ArchetypeServiceTest {
     public void testSortOnProduct() {
         Product product1 = createProduct("Z Test Product B");
         Product product2 = createProduct("Z Test Product A");
-        Entity batch1 = createBatch("batch1", product1, DateRules.getTomorrow());
-        Entity batch2 = createBatch("batch2", product2, DateRules.getToday());
+        Entity batch1 = ProductTestHelper.createBatch("batch1", product1, DateRules.getTomorrow());
+        Entity batch2 = ProductTestHelper.createBatch("batch2", product2, DateRules.getToday());
 
         SortConstraint[] sort = {Constraints.sort("product", true)};
         ProductBatchResultSet set = new ProductBatchResultSet(shortName(ProductArchetypes.PRODUCT_BATCH),
                                                               null, null, null, null, null, null, null, null, sort, 20);
         checkOrder(set, batch2, batch1);
+    }
+
+    /**
+     * Verifies that the
+     * {@link ProductBatchResultSet#ProductBatchResultSet(String, Product, Date, IMObjectReference, int)}
+     * constructor excludes inactive batches.
+     */
+    @Test
+    public void testQueryOnValueExcludesInactive() {
+        Product product1 = createProduct("Z Test Product A");
+        Entity batch1 = ProductTestHelper.createBatch("batch1", product1, DateRules.getTomorrow());
+        Entity batch2 = ProductTestHelper.createBatch("batch2", product1, DateRules.getTomorrow());
+        ProductBatchResultSet set1 = new ProductBatchResultSet(null, product1, null, null, 20);
+        checkBatches(set1, true, batch1, batch2);
+
+        batch1.setActive(false);
+        batch2.setActive(false);
+        save(batch1, batch2);
+
+        ProductBatchResultSet set2 = new ProductBatchResultSet(null, product1, null, null, 20);
+        checkBatches(set2, false, batch1, batch2);
     }
 
     /**
@@ -195,7 +214,7 @@ public class ProductBatchResultSetTestCase extends ArchetypeServiceTest {
      */
     private void checkOrder(ProductBatchResultSet set, Entity... batches) {
         int index = 0;
-        ResultSetIterator<Entity> iterator = new ResultSetIterator<Entity>(set);
+        ResultSetIterator<Entity> iterator = new ResultSetIterator<>(set);
         while (iterator.hasNext()) {
             Entity next = iterator.next();
             if (next.getName().equals(batches[index].getName())) {
@@ -206,29 +225,6 @@ public class ProductBatchResultSetTestCase extends ArchetypeServiceTest {
             }
         }
         assertEquals(batches.length, index);
-    }
-
-    /**
-     * Creates a new batch.
-     *
-     * @param batchNumber    the batch number
-     * @param product        the product
-     * @param expiryDate     the expiry date. May be {@code null}
-     * @param stockLocations the stock locations
-     * @return a new batch
-     */
-    private Entity createBatch(String batchNumber, Product product, Date expiryDate, Party... stockLocations) {
-        Entity batch = (Entity) create(ProductArchetypes.PRODUCT_BATCH);
-        EntityBean bean = new EntityBean(batch);
-        bean.setValue("name", batchNumber);
-        IMObjectRelationship relationship = bean.addNodeTarget("product", product);
-        IMObjectBean relBean = new IMObjectBean(relationship);
-        relBean.setValue("activeEndTime", expiryDate);
-        for (Party stockLocation : stockLocations) {
-            bean.addNodeTarget("stockLocations", stockLocation);
-        }
-        save(batch, product);
-        return batch;
     }
 
     private void addStockLocation(Entity batch, Party stockLocation, Date endTime) {
@@ -314,7 +310,7 @@ public class ProductBatchResultSetTestCase extends ArchetypeServiceTest {
         checkBatches(set, include, batches);
     }
 
-    private void checkBatches(ProductBatchResultSet set, boolean include, Entity[] batches) {
+    private void checkBatches(ProductBatchResultSet set, boolean include, Entity... batches) {
         List<IMObjectReference> objectRefs = QueryTestHelper.getObjectRefs(set);
         for (IMObject object : batches) {
             if (include) {

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
@@ -24,6 +24,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
+import org.openvpms.web.workspace.workflow.scheduling.ScheduleColours;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel;
 
 import java.util.Date;
@@ -39,10 +40,12 @@ public abstract class TaskTableModel extends ScheduleTableModel {
     /**
      * Constructs a {@link TaskTableModel}.
      *
-     * @param grid the task grid
+     * @param grid    the task grid
+     * @param context the context
+     * @param colours the colour cache
      */
-    public TaskTableModel(TaskGrid grid, Context context) {
-        super(grid, context, true);
+    public TaskTableModel(TaskGrid grid, Context context, ScheduleColours colours) {
+        super(grid, context, true, colours);
     }
 
     /**
@@ -62,7 +65,7 @@ public abstract class TaskTableModel extends ScheduleTableModel {
      * @param event the event
      * @return the status name
      */
-    protected String getStatus(PropertySet event) {
+    public String getStatus(PropertySet event) {
         String status;
         String code = event.getString(ScheduleEvent.ACT_STATUS);
         if (WorkflowStatus.PENDING.equals(code)) {

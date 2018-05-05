@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -24,7 +24,9 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
+import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -41,7 +43,7 @@ import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -71,9 +73,14 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
     private DocumentHandlers handlers;
 
     /**
-     * The practice rules.
+     * The practice location.
      */
-    private PracticeRules practiceRules;
+    private Party location;
+
+    /**
+     * The practice.
+     */
+    private Party practice;
 
     /**
      * Sets up the test case.
@@ -81,12 +88,21 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
     @Before
     public void setUp() {
         IArchetypeService service = getArchetypeService();
-        practiceRules = new PracticeRules(service, null);
+        practice = (Party) create(PracticeArchetypes.PRACTICE);
+        PracticeRules practiceRules = new PracticeRules(service, null);
+        PracticeService practiceService = new PracticeService(service, practiceRules, null) {
+            @Override
+            public synchronized Party getPractice() {
+                return practice;
+            }
+        };
+
         ILookupService lookups = getLookupService();
         PartyRules partyRules = new PartyRules(service, lookups);
         PatientRules patientRules = new PatientRules(practiceRules, service, lookups);
-        handlers = new DocumentHandlers();
-        exporter = new ReminderCSVExporter(practiceRules, partyRules, patientRules, service, lookups, handlers);
+        handlers = new DocumentHandlers(getArchetypeService());
+        exporter = new ReminderCSVExporter(practiceService, partyRules, patientRules, service, lookups, handlers);
+        location = TestHelper.createLocation();
     }
 
     /**
@@ -130,10 +146,8 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
      * @throws IOException for  any I/O error
      */
     private void checkExport(Party customer, boolean commaSeparated) throws IOException {
-        Party practice = practiceRules.getPractice();
         IMObjectBean practiceBean = new IMObjectBean(practice);
         practiceBean.setValue("fileExportFormat", commaSeparated ? "COMMA" : "TAB");
-        practiceBean.save();
 
         if (commaSeparated) {
             assertEquals(',', exporter.getSeparator());
@@ -163,7 +177,7 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
         reminderBean.save();
 
         ReminderEvent event = createReminderEvent(customer, address, patient, reminderType, reminder);
-        Document document = exporter.export(Arrays.asList(event));
+        Document document = exporter.export(Collections.singletonList(event));
         List<String[]> lines = readCSV(document);
         assertNotNull(lines);
         assertEquals(2, lines.size());
@@ -180,7 +194,7 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
                              getId(patient), patient.getName(), "Canine", "Kelpie", "Male", "Black", "2013-02-01",
                              getId(reminderType), reminderType.getName(),
                              getDate(reminder.getActivityEndTime()), "0", "2013-06-05", "10", "KILOGRAMS",
-                             "2015-01-01"};
+                             "2015-01-01", location.getName()};
         assertArrayEquals(expected, lines.get(1));
     }
 
@@ -196,9 +210,11 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
      */
     private ReminderEvent createReminderEvent(Party customer, Contact contact, Party patient, Entity reminderType,
                                               Act reminder) {
-        return new ReminderEvent(ReminderEvent.Action.EXPORT, reminder,
-                                 new ReminderType(reminderType, getArchetypeService()), patient, customer, contact,
-                                 null);
+        Act item = (Act) create(ReminderArchetypes.EXPORT_REMINDER);
+        ReminderEvent event = new ReminderEvent(reminder, item, patient, customer);
+        event.setContact(contact);
+        event.setReminderType(reminderType);
+        return event;
     }
 
     /**
@@ -219,6 +235,7 @@ public class ReminderCSVExporterTestCase extends ArchetypeServiceTest {
         bean.setValue("initials", initials);
         bean.setValue("lastName", lastName);
         bean.setValue("companyName", companyName);
+        bean.addNodeTarget("practice", location);
         bean.save();
         return customer;
     }

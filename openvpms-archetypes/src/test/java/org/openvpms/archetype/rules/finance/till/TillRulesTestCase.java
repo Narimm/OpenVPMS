@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.till;
@@ -28,13 +28,12 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.object.Relationship;
 import org.springframework.transaction.PlatformTransactionManager;
 
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -439,11 +438,10 @@ public class TillRulesTestCase extends AbstractTillRulesTest {
 
         if (initialCashFloat.compareTo(newCashFloat) != 0) {
             // expect a till balance adjustment to have been made
-            Set<ActRelationship> rels = balance.getSourceActRelationships();
-            assertEquals(1, rels.size());
-            ActRelationship r = rels.toArray(new ActRelationship[rels.size()])[0];
-            Act target = (Act) get(r.getTarget());
-            assertTrue(TypeHelper.isA(target, "act.tillBalanceAdjustment"));
+            assertEquals(1, balance.getSourceActRelationships().size());
+            ActBean balBean = new ActBean(balance);
+            Act target = balBean.getTarget("items", Act.class);
+            assertTrue(target.isA(TillArchetypes.TILL_BALANCE_ADJUSTMENT));
             ActBean adjBean = new ActBean(target);
             BigDecimal amount = adjBean.getBigDecimal("amount");
 
@@ -482,7 +480,7 @@ public class TillRulesTestCase extends AbstractTillRulesTest {
      */
     private int countRelationships(Act source, Act target) {
         int found = 0;
-        for (ActRelationship relationship : source.getSourceActRelationships()) {
+        for (Relationship relationship : source.getSourceActRelationships()) {
             if (relationship.getTarget().equals(target.getObjectReference())) {
                 found++;
             }

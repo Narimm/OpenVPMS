@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -37,8 +37,7 @@ import static org.junit.Assert.assertNotNull;
 /**
  * {@link QueryFactory} test case.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
+ * @author Tim Anderson
  */
 public class QueryFactoryTestCase extends AbstractAppTest {
 
@@ -90,12 +89,11 @@ public class QueryFactoryTestCase extends AbstractAppTest {
 
     /**
      * Verifies that a {@link DocumentTemplateQuery} is returned for
-     * <em>entity.documentTemplate*</em> short names.
+     * <em>entity.documentTemplate</em> short names.
      */
     @Test
     public void testDocumentTemplate() {
-        checkCreate("entity.documentTemplate*", DocumentTemplateQuery.class,
-                    Entity.class);
+        checkCreate("entity.documentTemplate", DocumentTemplateQuery.class, Entity.class);
     }
 
     /**

@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.wip;
 
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
@@ -29,12 +29,14 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.im.report.DocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.ResultSetCRUDWindow;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 /**
  * CRUD window for incomplete charges.
@@ -77,10 +79,11 @@ class IncompleteChargesCRUDWindow extends ResultSetCRUDWindow<Act> {
         try {
             Context context = getContext();
             DocumentTemplateLocator locator = new ContextDocumentTemplateLocator("WORK_IN_PROGRESS_CHARGES", context);
-            IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<Act>(getQuery(), locator, context);
+            ReporterFactory factory = ServiceHelper.getBean(ReporterFactory.class);
+            IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<>(getQuery(), locator, context, factory);
             String title = Messages.get("reporting.wip.print");
-            InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, context,
-                                                                               getHelpContext().subtopic("report"));
+            InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<>(title, printer, context,
+                                                                            getHelpContext().subtopic("report"));
             iPrinter.setMailContext(getMailContext());
             iPrinter.print();
         } catch (OpenVPMSException exception) {

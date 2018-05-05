@@ -11,8 +11,9 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="contact.phoneNumber.1.0" latest="true" primary="false"
                type="org.openvpms.component.business.domain.im.party.Contact" displayName="Phone Contact">
@@ -20,7 +21,7 @@
         <node name="name" type="java.lang.String" path="/name" defaultValue="'Phone Number'"/>
         <node name="description" type="java.lang.String"
               path="/description" hidden="true" derived="true"
-              derivedValue="concat(expr:if(boolean(/details/areaCode), concat('(',/details/areaCode,') '), ''), /details/telephoneNumber,' ',party:getContactPurposes())"/>
+              derivedValue="concat(expr:if(boolean(/details/areaCode), concat('(',/details/areaCode,') '), ''), translate(normalize-space(/details/telephoneNumber),' ',''),' ',party:getContactPurposes())"/>
         <node name="areaCode" path="/details/areaCode"
               type="java.lang.String" minCardinality="0" maxLength="6">
         </node>

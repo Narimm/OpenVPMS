@@ -11,25 +11,28 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.report;
 
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.IMReport;
 import org.openvpms.report.ParameterType;
 import org.openvpms.report.PrintProperties;
 import org.openvpms.report.ReportException;
 
-import java.util.Arrays;
+import java.io.OutputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 
 /**
@@ -63,7 +66,7 @@ public abstract class Reporter<T> {
     /**
      * The parameters to pass to the report.
      */
-    private Map<String, Object> parameters = new HashMap<String, Object>();
+    private Map<String, Object> parameters = new HashMap<>();
 
     /**
      * The fields to pass to the report.
@@ -75,9 +78,8 @@ public abstract class Reporter<T> {
      *
      * @param object the object
      */
-    @SuppressWarnings("unchecked")
     public Reporter(T object) {
-        objects = Arrays.asList(object);
+        objects = Collections.singletonList(object);
         this.object = object;
     }
 
@@ -111,7 +113,7 @@ public abstract class Reporter<T> {
 
     /**
      * Creates the document.
-     * <p/>
+     * <p>
      * Documents are formatted according to the default mime type. If the document has an {@link #IS_EMAIL} parameter,
      * then this will be set {@code false}.
      *
@@ -136,8 +138,9 @@ public abstract class Reporter<T> {
         if (type == null) {
             type = report.getDefaultMimeType();
         }
-        Map<String, Object> map = new HashMap<String, Object>(getParameters(email));
-        Document document = report.generate(getObjects(), map, fields, type);
+        String mimeType = type;
+        Map<String, Object> map = new HashMap<>(getParameters(email));
+        Document document = generate(report, () -> report.generate(getObjects(), map, fields, mimeType));
         setName(document);
         return document;
     }
@@ -145,11 +148,31 @@ public abstract class Reporter<T> {
     /**
      * Prints the report.
      *
-     * @param objects    the objects to print
      * @param properties the print properties
      */
-    public void print(Iterable<T> objects, PrintProperties properties) {
-        getReport().print(objects, getParameters(false), fields, properties);
+    public void print(PrintProperties properties) {
+        IMReport<T> report = getReport();
+        generate(report, () -> report.print(getObjects(), getParameters(false), fields, properties));
+    }
+
+    /**
+     * Generates a report for a collection of objects to the specified stream.
+     *
+     * @param type  the mime type. If {@code null} the default mime type associated with the report will be used.
+     * @param email if {@code true} indicates that the document will be emailed. Documents generated from templates
+     *              can perform custom formatting
+     * @throws ReportException               for any report error
+     * @throws ArchetypeServiceException     for any archetype service error
+     * @throws UnsupportedOperationException if this operation is not supported
+     */
+    public void generate(String type, boolean email, OutputStream stream) {
+        IMReport<T> report = getReport();
+        if (type == null) {
+            type = report.getDefaultMimeType();
+        }
+        String mimeType = type;
+        Map<String, Object> map = new HashMap<>(getParameters(email));
+        generate(report, () -> report.generate(getObjects(), map, fields, mimeType, stream));
     }
 
     /**
@@ -174,13 +197,13 @@ public abstract class Reporter<T> {
 
     /**
      * Returns the set of parameter types that may be supplied to the report.
-     * <p/>
+     * <p>
      * This suppresses return of the {@link #IS_EMAIL} parameter as this is dealt with automatically.
      *
      * @return the parameter types
      */
     public Set<ParameterType> getParameterTypes() {
-        Set<ParameterType> result = new LinkedHashSet<ParameterType>();
+        Set<ParameterType> result = new LinkedHashSet<>();
         for (ParameterType type : getReport().getParameterTypes()) {
             if (!IS_EMAIL.equals(type.getName())) {
                 result.add(type);
@@ -196,6 +219,16 @@ public abstract class Reporter<T> {
      */
     public void setFields(Map<String, Object> fields) {
         this.fields = fields;
+    }
+
+    /**
+     * Returns the document template.
+     *
+     * @return the document template, or {@code null} if this report isn't generated from a template
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public DocumentTemplate getTemplate() {
+        return null;
     }
 
     /**
@@ -218,7 +251,7 @@ public abstract class Reporter<T> {
     protected Map<String, Object> getParameters(boolean email) {
         Map<String, Object> result;
         if (getReport().hasParameter(IS_EMAIL)) {
-            result = new HashMap<String, Object>();
+            result = new HashMap<>();
             if (parameters != null) {
                 result.putAll(parameters);
             }
@@ -231,15 +264,36 @@ public abstract class Reporter<T> {
 
     /**
      * Updates the document name.
-     * <p/>
+     * <p>
      * This can be used to update the document name from its default value, prior to returning it to the caller.
-     * <p/>
+     * <p>
      * This implementation is a no-op.
      *
      * @param document the document to update
      */
     protected void setName(Document document) {
         // no-op
+    }
+
+    /**
+     * Generates a document, performing performance logging if logging is enabled.
+     *
+     * @param report    the report
+     * @param generator the report generator
+     * @return the generated document
+     */
+    private Document generate(IMReport<T> report, Supplier<Document> generator) {
+        return new ReportRunner(report, object).run(generator);
+    }
+
+    /**
+     * Generates a document, performing performance logging if logging is enabled.
+     *
+     * @param report    the report
+     * @param generator the report generator
+     */
+    private void generate(IMReport<T> report, Runnable generator) {
+        new ReportRunner(report, object).run(generator);
     }
 
 }

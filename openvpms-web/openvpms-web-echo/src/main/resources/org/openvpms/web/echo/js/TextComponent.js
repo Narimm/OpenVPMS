@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 /*
@@ -106,6 +106,19 @@ EchoTextComponent = Core.extend(
                 },
 
                 /**
+                 * Processes a key down event:
+                 * Delegates to data object method.
+                 *
+                 * @param e the DOM Level 2 event, if available
+                 */
+                processKeyDown: function (e) {
+                    e = e ? e : window.event;
+                    var target = EchoDomUtil.getEventTarget(e);
+                    var textComponent = EchoTextComponent.getComponent(target);
+                    textComponent.processKeyDown(e);
+                },
+
+                /**
                  * Processes a key press event:
                  * Initiates an action in the event that the key pressed was the
                  * ENTER key.
@@ -153,6 +166,7 @@ EchoTextComponent = Core.extend(
                 EchoEventProcessor.removeHandler(element, "blur");
                 EchoEventProcessor.removeHandler(element, "focus");
                 EchoEventProcessor.removeHandler(element, "keyup");
+                EchoDomUtil.removeEventListener(element, "keydown", EchoTextComponent.processKeyDown, false);
                 EchoDomUtil.removeEventListener(element, "keypress", EchoTextComponent.processKeyPress, false);
 
                 // Remove any updates to text component that occurred during client/server transaction.
@@ -248,6 +262,7 @@ EchoTextComponent = Core.extend(
                     EchoEventProcessor.addHandler(element, "focus", "EchoTextComponent.processFocus");
                     EchoEventProcessor.addHandler(element, "keyup", "EchoTextComponent.processKeyUp");
 
+                    EchoDomUtil.addEventListener(element, "keydown", EchoTextComponent.processKeyDown, false);
                     EchoDomUtil.addEventListener(element, "keypress", EchoTextComponent.processKeyPress, false);
 
                     EchoDomPropertyStore.setPropertyValue(element, "component", this);
@@ -317,11 +332,40 @@ EchoTextComponent = Core.extend(
                         EchoDomUtil.preventEventDefault(e);
                         return;
                     }
+                    EchoAsyncMonitor.active(); // flag the session as active. See OVPMS-1847
                     if (e.keyCode == 13) {
                         if (!this.multipleLines) {
                             EchoDomUtil.preventEventDefault(e);
                         }
                         this.doAction();
+                    }
+                },
+
+                /**
+                 * Processes a key down event.
+                 * If the key is Ctrl-left arrow, selects the previous {__} if any.
+                 * If the key is Ctrl-right arrow, selects the next {__} if any.
+                 * If there is no token, the browser default behaviour is used.
+                 * Any Ctrl-shift arrow combination is ignored, to allow range selection.
+                 */
+                processKeyDown: function (echoEvent) {
+                    var element = this.getElement();
+                    if (!this.enabled || !EchoClientEngine.verifyInput(element, true)) {
+                        EchoDomUtil.preventEventDefault(echoEvent);
+                        return;
+                    }
+                    if (echoEvent.ctrlKey && !echoEvent.shiftKey) {
+                        if (echoEvent.keyCode == 37) {
+                            // left arrow
+                            if (this.selectToken(element, false)) {
+                                EchoDomUtil.preventEventDefault(echoEvent);
+                            }
+                        } else if (echoEvent.keyCode == 39) {
+                            // right arrow
+                            if (this.selectToken(element, true)) {
+                                EchoDomUtil.preventEventDefault(echoEvent);
+                            }
+                        }
                     }
                 },
 
@@ -436,7 +480,27 @@ EchoTextComponent = Core.extend(
                         return false;
                     }
                 }
-            }
+            },
+
+            /**
+             * Selects the next token.
+             *
+             * @param element the text component
+             * @param forward if true, scan forwards, otherwise scan backwards
+             * @returns true if the token was selected
+             */
+            selectToken: function (element, forward) {
+                var token = '{__}';
+                var current = element.selectionStart;
+                var position = (forward) ? element.value.indexOf(token, current + 1)
+                        : element.value.lastIndexOf(token, current - 1);
+                if (position >= 0) {
+                    element.selectionStart = position;
+                    element.selectionEnd = position + token.length;
+                    return true;
+                }
+                return false;
+            },
         });
 
 /**

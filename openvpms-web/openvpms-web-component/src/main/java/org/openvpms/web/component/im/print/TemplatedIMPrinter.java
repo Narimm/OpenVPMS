@@ -11,24 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.print;
 
-import org.apache.commons.lang.StringUtils;
-import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.report.PrintProperties;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.im.report.TemplatedReporter;
-import org.openvpms.web.component.im.util.LookupNameHelper;
-
-import java.util.Map;
 
 
 /**
@@ -43,21 +38,17 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
      */
     private final Context context;
 
-    /**
-     * Cache of template names, keyed on template archetype short name.
-     */
-    private Map<String, String> templateNames;
-
 
     /**
      * Constructs a {@link TemplatedIMPrinter}.
      *
      * @param reporter the reporter
      * @param context  the context
+     * @param service  the archetype service
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public TemplatedIMPrinter(TemplatedReporter<T> reporter, Context context) {
-        super(reporter);
+    public TemplatedIMPrinter(TemplatedReporter<T> reporter, Context context, IArchetypeService service) {
+        super(reporter, service);
         this.context = context;
         DocumentTemplate template = getTemplate();
         if (template != null) {
@@ -73,22 +64,7 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
      * @return a display name for the objects being printed
      */
     public String getDisplayName() {
-        String result = null;
-        DocumentTemplate template = getReporter().getTemplate();
-        if (template != null) {
-            result = template.getName();
-        }
-        if (StringUtils.isEmpty(result)) {
-            if (templateNames == null) {
-                templateNames = LookupNameHelper.getLookupNames(DocumentArchetypes.DOCUMENT_TEMPLATE, "archetype");
-            }
-            String shortName = getReporter().getShortName();
-            result = templateNames.get(shortName);
-            if (result == null) {
-                result = DescriptorHelper.getDisplayName(shortName);
-            }
-        }
-        return result;
+        return getReporter().getDisplayName();
     }
 
     /**
@@ -98,8 +74,24 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
      * @throws OpenVPMSException for any error
      */
     public String getDefaultPrinter() {
+        String printer;
         DocumentTemplate template = getTemplate();
-        return (template != null) ? getDefaultPrinter(template, context) : null;
+        if (template != null) {
+            printer = getDefaultPrinter(template, context);
+        } else {
+            printer = getDefaultLocationPrinter(context.getLocation());
+        }
+        return printer;
+    }
+
+    /**
+     * Returns the reporter.
+     *
+     * @return the reporter
+     */
+    @Override
+    public TemplatedReporter<T> getReporter() {
+        return (TemplatedReporter<T>) super.getReporter();
     }
 
     /**
@@ -114,15 +106,6 @@ public abstract class TemplatedIMPrinter<T> extends AbstractIMPrinter<T> {
         return getProperties(printer, getTemplate(), context);
     }
 
-    /**
-     * Returns the reporter.
-     *
-     * @return the reporter
-     */
-    @Override
-    protected TemplatedReporter<T> getReporter() {
-        return (TemplatedReporter<T>) super.getReporter();
-    }
 
     /**
      * Returns the document template.

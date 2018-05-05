@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<!-- Created with Jaspersoft Studio version 6.1.0.final using JasperReports Library version 5.5.2  -->
+<!-- 2017-03-19T00:14:10 -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="Patient Mailing Labels" columnCount="3" pageWidth="595" pageHeight="842" columnWidth="185"
+              columnSpacing="8" leftMargin="23" rightMargin="0" topMargin="40" bottomMargin="0"
+              uuid="043921c6-aa79-4ca5-8397-d1185787504d">
+    <property name="ireport.scriptlethandling" value="0"/>
+    <property name="ireport.encoding" value="UTF-8"/>
+    <property name="ireport.zoom" value="2.0"/>
+    <property name="ireport.x" value="0"/>
+    <property name="ireport.y" value="0"/>
+    <property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+    <property name="com.jaspersoft.studio.unit." value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.pageHeight" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.pageWidth" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.topMargin" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.bottomMargin" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.leftMargin" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.rightMargin" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.columnWidth" value="pixel"/>
+    <property name="com.jaspersoft.studio.unit.columnSpacing" value="pixel"/>
+    <import value="net.sf.jasperreports.engine.*"/>
+    <import value="java.util.*"/>
+    <import value="net.sf.jasperreports.engine.data.*"/>
+    <parameter name="dataSource" class="org.openvpms.report.jasper.IMObjectCollectionDataSource"
+               isForPrompting="false"/>
+    <parameter name="IsEmail" class="java.lang.Boolean" isForPrompting="false">
+        <parameterDescription>
+            <![CDATA[If true, indicates the report is being emailed, to enable different formatting]]></parameterDescription>
+        <defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+    </parameter>
+    <queryString>
+        <![CDATA[]]>
+    </queryString>
+    <field name="patient.name" class="java.lang.String"/>
+    <field name="customer.lastName" class="java.lang.String"/>
+    <field name="customer.title" class="java.lang.String"/>
+    <field name="customer.initials" class="java.lang.String"/>
+    <field name="contact.address" class="java.lang.String"/>
+    <field name="contact.suburb" class="java.lang.String"/>
+    <field name="contact.postcode" class="java.lang.String"/>
+    <field name="customer.name" class="java.lang.String"/>
+    <field name="contact.state" class="java.lang.String"/>
+    <sortField name="patient.name"/>
+    <variable name="PatientCount" class="java.lang.Integer" resetType="Group" resetGroup="Patient" calculation="Count"/>
+    <group name="Patient" keepTogether="true">
+        <groupExpression><![CDATA[$F{patient.name}]]></groupExpression>
+        <groupHeader>
+            <band height="60" splitType="Prevent">
+                <property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.FreeLayout"/>
+                <property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+                <textField>
+                    <reportElement x="1" y="13" width="171" height="46" uuid="e669dd6e-49e4-4b84-a9ad-fe8877e9064b">
+                        <property name="local_mesure_unitheight" value="pixel"/>
+                        <property name="com.jaspersoft.studio.unit.height" value="px"/>
+                    </reportElement>
+                    <textElement>
+                        <font fontName="SansSerif" size="10"/>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
+                    <textFieldExpression>
+                        <![CDATA[$F{contact.address} + "\n" + $F{contact.suburb} + " " + $F{contact.state} + " " + $F{contact.postcode}]]></textFieldExpression>
+                </textField>
+                <textField>
+                    <reportElement x="1" y="0" width="171" height="13" uuid="8172bfe0-1f94-465f-aa61-593e07576e61">
+                        <property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+                    </reportElement>
+                    <textElement>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
+                    <textFieldExpression>
+                        <![CDATA[($F{patient.name} != null)? $F{patient.name} +" "+$F{customer.lastName} : $F{customer.name}]]></textFieldExpression>
+                </textField>
+                <line>
+                    <reportElement positionType="FixRelativeToBottom" x="1" y="59" width="171" height="1"
+                                   uuid="845d0b76-6c6a-45f2-8bc6-820e98c253c0">
+                        <property name="local_mesure_unity" value="pixel"/>
+                        <property name="com.jaspersoft.studio.unit.y" value="px"/>
+                    </reportElement>
+                </line>
+            </band>
+        </groupHeader>
+        <groupFooter>
+            <band height="36">
+                <textField isStretchWithOverflow="true">
+                    <reportElement positionType="Float" mode="Opaque" x="1" y="0" width="100" height="6"
+                                   isRemoveLineWhenBlank="true" uuid="27926d0e-6a8a-4f99-aab9-baca3c8c78a6">
+                        <printWhenExpression><![CDATA[$V{Patient_COUNT}>4]]></printWhenExpression>
+                    </reportElement>
+                    <textElement textAlignment="Left" markup="none">
+                        <font size="4"/>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA["***More***"]]></textFieldExpression>
+                </textField>
+                <textField isStretchWithOverflow="true">
+                    <reportElement positionType="Float" mode="Opaque" x="1" y="6" width="100" height="6"
+                                   isRemoveLineWhenBlank="true" uuid="0f826deb-4dc4-460c-a1e8-0370bfccba81">
+                        <property name="local_mesure_unitx" value="pixel"/>
+                        <property name="com.jaspersoft.studio.unit.x" value="px"/>
+                        <printWhenExpression><![CDATA[$V{Patient_COUNT}==1]]></printWhenExpression>
+                    </reportElement>
+                    <textElement textAlignment="Left" markup="html">
+                        <font size="4"/>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA["&nbsp;"]]></textFieldExpression>
+                </textField>
+                <textField isStretchWithOverflow="true">
+                    <reportElement positionType="Float" mode="Opaque" x="1" y="12" width="100" height="6"
+                                   isRemoveLineWhenBlank="true" uuid="b02e58a0-a100-4fbd-b0af-2d57b656f17c">
+                        <property name="com.jaspersoft.studio.unit.x" value="px"/>
+                        <printWhenExpression><![CDATA[$V{Patient_COUNT}<=2]]></printWhenExpression>
+                    </reportElement>
+                    <textElement textAlignment="Left" markup="html">
+                        <font size="4"/>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA["&nbsp;"]]></textFieldExpression>
+                </textField>
+                <textField isStretchWithOverflow="true">
+                    <reportElement positionType="Float" mode="Opaque" x="1" y="18" width="100" height="6"
+                                   isRemoveLineWhenBlank="true" uuid="1e5eb467-9e3a-4107-9724-4cdf9c270902">
+                        <property name="com.jaspersoft.studio.unit.x" value="px"/>
+                        <printWhenExpression><![CDATA[$V{Patient_COUNT}<=3]]></printWhenExpression>
+                    </reportElement>
+                    <textElement textAlignment="Left" markup="html">
+                        <font size="4"/>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA["&nbsp;"]]></textFieldExpression>
+                </textField>
+                <textField isStretchWithOverflow="true">
+                    <reportElement positionType="Float" mode="Opaque" x="1" y="24" width="100" height="6"
+                                   isRemoveLineWhenBlank="true" uuid="dde169dd-6b46-4804-affa-5c4a9a48cc02">
+                        <property name="com.jaspersoft.studio.unit.x" value="px"/>
+                        <printWhenExpression><![CDATA[$V{Patient_COUNT}<=4]]></printWhenExpression>
+                    </reportElement>
+                    <textElement textAlignment="Left" markup="html">
+                        <font size="4"/>
+                        <paragraph lineSpacing="Single"/>
+                    </textElement>
+                    <textFieldExpression><![CDATA["&nbsp;"]]></textFieldExpression>
+                </textField>
+            </band>
+        </groupFooter>
+    </group>
+    <background>
+        <band splitType="Stretch"/>
+    </background>
+    <title>
+        <band splitType="Stretch"/>
+    </title>
+    <columnHeader>
+        <band/>
+    </columnHeader>
+    <detail>
+        <band height="6" splitType="Prevent">
+            <printWhenExpression><![CDATA[$V{Patient_COUNT}<=4]]></printWhenExpression>
+        </band>
+    </detail>
+    <columnFooter>
+        <band height="1">
+            <property name="com.jaspersoft.studio.unit.height" value="pixel"/>
+            <line>
+                <reportElement positionType="FixRelativeToBottom" x="1" y="0" width="171" height="1"
+                               uuid="c0a329ca-168b-4830-b17f-7ebf26d9e63b">
+                    <property name="local_mesure_unity" value="pixel"/>
+                </reportElement>
+            </line>
+        </band>
+    </columnFooter>
+</jasperReport>

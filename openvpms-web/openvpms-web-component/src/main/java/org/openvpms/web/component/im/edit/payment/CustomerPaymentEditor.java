@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.payment;
@@ -27,8 +27,6 @@ import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
-import org.openvpms.web.component.property.Modifiable;
-import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.system.ServiceHelper;
@@ -61,6 +59,11 @@ public class CustomerPaymentEditor extends AbstractCustomerPaymentEditor {
      */
     private final SimpleProperty totalBalance;
 
+    /**
+     * The customer account rules.
+     */
+    private final CustomerAccountRules rules;
+
 
     /**
      * Constructs a {@link CustomerPaymentEditor}.
@@ -83,17 +86,14 @@ public class CustomerPaymentEditor extends AbstractCustomerPaymentEditor {
      */
     public CustomerPaymentEditor(Act act, IMObject parent, LayoutContext context, BigDecimal invoice) {
         super(act, parent, context);
+        rules = ServiceHelper.getBean(CustomerAccountRules.class);
         setInvoiceAmount(invoice);
         previousBalance = createProperty("previousBalance", "customer.payment.previousBalance");
         overdueAmount = createProperty("overdueAmount", "customer.payment.overdue");
         totalBalance = createProperty("totalBalance", "customer.payment.totalBalance");
 
         updateSummary();
-        getProperty("customer").addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                updateSummary();
-            }
-        });
+        getProperty("customer").addModifiableListener(modifiable -> updateSummary());
     }
 
     /**
@@ -115,9 +115,7 @@ public class CustomerPaymentEditor extends AbstractCustomerPaymentEditor {
         BigDecimal previous = BigDecimal.ZERO;
         BigDecimal total = BigDecimal.ZERO;
         if (customer != null) {
-            CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
-
-            total = rules.getBalance(customer);
+            total = getBalance(customer);
             overdue = rules.getOverdueBalance(customer, new Date());
             BigDecimal invoice = getInvoiceAmount();
             previous = total.subtract(overdue).subtract(invoice);
@@ -125,6 +123,16 @@ public class CustomerPaymentEditor extends AbstractCustomerPaymentEditor {
         previousBalance.setValue(previous);
         overdueAmount.setValue(overdue);
         totalBalance.setValue(total);
+    }
+
+    /**
+     * Returns the balance for a customer.
+     *
+     * @param customer the customer
+     * @return the customer balance
+     */
+    protected BigDecimal getBalance(Party customer) {
+        return rules.getBalance(customer);
     }
 
     protected class LayoutStrategy extends ActLayoutStrategy {

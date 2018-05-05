@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -30,7 +30,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.bound.BoundProperty;
 import org.openvpms.web.component.im.edit.act.TemplateProduct;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
@@ -44,12 +44,16 @@ import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
+import org.openvpms.web.workspace.customer.charge.ChargeEditContext;
 import org.openvpms.web.workspace.customer.charge.Quantity;
 
 import java.math.BigDecimal;
@@ -147,22 +151,30 @@ public class EstimateItemEditor extends PriceActItemEditor {
     /**
      * Constructs an {@link EstimateItemEditor}.
      *
-     * @param act     the act to edit
-     * @param parent  the parent act
-     * @param context the layout context
+     * @param act           the act to edit
+     * @param parent        the parent act
+     * @param context       the edit context
+     * @param layoutContext the layout context
      */
-    public EstimateItemEditor(Act act, Act parent, LayoutContext context) {
-        super(act, parent, context);
+    public EstimateItemEditor(Act act, Act parent, ChargeEditContext context, LayoutContext layoutContext) {
+        super(act, parent, context, layoutContext);
         if (!TypeHelper.isA(act, EstimateArchetypes.ESTIMATE_ITEM)) {
             throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
         }
-        setDisableDiscounts(getDisableDiscounts(getLocation()));
         if (act.isNew()) {
             // default the act start time to today
             act.setActivityStartTime(new Date());
         }
 
         lowQuantity = new Quantity(getProperty(LOW_QTY), act, getLayoutContext());
+        if (context.overrideMinimumQuantities()) {
+            lowQuantity.getProperty().addModifiableListener(new ModifiableListener() {
+                @Override
+                public void modified(Modifiable modifiable) {
+                    onLowQuantityChanged();
+                }
+            });
+        }
         highQuantity = new Quantity(getProperty(HIGH_QTY), act, getLayoutContext());
 
         Product product = getProduct();
@@ -343,12 +355,16 @@ public class EstimateItemEditor extends PriceActItemEditor {
      */
     @Override
     public void setProduct(TemplateProduct product, Product template) {
+        setMinimumQuantity(null);
         setTemplate(template);  // NB: template must be set before product
         if (product != null) {
             // clear the quantity. If the quantity changes after the product is set, don't overwrite with that
             // from the template, as it is the dose quantity for the patient weight, unless the low quantity is zero
             setQuantity(ZERO);
             setProduct(product.getProduct());
+            // need to set the minimum quantity after the product, as it can mark the product read-only.
+            // If done before the product, the productModified() callback is never invoked. TODO - brittle
+            setMinimumQuantity(product.getLowQuantity());
             if (isZero(getHighQuantity())) {
                 setLowQuantity(product.getLowQuantity());
                 setHighQuantity(product.getHighQuantity());
@@ -391,16 +407,24 @@ public class EstimateItemEditor extends PriceActItemEditor {
     }
 
     /**
-     * Invoked when layout has completed.
+     * Ensures that the quantity isn't less than the minimum quantity.
+     *
+     * @param validator the validator
+     * @return {@code true} if the quantity isn't less than the minimum quantity, otherwise {@code false}
      */
-    @Override
-    protected void onLayoutCompleted() {
-        super.onLayoutCompleted();
-        ProductParticipationEditor product = getProductEditor();
-        if (product != null) {
-            // register the location in order to determine service ratios
-            product.setLocation(getLocation());
+    protected boolean validateMinimumQuantity(Validator validator) {
+        boolean result = true;
+        BigDecimal minQuantity = getMinimumQuantity();
+        if (!MathRules.isZero(minQuantity) && getLowQuantity().compareTo(minQuantity) < 0) {
+            Product product = getProduct();
+            String name = (product != null) ? product.getName() : null;
+            // product should never be null, due to validation
+            Property property = getProperty(LOW_QTY);
+            String message = Messages.format("customer.charge.minquantity", name, minQuantity);
+            validator.add(property, new ValidatorError(property, message));
+            result = false;
         }
+        return result;
     }
 
     /**
@@ -474,6 +498,13 @@ public class EstimateItemEditor extends PriceActItemEditor {
             updateSellingUnits(product);
         }
 
+        ProductParticipationEditor productEditor = getProductEditor();
+        if (productEditor != null) {
+            // check if the product has been marked read-only by setting the minimum quantity
+            boolean readOnly = needsReadOnlyProduct();
+            productEditor.setReadOnly(readOnly);
+        }
+
         setPrint(true);
         updateLayout(product, showPrint);
 
@@ -532,6 +563,23 @@ public class EstimateItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Invoked when the low quantity changes and the user can override the minimum quantity.
+     * <p/>
+     * This ensures that the minimum quantity is set to the low quantity if it is less, in order for
+     * the estimate to be valid.
+     * <p/>
+     // Setting the low quantity to zero disables the minimum.
+     */
+    private void onLowQuantityChanged() {
+        BigDecimal minQuantity = getMinimumQuantity();
+        BigDecimal quantity = getLowQuantity();
+        if (lowQuantity.getProperty().isValid()
+            && (quantity.compareTo(minQuantity) < 0 || MathRules.isZero(quantity))) {
+            setMinimumQuantity(quantity);
+        }
+    }
+
+    /**
      * Updates the layout if required.
      *
      * @param product   the product. May be {@code null}
@@ -586,8 +634,9 @@ public class EstimateItemEditor extends PriceActItemEditor {
             BigDecimal unitPrice = getLowUnitPrice();
             BigDecimal quantity = getLowQuantity();
             BigDecimal amount = calculateDiscount(unitPrice, quantity);
-            // If discount amount calculates to zero don't update any existing value as may have been manually modified.
-            if (getDisableDiscounts() || amount.compareTo(ZERO) != 0) {
+            // If discount amount calculates to zero don't update any existing value as may have been manually
+            // modified unless discounts are disabled or quantity is zero (in which case amount should be zero).
+            if (disableDiscounts() || !isZero(amount) || isZero(quantity)) {
                 Property discount = getProperty(LOW_DISCOUNT);
                 result = discount.setValue(amount);
             }
@@ -608,8 +657,9 @@ public class EstimateItemEditor extends PriceActItemEditor {
             BigDecimal unitPrice = getHighUnitPrice();
             BigDecimal quantity = getHighQuantity();
             BigDecimal amount = calculateDiscount(unitPrice, quantity);
-            // If discount amount calculates to zero don't update any existing value as may have been manually modified.
-            if (getDisableDiscounts() || amount.compareTo(ZERO) != 0) {
+            // If discount amount calculates to zero don't update any existing value as may have been manually
+            // modified unless discounts are disabled or quantity is zero (in which case amount should be zero).
+            if (disableDiscounts() || !isZero(amount) || isZero(quantity)) {
                 Property discount = getProperty(HIGH_DISCOUNT);
                 result = discount.setValue(amount);
             }
@@ -626,7 +676,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
 
         /**
          * Apply the layout strategy.
-         * <p>
+         * <p/>
          * This renders an object in a {@code Component}, using a factory to create the child components.
          *
          * @param object     the object to apply
@@ -708,7 +758,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
         if (TypeHelper.isA(product, TEMPLATE)) {
             result = TEMPLATE_NODES;
         } else {
-            if (getDisableDiscounts()) {
+            if (disableDiscounts()) {
                 result = new ArchetypeNodes().exclude(LOW_DISCOUNT, HIGH_DISCOUNT);
             }
             if (showPrint) {
@@ -721,4 +771,5 @@ public class EstimateItemEditor extends PriceActItemEditor {
         }
         return result;
     }
+
 }

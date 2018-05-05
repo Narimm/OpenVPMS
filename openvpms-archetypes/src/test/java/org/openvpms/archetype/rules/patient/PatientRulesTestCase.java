@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -19,10 +19,12 @@ package org.openvpms.archetype.rules.patient;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.math.WeightUnits;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -122,7 +124,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
 
         checkOwner(patient, "2006-12-10", customer1); // customer1 closest
         checkOwner(patient, "2007-01-01", customer1); // exact match
-        checkOwner(patient, "2007-01-31", customer1); // exact match
+        checkOwner(patient, "2007-01-31", customer2); // customer1 relationship ended
         checkOwner(patient, "2007-02-01", customer2); // customer2 closest
         checkOwner(patient, "2007-02-02", customer2); // exact match
         checkOwner(patient, "2008-01-01", customer2); // unbounded end time
@@ -191,7 +193,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
 
         checkLocation(patient, "2006-12-10", customer1); // customer1 closest
         checkLocation(patient, "2007-01-01", customer1); // exact match
-        checkLocation(patient, "2007-01-31", customer1); // exact match
+        checkLocation(patient, "2007-01-31", customer2); // customer1 relationship ended
         checkLocation(patient, "2007-02-01", customer2); // customer2 closest
         checkLocation(patient, "2007-02-02", customer2); // exact match
         checkLocation(patient, "2008-01-01", customer2); // unbounded end time
@@ -387,6 +389,25 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         PatientAgeFormatter formatter = new PatientAgeFormatter(getLookupService(), practiceRules, factory);
         String expected = formatter.format(birth, deceased);
         assertEquals(expected, age);
+    }
+
+    /**
+     * Tests the {@link PatientRules#isAllergy(Act)} method.
+     */
+    @Test
+    public void testIsAllergy() {
+        Party patient = TestHelper.createPatient();
+        Entity other = ReminderTestHelper.createAlertType("Z Alert Type 1");
+        Entity allergy = ReminderTestHelper.createAlertType("Z Alert Type 2", "ALLERGY");
+        Entity aggression = ReminderTestHelper.createAlertType("Z Alert Type 3", "AGGRESSION");
+        Act act1 = ReminderTestHelper.createAlert(patient, other);
+        assertFalse(rules.isAllergy(act1));
+
+        Act act2 = ReminderTestHelper.createAlert(patient, allergy);
+        assertTrue(rules.isAllergy(act2));
+
+        Act act3 = ReminderTestHelper.createAlert(patient, aggression);
+        assertFalse(rules.isAllergy(act3));
     }
 
     /**

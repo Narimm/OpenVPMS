@@ -11,18 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.statement;
 
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.AbstractCustomerAccountTest;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -100,7 +102,7 @@ public class AbstractStatementTest extends AbstractCustomerAccountTest {
                 = new StatementActHelper(getArchetypeService());
         Date timestamp = helper.getStatementTimestamp(statementDate);
         Iterable<Act> acts = helper.getActs(customer, timestamp);
-        List<Act> result = new ArrayList<Act>();
+        List<Act> result = new ArrayList<>();
         for (Act act : acts) {
             result.add(act);
         }
@@ -121,11 +123,24 @@ public class AbstractStatementTest extends AbstractCustomerAccountTest {
         Date close = helper.getClosingBalanceTimestamp(customer, statementDate,
                                                        open);
         Iterable<Act> acts = helper.getPostedActs(customer, open, close, true);
-        List<Act> result = new ArrayList<Act>();
+        List<Act> result = new ArrayList<>();
         for (Act act : acts) {
             result.add(act);
         }
         return result;
+    }
+
+    /**
+     * Verifies a debit adjustment matches that expected.
+     *
+     * @param act               the act to verify
+     * @param amount            the expected amount
+     * @param accountFeeMessage the account fee message
+     */
+    protected void checkDebitAdjust(Act act, BigDecimal amount, String accountFeeMessage) {
+        checkAct(act, CustomerAccountArchetypes.DEBIT_ADJUST, amount);
+        ActBean bean = new ActBean(act);
+        assertEquals(accountFeeMessage, bean.getString("notes"));
     }
 
     /**

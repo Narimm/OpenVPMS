@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -59,6 +59,8 @@
                 </propertyList>
             </assertion>
         </node>
+        <node name="skipIfMissing" path="/details/skipIfMissing" type="java.lang.Boolean" minCardinality="0"
+              defaultValue="false()"/>
         <node name="zeroPrice" path="/details/zeroPrice" type="java.lang.Boolean" minCardinality="0"
               defaultValue="false()"/>
         <node name="print" path="/details/print" type="java.lang.Boolean" minCardinality="0" defaultValue="true()"/>

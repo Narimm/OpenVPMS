@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -20,10 +20,16 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.hl7.patient.PatientContext;
+import org.openvpms.smartflow.client.FlowSheetException;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.HospitalizationService;
+import org.openvpms.smartflow.i18n.FlowSheetMessages;
+import org.openvpms.smartflow.model.Anesthetic;
+import org.openvpms.smartflow.model.Anesthetics;
+import org.openvpms.smartflow.model.Form;
 import org.openvpms.web.echo.button.CheckBox;
 import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.CheckBoxFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -32,9 +38,13 @@ import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Flow Sheets Reports Import dialog.
- * <p/>
+ * <p>
  * Imports Smart Flow Sheet reports associated with a visit, and links them to the visit.
  *
  * @author Tim Anderson
@@ -47,44 +57,49 @@ public class FlowSheetReportsDialog extends PopupDialog {
     private final PatientContext context;
 
     /**
+     * The forms.
+     */
+    private final List<Form> forms;
+
+    /**
+     * The anesthetics.
+     */
+    private final List<Anesthetic> anesthetics;
+
+    /**
      * Determines if the medical records report is imported.
      */
-    private final CheckBox medicalRecords;
+    private final CheckBox medicalRecordsCheckBox;
 
     /**
-     * Determines if the inventory report is imported.
+     * Determines if the billing report is imported.
      */
-    private final CheckBox inventory;
+    private final CheckBox billingCheckBox;
 
     /**
-     * Determines if the tech notes report is imported.
+     * Determines if the notes report is imported.
      */
-    private final CheckBox techNotes;
+    private final CheckBox notesCheckBox;
 
     /**
      * Determines if the flow sheet report is imported.
      */
-    private final CheckBox flowSheet;
+    private final CheckBox flowSheetCheckBox;
 
     /**
-     * Medical records report label.
+     * Determines if the forms reports are imported.
      */
-    private static final String MEDICAL = "patient.record.flowsheet.import.medical";
+    private final CheckBox formsCheckBox;
 
     /**
-     * Inventory report label.
+     * Determines if the anesthetics report is imported.
      */
-    private static final String INVENTORY = "patient.record.flowsheet.import.inventory";
+    private final CheckBox anestheticsCheckBox;
 
     /**
-     * Tech notes report label.
+     * The hospitalization service.
      */
-    private static final String TECH_NOTES = "patient.record.flowsheet.import.technotes";
-
-    /**
-     * Flow sheet report label.
-     */
-    private static final String FLOW_SHEET = "patient.record.flowsheet.import.flowsheet";
+    private HospitalizationService service;
 
     /**
      * Constructs a {@link FlowSheetReportsDialog}.
@@ -103,19 +118,35 @@ public class FlowSheetReportsDialog extends PopupDialog {
      */
     public FlowSheetReportsDialog(PatientContext context, boolean skip) {
         super(Messages.get("patient.record.flowsheet.import.title"), "MessageDialog", (skip) ? OK_SKIP : OK_CANCEL);
+        setModal(true);
         this.context = context;
+        FlowSheetServiceFactory factory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
+        service = factory.getHospitalizationService(context.getLocation());
+        forms = getForms(context);
+        anesthetics = getAnesthetics(context);
         ActionListener listener = new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
-                boolean enable = medicalRecords.isSelected() || inventory.isSelected() || techNotes.isSelected()
-                                 || flowSheet.isSelected();
+                boolean enable = medicalRecordsCheckBox.isSelected() || billingCheckBox.isSelected()
+                                 || notesCheckBox.isSelected() || flowSheetCheckBox.isSelected()
+                                 || formsCheckBox.isSelected() || anestheticsCheckBox.isSelected();
                 getButtons().setEnabled(OK_ID, enable);
             }
         };
-        medicalRecords = CheckBoxFactory.create(MEDICAL, true, listener);
-        inventory = CheckBoxFactory.create(INVENTORY, true, listener);
-        techNotes = CheckBoxFactory.create(TECH_NOTES, true, listener);
-        flowSheet = CheckBoxFactory.create(FLOW_SHEET, true, listener);
+        medicalRecordsCheckBox = createCheckBox(FlowSheetMessages.medicalRecordsReportName(), listener);
+        billingCheckBox = createCheckBox(FlowSheetMessages.billingReportName(), listener);
+        notesCheckBox = createCheckBox(FlowSheetMessages.notesReportName(), listener);
+        flowSheetCheckBox = createCheckBox(FlowSheetMessages.flowSheetReportName(), listener);
+        formsCheckBox = createCheckBox(Messages.get("patient.record.flowsheet.import.forms"), listener);
+        if (forms.isEmpty()) {
+            formsCheckBox.setSelected(false);
+            formsCheckBox.setEnabled(false);
+        }
+        anestheticsCheckBox = createCheckBox(FlowSheetMessages.anaestheticReportName(), listener);
+        if (anesthetics.isEmpty()) {
+            anestheticsCheckBox.setSelected(false);
+            anestheticsCheckBox.setEnabled(false);
+        }
     }
 
     /**
@@ -124,44 +155,92 @@ public class FlowSheetReportsDialog extends PopupDialog {
      */
     @Override
     protected void onOK() {
-        FlowSheetServiceFactory factory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
-        HospitalizationService service = factory.getHospitalisationService(context.getLocation());
-        if (medicalRecords.isSelected()) {
-            service.saveMedicalRecords(getName(MEDICAL), context);
+        try {
+            if (medicalRecordsCheckBox.isSelected()) {
+                service.saveMedicalRecords(context);
+            }
+            if (billingCheckBox.isSelected()) {
+                service.saveBillingReport(context);
+            }
+            if (notesCheckBox.isSelected()) {
+                service.saveNotesReport(context);
+            }
+            if (flowSheetCheckBox.isSelected()) {
+                service.saveFlowSheetReport(context);
+            }
+            if (formsCheckBox.isSelected()) {
+                for (Form form : forms) {
+                    service.saveFormReport(context, form);
+                }
+            }
+            if (anestheticsCheckBox.isSelected()) {
+                for (Anesthetic anesthetic : anesthetics) {
+                    service.saveAnestheticReports(context, anesthetic);
+                }
+            }
+            super.onOK();
+        } catch (FlowSheetException exception) {
+            ErrorHandler.getInstance().error(exception.getMessage(), exception);
         }
-        if (inventory.isSelected()) {
-            service.saveInventoryReport(getName(INVENTORY), context);
-        }
-        if (techNotes.isSelected()) {
-            service.saveTechNotesReport(getName(TECH_NOTES), context);
-        }
-        if (flowSheet.isSelected()) {
-            service.saveFlowSheetReport(getName(FLOW_SHEET), context);
-        }
-        super.onOK();
     }
 
     /**
      * Lays out the component prior to display.
      * This implementation is a no-op.
-     * +
      */
     @Override
     protected void doLayout() {
         Label label = LabelFactory.create("patient.record.flowsheet.import.message", Styles.BOLD);
-        Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, label, medicalRecords, inventory, techNotes,
-                                             flowSheet);
+        Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, label, medicalRecordsCheckBox, billingCheckBox,
+                                             notesCheckBox, flowSheetCheckBox, formsCheckBox, anestheticsCheckBox);
         getLayout().add(ColumnFactory.create(Styles.LARGE_INSET, column));
     }
 
     /**
-     * Formats a report name.
+     * Returns the anaesthetics for a patient.
      *
-     * @param key the resource bundle key for the report name
-     * @return the report name
+     * @param context the patient context
+     * @return the anaesthetics
+     * @throws FlowSheetException if the sheet cannot be retrieved
      */
-    private String getName(String key) {
-        return Messages.format("patient.record.flowsheet.import.name", Messages.get(key));
+    private List<Anesthetic> getAnesthetics(PatientContext context) {
+        List<Anesthetic> result = Collections.emptyList();
+        Anesthetics anesthetics = service.getAnesthetics(context.getPatient(), context.getVisit());
+        if (anesthetics.getAnesthetics() != null) {
+            result = anesthetics.getAnesthetics();
+        }
+        return result;
+    }
+
+    /**
+     * Returns the forms for a patient that have PDF content.
+     *
+     * @param context the patient context
+     * @return the forms
+     */
+    private List<Form> getForms(PatientContext context) {
+        List<Form> result = new ArrayList<>();
+        List<Form> forms = service.getForms(context.getPatient(), context.getVisit());
+        for (Form form : forms) {
+            if (!form.isDeleted() && form.isFinalized()) {
+                result.add(form);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Creates a new check box, initially selected.
+     *
+     * @param text     the text
+     * @param listener the listener
+     * @return a new check box
+     */
+    private CheckBox createCheckBox(String text, ActionListener listener) {
+        CheckBox checkBox = CheckBoxFactory.create(true);
+        checkBox.setText(text);
+        checkBox.addActionListener(listener);
+        return checkBox;
     }
 
 }

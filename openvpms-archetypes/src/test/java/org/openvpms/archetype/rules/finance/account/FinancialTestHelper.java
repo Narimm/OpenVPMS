@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -29,7 +29,9 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -120,9 +122,23 @@ public class FinancialTestHelper extends TestHelper {
                                                           Product product, BigDecimal quantity, BigDecimal fixedPrice,
                                                           BigDecimal unitPrice, BigDecimal tax, String status) {
         return createCharges(INVOICE, INVOICE_ITEM, customer, patient, clinician, product, quantity, fixedPrice,
-                             unitPrice, tax, status);
+                             unitPrice, BigDecimal.ZERO, tax, status);
     }
 
+    /**
+     * Helper to create a new <em>act.customerAccountChargesInvoice</em>
+     * with multiple <em>act.customerAccountInvoiceItem</em>s.
+     *
+     * @param customer  the customer
+     * @param clinician the clinician. May be {@code null}
+     * @param status    the act status
+     * @param items     the invoice items
+     * @return a list containing the invoice act and its items
+     */
+    public static List<FinancialAct> createChargesInvoice(Party customer, User clinician, String status,
+                                                          FinancialAct... items) {
+        return createCharges(INVOICE, customer, clinician, status, items);
+    }
 
     /**
      * Helper to create a new <em>act.customerAccountChargesCounter</em>
@@ -393,6 +409,29 @@ public class FinancialTestHelper extends TestHelper {
     }
 
     /**
+     * Helper to create an invoice item.
+     *
+     * @param date       the date
+     * @param patient    the patient. May be {@code null}
+     * @param clinician  the clinician. May be {@code null}
+     * @param product    the product. May be {@code null}
+     * @param quantity   the quantity
+     * @param fixedPrice the fixed price
+     * @param unitPrice  the unit price
+     * @param discount   the discount
+     * @param tax        the tax
+     * @return a new charge item
+     */
+    public static FinancialAct createInvoiceItem(Date date, Party patient, User clinician, Product product,
+                                                 BigDecimal quantity, BigDecimal fixedPrice, BigDecimal unitPrice,
+                                                 BigDecimal discount, BigDecimal tax) {
+        FinancialAct act = createChargeItem(INVOICE_ITEM, patient, clinician, product, quantity, fixedPrice, unitPrice,
+                                            discount, tax);
+        act.setActivityStartTime(date);
+        return act;
+    }
+
+    /**
      * Helper to create a charge item.
      *
      * @param itemShortName the charge item short name
@@ -403,7 +442,7 @@ public class FinancialTestHelper extends TestHelper {
      */
     public static FinancialAct createChargeItem(String itemShortName, Party patient, Product product,
                                                 BigDecimal unitPrice) {
-        return createChargeItem(itemShortName, patient, null, product, ONE, unitPrice, ZERO, ZERO);
+        return createChargeItem(itemShortName, patient, null, product, ONE, unitPrice, ZERO, BigDecimal.ZERO, ZERO);
     }
 
     /**
@@ -416,27 +455,30 @@ public class FinancialTestHelper extends TestHelper {
      * @param quantity      the quantity
      * @param fixedPrice    the fixed price
      * @param unitPrice     the unit price
+     * @param discount      the discount
      * @param tax           the tax
      * @return a new charge item
      */
     public static FinancialAct createChargeItem(String itemShortName, Party patient, User clinician, Product product,
                                                 BigDecimal quantity, BigDecimal fixedPrice, BigDecimal unitPrice,
-                                                BigDecimal tax) {
+                                                BigDecimal discount, BigDecimal tax) {
         FinancialAct item = (FinancialAct) create(itemShortName);
-        ActBean itemBean = new ActBean(item);
+        ActBean bean = new ActBean(item);
         if (patient != null) {
-            itemBean.addNodeParticipation("patient", patient);
+            bean.addNodeParticipation("patient", patient);
         }
         if (clinician != null) {
-            itemBean.addNodeParticipation("clinician", clinician);
+            bean.addNodeParticipation("clinician", clinician);
         }
         if (product != null) {
-            itemBean.addNodeParticipation("product", product);
+            bean.addNodeParticipation("product", product);
         }
-        itemBean.setValue("quantity", quantity);
-        itemBean.setValue("fixedPrice", fixedPrice);
-        itemBean.setValue("unitPrice", unitPrice);
-        itemBean.setValue("tax", tax);
+        bean.setValue("quantity", quantity);
+        bean.setValue("fixedPrice", fixedPrice);
+        bean.setValue("unitPrice", unitPrice);
+        bean.setValue("discount", discount);
+        bean.setValue("tax", tax);
+        bean.deriveValues();
         return item;
     }
 
@@ -466,24 +508,25 @@ public class FinancialTestHelper extends TestHelper {
     public static Lookup createAccountType(int paymentTerms, DateUnits paymentUom, BigDecimal accountFeeAmount,
                                            int accountFeeDays) {
         return createAccountType(paymentTerms, paymentUom, accountFeeAmount, AccountType.FeeType.FIXED, accountFeeDays,
-                                 ZERO);
+                                 ZERO, "Accounting Fee");
     }
 
     /**
      * Helper to create and save a new <em>lookup.customerAccountType</em>
      * classification.
      *
-     * @param paymentTerms     the payment terms
-     * @param paymentUom       the payment units
-     * @param accountFeeAmount the account fee
-     * @param accountFeeType   the account fee type
-     * @param accountFeeDays   the account fee days
-     * @param feeBalance       the minimum balance when an account fee applies
+     * @param paymentTerms      the payment terms
+     * @param paymentUom        the payment units
+     * @param accountFeeAmount  the account fee
+     * @param accountFeeType    the account fee type
+     * @param accountFeeDays    the account fee days
+     * @param feeBalance        the minimum balance when an account fee applies
+     * @param accountFeeMessage the account fee message. May be {@code null}
      * @return a new classification
      */
     public static Lookup createAccountType(int paymentTerms, DateUnits paymentUom, BigDecimal accountFeeAmount,
                                            AccountType.FeeType accountFeeType, int accountFeeDays,
-                                           BigDecimal feeBalance) {
+                                           BigDecimal feeBalance, String accountFeeMessage) {
         Lookup lookup = (Lookup) create("lookup.customerAccountType");
         IMObjectBean bean = new IMObjectBean(lookup);
         bean.setValue("code", "XCUSTOMER_ACCOUNT_TYPE" + Math.abs(new Random().nextInt()));
@@ -493,6 +536,7 @@ public class FinancialTestHelper extends TestHelper {
         bean.setValue("accountFeeAmount", accountFeeAmount);
         bean.setValue("accountFeeDays", accountFeeDays);
         bean.setValue("accountFeeBalance", feeBalance);
+        bean.setValue("accountFeeMessage", accountFeeMessage);
         save(lookup);
         return lookup;
     }
@@ -522,6 +566,26 @@ public class FinancialTestHelper extends TestHelper {
     }
 
     /**
+     * Creates a new payment/refund act item.
+     *
+     * @param itemShortName the item short name
+     * @param amount        the act amount
+     * @return the payment/refund item
+     */
+    public static FinancialAct createPaymentRefundItem(String itemShortName, BigDecimal amount) {
+        FinancialAct item = (FinancialAct) create(itemShortName);
+        ActBean itemBean = new ActBean(item);
+        itemBean.setValue("amount", amount);
+        if (itemBean.isA(PAYMENT_CASH, REFUND_CASH)) {
+            itemBean.setValue("roundedAmount", amount);
+            if (itemBean.isA(PAYMENT_CASH)) {
+                itemBean.setValue("tendered", amount);
+            }
+        }
+        return item;
+    }
+
+    /**
      * Helper to create a charges act.
      *
      * @param shortName     the act short name
@@ -535,7 +599,7 @@ public class FinancialTestHelper extends TestHelper {
      */
     private static List<FinancialAct> createCharges(String shortName, String itemShortName, BigDecimal amount,
                                                     Party customer, Party patient, Product product, String status) {
-        return createCharges(shortName, itemShortName, customer, patient, null, product, ONE, ZERO, amount, ZERO,
+        return createCharges(shortName, itemShortName, customer, patient, null, product, ONE, ZERO, amount, ZERO, ZERO,
                              status);
     }
 
@@ -551,20 +615,48 @@ public class FinancialTestHelper extends TestHelper {
      * @param quantity      the quantity
      * @param fixedPrice    the fixed price
      * @param unitPrice     the unit price
+     * @param discount      the discount
      * @param tax           the tax
-     * @param status        the act status       @return a list containing the charges act and its item
+     * @param status        the act status
+     * @return a list containing the charges act and its item
      */
     private static List<FinancialAct> createCharges(String shortName, String itemShortName, Party customer,
                                                     Party patient, User clinician, Product product, BigDecimal quantity,
-                                                    BigDecimal fixedPrice, BigDecimal unitPrice, BigDecimal tax,
-                                                    String status) {
-        BigDecimal amount = fixedPrice.add(unitPrice.multiply(quantity));
-        FinancialAct act = createAct(shortName, amount, customer, clinician, status);
-        ActBean bean = new ActBean(act);
+                                                    BigDecimal fixedPrice, BigDecimal unitPrice, BigDecimal discount,
+                                                    BigDecimal tax, String status) {
         FinancialAct item = createChargeItem(itemShortName, patient, clinician, product, quantity, fixedPrice,
-                                             unitPrice, tax);
-        bean.addNodeRelationship("items", item);
-        return Arrays.asList(act, item);
+                                             unitPrice, discount, tax);
+        return createCharges(shortName, customer, clinician, status, item);
+    }
+
+    /**
+     * Helper to create a charges act.
+     *
+     * @param shortName the act short name
+     * @param customer  the customer
+     * @param clinician the clinician. May be {@code null}
+     * @param status    the act status
+     * @param items     the charge items
+     * @return a list containing the charges act and its items
+     */
+    private static List<FinancialAct> createCharges(String shortName, Party customer, User clinician, String status,
+                                                    FinancialAct... items) {
+        List<FinancialAct> result = new ArrayList<>();
+        BigDecimal amount = BigDecimal.ZERO;
+        BigDecimal tax = BigDecimal.ZERO;
+        FinancialAct act = createAct(shortName, amount, customer, clinician, status);
+        result.add(act);
+        ActBean chargeBean = new ActBean(act);
+        for (FinancialAct item : items) {
+            IMObjectBean itemBean = new IMObjectBean(item);
+            tax = tax.add(itemBean.getBigDecimal("tax", BigDecimal.ZERO));
+            amount = amount.add(itemBean.getBigDecimal("total", BigDecimal.ZERO));
+            result.add(item);
+            chargeBean.addNodeRelationship("items", item);
+        }
+        chargeBean.setValue("amount", amount);
+        chargeBean.setValue("tax", tax);
+        return result;
     }
 
     /**
@@ -626,26 +718,6 @@ public class FinancialTestHelper extends TestHelper {
         }
         bean.addNodeRelationship("items", item);
         return Arrays.asList(act, item);
-    }
-
-    /**
-     * Creates a new payment/refund act item.
-     *
-     * @param itemShortName the item short name
-     * @param amount        the act amount
-     * @return the payment/refund item
-     */
-    public static FinancialAct createPaymentRefundItem(String itemShortName, BigDecimal amount) {
-        FinancialAct item = (FinancialAct) create(itemShortName);
-        ActBean itemBean = new ActBean(item);
-        itemBean.setValue("amount", amount);
-        if (itemBean.isA(PAYMENT_CASH, REFUND_CASH)) {
-            itemBean.setValue("roundedAmount", amount);
-            if (itemBean.isA(PAYMENT_CASH)) {
-                itemBean.setValue("tendered", amount);
-            }
-        }
-        return item;
     }
 
     /**

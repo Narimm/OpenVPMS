@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -102,6 +102,16 @@ public class PatientArchetypes {
     public static String CLINICAL_PROBLEM_ITEM = "actRelationship.patientClinicalProblemItem";
 
     /**
+     * Patient clinical addendum act short name.
+     */
+    public static final String CLINICAL_ADDENDUM = "act.patientClinicalAddendum";
+
+    /**
+     * Clinical item act relationship short name.
+     */
+    public static final String CLINICAL_ITEM_ADDENDUM = "actRelationship.patientClinicalItemAddendum";
+
+    /**
      * Patient weight act short name.
      */
     public static final String PATIENT_WEIGHT = "act.patientWeight";
@@ -147,6 +157,11 @@ public class PatientArchetypes {
     public static final String ALERT = "act.patientAlert";
 
     /**
+     * Patient alert type archetype.
+     */
+    public static final String ALERT_TYPE = "entity.patientAlertType";
+
+    /**
      * Patient prescription act short name.
      */
     public static final String PRESCRIPTION = "act.patientPrescription";
@@ -160,4 +175,19 @@ public class PatientArchetypes {
      * Customer note act short name.
      */
     public static final String CUSTOMER_NOTE = "act.patientCustomerNote";
+
+    /**
+     * Microchip short name.
+     */
+    public static final String MICROCHIP = "entityIdentity.microchip";
+
+    /**
+     * Pet tag archetype.
+     */
+    public static final String PET_TAG = "entityIdentity.petTag";
+
+    /**
+     * VeNom diagnosis archetype.
+     */
+    public static final String DIAGNOSIS_VENOM = "lookup.diagnosisVeNom";
 }

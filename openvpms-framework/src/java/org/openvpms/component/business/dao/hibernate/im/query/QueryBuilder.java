@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -37,7 +37,7 @@ import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.ExistsConstraint;
 import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IdConstraint;
-import org.openvpms.component.system.common.query.LongNameConstraint;
+import org.openvpms.component.system.common.query.IsAConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.NotConstraint;
@@ -318,57 +318,6 @@ public class QueryBuilder {
     }
 
     /**
-     * Process an archetype constraint where the reference model name, entity
-     * name and concept name are specified.
-     *
-     * @param constraint the constraint
-     * @param context    the hql context
-     */
-    private void process(LongNameConstraint constraint, QueryContext context) {
-        boolean popJoin = context.pushTypeSet(getTypeSet(constraint));
-
-        // process the common portion of the archetype constraint
-        processArchetypeConstraint(constraint, context);
-
-        // pop the stack when we have finished processing this constraint
-        context.popTypeSet(popJoin);
-    }
-
-    /**
-     * Process an common portion of this archetype constraint
-     *
-     * @param constraint the constraint
-     * @param context    the hql context
-     */
-    private void processArchetypeConstraint(LongNameConstraint constraint, QueryContext context) {
-        String alias = constraint.getAlias();
-        String entityName = constraint.getEntityName();
-        String conceptName = constraint.getConceptName();
-
-        StringBuilder shortName = new StringBuilder();
-        if (StringUtils.isEmpty(entityName)) {
-            shortName.append("*.");
-        } else {
-            shortName.append(entityName);
-            shortName.append(".");
-        }
-        if (StringUtils.isEmpty(conceptName)) {
-            shortName.append("*");
-        } else {
-            shortName.append(conceptName);
-        }
-        context.addConstraint(alias, "archetypeId.shortName", RelationalOp.EQ, shortName.toString().replace("*", "%"));
-        // process the active flag
-        addActiveConstraint(constraint, context);
-
-        // process the embedded constraints.
-        for (IConstraint oc : constraint.getConstraints()) {
-            processConstraint(oc, context);
-        }
-
-    }
-
-    /**
      * Process the embedded constraints using the logical 'or' operator
      *
      * @param constraint the or constraint
@@ -646,7 +595,7 @@ public class QueryBuilder {
 
     /**
      * Iterate through all the {@link ArchetypeDescriptor} instances and return each {@link NodeDescriptor}.
-     * <p/>
+     * <p>
      * The only requirement is that the path and the type are same for every archetype descriptor
      *
      * @param descriptors the set of archetype descriptors
@@ -691,8 +640,6 @@ public class QueryBuilder {
             return TypeSet.create((ArchetypeIdConstraint) constraint, cache, assembler);
         } else if (constraint instanceof ShortNameConstraint) {
             return TypeSet.create((ShortNameConstraint) constraint, cache, assembler);
-        } else if (constraint instanceof LongNameConstraint) {
-            return TypeSet.create((LongNameConstraint) constraint, cache, assembler);
         }
         throw new QueryBuilderException(
                 QueryBuilderException.ErrorCode.ConstraintTypeNotSupported,
@@ -710,8 +657,6 @@ public class QueryBuilder {
             processArchetypeConstraint((ArchetypeIdConstraint) constraint, context);
         } else if (constraint instanceof ShortNameConstraint) {
             processArchetypeConstraint((ShortNameConstraint) constraint, context);
-        } else if (constraint instanceof LongNameConstraint) {
-            processArchetypeConstraint((LongNameConstraint) constraint, context);
         } else if (constraint instanceof ArchetypeConstraint) {
             processArchetypeConstraint((ArchetypeConstraint) constraint, context);
         } else {
@@ -743,6 +688,32 @@ public class QueryBuilder {
     }
 
     /**
+     * Process an {@link IsAConstraint}.
+     *
+     * @param constraint the constraint
+     * @param context    the query context
+     */
+    private void process(IsAConstraint constraint, QueryContext context) {
+        String name = constraint.getName();
+        String[] shortNames = constraint.getShortNames();
+
+        boolean or = false;
+        if (shortNames.length > 1) {
+            context.pushLogicalOperator(LogicalOperator.OR);
+            or = true;
+        }
+
+        for (String shortName : shortNames) {
+            String value = shortName.replace('*', '%'); // convert wildcards to SQL
+            context.addConstraint(getAliasOrQualifiedName(name, context), "archetypeId.shortName", RelationalOp.EQ,
+                                  value);
+        }
+        if (or) {
+            context.popLogicalOperator();
+        }
+    }
+
+    /**
      * Process the appropriate constraint
      *
      * @param constraint the constraint to process
@@ -756,8 +727,6 @@ public class QueryBuilder {
             process((ObjectRefConstraint) constraint, context);
         } else if (constraint instanceof ArchetypeIdConstraint) {
             process((ArchetypeIdConstraint) constraint, context);
-        } else if (constraint instanceof LongNameConstraint) {
-            process((LongNameConstraint) constraint, context);
         } else if (constraint instanceof ShortNameConstraint) {
             process((ShortNameConstraint) constraint, context);
         } else if (constraint instanceof CollectionNodeConstraint) {
@@ -784,6 +753,8 @@ public class QueryBuilder {
             process((NotConstraint) constraint, context);
         } else if (constraint instanceof ExistsConstraint) {
             process((ExistsConstraint) constraint, context);
+        } else if (constraint instanceof IsAConstraint) {
+            process((IsAConstraint) constraint, context);
         } else {
             throw new QueryBuilderException(QueryBuilderException.ErrorCode.ConstraintTypeNotSupported,
                                             constraint.getClass().getName());
@@ -831,8 +802,8 @@ public class QueryBuilder {
      * @param name    the name. May be a type alias or node name
      * @param context the query context
      * @return the property corresponding to <tt>name</tt> prefixed with
-     *         the type alias if <tt>name</tt> refers to a node, or
-     *         the <tt>name</tt> unchanged if it refers to a type alias
+     * the type alias if <tt>name</tt> refers to a node, or
+     * the <tt>name</tt> unchanged if it refers to a type alias
      */
     private String getAliasOrQualifiedName(String name, QueryContext context) {
         String property;

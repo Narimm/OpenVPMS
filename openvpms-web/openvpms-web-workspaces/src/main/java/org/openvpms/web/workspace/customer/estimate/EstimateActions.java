@@ -11,13 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.web.component.im.edit.ActActions;
+import org.openvpms.web.component.im.edit.FinancialActions;
 
 import static org.openvpms.archetype.rules.act.ActStatus.CANCELLED;
 import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
@@ -30,7 +30,14 @@ import static org.openvpms.archetype.rules.act.EstimateActStatus.INVOICED;
  *
  * @author Tim Anderson
  */
-public class EstimateActions extends ActActions<Act> {
+public class EstimateActions extends FinancialActions<Act> {
+
+    /**
+     * Default constructor.
+     */
+    public EstimateActions() {
+        super();
+    }
 
     /**
      * Determines if an estimate can be edited.
@@ -78,5 +85,16 @@ public class EstimateActions extends ActActions<Act> {
     public boolean canInvoice(Act act) {
         String status = act.getStatus();
         return !CANCELLED.equals(status) && !INVOICED.equals(status);
+    }
+
+    /**
+     * Determines if an act is unfinalised, for the purposes of printing.
+     *
+     * @param act the act
+     * @return {@code true} if the act is unfinalised, otherwise {@code false}
+     */
+    @Override
+    public boolean isUnfinalised(Act act) {
+        return !INVOICED.equals(act.getStatus()) || !super.isUnfinalised(act);
     }
 }

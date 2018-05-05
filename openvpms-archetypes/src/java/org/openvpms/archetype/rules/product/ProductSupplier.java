@@ -1,29 +1,27 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
 
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
@@ -32,10 +30,9 @@ import java.util.Date;
 
 
 /**
- * Wrapper for <em>entityRelationship.productSupplier</em> relationships.
+ * Wrapper for <em>entityLink.productSupplier</em> relationships.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ProductSupplier {
 
@@ -46,29 +43,19 @@ public class ProductSupplier {
 
 
     /**
-     * Creates a new <tt>ProductSupplier</em>.
-     *
-     * @param relationship the relationship
-     */
-    public ProductSupplier(EntityRelationship relationship) {
-        this(relationship, ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Creates a new <tt>ProductSupplier</em>.
+     * Constructs a {@link ProductSupplier}.
      *
      * @param relationship the relationship
      * @param service      the archetype service
      */
-    public ProductSupplier(EntityRelationship relationship,
-                           IArchetypeService service) {
+    public ProductSupplier(IMObjectRelationship relationship, IArchetypeService service) {
         bean = new IMObjectBean(relationship, service);
     }
 
     /**
      * Returns the product.
      *
-     * @return the product, or <tt>null</tt> if none is found
+     * @return the product, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Product getProduct() {
@@ -78,7 +65,7 @@ public class ProductSupplier {
     /**
      * Returns a reference to the product.
      *
-     * @return the product reference, or <tt>null</tt> if none is found
+     * @return the product reference, or {@code null} if none is found
      */
     public IMObjectReference getProductRef() {
         return getRelationship().getSource();
@@ -87,7 +74,7 @@ public class ProductSupplier {
     /**
      * Returns the supplier.
      *
-     * @return the supplier, or <tt>null</tt> if none is found
+     * @return the supplier, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getSupplier() {
@@ -97,7 +84,7 @@ public class ProductSupplier {
     /**
      * Returns a reference to the suplier.
      *
-     * @return the supplier reference, or <tt>null</tt> if none is found
+     * @return the supplier reference, or {@code null} if none is found
      */
     public IMObjectReference getSupplierRef() {
         return getRelationship().getTarget();
@@ -142,7 +129,7 @@ public class ProductSupplier {
     /**
      * Sets the reorder code.
      *
-     * @param code the reorder code. May be <tt>null</tt>
+     * @param code the reorder code. May be {@code null}
      */
     public void setReorderCode(String code) {
         bean.setValue("reorderCode", code);
@@ -151,7 +138,7 @@ public class ProductSupplier {
     /**
      * Returns the reorder code.
      *
-     * @return the reorder code. May be <tt>null</tt>
+     * @return the reorder code. May be {@code null}
      */
     public String getReorderCode() {
         return bean.getString("reorderCode");
@@ -160,7 +147,7 @@ public class ProductSupplier {
     /**
      * Sets the reorder description.
      *
-     * @param description the reorder description. May be <tt>null</tt>
+     * @param description the reorder description. May be {@code null}
      */
     public void setReorderDescription(String description) {
         bean.setValue("reorderDescription", description);
@@ -169,7 +156,7 @@ public class ProductSupplier {
     /**
      * Returns the reorder description.
      *
-     * @return the reorder description. May be <tt>null</tt>
+     * @return the reorder description. May be {@code null}
      */
     public String getReorderDescription() {
         return bean.getString("reorderDescription");
@@ -178,7 +165,7 @@ public class ProductSupplier {
     /**
      * Sets the bar code.
      *
-     * @param barCode the bar code. May be <tt>null</tt>
+     * @param barCode the bar code. May be {@code null}
      */
     public void setBarCode(String barCode) {
         bean.setValue("barCode", barCode);
@@ -187,7 +174,7 @@ public class ProductSupplier {
     /**
      * Returns the bar code.
      *
-     * @return the bar code. May be <tt>null</tt>
+     * @return the bar code. May be {@code null}
      */
     public String getBarCode() {
         return bean.getString("barCode");
@@ -214,7 +201,7 @@ public class ProductSupplier {
     /**
      * Sets the package units.
      *
-     * @param units the package units. May be <tt>null</tt>
+     * @param units the package units. May be {@code null}
      */
     public void setPackageUnits(String units) {
         bean.setValue("packageUnits", units);
@@ -223,7 +210,7 @@ public class ProductSupplier {
     /**
      * Returns the package units.
      *
-     * @return the package units. May be <tt>null</tt>
+     * @return the package units. May be {@code null}
      */
     public String getPackageUnits() {
         return bean.getString("packageUnits");
@@ -304,7 +291,7 @@ public class ProductSupplier {
     /**
      * Sets the list price.
      *
-     * @param price the list price. May be <tt>null</tt>
+     * @param price the list price. May be {@code null}
      */
     public void setListPrice(BigDecimal price) {
         bean.setValue("listPrice", price);
@@ -313,7 +300,7 @@ public class ProductSupplier {
     /**
      * Returns the list price.
      *
-     * @return the list price. May be <tt>null</tt>
+     * @return the list price. May be {@code null}
      */
     public BigDecimal getListPrice() {
         return bean.getBigDecimal("listPrice");
@@ -322,7 +309,7 @@ public class ProductSupplier {
     /**
      * Sets the nett price.
      *
-     * @param price the nett price. MAy be <tt>null</tt>
+     * @param price the nett price. MAy be {@code null}
      */
     public void setNettPrice(BigDecimal price) {
         bean.setValue("nettPrice", price);
@@ -341,7 +328,7 @@ public class ProductSupplier {
      * Indicates if this is the preferred relatiobship for the supplier
      * and product.
      *
-     * @param preferred if <tt>true</tt>, this is the preferred relationship
+     * @param preferred if {@code true}, this is the preferred relationship
      */
     public void setPreferred(boolean preferred) {
         bean.setValue("preferred", preferred);
@@ -351,7 +338,7 @@ public class ProductSupplier {
      * Determines if this is the preferred relationship for the supplier
      * and product.
      *
-     * @return <tt>true</tt> if this is the preferred relationship
+     * @return {@code true} if this is the preferred relationship
      */
     public boolean isPreferred() {
         return bean.getBoolean("preferred");
@@ -362,7 +349,7 @@ public class ProductSupplier {
      * of the <em>cost</em> and <em>price</em> nodes of any
      * <em>productPrice.unitPrice</em> associated with the product.
      *
-     * @return <tt>true</tt> if unit prices should be updated
+     * @return {@code true} if unit prices should be updated
      */
     public boolean isAutoPriceUpdate() {
         return bean.getBoolean("autoPriceUpdate");
@@ -373,10 +360,27 @@ public class ProductSupplier {
      * of the <em>cost</em> and <em>price</em> nodes of any
      * <em>productPrice.unitPrice</em> associated with the product.
      *
-     * @param autoUpdate if <tt>true</tt>, unit prices should be updated
+     * @param autoUpdate if {@code true}, unit prices should be updated
      */
     public void setAutoPriceUpdate(boolean autoUpdate) {
         bean.setValue("autoPriceUpdate", autoUpdate);
+    }
+
+    /**
+     * Returns the cost price.
+     * <p/>
+     * This is the {@link #getListPrice() list price}/{@link #getPackageSize() package size}.
+     *
+     * @return the cost price, or {@code 0} if the list price is unset/0 or the package size {@code <= 0}
+     */
+    public BigDecimal getCostPrice() {
+        BigDecimal result = BigDecimal.ZERO;
+        BigDecimal listPrice = getListPrice();
+        int packageSize = getPackageSize();
+        if (listPrice != null && !MathRules.isZero(listPrice) && packageSize > 0) {
+            result = MathRules.divide(listPrice, packageSize, 3);
+        }
+        return result;
     }
 
     /**
@@ -384,8 +388,8 @@ public class ProductSupplier {
      *
      * @return the underlying relationship
      */
-    public EntityRelationship getRelationship() {
-        return (EntityRelationship) bean.getObject();
+    public IMObjectRelationship getRelationship() {
+        return (IMObjectRelationship) bean.getObject();
     }
 
     /**
@@ -401,8 +405,8 @@ public class ProductSupplier {
      * Indicates whether some other object is "equal to" this one.
      *
      * @param other the reference object with which to compare
-     * @return <tt>true</tt> if other is a <tt>ProductSupplier</tt> whose
-     *         underlying {@link EntityRelationship} equals this one.
+     * @return {@code true} if other is a {@code ProductSupplier} whose underlying {@link IMObjectRelationship} equals
+     * this one.
      */
     @Override
     public boolean equals(Object other) {

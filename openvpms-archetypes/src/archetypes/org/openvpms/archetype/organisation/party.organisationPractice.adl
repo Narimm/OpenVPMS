@@ -11,14 +11,15 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
     <archetype name="party.organisationPractice.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party" displayName="Practice">
         <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
-        <node name="name" displayName="Practice Name" type="java.lang.String" path="/name" minCardinality="1">
+        <node name="name" displayName="Practice Name" type="java.lang.String" path="/name" minCardinality="1"
+              maxLength="100">
             <assertion name="propercase"/>
         </node>
         <node name="description" type="java.lang.String"
@@ -30,6 +31,12 @@
                 <property name="type" value="lookup"/>
                 <property name="source" value="lookup.currency"/>
                 <errorMessage>Invalid currency</errorMessage>
+            </assertion>
+        </node>
+        <node name="addressFormat" path="/details/addressFormat" type="java.lang.String" minCardinality="0">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.addressformat"/>
             </assertion>
         </node>
         <node name="patientAgeFormat" path="/details/patientAgeFormat" type="java.lang.String" minCardinality="0">
@@ -53,15 +60,6 @@
                 </propertyList>
             </assertion>
         </node>
-        <node name="medicalRecordsSortOrder" path="/details/medicalRecordsSortOrder"
-              type="java.lang.String" minCardinality="0" defaultValue='DESC'>
-            <assertion name="lookup.local">
-                <propertyList name="entries">
-                    <property name="ASC" value="Ascending"/>
-                    <property name="DESC" value="Descending"/>
-                </propertyList>
-            </assertion>
-        </node>
         <node name="fileExportFormat" path="/details/fileExportFormat"
               type="java.lang.String" minCardinality="0" defaultValue='COMMA'>
             <assertion name="lookup.local">
@@ -75,18 +73,70 @@
               defaultValue="5"/>
         <node name="autoLogout" path="/details/autoLogout" type="java.lang.Integer" minCardinality="0"
               defaultValue="30"/>
-        <node name="showClinicianInHistoryItems" path="/details/showClinicianInHistoryItems" type="java.lang.Boolean"
-              defaultValue="false()"/>
         <node name="showProblemsInVisit" path="/details/showProblemsInVisit" type="java.lang.Boolean"
               defaultValue="false()"/>
-        <node name="showCustomerAccountSummary" path="/details/showCustomerAccountSummary" type="java.lang.Boolean"
-              defaultValue="true()"/>
-        <node name="showBatchDuringCharging" path="/details/showBatchDuringCharging" type="java.lang.Boolean"
+        <node name="ignoreListPriceDecreases" path="/details/ignoreListPriceDecreases"
+              type="java.lang.Boolean" minCardinality="0" maxCardinality="1" defaultValue="false()"/>
+        <node name="logCommunication" path="/details/logCommunication" type="java.lang.Boolean"
               minCardinality="0" maxCardinality="1" defaultValue="false()"/>
-        <node name="showTemplateDuringCharging" path="/details/showTemplateDuringCharging" type="java.lang.Boolean"
-              minCardinality="0" maxCardinality="1" defaultValue="false()"/>
-        <node name="showProductTypeDuringCharging" path="/details/showProductTypeDuringCharging" type="java.lang.Boolean"
-              minCardinality="0" maxCardinality="1" defaultValue="false()"/>
+        <node name="recordLockPeriod" path="/details/recordLockPeriod" type="java.lang.Integer" minCardinality="0"
+              maxCardinality="1" defaultValue="24"/>
+        <node name="recordLockPeriodUnits" path="/details/recordLockPeriodUnits" minCardinality="0"
+              maxCardinality="1" type="java.lang.String" defaultValue="'HOURS'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="HOURS" value="hours"/>
+                    <property name="DAYS" value="days"/>
+                    <property name="WEEKS" value="weeks"/>
+                    <property name="MONTHS" value="months"/>
+                    <property name="YEARS" value="years"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="minimumQuantities" path="/details/minimumQuantities" minCardinality="0"
+              maxCardinality="1" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="minimumQuantitiesOverride" displayName="Override" path="/details/minimumQuantitiesOverride"
+              minCardinality="0" maxCardinality="1" type="java.lang.String">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.userType"/>
+                <errorMessage>Invalid user type</errorMessage>
+            </assertion>
+        </node>
+        <node name="showPricesTaxInclusive" path="/details/showPricesTaxInclusive" minCardinality="0"
+              maxCardinality="1" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="useLocationProducts" path="/details/useLocationProducts" minCardinality="0" maxCardinality="1"
+              type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="followUpAtCheckOut" path="/details/followUpAtCheckOut" minCardinality="0" maxCardinality="1"
+              type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="useLoggedInClinician" path="/details/useLoggedInClinician" minCardinality="0" maxCardinality="1"
+              type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="shortUserNameFormat" path="/details/shortUserNameFormat"
+              type="java.lang.String" minCardinality="0" defaultValue="'NAME'">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.userNameFormat"/>
+                <errorMessage>Invalid user name format</errorMessage>
+            </assertion>
+        </node>
+        <node name="mediumUserNameFormat" path="/details/mediumUserNameFormat"
+              type="java.lang.String" minCardinality="0" defaultValue="'TITLE_NAME'">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.userNameFormat"/>
+                <errorMessage>Invalid user name format</errorMessage>
+            </assertion>
+        </node>
+        <node name="longUserNameFormat" path="/details/longUserNameFormat"
+              type="java.lang.String" minCardinality="0" defaultValue="'TITLE_NAME_QUALIFICATIONS'">
+            <assertion name="lookup">
+                <property name="type" value="lookup"/>
+                <property name="source" value="lookup.userNameFormat"/>
+                <errorMessage>Invalid user name format</errorMessage>
+            </assertion>
+        </node>
+        <node name="restrictOrdering" minCardinality="0" maxCardinality="1" path="/details/restrictOrdering"
+              type="java.lang.Boolean" defaultValue="false()"/>
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">
@@ -99,6 +149,9 @@
                     </propertyMap>
                     <propertyMap name="archetype">
                         <property name="shortName" value="contact.email"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="contact.website"/>
                     </propertyMap>
                 </propertyList>
             </assertion>
@@ -118,8 +171,18 @@
         <node name="templates" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.documentTemplatePrinter"/>
-        <node name="SMS" path="/entityRelationships"
-              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="1"
+        <node name="mailServer" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink" minCardinality="0"
+              maxCardinality="1" filter="entityLink.organisationMailServer"/>
+        <node name="sms" displayName="SMS" path="/entityRelationships" type="java.util.HashSet"
+              baseName="EntityRelationship" minCardinality="0" maxCardinality="1"
               filter="entityRelationship.practiceSMSConfiguration"/>
+        <node name="smsAppointment" displayName="Appointment SMS" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="1"
+              filter="entityLink.organisationSMSAppointment"/>
+        <node name="reminderConfiguration" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="0" maxCardinality="1" filter="entityLink.practiceReminderConfiguration"/>
+        <node name="smartflowConfiguration" displayName="Smart Flow Sheet Configuration" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="1"
+              filter="entityLink.smartflowConfiguration"/>
     </archetype>
 </archetypes>

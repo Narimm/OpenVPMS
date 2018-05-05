@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -19,6 +19,7 @@ package org.openvpms.hl7.impl;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.helper.AbstractMonitoringIMObjectCache;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.Connectors;
@@ -59,12 +60,12 @@ public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> impl
     /**
      * The connectors, keyed on id.
      */
-    private final Map<Long, State> connectors = new HashMap<Long, State>();
+    private final Map<Long, State> connectors = new HashMap<>();
 
     /**
      * Listeners to notify when a connector changes.
      */
-    private final List<Listener> listeners = new ArrayList<Listener>();
+    private final List<Listener> listeners = new ArrayList<>();
 
     /**
      * Constructs a {@link ConnectorsImpl}.
@@ -83,7 +84,7 @@ public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> impl
      */
     @Override
     public List<Connector> getConnectors() {
-        List<Connector> result = new ArrayList<Connector>();
+        List<Connector> result = new ArrayList<>();
         synchronized (connectors) {
             for (State state : connectors.values()) {
                 result.add(state.connector);

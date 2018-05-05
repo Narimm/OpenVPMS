@@ -1,21 +1,20 @@
 <?xml version="1.0"?>
+
 <!--
-  #  Version: 1.0
-  #
-  #  The contents of this file are subject to the OpenVPMS License Version
-  #  1.0 (the 'License'); you may not use this file except in compliance with
-  #  the License. You may obtain a copy of the License at
-  #  http://www.openvpms.org/license/
-  #
-  #  Software distributed under the License is distributed on an 'AS IS' basis,
-  #  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
-  #  for the specific language governing rights and limitations under the
-  #  License.
-  #
-  #  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
-  #
-  #  $Id$
--->
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
 <!DOCTYPE hibernate-mapping PUBLIC
         "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
         "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
@@ -32,7 +31,7 @@
         <component name="archetypeId">
             <property name="shortName" column="arch_short_name" type="string"
                       length="100" not-null="true"
-                      index="act_short_name_status_idx"/>
+                      index="act_short_name_status_idx, act_short_name_status2_idx"/>
             <property name="version" column="arch_version"
                       type="string" length="100" not-null="true"/>
         </component>
@@ -48,8 +47,8 @@
                   type="timestamp"
                   index="act_end_time_idx"/>
         <property name="reason" column="reason" type="string"/>
-        <property name="status" column="status" type="string"
-                  index="act_short_name_status_idx"/>
+        <property name="status" column="status" type="string" index="act_short_name_status_idx"/>
+        <property name="status2" column="status2" length="50" type="string" index="act_short_name_status2_idx"/>
         <map name="details" access="field" table="act_details" lazy="false"
              batch-size="50" cascade="all,delete-orphan">
             <key column="act_id"/>
@@ -60,6 +59,11 @@
                 <property name="value" length="5000" not-null="true"/>
             </composite-element>
         </map>
+        <set name="identities" inverse="true" lazy="true" batch-size="50"
+             cascade="all,delete-orphan">
+            <key column="act_id" on-delete="cascade"/>
+            <one-to-many class="org.openvpms.component.business.dao.hibernate.im.act.ActIdentityDOImpl"/>
+        </set>
         <set name="sourceActRelationships" inverse="true"
              lazy="true" batch-size="50" cascade="all,delete-orphan">
             <key column="source_id" on-delete="cascade"/>

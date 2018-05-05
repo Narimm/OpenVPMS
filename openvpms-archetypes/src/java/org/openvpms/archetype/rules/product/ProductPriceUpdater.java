@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -21,6 +21,7 @@ import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.math.CurrencyException;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -118,10 +119,10 @@ public class ProductPriceUpdater {
         List<ProductPrice> result = Collections.emptyList();
         if (needsUpdate(product)) {
             EntityBean bean = new EntityBean(product, service);
-            List<EntityRelationship> relationships = bean.getNodeRelationships("suppliers");
+            List<EntityLink> relationships = bean.getValues("suppliers", EntityLink.class);
             Transformer transformer = new Transformer() {
                 public Object transform(Object object) {
-                    ProductSupplier ps = new ProductSupplier((EntityRelationship) object, service);
+                    ProductSupplier ps = new ProductSupplier((EntityLink) object, service);
                     return update(product, ps, false);
                 }
             };
@@ -153,7 +154,7 @@ public class ProductPriceUpdater {
      */
     public List<ProductPrice> update(Party supplier, boolean save) {
         EntityBean bean = new EntityBean(supplier, service);
-        List<EntityRelationship> products = bean.getNodeRelationships("products");
+        List<EntityLink> products = bean.getValues("products", EntityLink.class);
         Transformer transformer = new Transformer() {
             public Object transform(Object object) {
                 ProductSupplier ps = new ProductSupplier((EntityRelationship) object, service);
@@ -176,12 +177,31 @@ public class ProductPriceUpdater {
      *                                      relationship
      */
     public List<ProductPrice> update(Product product, ProductSupplier productSupplier, boolean save) {
+        return update(product, productSupplier, false, save);
+    }
+
+    /**
+     * Updates any <em>productPrice.unitPrice</em> product prices associated with a product.
+     *
+     * @param product            the product
+     * @param productSupplier    the product-supplier relationship
+     * @param ignoreCostDecrease if {@code true}, don't update any unit price if the new cost price would be less than
+     *                           the existing cost price
+     * @param save               if {@code true}, save updated prices
+     * @return a list of updated prices
+     * @throws ArchetypeServiceException    for any archetype service error
+     * @throws ProductPriceUpdaterException if there is no practice
+     * @throws IllegalArgumentException     if the product is not that referred to by the product-supplier
+     *                                      relationship
+     */
+    public List<ProductPrice> update(Product product, ProductSupplier productSupplier, boolean ignoreCostDecrease,
+                                     boolean save) {
         if (!product.getObjectReference().equals(productSupplier.getRelationship().getSource())) {
             throw new IllegalArgumentException("Argument 'product' is not that referred to by 'productSupplier'");
         }
         List<ProductPrice> result;
         if (canUpdate(productSupplier)) {
-            result = doUpdate(productSupplier, product, save);
+            result = doUpdate(productSupplier, product, ignoreCostDecrease, save);
         } else {
             result = Collections.emptyList();
         }
@@ -202,10 +222,27 @@ public class ProductPriceUpdater {
         if (canUpdate(productSupplier)) {
             Product product = productSupplier.getProduct();
             if (product != null) {
-                result = doUpdate(productSupplier, product, save);
+                result = doUpdate(productSupplier, product, false, save);
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the practice.
+     *
+     * @return the practice
+     * @throws ArchetypeServiceException    for any archetype service error
+     * @throws ProductPriceUpdaterException if there is no practice
+     */
+    public Party getPractice() {
+        if (practice == null) {
+            practice = practiceRules.getPractice();
+            if (practice == null) {
+                throw new ProductPriceUpdaterException(NoPractice);
+            }
+        }
+        return practice;
     }
 
     /**
@@ -219,8 +256,8 @@ public class ProductPriceUpdater {
         if (!product.isNew()) {
             Product prior = (Product) service.get(product.getObjectReference());
             if (prior != null) {
-                Set<EntityRelationship> oldSuppliers = getProductSuppliers(prior);
-                Set<EntityRelationship> newSuppliers = getProductSuppliers(product);
+                Set<EntityLink> oldSuppliers = getProductSuppliers(prior);
+                Set<EntityLink> newSuppliers = getProductSuppliers(product);
                 if (oldSuppliers.equals(newSuppliers)) {
                     update = !checkEquals(oldSuppliers, newSuppliers);
                 }
@@ -236,13 +273,13 @@ public class ProductPriceUpdater {
      * @param newSuppliers the new supplier relationships
      * @return {@code true} if they are equal
      */
-    private boolean checkEquals(Set<EntityRelationship> oldSuppliers, Set<EntityRelationship> newSuppliers) {
+    private boolean checkEquals(Set<EntityLink> oldSuppliers, Set<EntityLink> newSuppliers) {
         Map<IMObjectReference, ProductSupplier> oldMap = getProductSuppliers(oldSuppliers);
         Map<IMObjectReference, ProductSupplier> newMap = getProductSuppliers(newSuppliers);
         for (Map.Entry<IMObjectReference, ProductSupplier> entry : newMap.entrySet()) {
             ProductSupplier supplier = entry.getValue();
             ProductSupplier old = oldMap.get(entry.getKey());
-            if (old == null || supplier.getListPrice().compareTo(old.getListPrice()) != 0
+            if (old == null || !MathRules.equals(supplier.getListPrice(), old.getListPrice())
                 || supplier.getPackageSize() != old.getPackageSize()) {
                 return false;
             }
@@ -251,14 +288,14 @@ public class ProductPriceUpdater {
     }
 
     /**
-     * Returns the product suppliers for a set of <em>entityRelationship.productSupplier</em> relationships.
+     * Returns the product suppliers for a set of <em>entityLink.productSupplier</em> relationships.
      *
      * @param suppliers the product supplier relationships
      * @return the product suppliers, keyed on supplier reference.
      */
-    private Map<IMObjectReference, ProductSupplier> getProductSuppliers(Set<EntityRelationship> suppliers) {
-        Map<IMObjectReference, ProductSupplier> result = new HashMap<IMObjectReference, ProductSupplier>();
-        for (EntityRelationship supplier : suppliers) {
+    private Map<IMObjectReference, ProductSupplier> getProductSuppliers(Set<EntityLink> suppliers) {
+        Map<IMObjectReference, ProductSupplier> result = new HashMap<>();
+        for (EntityLink supplier : suppliers) {
             result.put(supplier.getObjectReference(), new ProductSupplier(supplier, service));
         }
         return result;
@@ -270,8 +307,7 @@ public class ProductPriceUpdater {
      * Prices can be updated if:
      * <ul>
      * <li>autoPriceUpdate is {@code true}; and</li>
-     * <li>listPrice &lt;&gt; 0; and</li>
-     * <li>packageSize &lt;&gt; 0; and</li>
+     * <li>costPrice &lt;&gt; 0; and</li>
      * <li>the supplier is active</li>
      * </ul>
      *
@@ -279,28 +315,26 @@ public class ProductPriceUpdater {
      * @return {@code true} if prices can be updated
      */
     private boolean canUpdate(ProductSupplier productSupplier) {
-        BigDecimal listPrice = productSupplier.getListPrice();
-        int packageSize = productSupplier.getPackageSize();
         return productSupplier.isAutoPriceUpdate()
-               && !MathRules.equals(listPrice, BigDecimal.ZERO)
-               && packageSize != 0
+               && !MathRules.isZero(productSupplier.getCostPrice())
                && isActive(productSupplier.getSupplierRef());
     }
 
     /**
      * Updates prices.
      *
-     * @param productSupplier the product-supplier relationship
-     * @param product         the product
-     * @param save            if {@code true}, save updated prices, otherwise derive values
+     * @param productSupplier    the product-supplier relationship
+     * @param product            the product
+     * @param ignoreCostDecrease if {@code true}, don't update any unit price if the new cost price would be less than
+     *                           the existing cost price
+     * @param save               if {@code true}, save updated prices, otherwise derive values
      * @return a list of updated prices
      */
-    private List<ProductPrice> doUpdate(ProductSupplier productSupplier, Product product, boolean save) {
+    private List<ProductPrice> doUpdate(ProductSupplier productSupplier, Product product,
+                                        boolean ignoreCostDecrease, boolean save) {
         List<ProductPrice> result;
-        BigDecimal listPrice = productSupplier.getListPrice();
-        int packageSize = productSupplier.getPackageSize();
-        BigDecimal cost = MathRules.divide(listPrice, packageSize, 3);
-        result = rules.updateUnitPrices(product, cost, getPractice(), getCurrency());
+        BigDecimal cost = productSupplier.getCostPrice();
+        result = rules.updateUnitPrices(product, cost, ignoreCostDecrease, getCurrency());
         if (!result.isEmpty()) {
             if (save) {
                 service.save(result);
@@ -322,9 +356,10 @@ public class ProductPriceUpdater {
      * @return a list of updated prices
      * @throws ArchetypeServiceException for any archetype service error
      */
-    private List<ProductPrice> collect(List<EntityRelationship> relationships, Transformer transformer, boolean save) {
+    @SuppressWarnings("unchecked")
+    private List<ProductPrice> collect(List<EntityLink> relationships, Transformer transformer, boolean save) {
         List<ProductPrice> result = null;
-        for (EntityRelationship relationship : relationships) {
+        for (EntityLink relationship : relationships) {
             List<ProductPrice> prices = (List<ProductPrice>) transformer.transform(relationship);
             if (!prices.isEmpty()) {
                 if (result == null) {
@@ -340,23 +375,6 @@ public class ProductPriceUpdater {
             service.save(result);
         }
         return result;
-    }
-
-    /**
-     * Returns the practice.
-     *
-     * @return the practice
-     * @throws ArchetypeServiceException    for any archetype service error
-     * @throws ProductPriceUpdaterException if there is no practice
-     */
-    private Party getPractice() {
-        if (practice == null) {
-            practice = practiceRules.getPractice();
-            if (practice == null) {
-                throw new ProductPriceUpdaterException(NoPractice);
-            }
-        }
-        return practice;
     }
 
     /**
@@ -406,8 +424,8 @@ public class ProductPriceUpdater {
         return result;
     }
 
-    private Set<EntityRelationship> getProductSuppliers(Product product) {
+    private Set<EntityLink> getProductSuppliers(Product product) {
         EntityBean bean = new EntityBean(product, service);
-        return new HashSet<EntityRelationship>(bean.getNodeRelationships("suppliers"));
+        return new HashSet<>(bean.getValues("suppliers", EntityLink.class));
     }
 }

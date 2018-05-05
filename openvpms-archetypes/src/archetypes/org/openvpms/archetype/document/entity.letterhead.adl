@@ -1,0 +1,87 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="entity.letterhead.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.common.Entity"
+               displayName="Letterhead &amp; Document Control">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="1" maxLength="100"/>
+        <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="companyID" displayName="Company Tax ID" type="java.lang.String"
+              path="/details/companyID"/>
+        <node name="logoFile" displayName="Logo File" path="/details/logoFile"
+              type="java.lang.String" minCardinality="1" maxLength="240"/>
+        <node name="logoFileHTML" displayName="HTML Logo URL" path="/details/logoFileHTML"
+              type="java.lang.String" maxLength="240"/>
+        <node name="contacts" displayName="Contacts Source" path="/entityLinks"
+              type="java.util.HashSet" baseName="EntityLink" minCardinality="0" maxCardinality="1"
+              filter="entityLink.letterheadContacts"/>
+        <node name="subreport" displayName="Subreport Expression" type="java.lang.String"
+              path="/details/subreport" minCardinality="1" maxLength="30"
+              defaultValue="'Letterhead'">
+        </node>
+        <node name="plainPaper" displayName="Plain Paper"
+              path="/details/plainPaper" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="letterheadP1only" displayName="Letterhead Page 1 Only"
+              path="/details/letterheadP1only" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="useProductTypes" displayName="Use Product Types"
+              path="/details/useProductTypes" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="remindersInvoice" displayName="Reminders on invoice"
+              path="/details/remindersInvoice" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="appointmentsInvoice" displayName="Appointments on invoice"
+              path="/details/appointmentsInvoice" type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="lastPageFooter" displayName="Slogan"
+              path="/details/lastPageFooter" type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="invoiceMsg" displayName="Invoice Message"
+              path="/details/invoiceMsg" type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="invoicePay" displayName="Invoice Payment Instr."
+              path="/details/invoicePay" type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="receiptMsg" displayName="Receipt Message"
+              path="/details/receiptMsg" type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="estimateMsg" displayName="Estimate Message"
+              path="/details/estimateMsg" type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="generalMsg" displayName="General Message"
+              path="/details/generalMsg" type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="orderMsg" displayName="Order Message"
+              path="/details/orderMsg" type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="supplierMsg" displayName="Supplier Message"
+              path="/details/supplierMsg" type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="pharmacyMsg" displayName="Pharmacy Message"
+              path="/details/pharmacyMsg" type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="creditCardInstructions" displayName="Credit Card Instructions"
+              path="/details/creditCardInstructions" type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="directDepositInstructions" displayName="Direct Deposit Instructions"
+              path="/details/directDepositInstructions" type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="paymentOption3" displayName="Payment Option 3" path="/details/paymentOption3"
+              type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="paymentOption4" displayName="Payment Option 4" path="/details/paymentOption4"
+              type="java.lang.String" minCardinality="0" maxLength="300"/>
+        <node name="lineItemPrint" path="/details/lineItemPrint" type="java.lang.String"
+              defaultValue="'A'" minCardinality="1">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="A" value="Always"/>
+                    <property name="N" value="Never"/>
+                    <property name="P" value="If Not Printed"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="groupRemindMsg" displayName="Reminder Message"
+              path="/details/groupRemindMsg" type="java.lang.String" minCardinality="0" maxLength="900"/>
+    </archetype>
+</archetypes>

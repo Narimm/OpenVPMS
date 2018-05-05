@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.info;
 
 import nextapp.echo2.app.Component;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.app.Context;
@@ -39,14 +40,21 @@ import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
 
     /**
+     * User preferences.
+     */
+    private final Preferences preferences;
+
+    /**
      * Constructs an {@link InformationWorkspace}.
      *
-     * @param context the context
+     * @param context     the context
+     * @param preferences user preferences
      */
-    public InformationWorkspace(Context context) {
-        super("patient", "info", context);
+    public InformationWorkspace(Context context, Preferences preferences) {
+        super("patient.information", context);
         setArchetypes(Party.class, "party.patient*");
         setMailContext(new CustomerMailContext(context, getHelpContext()));
+        this.preferences = preferences;
     }
 
     /**
@@ -69,7 +77,8 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
     @Override
     public Component getSummary() {
         CustomerPatientSummaryFactory factory = ServiceHelper.getBean(CustomerPatientSummaryFactory.class);
-        CustomerPatientSummary summary = factory.createCustomerPatientSummary(getContext(), getHelpContext());
+        CustomerPatientSummary summary = factory.createCustomerPatientSummary(getContext(), getHelpContext(),
+                                                                              preferences);
         return summary.getSummary(getObject());
     }
 

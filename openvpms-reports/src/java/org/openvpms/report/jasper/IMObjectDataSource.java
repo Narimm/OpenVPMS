@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
@@ -20,7 +20,6 @@ import net.sf.jasperreports.engine.JRException;
 import net.sf.jasperreports.engine.JRField;
 import net.sf.jasperreports.engine.JRRewindableDataSource;
 import org.apache.commons.jxpath.Functions;
-import org.apache.commons.jxpath.JXPathContext;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -31,10 +30,10 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.NodeResolver;
 import org.openvpms.component.business.service.archetype.helper.ResolvingPropertySet;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.report.ExpressionEvaluator;
 import org.openvpms.report.IMObjectExpressionEvaluator;
+import org.openvpms.report.Parameters;
 
 import java.util.Map;
 
@@ -44,17 +43,12 @@ import java.util.Map;
  *
  * @author Tim Anderson
  */
-public class IMObjectDataSource extends AbstractIMObjectDataSource {
+public class IMObjectDataSource extends AbstractDataSource {
 
     /**
      * The source object.
      */
     private final IMObject object;
-
-    /**
-     * Additional fields. May be {@code null}
-     */
-    private final PropertySet fields;
 
     /**
      * The node resolver.
@@ -79,34 +73,37 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
     /**
      * Constructs an {@link IMObjectDataSource}.
      *
-     * @param object    the source object
-     * @param fields    a map of additional field names and their values, to pass to the report. May be {@code null}
-     * @param service   the archetype service
-     * @param handlers  the document handlers
-     * @param functions the JXPath extension functions
+     * @param object     the source object
+     * @param parameters the report parameters
+     * @param fields     a map of additional field names and their values, to pass to the report. May be {@code null}
+     * @param service    the archetype service
+     * @param handlers   the document handlers
+     * @param functions  the JXPath extension functions
      */
-    public IMObjectDataSource(IMObject object, Map<String, Object> fields, IArchetypeService service,
-                              ILookupService lookups, DocumentHandlers handlers, Functions functions) {
-        this(object, fields != null ? new ResolvingPropertySet(fields, service) : null, service, lookups, handlers,
-             functions);
+    public IMObjectDataSource(IMObject object, Parameters parameters, Map<String, Object> fields,
+                              IArchetypeService service, ILookupService lookups, DocumentHandlers handlers,
+                              Functions functions) {
+        this(object, parameters, fields != null ? new ResolvingPropertySet(fields, service, lookups) : null, service,
+             lookups, handlers, functions);
     }
 
     /**
      * Constructs an {@link IMObjectDataSource}.
      *
-     * @param object    the source object
-     * @param fields    fields to pass to the report. May be {@code null}
-     * @param service   the archetype service
-     * @param handlers  the document handlers
-     * @param functions the JXPath extension functions
+     * @param object     the source object
+     * @param parameters the report parameters
+     * @param fields     fields to pass to the report. May be {@code null}
+     * @param service    the archetype service
+     * @param handlers   the document handlers
+     * @param functions  the JXPath extension functions
      */
-    public IMObjectDataSource(IMObject object, PropertySet fields, IArchetypeService service,
-                              ILookupService lookups, DocumentHandlers handlers, Functions functions) {
-        super(service, lookups, handlers, functions);
+    protected IMObjectDataSource(IMObject object, Parameters parameters, PropertySet fields,
+                                 IArchetypeService service, ILookupService lookups, DocumentHandlers handlers,
+                                 Functions functions) {
+        super(parameters, fields, service, lookups, handlers, functions);
         this.object = object;
-        this.fields = fields;
-        resolver = new NodeResolver(object, service);
-        evaluator = new IMObjectExpressionEvaluator(object, resolver, fields, service, lookups, functions);
+        resolver = new NodeResolver(object, service, lookups);
+        evaluator = new IMObjectExpressionEvaluator(object, resolver, parameters, fields, service, lookups, functions);
         this.handlers = handlers;
     }
 
@@ -123,53 +120,14 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
     }
 
     /**
-     * Returns a data source for a collection node.
+     * Returns the field value.
      *
-     * @param name      the collection node name
-     * @param sortNodes the list of nodes to sort on
-     * @throws JRException for any error
-     */
-    public JRRewindableDataSource getDataSource(String name, String[] sortNodes) throws JRException {
-        ArchetypeDescriptor archetype = resolver.getArchetype();
-        NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
-        if (descriptor == null) {
-            throw new JRException("No node found for field=" + name);
-        }
-        return new IMObjectCollectionDataSource(object, fields, descriptor, getArchetypeService(), getLookupService(),
-                                                getDocumentHandlers(), getFunctions(), sortNodes);
-    }
-
-    /**
-     * Returns a data source for the given jxpath expression.
-     *
-     * @param expression the expression. Must return an {@code Iterable} or {@code Iterator} returning {@code IMObjects}
-     * @return the data source
-     * @throws JRException for any error
+     * @param name the field name
+     * @return the field value. May be {@code null}
      */
     @Override
-    @SuppressWarnings("unchecked")
-    public JRRewindableDataSource getExpressionDataSource(String expression) throws JRException {
-        JXPathContext context = JXPathHelper.newContext(object, getFunctions());
-        Object value = context.getValue(expression);
-        Iterable<IMObject> iterable;
-        if (value instanceof Iterable) {
-            iterable = (Iterable<IMObject>) value;
-        } else {
-            throw new JRException("Unsupported value type=" + ((value != null) ? value.getClass() : null)
-                                  + " returned by expression=" + expression);
-        }
-        return new IMObjectCollectionDataSource(iterable, fields, getArchetypeService(), getLookupService(),
-                                                getDocumentHandlers(), getFunctions());
-    }
-
-    /**
-     * Gets the field value for the current position.
-     *
-     * @return an object containing the field value. The object type must be the field object type.
-     * @throws JRException for any error
-     */
-    public Object getFieldValue(JRField field) throws JRException {
-        Object value = evaluator.getValue(field.getName());
+    public Object getFieldValue(String name) {
+        Object value = evaluator.getValue(name);
         if (value instanceof Document) {
             Document doc = (Document) value;
             if (doc.getContents() != null && doc.getContents().length != 0) {
@@ -182,4 +140,66 @@ public class IMObjectDataSource extends AbstractIMObjectDataSource {
         return value;
     }
 
+    /**
+     * Returns a data source for a collection node.
+     *
+     * @param name      the collection node name
+     * @param sortNodes the list of nodes to sort on
+     * @throws JRException for any error
+     */
+    public JRRewindableDataSource getDataSource(String name, String[] sortNodes) throws JRException {
+        ArchetypeDescriptor archetype = resolver.getArchetype();
+        NodeDescriptor descriptor = archetype.getNodeDescriptor(name);
+        if (descriptor == null) {
+            throw new JRException("No node found for field=" + name);
+        }
+        return new IMObjectCollectionDataSource(object, getParameters(), getFields(), descriptor,
+                                                getArchetypeService(), getLookupService(), getDocumentHandlers(),
+                                                getFunctions(), sortNodes);
+    }
+
+    /**
+     * Returns a data source for the given jxpath expression.
+     *
+     * @param expression the expression. Must return an {@code Iterable} or {@code Iterator} returning {@code IMObjects}
+     * @return the data source
+     * @throws JRException for any error
+     */
+    @Override
+    @SuppressWarnings("unchecked")
+    public JRRewindableDataSource getExpressionDataSource(String expression) throws JRException {
+        return getExpressionDataSource(object, expression);
+    }
+
+    /**
+     * Gets the field value for the current position.
+     *
+     * @param field the field
+     * @return an object containing the field value. The object type must be the field object type.
+     */
+    public Object getFieldValue(JRField field) {
+        return getFieldValue(field.getName());
+    }
+
+    /**
+     * Evaluates an xpath expression.
+     *
+     * @param expression the expression
+     * @return the result of the expression. May be {@code null}
+     */
+    public Object evaluate(String expression) {
+        return evaluator.evaluate(expression);
+    }
+
+    /**
+     * Evaluates an xpath expression against an object.
+     *
+     * @param object     the object
+     * @param expression the expression
+     * @return the result of the expression. May be {@code null}
+     */
+    @Override
+    public Object evaluate(Object object, String expression) {
+        return evaluator.evaluate(object, expression);
+    }
 }

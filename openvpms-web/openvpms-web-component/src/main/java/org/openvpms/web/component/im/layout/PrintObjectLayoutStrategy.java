@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.layout;
 
@@ -22,7 +22,7 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
@@ -31,12 +31,15 @@ import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.button.ButtonColumn;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 
@@ -55,7 +58,7 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
 
 
     /**
-     * Constructs a new <tt>PrintObjectLayoutStrategy</tt>.
+     * Constructs a {@link PrintObjectLayoutStrategy}.
      *
      * @param buttonId the button identifier
      */
@@ -66,7 +69,7 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * Determines if the button should be enabled.
      *
-     * @param enable if <tt>true</tt>, enable the button
+     * @param enable if {@code true}, enable the button
      */
     public void setEnableButton(boolean enable) {
         this.enableButton = enable;
@@ -77,7 +80,7 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
      *
      * @param object     the object to lay out
      * @param properties the object's properties
-     * @param parent     the parent object. May be <tt>null</tt>
+     * @param parent     the parent object. May be {@code null}
      * @param container  the container to use
      * @param context    the layout context
      */
@@ -102,7 +105,7 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
      * Lays out child components in a grid.
      *
      * @param object     the object to lay out
-     * @param parent     the parent object. May be <tt>null</tt>
+     * @param parent     the parent object. May be {@code null}
      * @param properties the properties
      * @param container  the container to use
      * @param context    the layout context
@@ -111,18 +114,26 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
     protected void doSimpleLayout(IMObject object, IMObject parent, List<Property> properties,
                                   Component container, LayoutContext context) {
         if (button != null) {
-            RowLayoutData rowLayout = new RowLayoutData();
-            Alignment topRight = new Alignment(Alignment.RIGHT, Alignment.TOP);
-            rowLayout.setAlignment(topRight);
-            button.setLayoutData(rowLayout);
             ComponentGrid grid = createGrid(object, properties, context);
-            Row row = RowFactory.create("WideCellSpacing", createGrid(grid));
-            ButtonSet set = new ButtonSet(row);
-            set.add(button);
-            container.add(ColumnFactory.create("Inset.Small", row));
+            ButtonColumn column = new ButtonColumn(getFocusGroup());
+            RowLayoutData layoutData = new RowLayoutData();
+            layoutData.setAlignment(Alignment.ALIGN_TOP);
+            column.setLayoutData(layoutData);
+            addButton(column.getButtons());
+            Row row = RowFactory.create(Styles.WIDE_CELL_SPACING, createGrid(grid), column);
+            container.add(ColumnFactory.create(Styles.SMALL_INSET, row));
         } else {
             super.doSimpleLayout(object, parent, properties, container, context);
         }
+    }
+
+    /**
+     * Adds the print button.
+     *
+     * @param set the button set
+     */
+    protected void addButton(ButtonSet set) {
+        set.add(button);
     }
 
     /**
@@ -135,8 +146,9 @@ public abstract class PrintObjectLayoutStrategy extends AbstractLayoutStrategy {
     protected void onPrint(IMObject object, Context context, HelpContext help) {
         try {
             ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
-            IMPrinter<IMObject> printer = IMPrinterFactory.create(object, locator, context);
-            InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<IMObject>(printer, context, help);
+            IMPrinterFactory factory = ServiceHelper.getBean(IMPrinterFactory.class);
+            IMPrinter<IMObject> printer = factory.create(object, locator, context);
+            InteractiveIMPrinter<IMObject> iPrinter = new InteractiveIMPrinter<>(printer, context, help);
             iPrinter.print();
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);

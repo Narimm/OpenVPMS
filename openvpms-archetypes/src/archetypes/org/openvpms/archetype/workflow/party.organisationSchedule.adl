@@ -11,14 +11,14 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
     <archetype name="party.organisationSchedule.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party" displayName="Schedule">
         <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
-        <node name="name" displayName="Name" type="java.lang.String" path="/name" minCardinality="1">
+        <node name="name" type="java.lang.String" path="/name" minCardinality="1" maxLength="100">
             <assertion name="propercase"/>
         </node>
         <node name="description" type="java.lang.String" path="/description"/>
@@ -43,29 +43,22 @@
               defaultValue="true()"/>
         <node name="useAllTemplates" path="/details/useAllTemplates" type="java.lang.Boolean" minCardinality="0"
               defaultValue="true()"/>
+        <node name="sendReminders" displayName="Send Appointment Reminders" path="/details/sendReminders"
+              type="java.lang.Boolean" minCardinality="0" defaultValue="false()"/>
+        <node name="onlineBooking" path="/details/onlineBooking" type="java.lang.Boolean" minCardinality="0"
+              defaultValue="false()"/>
+        <node name="onlineBookingTimes" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="0" maxCardinality="1" filter="entityLink.scheduleBookingTimes"/>
+        <node name="location" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink" minCardinality="1"
+              maxCardinality="1" filter="entityLink.scheduleLocation"/>
+        <node name="cageType" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink" minCardinality="0"
+              maxCardinality="1" filter="entityLink.scheduleCageType"/>
         <node name="views" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.viewSchedule">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.viewSchedule"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
-        </node>
+              filter="entityRelationship.viewSchedule"/>
         <node name="appointmentTypes" path="/entityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.scheduleAppointmentType">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.scheduleAppointmentType"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active appointment type relationship</errorMessage>
             </assertion>
@@ -73,26 +66,12 @@
         <node name="workLists" path="/sourceEntityRelationships" type="java.util.HashSet"
               baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
               filter="entityRelationship.scheduleWorkList">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="entityRelationship.scheduleWorkList"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active schedule work-list relationship</errorMessage>
             </assertion>
         </node>
         <node name="templates" path="/sourceEntityRelationships" type="java.util.HashSet" baseName="EntityRelationship"
               minCardinality="0" maxCardinality="*" filter="entityRelationship.scheduleDocumentTemplate">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName" value="entityRelationship.scheduleDocumentTemplate"/>
-                    </propertyMap>
-                </propertyList>
-            </assertion>
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active document template relationship</errorMessage>
             </assertion>

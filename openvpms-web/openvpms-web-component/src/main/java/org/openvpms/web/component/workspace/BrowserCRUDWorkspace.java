@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -22,14 +22,9 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.BrowserListener;
-import org.openvpms.web.component.im.query.Query;
-import org.openvpms.web.component.im.query.QueryFactory;
 import org.openvpms.web.component.im.select.IMObjectSelector;
-import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 
 import java.util.List;
@@ -39,18 +34,13 @@ import java.util.List;
  * A CRUD workspace that provides a {@link IMObjectSelector selector} to
  * select the parent object, a {@link Browser} to display related child objects,
  * and a {@link CRUDWindow} to view/edit the child objects.
- * <p/>
+ * <p>
  * The selector is optional.
  *
  * @author Tim Anderson
  */
 public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extends IMObject>
-    extends AbstractCRUDWorkspace<Parent, Child> {
-
-    /**
-     * The query.
-     */
-    private Query<Child> query;
+        extends AbstractCRUDWorkspace<Parent, Child> {
 
     /**
      * The browser.
@@ -64,78 +54,68 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
 
 
     /**
-     * Constructs a {@code BrowserCRUDWorkspace}, with a selector to select the parent object.
-     * <p/>
+     * Constructs a {@link BrowserCRUDWorkspace}, with a selector to select the parent object.
+     * <p>
      * The {@link #setArchetypes} and {@link #setChildArchetypes} methods must
      * be invoked to set archetypes that the workspace supports, before
      * performing any operations.
      *
-     * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId the workspace localisation identifier
+     * @param id      the workspace identifier
+     * @param context the context
      */
-    public BrowserCRUDWorkspace(String workspacesId, String workspaceId, Context context) {
-        this(workspacesId, workspaceId, context, true);
+    public BrowserCRUDWorkspace(String id, Context context) {
+        this(id, context, true);
     }
 
     /**
-     * Constructs a {@code BrowserCRUDWorkspace}.
-     * <p/>
-     * The {@link #setArchetypes} and {@link #setChildArchetypes} methods must
-     * be invoked to set archetypes that the workspace supports, before
-     * performing any operations.
+     * Constructs a {@link BrowserCRUDWorkspace}.
+     * <p>
+     * The {@link #setArchetypes} and {@link #setChildArchetypes} methods must * be invoked to set archetypes that the
+     * workspace supports, before performing any operations.
      *
-     * @param workspacesId  the workspaces localisation identifier
-     * @param workspaceId  the workspace localisation identifier
+     * @param id           the workspace identifier
      * @param context      the context
      * @param showSelector if {@code true}, show the selector
      */
-    public BrowserCRUDWorkspace(String workspacesId, String workspaceId, Context context, boolean showSelector) {
-        super(workspacesId, workspaceId, context, showSelector);
+    public BrowserCRUDWorkspace(String id, Context context, boolean showSelector) {
+        super(id, context, showSelector);
     }
 
     /**
-     * Constructs a new {@code BrowserCRUDWorkspace}, with a selector for
-     * the parent object.
-     * <p/>
+     * Constructs a {@link BrowserCRUDWorkspace}, with a selector for the parent object.
+     * <p>
      * The {@link #setChildArchetypes} method must be invoked to set archetypes
      * that the workspace supports, before performing any operations.
      *
-     * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId the workspace localisation identifier
-     * @param archetypes  the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
-     *                    method must be invoked to set a non-null value before performing any operation
-     * @param context     the context
+     * @param id         the workspace identifier
+     * @param archetypes the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
+     *                   method must be invoked to set a non-null value before performing any operation
+     * @param context    the context
      */
-    public BrowserCRUDWorkspace(String workspacesId, String workspaceId, Archetypes<Parent> archetypes,
-                                Context context) {
-        this(workspacesId, workspaceId, archetypes, null, context);
+    public BrowserCRUDWorkspace(String id, Archetypes<Parent> archetypes, Context context) {
+        this(id, archetypes, null, context);
     }
 
     /**
-     * Constructs a new {@code BrowserCRUDWorkspace}, with a selector for
-     * the parent object.
+     * Constructs a {@link BrowserCRUDWorkspace}, with a selector for the parent object.
      *
-     * @param workspacesId     the workspaces localisation identifier
-     * @param workspaceId     the workspace localisation identifier
-     * @param archetypes      the archetypes that this operates on.
-     *                        If {@code null}, the {@link #setArchetypes}
-     *                        method must be invoked to set a non-null value
-     *                        before performing any operation
+     * @param id              the workspace identifier
+     * @param archetypes      the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
+     *                        method must be invoked to set a non-null value before performing any operation
      * @param childArchetypes the child archetypes that this operates on. If {@code null}, the
      *                        {@link #setChildArchetypes} method must be invoked to set a non-null value before
      *                        performing any operation
      * @param context         the context
      */
-    public BrowserCRUDWorkspace(String workspacesId, String workspaceId, Archetypes<Parent> archetypes,
-                                Archetypes<Child> childArchetypes, Context context) {
-        this(workspacesId, workspaceId, archetypes, childArchetypes, context, true);
+    public BrowserCRUDWorkspace(String id, Archetypes<Parent> archetypes, Archetypes<Child> childArchetypes,
+                                Context context) {
+        this(id, archetypes, childArchetypes, context, true);
     }
 
     /**
-     * Constructs a new {@code BrowserCRUDWorkspace}.
+     * Constructs a {@link BrowserCRUDWorkspace}.
      *
-     * @param workspacesId     the workspaces localisation identifier
-     * @param workspaceId     the workspace localisation identifier
+     * @param id              the workspace identifier
      * @param archetypes      the archetypes that this operates on. If {@code null}, the {@link #setArchetypes}
      *                        method must be invoked to set a non-null value before performing any operation
      * @param childArchetypes the child archetypes that this operates on. If {@code null}, the
@@ -143,12 +123,10 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      *                        performing any operation
      * @param context         the context
      * @param showSelector    if {@code true}, show a selector to select the
-     *                        parent object
      */
-    public BrowserCRUDWorkspace(String workspacesId, String workspaceId,
-                                Archetypes<Parent> archetypes, Archetypes<Child> childArchetypes,
+    public BrowserCRUDWorkspace(String id, Archetypes<Parent> archetypes, Archetypes<Child> childArchetypes,
                                 Context context, boolean showSelector) {
-        super(workspacesId, workspaceId, archetypes, childArchetypes, context, showSelector);
+        super(id, archetypes, childArchetypes, context, showSelector);
     }
 
     /**
@@ -161,6 +139,13 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
         super.setObject(object);
         layoutWorkspace(false);
     }
+
+    /**
+     * Creates a new browser.
+     *
+     * @return the browser
+     */
+    protected abstract Browser<Child> createBrowser();
 
     /**
      * Returns the browser.
@@ -197,46 +182,8 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
     }
 
     /**
-     * Creates a new browser.
-     *
-     * @param query the query
-     * @return a new browser
-     */
-    protected Browser<Child> createBrowser(Query<Child> query) {
-        return BrowserFactory.create(query, new DefaultLayoutContext(getContext(), getHelpContext()));
-    }
-
-    /**
-     * Returns the query used to populate the browser.
-     *
-     * @return the query, or {@code null} if none is registered
-     */
-    protected Query<Child> getQuery() {
-        return query;
-    }
-
-    /**
-     * Registers a browser query.
-     *
-     * @param query the browser query. May be {@code null}
-     */
-    protected void setQuery(Query<Child> query) {
-        this.query = query;
-    }
-
-    /**
-     * Creates a new query to populate the browser.
-     *
-     * @return a new query
-     */
-    protected Query<Child> createQuery() {
-        Archetypes shortNames = getChildArchetypes();
-        return QueryFactory.create(shortNames.getShortNames(), getContext(), shortNames.getType());
-    }
-
-    /**
      * Invoked when a browser object is selected.
-     * <p/>
+     * <p>
      * This implementation sets the object in the CRUD window.
      *
      * @param object the selected object
@@ -247,7 +194,7 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
 
     /**
      * Invoked when a browser object is viewed (aka 'browsed').
-     * <p/>
+     * <p>
      * This implementation sets the object in the CRUD window.
      *
      * @param object the selected object
@@ -350,17 +297,9 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
                 setWorkspace(getWorkspace());
                 browser.query();
             } else {
-                Query<Child> query = createQuery();
-                setQuery(query);
-                setBrowser(createBrowser(query));
-                setCRUDWindow(createCRUDWindow());
-                setWorkspace(createWorkspace());
-                if (query.isAuto()) {
-                    onBrowserQuery();
-                }
+                recreateWorkspace();
             }
         } else {
-            setQuery(null);
             setBrowser(null);
             setCRUDWindow(null);
             if (workspace != null) {
@@ -368,6 +307,15 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
                 workspace = null;
             }
         }
+    }
+
+    /**
+     * Recreates the workspace.
+     */
+    protected void recreateWorkspace() {
+        setBrowser(createBrowser());
+        setCRUDWindow(createCRUDWindow());
+        setWorkspace(createWorkspace());
     }
 
     /**
@@ -399,20 +347,18 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
      * @return a new workspace
      */
     protected Component createWorkspace() {
-        Component browser = ColumnFactory.create("Inset", getBrowser().getComponent());
-        return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL,
-                                       "BrowserCRUDWorkspace.Layout", browser,
-                                       getCRUDWindow().getComponent());
+        return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL, "BrowserCRUDWorkspace.Layout",
+                                       getBrowser().getComponent(), getCRUDWindow().getComponent());
     }
 
     /**
      * Determines if the a property change notification containing
      * {@link #SUMMARY_PROPERTY} should be made when a child updates.
-     * <p/>
+     * <p>
      * This implementation always returns {@code true}.
      *
      * @return {@code true} if a notification should be made, otherwise
-     *         {@code false}
+     * {@code false}
      */
     protected boolean updateSummaryOnChildUpdate() {
         return true;
@@ -421,15 +367,15 @@ public abstract class BrowserCRUDWorkspace<Parent extends IMObject, Child extend
     /**
      * Determines if the parent object is optional (i.e may be {@code null},
      * when laying out the workspace.
-     * <p/>
+     * <p>
      * If the parent object is optional, the browser and CRUD window will be
      * displayed if there is no parent object. If it is mandatory, the
      * browser and CRUD window will only be displayed if it is present.
-     * <p/>
+     * <p>
      * This implementation always returns {@code false}.
      *
      * @return {@code true} if the parent object is optional, otherwise
-     *         {@code false}
+     * {@code false}
      */
     protected boolean isParentOptional() {
         return false;

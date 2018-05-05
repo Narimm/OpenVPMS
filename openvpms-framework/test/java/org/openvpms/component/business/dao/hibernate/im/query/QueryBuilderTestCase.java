@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.query;
@@ -685,6 +685,152 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
 
 
     /**
+     * Verifies that count can be used.
+     */
+    @Test
+    public void testCount() {
+        String expected = "select count (party0) from "
+                          + PartyDO.class.getName() + " as party0 "
+                          + "where party0.archetypeId.shortName = :shortName0";
+        ArchetypeQuery query = new ArchetypeQuery("party.customerperson");
+        QueryContext context = builder.build(query);
+        checkParameter(context, "party.customerperson", "shortName0");
+        String hql = context.getQueryString(true);
+        assertEquals(expected, hql);
+        checkHQL(hql);
+    }
+
+    /**
+     * Verifies that count can be used with a single select constraint.
+     */
+    @Test
+    public void testCountWithSingleSelect() {
+        String expected = "select count (party0.name) from "
+                          + PartyDO.class.getName() + " as party0 "
+                          + "where (party0.archetypeId.shortName = :shortName0)";
+        ArchetypeQuery query = new ArchetypeQuery("party.customerperson");
+        query.add(new NodeSelectConstraint("name"));
+        QueryContext context = builder.build(query);
+        checkParameter(context, "party.customerperson", "shortName0");
+        String hql = context.getQueryString(true);
+        assertEquals(expected, hql);
+        checkHQL(hql);
+    }
+
+    /**
+     * Verifies that count can be used with multiple select constraint.
+     */
+    @Test
+    public void testCountWithMultipleSelect() {
+        String expected = "select count (*) from "
+                          + PartyDO.class.getName() + " as party0 "
+                          + "where (party0.archetypeId.shortName = :shortName0)";
+        ArchetypeQuery query = new ArchetypeQuery("party.customerperson");
+        query.add(new NodeSelectConstraint("name"));
+        query.add(new NodeSelectConstraint("description"));
+        QueryContext context = builder.build(query);
+        checkParameter(context, "party.customerperson", "shortName0");
+        String hql = context.getQueryString(true);
+        assertEquals(expected, hql);
+        checkHQL(hql);
+    }
+
+    /**
+     * Verifies that distinct can be used.
+     */
+    @Test
+    public void testDistinct() {
+        String expected = "select distinct party0 from "
+                          + PartyDO.class.getName() + " as party0 "
+                          + "where party0.archetypeId.shortName = :shortName0";
+        ArchetypeQuery query = new ArchetypeQuery("party.customerperson");
+        query.setDistinct(true);
+        checkQuery(query, expected);
+    }
+
+    /**
+     * Verifies that distinct can be used with a single select constraint.
+     */
+    @Test
+    public void testDistinctWithSingleSelect() {
+        String expected = "select distinct party0.name from "
+                          + PartyDO.class.getName() + " as party0 "
+                          + "where (party0.archetypeId.shortName = :shortName0)";
+        ArchetypeQuery query = new ArchetypeQuery("party.customerperson");
+        query.add(new NodeSelectConstraint("name"));
+        query.setDistinct(true);
+        checkQuery(query, expected);
+    }
+
+    /**
+     * Verifies that distinct can be used with multiple select constraints.
+     */
+    @Test
+    public void testDistinctWithMultipleSelect() {
+        String expected = "select distinct party0.name, party0.description from "
+                          + PartyDO.class.getName() + " as party0 "
+                          + "where (party0.archetypeId.shortName = :shortName0)";
+        ArchetypeQuery query = new ArchetypeQuery("party.customerperson");
+        query.add(new NodeSelectConstraint("name"));
+        query.add(new NodeSelectConstraint("description"));
+        query.setDistinct(true);
+        checkQuery(query, expected);
+    }
+
+    /**
+     * Verifies that count distinct can be used.
+     */
+    @Test
+    public void testCountDistinct() {
+        String expected = "select count (distinct party0) from "
+                          + PartyDO.class.getName() + " as party0 "
+                          + "where party0.archetypeId.shortName = :shortName0";
+        ArchetypeQuery query = new ArchetypeQuery("party.customerperson");
+        query.setDistinct(true);
+        QueryContext context = builder.build(query);
+        checkParameter(context, "party.customerperson", "shortName0");
+        String hql = context.getQueryString(true);
+        assertEquals(expected, hql);
+        checkHQL(hql);
+    }
+
+    /**
+     * Verifies that count distinct can be used with a single select constraint.
+     */
+    @Test
+    public void testCountDistinctWithSingleSelect() {
+        String expected = "select count (distinct party0.name) from "
+                          + PartyDO.class.getName() + " as party0 "
+                          + "where (party0.archetypeId.shortName = :shortName0)";
+        ArchetypeQuery query = new ArchetypeQuery("party.customerperson");
+        query.setDistinct(true);
+        query.add(new NodeSelectConstraint("name"));
+        QueryContext context = builder.build(query);
+        checkParameter(context, "party.customerperson", "shortName0");
+        String hql = context.getQueryString(true);
+        assertEquals(expected, hql);
+        checkHQL(hql);
+    }
+
+    /**
+     * Verifies that count distinct with a multiple select constraints triggers a {@link QueryBuilderException}.
+     */
+    @Test
+    public void testCountDistinctWithMultipleSelect() {
+        ArchetypeQuery query = new ArchetypeQuery("party.customerperson");
+        query.setDistinct(true);
+        query.add(new NodeSelectConstraint("name"));
+        query.add(new NodeSelectConstraint("description"));
+        QueryContext context = builder.build(query);
+        try {
+            context.getQueryString(true);
+            fail("Expected query build to fail");
+        } catch (QueryBuilderException expected) {
+            assertEquals(QueryBuilderException.ErrorCode.CannotCountDistinctMultipleSelect, expected.getErrorCode());
+        }
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -706,9 +852,18 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
     private void checkQuery(ArchetypeQuery query, String expected) {
         String hql = builder.build(query).getQueryString();
         assertEquals(expected, hql);
+        checkHQL(hql);
+    }
+
+    /**
+     * Verifies that an HQL query can be parsed by Hibernate.
+     *
+     * @param query the query
+     */
+    private void checkHQL(String query) {
         SessionFactory factory = (SessionFactory) applicationContext.getBean("sessionFactory");
         Session session = factory.openSession();
-        session.createQuery(hql);
+        session.createQuery(query);
         session.close();
     }
 

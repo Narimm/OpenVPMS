@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
 
+import org.apache.commons.jxpath.FunctionLibrary;
 import org.apache.commons.jxpath.JXPathContext;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
@@ -27,9 +28,7 @@ import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 
-import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 
 /**
@@ -38,67 +37,6 @@ import java.util.GregorianCalendar;
  * @author Tim Anderson
  */
 public class SchedulingHelper {
-
-    /**
-     * Returns the minutes from midnight for the specified time.
-     *
-     * @param time the time
-     * @return the minutes from midnight for {@code time}
-     */
-    public static int getMinutes(Date time) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(time);
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        int mins = calendar.get(Calendar.MINUTE);
-        return (hour * 60) + mins;
-    }
-
-    /**
-     * Returns the minutes from midnight for the specified time, rounded
-     * up or down to the nearest slot.
-     *
-     * @param time     the time
-     * @param slotSize the slot size
-     * @param roundUp  if {@code true} round up to the nearest slot, otherwise round down
-     * @return the minutes from midnight for the specified time
-     */
-    public static int getSlotMinutes(Date time, int slotSize, boolean roundUp) {
-        int mins = getMinutes(time);
-        int result = getNearestSlot(mins, slotSize);
-        if (result != mins && roundUp) {
-            result += slotSize;
-        }
-        return result;
-    }
-
-    /**
-     * Returns the time of the slot closest to that of the specified time.
-     *
-     * @param time     the time
-     * @param slotSize the size of the slot, in minutes
-     * @param roundUp  if {@code true} round up to the nearest slot, otherwise round down
-     * @return the nearest slot time to {@code time}
-     */
-    public static Date getSlotTime(Date time, int slotSize, boolean roundUp) {
-        Date result;
-        int mins = getMinutes(time);
-        int nearestSlot = getNearestSlot(mins, slotSize);
-        if (nearestSlot != mins) {
-            if (roundUp) {
-                nearestSlot += slotSize;
-            }
-            GregorianCalendar calendar = new GregorianCalendar();
-            calendar.setTime(time);
-            calendar.set(Calendar.HOUR_OF_DAY, 0);
-            calendar.set(Calendar.MINUTE, 0);
-            calendar.set(Calendar.SECOND, 0);
-            calendar.add(Calendar.MINUTE, nearestSlot);
-            result = calendar.getTime();
-        } else {
-            result = time;
-        }
-        return result;
-    }
 
     /**
      * Evaluates an xpath expression against the supplied event.
@@ -113,6 +51,23 @@ public class SchedulingHelper {
      * @return the evaluate result. May be {@code null}
      */
     public static String evaluate(String expression, PropertySet event) {
+        return evaluate(expression, event, null);
+    }
+
+    /**
+     * Evaluates an xpath expression against the supplied event.
+     * <p/>
+     * This adds a "waiting" time attribute to the event prior to evaluation as determined by {@link #getWaitingTime}.
+     * <p/>
+     * NOTE: any string sequence containing the characters '\\n' will be treated
+     * as new lines.
+     *
+     * @param expression the expression
+     * @param event      the event
+     * @param functions  the functions. May be {@code null}
+     * @return the evaluate result. May be {@code null}
+     */
+    public static String evaluate(String expression, PropertySet event, FunctionLibrary functions) {
         String text;
         String waiting = getWaitingTime(event);
         if (waiting != null) {
@@ -122,7 +77,8 @@ public class SchedulingHelper {
         }
         event.set("waiting", waiting);
 
-        JXPathContext context = JXPathHelper.newContext(event);
+        JXPathContext context = (functions != null) ? JXPathHelper.newContext(event, functions)
+                                                    : JXPathHelper.newContext(event);
 
         // hack to replace all instances of '\\n' with new lines to
         // enable new lines to be included in the text
@@ -166,7 +122,7 @@ public class SchedulingHelper {
         boolean appointment = TypeHelper.isA(event.getReference(ScheduleEvent.ACT_REFERENCE),
                                              ScheduleArchetypes.APPOINTMENT);
         if (appointment) {
-            if (status.equals(AppointmentStatus.CHECKED_IN) && event.exists(ScheduleEvent.ARRIVAL_TIME)) {
+            if (AppointmentStatus.CHECKED_IN.equals(status) && event.exists(ScheduleEvent.ARRIVAL_TIME)) {
                 Date arrival = event.getDate(ScheduleEvent.ARRIVAL_TIME);
                 if (arrival != null) {
                     waiting = DateFormatter.formatTimeDiff(arrival, new Date());
@@ -175,7 +131,7 @@ public class SchedulingHelper {
         } else {
             Date start = event.getDate(ScheduleEvent.ACT_START_TIME);
             Date end;
-            if (status.equals(TaskStatus.PENDING) || !event.exists(ScheduleEvent.CONSULT_START_TIME)) {
+            if (TaskStatus.PENDING.equals(status) || !event.exists(ScheduleEvent.CONSULT_START_TIME)) {
                 end = new Date();
             } else {
                 end = event.getDate(ScheduleEvent.CONSULT_START_TIME);
@@ -183,17 +139,6 @@ public class SchedulingHelper {
             waiting = DateFormatter.formatTimeDiff(start, end);
         }
         return waiting;
-    }
-
-    /**
-     * Returns the nearest slot.
-     *
-     * @param mins     the start minutes
-     * @param slotSize the slot size
-     * @return the minutes from midnight for the specified time
-     */
-    private static int getNearestSlot(int mins, int slotSize) {
-        return (mins / slotSize) * slotSize;
     }
 
 }

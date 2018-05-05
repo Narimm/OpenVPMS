@@ -11,12 +11,11 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
 
-import nextapp.echo2.app.Button;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
@@ -24,13 +23,18 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
+import org.openvpms.web.component.im.doc.DocumentGeneratorFactory;
+import org.openvpms.web.component.im.edit.IMObjectActions;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
@@ -39,7 +43,9 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -52,18 +58,46 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     /**
      * Refresh button identifier.
      */
-    private static final String REFRESH_ID = "refresh";
-
+    private static final String REFRESH_ID = "button.refresh";
 
     /**
-     * Constructs a {@code DocumentCRUDWindow}.
+     * External edit button identifier.
+     */
+    private static final String EXTERNAL_EDIT_ID = "button.externaledit";
+
+    /**
+     * Constructs a {@link DocumentCRUDWindow}.
      *
      * @param archetypes the archetypes that this may create
      * @param context    the context
      * @param help       the help context
      */
     public DocumentCRUDWindow(Archetypes<DocumentAct> archetypes, Context context, HelpContext help) {
-        super(archetypes, new DocumentActActions(), context, help);
+        this(archetypes, new DocumentActActions(), context, help);
+    }
+
+    /**
+     * Constructs a {@link DocumentCRUDWindow}.
+     *
+     * @param archetypes the archetypes that this may create
+     * @param context    the context
+     * @param actions    determines the operations that may be performed on the selected object. If {@code null},
+     *                   actions should be registered via {@link #setActions(IMObjectActions)}
+     * @param help       the help context
+     */
+    public DocumentCRUDWindow(Archetypes<DocumentAct> archetypes, DocumentActActions actions, Context context,
+                              HelpContext help) {
+        super(archetypes, actions, context, help);
+    }
+
+    /**
+     * Returns the actions that may be performed on the selected object.
+     *
+     * @return the actions
+     */
+    @Override
+    protected DocumentActActions getActions() {
+        return (DocumentActActions) super.getActions();
     }
 
     /**
@@ -74,13 +108,18 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     @Override
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
-        Button refresh = ButtonFactory.create(REFRESH_ID, new ActionListener() {
+        buttons.add(createPrintButton());
+        buttons.add(ButtonFactory.create(REFRESH_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onRefresh();
             }
-        });
-        buttons.add(createPrintButton());
-        buttons.add(refresh);
+        }));
+        buttons.add(ButtonFactory.create(EXTERNAL_EDIT_ID, new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                onExternalEdit();
+            }
+        }));
     }
 
     /**
@@ -92,9 +131,10 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     @Override
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
-        buttons.setEnabled(PRINT_ID, enable);
+        enablePrintPreview(buttons, enable);
         boolean enableRefresh = enable && canRefresh();
         buttons.setEnabled(REFRESH_ID, enableRefresh);
+        buttons.setEnabled(EXTERNAL_EDIT_ID, enable && getActions().canExternalEdit(getObject()));
     }
 
     /**
@@ -102,20 +142,22 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      */
     @Override
     protected void onPrint() {
-        DocumentAct act = getObject();
-        if (act.getDocument() == null) {
+        DocumentAct act = IMObjectHelper.reload(getObject());
+        if (act == null) {
+            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
+        } else if (act.getDocument() == null) {
             if (canRefresh()) {
                 // regenerate the document, and print
-                refresh(true, false);
+                refresh(act, true, false);
             } else {
                 ActBean bean = new ActBean(act);
                 if (bean.hasNode("documentTemplate") || bean.hasNode("investigationType")) {
                     // document is generated on the fly
-                    super.onPrint();
+                    print(act);
                 }
             }
         } else {
-            super.onPrint();
+            print(act);
         }
     }
 
@@ -123,45 +165,92 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
      * Invoked when the 'refresh' button is pressed.
      */
     private void onRefresh() {
-        final RefreshDialog dialog = new RefreshDialog(getObject(), getHelpContext());
-        dialog.addWindowPaneListener(new PopupDialogListener() {
-            @Override
-            public void onOK() {
-                refresh(false, dialog.version());
+        final DocumentAct act = IMObjectHelper.reload(getObject());
+        if (act == null) {
+            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
+        } else {
+            String name = act.getFileName();
+            if (name == null) {
+                ActBean bean = new ActBean(act);
+                if (bean.hasNode("documentTemplate")) {
+                    Entity documentTemplate = bean.getNodeParticipant("documentTemplate");
+                    if (documentTemplate != null) {
+                        name = documentTemplate.getName();
+                    }
+                }
             }
-        });
-        dialog.show();
+            if (name == null) {
+                name = Messages.get("imobject.none");
+            }
+            final RefreshDialog dialog = new RefreshDialog(act, name, getHelpContext());
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onOK() {
+                    refresh(act, false, dialog.version());
+                }
+            });
+            dialog.show();
+        }
     }
 
     /**
-     * Refreshes the current document act, optionally printing it.
+     * Refreshes an act, optionally printing it.
      *
+     * @param act     the act to refresh
      * @param print   if {@code true} print it
      * @param version if {@code true} version the document
      */
-    private void refresh(final boolean print, boolean version) {
-        final DocumentAct act = getObject();
-        DocumentGenerator generator = new DocumentGenerator(
+    private void refresh(final DocumentAct act, final boolean print, boolean version) {
+        DocumentGeneratorFactory factory = ServiceHelper.getBean(DocumentGeneratorFactory.class);
+        DocumentGenerator generator = factory.create(
                 act, getContext(), getHelpContext(), new DocumentGenerator.AbstractListener() {
-            public void generated(Document document) {
-                onSaved(act, false);
-                if (print) {
-                    print(act);
-                }
-            }
-        });
+                    public void generated(Document document) {
+                        onSaved(act, false);
+                        if (print) {
+                            print(act);
+                        }
+                    }
+                });
         generator.generate(true, version);
+    }
+
+
+    /**
+     * Launches an external editor to edit the selected document, if editing of the document is supported.
+     */
+    private void onExternalEdit() {
+        final DocumentAct act = IMObjectHelper.reload(getObject());
+        if (act == null) {
+            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
+        } else if (act.getDocument() != null) {
+            getActions().externalEdit(act);
+        } else {
+            // the act has no document attached. Try and generate it first.
+            DocumentGeneratorFactory factory = ServiceHelper.getBean(DocumentGeneratorFactory.class);
+            DocumentGenerator generator = factory.create(act, getContext(), getHelpContext(),
+                                                         new DocumentGenerator.AbstractListener() {
+                                                             @Override
+                                                             public void generated(Document document) {
+                                                                 onSaved(act, false);
+                                                                 DocumentActActions actions = getActions();
+                                                                 if (actions.canExternalEdit(act)) {
+                                                                     actions.externalEdit(act);
+                                                                 }
+                                                             }
+                                                         });
+            generator.generate(true, true);
+        }
     }
 
     /**
      * Determines if a document can be refreshed.
      *
      * @return {@code true} if the document can be refreshed, otherwise
-     *         {@code false}
+     * {@code false}
      */
     private boolean canRefresh() {
         DocumentAct act = getObject();
-        return (act != null && ((DocumentActActions) getActions()).canRefresh(act));
+        return (act != null && getActions().canRefresh(act));
     }
 
     private class RefreshDialog extends ConfirmationDialog {
@@ -173,15 +262,16 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
 
 
         /**
-         * Constructs a new {@code RefreshDialog}.
+         * Constructs a {@link RefreshDialog}.
          *
          * @param act  the document act
+         * @param name the name of the document
          * @param help the help context
          */
-        public RefreshDialog(DocumentAct act, HelpContext help) {
-            super(Messages.get("document.refresh.title"), Messages.get("document.refresh.message"),
+        public RefreshDialog(DocumentAct act, String name, HelpContext help) {
+            super(Messages.get("document.refresh.title"), Messages.format("document.refresh.message", name),
                   help.subtopic("refresh"));
-            DocumentRules rules = new DocumentRules();
+            DocumentRules rules = new DocumentRules(ServiceHelper.getArchetypeService());
             if (act.getDocument() != null && rules.supportsVersions(act)) {
                 version = CheckBoxFactory.create("document.refresh.version", true);
             }
@@ -204,8 +294,8 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
             if (version != null) {
                 Label content = LabelFactory.create(true, true);
                 content.setText(getMessage());
-                Column column = ColumnFactory.create("WideCellSpacing", content, version);
-                Row row = RowFactory.create("Inset", column);
+                Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, content, version);
+                Row row = RowFactory.create(Styles.LARGE_INSET, column);
                 getLayout().add(row);
             } else {
                 super.doLayout();

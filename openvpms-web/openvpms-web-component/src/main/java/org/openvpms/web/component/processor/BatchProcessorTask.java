@@ -11,14 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.processor;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.component.processor.BatchProcessor;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.workflow.AbstractTask;
 import org.openvpms.web.component.workflow.Task;
 import org.openvpms.web.component.workflow.TaskContext;
@@ -42,9 +44,13 @@ public class BatchProcessorTask extends AbstractTask {
      */
     private boolean terminate = true;
 
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(BatchProcessorTask.class);
 
     /**
-     * Creates a new <tt>BatchProcessorTask</tt>.
+     * Constructs a {@link BatchProcessorTask}.
      *
      * @param processor the processor
      */
@@ -64,9 +70,9 @@ public class BatchProcessorTask extends AbstractTask {
     /**
      * Determines if the task should terminate on error.
      * <p/>
-     * Defaults to <tt>true</tt>.
+     * Defaults to {@code true}.
      *
-     * @param terminate if <tt>true</tt> terminates on error, otherwise ignores the error
+     * @param terminate if {@code true} terminates on error, otherwise ignores the error
      */
     public void setTerminateOnError(boolean terminate) {
         this.terminate = terminate;
@@ -90,6 +96,8 @@ public class BatchProcessorTask extends AbstractTask {
             public void error(Throwable exception) {
                 if (terminate) {
                     notifyCancelledOnError(exception);
+                } else {
+                    log.error(exception, exception);
                 }
             }
         });

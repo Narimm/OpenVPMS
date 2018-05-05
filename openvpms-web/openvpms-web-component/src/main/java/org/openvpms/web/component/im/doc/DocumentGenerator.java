@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -21,14 +21,15 @@ import org.openvpms.archetype.rules.doc.DocumentRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.report.ParameterType;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.report.DocumentActReporter;
 import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.im.util.AbstractIMObjectSaveListener;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.macro.MacroVariables;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.help.HelpContext;
@@ -42,7 +43,7 @@ import java.util.Set;
 
 /**
  * Generates a document from a document act.
- * <p/>
+ * <p>
  * For document acts that have an existing document and no document template, the existing document will be returned.
  *
  * @author Tim Anderson
@@ -125,6 +126,26 @@ public class DocumentGenerator {
     private final Context context;
 
     /**
+     * The help context.
+     */
+    private final HelpContext help;
+
+    /**
+     * The file name formatter.
+     */
+    private final FileNameFormatter formatter;
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
+     * The lookup service.
+     */
+    private final ILookupService lookups;
+
+    /**
      * The generated document.
      */
     private Document document;
@@ -135,22 +156,24 @@ public class DocumentGenerator {
     private final Listener listener;
 
     /**
-     * The help context.
-     */
-    private final HelpContext help;
-
-    /**
-     * Constructs a {@code DocumentGenerator}.
+     * Constructs a {@link DocumentGenerator}.
      *
-     * @param act      the document act
-     * @param context  the context
-     * @param help     the help context
-     * @param listener the listener to notify
+     * @param act       the document act
+     * @param context   the context
+     * @param help      the help context
+     * @param formatter the file name formatter
+     * @param service   the archetype service
+     * @param lookups   the lookup service
+     * @param listener  the listener to notify
      */
-    public DocumentGenerator(DocumentAct act, Context context, HelpContext help, Listener listener) {
+    public DocumentGenerator(DocumentAct act, Context context, HelpContext help, FileNameFormatter formatter,
+                             IArchetypeService service, ILookupService lookups, Listener listener) {
         this.act = act;
         this.context = context;
         this.help = help;
+        this.formatter = formatter;
+        this.service = service;
+        this.lookups = lookups;
         this.listener = listener;
     }
 
@@ -165,7 +188,7 @@ public class DocumentGenerator {
 
     /**
      * Generates the document.
-     * <p/>
+     * <p>
      * The document will not be saved.
      *
      * @throws DocumentException for any document error
@@ -194,8 +217,8 @@ public class DocumentGenerator {
      * @throws DocumentException for any document error
      */
     public void generate(boolean save, boolean version, boolean skip) {
-        if (DocumentActReporter.hasTemplate(act)) {
-            DocumentActReporter reporter = new DocumentActReporter(act);
+        if (DocumentActReporter.hasTemplate(act, service)) {
+            DocumentActReporter reporter = new DocumentActReporter(act, formatter, service, lookups);
             reporter.setFields(ReportContextFactory.create(context));
             Set<ParameterType> parameters = reporter.getParameterTypes();
             boolean isLetter = TypeHelper.isA(act, "act.*Letter");
@@ -206,7 +229,7 @@ public class DocumentGenerator {
                 promptParameters(reporter, save, version, skip);
             }
         } else if (act.getDocument() != null) {
-            Document existing = (Document) IMObjectHelper.getObject(act.getDocument(), context);
+            Document existing = (Document) service.get(act.getDocument());
             if (existing == null) {
                 throw new DocumentException(DocumentException.ErrorCode.NotFound);
             }
@@ -237,7 +260,7 @@ public class DocumentGenerator {
         document = generate(reporter);
 
         if (save) {
-            DocumentRules rules = new DocumentRules();
+            DocumentRules rules = new DocumentRules(ServiceHelper.getArchetypeService());
             List<IMObject> changes = rules.addDocument(act, document, version);
             SaveHelper.save(changes, new AbstractIMObjectSaveListener() {
                 @Override
@@ -270,7 +293,7 @@ public class DocumentGenerator {
         MacroVariables variables = new MacroVariables(context, ServiceHelper.getArchetypeService(),
                                                       ServiceHelper.getLookupService());
         final ParameterDialog dialog = new ParameterDialog(title, parameters, act, context, help.subtopic("parameters"),
-                                                           variables, skip);
+                                                           variables, skip, true);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onOK() {

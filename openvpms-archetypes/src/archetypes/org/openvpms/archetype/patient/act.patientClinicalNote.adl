@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -23,6 +23,18 @@
         <node name="description" type="java.lang.String" path="/description" hidden="true" maxLength="255"/>
         <node displayName="Date" name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"
               defaultValue="java.util.Date.new()"/>
+        <node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'IN_PROGRESS'"
+              hidden="true" readOnly="true">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="IN_PROGRESS" value="In Progress"/>
+                    <property name="POSTED" value="Finalised"/>
+                </propertyList>
+                <errorMessage>Invalid Note Status</errorMessage>
+            </assertion>
+        </node>
+        <node name="identities" path="/identities" type="java.util.HashSet" minCardinality="0" maxCardinality="*"
+              filter="actIdentity.*" hidden="true"/>
         <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.patient" hidden="true"/>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
@@ -42,5 +54,7 @@
         </node>
         <node name="problem" path="/targetActRelationships" type="java.util.HashSet" baseName="TargetActRelationship"
               minCardinality="0" maxCardinality="1" hidden="true" filter="actRelationship.patientClinicalProblemItem"/>
+        <node name="addenda" path="/sourceActRelationships" type="java.util.HashSet" baseName="SourceActRelationship"
+              minCardinality="0" maxCardinality="*" hidden="true" filter="actRelationship.patientClinicalItemAddendum"/>
     </archetype>
 </archetypes>

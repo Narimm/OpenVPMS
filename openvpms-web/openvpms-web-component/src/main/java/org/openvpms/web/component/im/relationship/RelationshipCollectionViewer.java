@@ -42,8 +42,7 @@ import java.util.Map;
  *
  * @author Tim Anderson
  */
-public class RelationshipCollectionViewer
-        extends IMTableCollectionViewer<RelationshipState> {
+public class RelationshipCollectionViewer extends IMTableCollectionViewer<RelationshipState> {
 
     /**
      * Determines if the parent is the source or target of the relationships.
@@ -51,16 +50,14 @@ public class RelationshipCollectionViewer
     private final boolean parentIsSource;
 
     /**
-     * The relationship states, keyed on their corresponding
-     * relationships.
+     * The relationship states, keyed on their corresponding relationships.
      */
-    private Map<IMObjectRelationship, RelationshipState> states
-            = new LinkedHashMap<IMObjectRelationship, RelationshipState>();
+    private Map<IMObjectRelationship, RelationshipState> states = new LinkedHashMap<>();
 
     /**
      * Determines if inactive relationships should be displayed.
      */
-    private CheckBox hideInactive;
+    private final CheckBox hideInactive;
 
 
     /**
@@ -72,9 +69,24 @@ public class RelationshipCollectionViewer
      * @throws ArchetypeServiceException for any archetype service error
      */
     public RelationshipCollectionViewer(CollectionProperty property, IMObject parent, LayoutContext context) {
+        this(property, parent, true, context);
+    }
+
+    /**
+     * Constructs a {@link RelationshipCollectionViewer}.
+     *
+     * @param property     the collection to view
+     * @param parent       the parent object
+     * @param context      the layout context. May be {@code null}
+     * @param hideInactive if {@code true}, display a checkbox to determine if inactive objects should be hidden/shown
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public RelationshipCollectionViewer(CollectionProperty property, IMObject parent, boolean hideInactive,
+                                        LayoutContext context) {
         super(property, parent, context);
         RelationshipStateQuery query = createQuery(parent);
         parentIsSource = query.parentIsSource();
+        this.hideInactive = (hideInactive) ? CheckBoxFactory.create(null, true) : null;
         states = query.query();
     }
 
@@ -120,22 +132,21 @@ public class RelationshipCollectionViewer
     }
 
     /**
-     * Returns the relationship states, filtering inactive relationships if
-     * {@link #hideInactive()} is {@code true}.
+     * Returns the relationship states, filtering inactive relationships if {@link #hideInactive()} is {@code true}.
      *
      * @return the relationships
      */
     protected List<RelationshipState> getRelationshipStates() {
         List<RelationshipState> result;
         if (hideInactive()) {
-            result = new ArrayList<RelationshipState>();
+            result = new ArrayList<>();
             for (RelationshipState relationship : states.values()) {
                 if (relationship.isActive()) {
                     result.add(relationship);
                 }
             }
         } else {
-            result = new ArrayList<RelationshipState>(states.values());
+            result = new ArrayList<>(states.values());
         }
         return result;
     }
@@ -154,7 +165,7 @@ public class RelationshipCollectionViewer
      * Determines if the parent is the source or target of the relationship.
      *
      * @return {@code true} if the parent is the source of the relationship,
-     *         {@code false} if it is the target
+     * {@code false} if it is the target
      */
     protected boolean parentIsSource() {
         return parentIsSource;
@@ -165,27 +176,28 @@ public class RelationshipCollectionViewer
      */
     @Override
     protected Component doLayout() {
-        String name = getProperty().getDisplayName();
-        String label = Messages.format("relationship.hide.inactive", name);
-        hideInactive = CheckBoxFactory.create(null, true);
-        hideInactive.setText(label);
-        hideInactive.addActionListener(new ActionListener() {
-            public void onAction(ActionEvent event) {
-                onHideInactiveChanged();
-            }
-        });
         Component component = super.doLayout();
-        component.add(hideInactive, 0);
+        if (hideInactive != null) {
+            String name = getProperty().getDisplayName();
+            String label = Messages.format("relationship.hide.inactive", name);
+            hideInactive.setText(label);
+            hideInactive.addActionListener(new ActionListener() {
+                public void onAction(ActionEvent event) {
+                    onHideInactiveChanged();
+                }
+            });
+            component.add(hideInactive, 0);
+        }
         return component;
     }
 
     /**
      * Determines if inactive objects should be hidden.
      *
-     * @return <code>true</code> if inactive objects should be hidden
+     * @return {@code true} if inactive objects should be hidden
      */
     protected boolean hideInactive() {
-        return hideInactive.isSelected();
+        return hideInactive != null && hideInactive.isSelected();
     }
 
     /**

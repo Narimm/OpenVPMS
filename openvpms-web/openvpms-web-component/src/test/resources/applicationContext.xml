@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -125,6 +125,8 @@
                 <property name="cacheName" value="lookupCache"/>
                 <property name="maxEntriesLocalHeap" value="40000"/>
                 <property name="overflowToDisk" value="false"/>
+                <property name="timeToIdleSeconds" value="0"/>
+                <property name="timeToLiveSeconds" value="0"/>
                 <property name="eternal" value="true"/>
             </bean>
         </constructor-arg>
@@ -135,9 +137,12 @@
     </bean>
 
     <bean id="functionsFactory" class="org.openvpms.archetype.function.factory.DefaultArchetypeFunctionsFactory">
-        <constructor-arg ref="currencies"/>
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
+        <constructor-arg>
+            <null/>
+        </constructor-arg>
+        <constructor-arg ref="currencies"/>
         <constructor-arg>
             <null/>
         </constructor-arg>
@@ -207,16 +212,20 @@
         <constructor-arg ref="archetypeService"/>
     </bean>
 
+    <bean class="org.openvpms.archetype.rules.practice.LocationRules">
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
     <bean id="medicalRecordRules" class="org.openvpms.archetype.rules.patient.MedicalRecordRules">
         <constructor-arg ref="archetypeService"/>
     </bean>
     <bean id="productPriceRules" class="org.openvpms.archetype.rules.product.ProductPriceRules">
         <constructor-arg ref="archetypeService"/>
-        <constructor-arg ref="lookupService"/>
     </bean>
 
     <bean id="productRules" class="org.openvpms.archetype.rules.product.ProductRules">
         <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="lookupService"/>
     </bean>
 
     <bean id="patientRules" class="org.openvpms.archetype.rules.patient.PatientRules">
@@ -246,13 +255,14 @@
     <!-- the Document handlers -->
     <bean id="documentHandlers"
           class="org.openvpms.archetype.rules.doc.DocumentHandlers">
-        <property name="documentHandlers">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg>
             <list>
                 <bean class="org.openvpms.report.jasper.JRXMLDocumentHandler">
                     <constructor-arg ref="archetypeService"/>
                 </bean>
             </list>
-        </property>
+        </constructor-arg>
     </bean>
 
     <bean id="reportFactory" class="org.openvpms.report.CachingReportFactory">
@@ -269,16 +279,19 @@
     <!-- ================================================================== -->
 
     <bean id="macros" class="org.openvpms.macro.impl.LookupMacros">
-        <constructor-arg index="0" ref="lookupService"/>
-        <constructor-arg index="1" ref="archetypeService"/>
-        <constructor-arg index="2" ref="reportFactory"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="reportFactory"/>
+        <constructor-arg ref="functionsFactory"/>
     </bean>
 
     <!-- ================================================================== -->
     <!--                        FACTORIES                                   -->
     <!-- ================================================================== -->
     <bean id="editorFactory" class="org.openvpms.web.component.im.edit.IMObjectEditorFactory">
-        <constructor-arg value="TestIMObjectEditorFactory.properties"/>
+        <constructor-arg value="IMObjectEditorFactory.properties"/>
+        <constructor-arg value="DefaultIMObjectEditorFactory.properties"/>
+        <constructor-arg ref="archetypeService"/>
     </bean>
     <bean id="viewLayoutStrategyFactory" class="org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory"/>
 
@@ -290,6 +303,10 @@
         <!--  The mask. May contain combinations of Ctrl, Alt, or Shift,
               separated by '-' -->
         <property name="mask" value="Alt"/>
+    </bean>
+
+    <bean id="preferences" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.openvpms.archetype.rules.prefs.Preferences"/>
     </bean>
 
 </beans>

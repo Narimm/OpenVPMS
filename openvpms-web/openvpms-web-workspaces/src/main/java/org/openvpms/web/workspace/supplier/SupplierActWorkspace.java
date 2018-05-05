@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier;
@@ -21,7 +21,9 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.workspace.BrowserCRUDWorkspace;
+import org.openvpms.web.component.im.query.Query;
+import org.openvpms.web.component.im.query.QueryFactory;
+import org.openvpms.web.component.workspace.QueryBrowserCRUDWorkspace;
 
 
 /**
@@ -30,29 +32,27 @@ import org.openvpms.web.component.workspace.BrowserCRUDWorkspace;
  * @author Tim Anderson
  */
 public abstract class SupplierActWorkspace<T extends Act>
-    extends BrowserCRUDWorkspace<Party, T> {
+        extends QueryBrowserCRUDWorkspace<Party, T> {
 
     /**
-     * Constructs a {@code SupplierActWorkspace}.
+     * Constructs a {@link SupplierActWorkspace}.
      *
-     * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId the workspace localisation identifier
+     * @param id          the workspace id
      * @param context     the context
      */
-    public SupplierActWorkspace(String workspacesId, String workspaceId, Context context) {
-        this(workspacesId, workspaceId, null, context);
+    public SupplierActWorkspace(String id, Context context) {
+        this(id, null, context);
     }
 
     /**
-     * Constructs a {@code SupplierActWorkspace}.
+     * Constructs a {@link SupplierActWorkspace}.
      *
-     * @param workspacesId the workspaces localisation identifier
-     * @param workspaceId the workspace localisation identifier
-     * @param archetypes  the archetype short names that this operates on
-     * @param context     the context
+     * @param id         the workspace id
+     * @param archetypes the archetype short names that this operates on
+     * @param context    the context
      */
-    public SupplierActWorkspace(String workspacesId, String workspaceId, Archetypes<T> archetypes, Context context) {
-        super(workspacesId, workspaceId, null, archetypes, context);
+    public SupplierActWorkspace(String id, Archetypes<T> archetypes, Context context) {
+        super(id, null, archetypes, context);
         setArchetypes(Party.class, "party.supplier*");
         setMailContext(new SupplierMailContext(context, getHelpContext()));
     }
@@ -67,6 +67,17 @@ public abstract class SupplierActWorkspace<T extends Act>
         super.setObject(object);
         getContext().setSupplier(object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
+    }
+
+    /**
+     * Creates a new query to select an object.
+     *
+     * @return a new query
+     */
+    @Override
+    protected Query<Party> createSelectQuery() {
+        // uses the query handler for party.supplier* by default
+        return QueryFactory.create(getArchetypes().getShortNames(), false, getContext(), getType());
     }
 
     /**

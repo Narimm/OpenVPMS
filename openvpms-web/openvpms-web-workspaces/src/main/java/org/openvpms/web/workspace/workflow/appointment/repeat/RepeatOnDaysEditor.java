@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
@@ -118,7 +118,7 @@ class RepeatOnDaysEditor extends AbstractRepeatExpressionEditor {
         DayOfWeek dayOfWeek = expression.getDayOfWeek();
         DayOfMonth dayOfMonth = expression.getDayOfMonth();
         Month month = expression.getMonth();
-        return !dayOfWeek.isAll() && !dayOfWeek.isOrdinal() && dayOfMonth.isAll() && month.isAll();
+        return !dayOfWeek.isOrdinal() && dayOfMonth.isAll() && month.isAll();
     }
 
     /**

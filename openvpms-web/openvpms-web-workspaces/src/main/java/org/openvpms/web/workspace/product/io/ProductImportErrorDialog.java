@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.io;
@@ -52,13 +52,13 @@ public class ProductImportErrorDialog extends PopupDialog {
         super(Messages.get("product.import.error.title"), "BrowserDialog", OK, help);
         setModal(true);
 
-        ResultSet<ProductData> resultSet = new ListResultSet<ProductData>(errors, 20);
-        PagedIMTableModel<ProductData, ProductData> model
-                = new PagedIMTableModel<ProductData, ProductData>(new ErrorTableModel());
-        PagedIMTable<ProductData> table = new PagedIMTable<ProductData>(model, resultSet);
+        ResultSet<ProductData> resultSet = new ListResultSet<>(errors, 20);
+        PagedIMTableModel<ProductData, ProductData> model = new PagedIMTableModel<>(new ErrorTableModel());
+        PagedIMTable<ProductData> table = new PagedIMTable<>(model, resultSet);
         Label message = LabelFactory.create("product.import.error.message");
-        getLayout().add(ColumnFactory.create("Inset.Large",
-                                             ColumnFactory.create(Styles.WIDE_CELL_SPACING, message, table)));
+        getLayout().add(ColumnFactory.create(Styles.LARGE_INSET,
+                                             ColumnFactory.create(Styles.WIDE_CELL_SPACING, message,
+                                                                  table.getComponent())));
     }
 
     private static class ErrorTableModel extends AbstractIMTableModel<ProductData> {

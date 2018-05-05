@@ -17,6 +17,7 @@
 package org.openvpms.web.component.im.query;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Label;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -40,6 +41,10 @@ public abstract class NonRenderingQuery<T> extends AbstractQuery<T> {
      */
     private FocusGroup group;
 
+    /**
+     * Zero pixel extent.
+     */
+    private static final Extent ZERO_PX = new Extent(0);
 
     /**
      * Constructs a {@link NonRenderingQuery} that queries objects with the specified primary short names.
@@ -84,5 +89,15 @@ public abstract class NonRenderingQuery<T> extends AbstractQuery<T> {
      */
     public FocusGroup getFocusGroup() {
         return group;
+    }
+
+    /**
+     * Returns the preferred height of the query when rendered.
+     *
+     * @return an extent zero pixels high
+     */
+    @Override
+    public Extent getHeight() {
+        return ZERO_PX;
     }
 }

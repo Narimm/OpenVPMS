@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -70,7 +70,7 @@ public class RelationshipCollectionTargetViewer
         IMObjectRelationship relationship = (IMObjectRelationship) object;
         IMObject target = getLayoutContext().getCache().get(relationship.getTarget());
         if (target != null) {
-            browse(target);
+            super.browse(target);
         }
     }
 

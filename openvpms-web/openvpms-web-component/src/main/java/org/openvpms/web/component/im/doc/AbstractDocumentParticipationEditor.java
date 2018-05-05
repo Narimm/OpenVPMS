@@ -11,8 +11,9 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.im.doc;
 
 import nextapp.echo2.app.event.ActionEvent;
@@ -26,18 +27,17 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
-import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.select.BasicSelector;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -164,77 +164,53 @@ public abstract class AbstractDocumentParticipationEditor extends AbstractIMObje
 
     /**
      * Save any modified child Saveable instances.
-     *
-     * @return {@code true} if the save was successful
      */
     @Override
-    protected boolean saveChildren() {
-        boolean saved = super.saveChildren();
-        if (saved && (docModified || act.isNew())) {
+    protected void saveChildren() {
+        super.saveChildren();
+        if (docModified || act.isNew()) {
             if (!act.isNew()) {
                 // need to reload the act as the participation has already
-                // been saved by the parent Entity. Failing to do so will
-                // result in hibernate StaleObjectExceptions
+                // been saved by the parent Entity. Failing to do so will result in hibernate StaleObjectExceptions
                 IMObjectReference ref = act.getDocument();
                 String fileName = act.getFileName();
                 String mimeType = act.getMimeType();
                 String description = act.getDescription();
-                act = IMObjectHelper.reload(act);
-                if (act == null) {
-                    saved = false;
-                } else {
-                    act.setDocument(ref);
-                    act.setFileName(fileName);
-                    act.setMimeType(mimeType);
-                    act.setDescription(description);
-                }
+                act = reload(act);
+                act.setDocument(ref);
+                act.setFileName(fileName);
+                act.setMimeType(mimeType);
+                act.setDescription(description);
             }
-            if (saved) {
-                saved = SaveHelper.save(act);
-                if (saved) {
-                    refMgr.commit();
-                }
-            }
+            ServiceHelper.getArchetypeService().save(act);
+            refMgr.commit();
         }
-        return saved;
     }
 
     /**
      * Deletes the object.
      *
-     * @return {@code true} if the delete was successful
+     * @throws OpenVPMSException if the delete fails
      */
     @Override
-    protected boolean doDelete() {
-        boolean result;
+    protected void doDelete() {
         if (deleteAct) {
-            result = super.deleteChildren();
-            if (result) {
-                result = SaveHelper.delete(act);
-            }
+            ServiceHelper.getArchetypeService().remove(act);
+            deleteChildren();
         } else {
-            result = super.doDelete();
+            super.doDelete();
         }
-        return result;
     }
 
     /**
      * Deletes any child Deletable instances.
      *
-     * @return {@code true} if the delete was successful
+     * @throws OpenVPMSException if the delete fails
      */
     @Override
-    protected boolean deleteChildren() {
-        boolean result = super.deleteChildren();
-        if (result) {
-            try {
-                refMgr.delete();
-                result = true;
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
-        }
-        return result;
+    protected void deleteChildren() {
+        super.deleteChildren();
+        refMgr.delete();
     }
 
     /**

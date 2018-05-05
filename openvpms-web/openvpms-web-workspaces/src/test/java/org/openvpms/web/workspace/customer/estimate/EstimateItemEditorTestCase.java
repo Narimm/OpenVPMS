@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -25,10 +25,8 @@ import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
 import org.openvpms.archetype.rules.finance.estimate.EstimateTestHelper;
 import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.math.WeightUnits;
-import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
-import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -46,10 +44,9 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.customer.DoseManager;
+import org.openvpms.web.workspace.customer.charge.ChargeEditContext;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
-import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -88,14 +85,14 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
     private User author;
 
     /**
+     * The practice location.
+     */
+    private Party location;
+
+    /**
      * The layout context.
      */
     private LayoutContext layout;
-
-    /**
-     * The dose manager.
-     */
-    private DoseManager doseManager;
 
 
     /**
@@ -108,26 +105,16 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         customer = TestHelper.createCustomer();
         patient = TestHelper.createPatient();
         author = TestHelper.createUser();
+        location = TestHelper.createLocation();
 
         // register an ErrorHandler to collect errors
-        ErrorHandler.setInstance(new ErrorHandler() {
-            @Override
-            public void error(Throwable cause) {
-                errors.add(cause.getMessage());
-            }
+        initErrorHandler(errors);
 
-            public void error(String title, String message, Throwable cause, WindowPaneListener listener) {
-                errors.add(message);
-            }
-        });
         Context context = new LocalContext();
         context.setPractice(getPractice());
-        context.setLocation(TestHelper.createLocation());
+        context.setLocation(location);
         context.setUser(author);
         layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
-
-        doseManager = new DoseManager(ServiceHelper.getBean(PatientRules.class),
-                                      ServiceHelper.getBean(ProductRules.class));
     }
 
     /**
@@ -138,9 +125,11 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         BigDecimal lowQuantity = BigDecimal.ONE;
         BigDecimal highQuantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);
-        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal unitPrice = new BigDecimal("9.09");
+        BigDecimal unitPriceIncTax = BigDecimal.TEN;
         BigDecimal fixedCost = BigDecimal.valueOf(1);
-        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        BigDecimal fixedPrice = new BigDecimal("1.82");
+        BigDecimal fixedPriceIncTax = BigDecimal.valueOf(2);
         Entity discount = DiscountTestHelper.createDiscount(BigDecimal.TEN, true, DiscountRules.PERCENTAGE);
         Product product = createProduct(ProductArchetypes.MEDICATION, fixedCost, fixedPrice, unitCost, unitPrice);
         addDiscount(patient, discount);
@@ -150,8 +139,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
-        editor.setDoseManager(doseManager);
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate,
+                                                           new ChargeEditContext(customer, location, layout), layout);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -170,10 +159,19 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         BigDecimal highDiscount1 = new BigDecimal("2.20");
         BigDecimal lowTotal1 = new BigDecimal("10.80");
         BigDecimal highTotal1 = new BigDecimal("19.80");
-        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPrice, unitPrice, fixedPrice,
-                  lowDiscount1, highDiscount1, lowTotal1, highTotal1);
+        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPriceIncTax, unitPriceIncTax,
+                  fixedPriceIncTax, lowDiscount1, highDiscount1, lowTotal1, highTotal1);
 
-        // now remove the discounts
+        // set low quantity to zero, and verify low discount, low zero.
+        // NOTE: the lowTotal goes to 2 as the fixedPrice is still incorporated, for historical reasons. TODO
+        editor.setLowQuantity(BigDecimal.ZERO);
+        checkSave(estimate, editor);
+        item = get(item);
+        checkItem(item, patient, product, author, BigDecimal.ZERO, highQuantity, unitPriceIncTax, unitPriceIncTax,
+                  fixedPriceIncTax, BigDecimal.ZERO, highDiscount1, new BigDecimal(2), highTotal1);
+
+        // set low quantity and remove the discounts
+        editor.setLowQuantity(lowQuantity);
         editor.setLowDiscount(BigDecimal.ZERO);
         editor.setHighDiscount(BigDecimal.ZERO);
         checkSave(estimate, editor);
@@ -181,13 +179,13 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         item = get(item);
         BigDecimal lowTotal2 = new BigDecimal("12.00");
         BigDecimal highTotal2 = new BigDecimal("22.00");
-        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPrice, unitPrice, fixedPrice,
-                  BigDecimal.ZERO, BigDecimal.ZERO, lowTotal2, highTotal2);
+        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPriceIncTax, unitPriceIncTax,
+                  fixedPriceIncTax, BigDecimal.ZERO, BigDecimal.ZERO, lowTotal2, highTotal2);
     }
 
     /**
      * Tests a product with a 10% discount where discounts are disabled at the practice location.
-     * <p/>
+     * <p>
      * The calculated discount should be zero.
      */
     @Test
@@ -198,9 +196,11 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         BigDecimal lowQuantity = BigDecimal.ONE;
         BigDecimal highQuantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);
-        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal unitPrice = new BigDecimal("9.09");
+        BigDecimal unitPriceIncTax = BigDecimal.TEN;
         BigDecimal fixedCost = BigDecimal.valueOf(1);
-        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        BigDecimal fixedPrice = new BigDecimal("1.82");
+        BigDecimal fixedPriceIncTax = BigDecimal.valueOf(2);
         Entity discount = DiscountTestHelper.createDiscount(BigDecimal.TEN, true, DiscountRules.PERCENTAGE);
         Product product = createProduct(ProductArchetypes.MEDICATION, fixedCost, fixedPrice, unitCost, unitPrice);
         addDiscount(patient, discount);
@@ -210,8 +210,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
-        editor.setDoseManager(doseManager);
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate,
+                                                           new ChargeEditContext(customer, location, layout), layout);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -230,8 +230,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         BigDecimal highDiscount1 = BigDecimal.ZERO;
         BigDecimal lowTotal1 = new BigDecimal("12.00");
         BigDecimal highTotal1 = new BigDecimal("22.00");
-        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPrice, unitPrice, fixedPrice,
-                  lowDiscount1, highDiscount1, lowTotal1, highTotal1);
+        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPriceIncTax, unitPriceIncTax,
+                  fixedPriceIncTax, lowDiscount1, highDiscount1, lowTotal1, highTotal1);
     }
 
     /**
@@ -243,9 +243,9 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
 
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);
-        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal unitPrice = new BigDecimal("9.09");
         BigDecimal fixedCost = BigDecimal.valueOf(1);
-        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        BigDecimal fixedPrice = new BigDecimal("1.82");
         BigDecimal discount = BigDecimal.ZERO;
         Product product = createProduct(ProductArchetypes.MERCHANDISE, fixedCost, fixedPrice, unitCost, unitPrice);
 
@@ -253,8 +253,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
-        editor.setDoseManager(doseManager);
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate,
+                                                           new ChargeEditContext(customer, location, layout), layout);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -274,10 +274,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         assertNotNull(item);
 
         // verify the item matches that expected
-        BigDecimal fixedPriceExTax = new BigDecimal("1.82");
-        BigDecimal unitPriceExTax = new BigDecimal("9.09");
         BigDecimal totalExTax = new BigDecimal("20");
-        checkItem(item, patient, product, author, quantity, quantity, unitPriceExTax, unitPriceExTax, fixedPriceExTax,
+        checkItem(item, patient, product, author, quantity, quantity, unitPrice, unitPrice, fixedPrice,
                   discount, discount, totalExTax, totalExTax);
 
         // verify no errors were logged
@@ -293,9 +291,9 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
 
         BigDecimal quantity = BigDecimal.valueOf(2);
         BigDecimal unitCost = BigDecimal.valueOf(5);
-        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal unitPrice = new BigDecimal("9.09");
         BigDecimal fixedCost = BigDecimal.ONE;
-        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        BigDecimal fixedPrice = new BigDecimal("1.82");
         BigDecimal discount = BigDecimal.ZERO;
         BigDecimal ratio = BigDecimal.valueOf(2);
         Product product = createProduct(ProductArchetypes.MERCHANDISE, fixedCost, fixedPrice, unitCost, unitPrice);
@@ -307,8 +305,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
-        editor.setDoseManager(doseManager);
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate,
+                                                           new ChargeEditContext(customer, location, layout), layout);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -328,11 +326,11 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         assertNotNull(item);
 
         // verify the item matches that expected
-        BigDecimal fixedPriceExTax = new BigDecimal("1.82").multiply(ratio);
-        BigDecimal unitPriceExTax = new BigDecimal("9.09").multiply(ratio);
-        BigDecimal totalExTax = new BigDecimal("40");
-        checkItem(item, patient, product, author, quantity, quantity, unitPriceExTax, unitPriceExTax, fixedPriceExTax,
-                  discount, discount, totalExTax, totalExTax);
+        BigDecimal fixedPriceWithRatio = new BigDecimal("1.82").multiply(ratio);
+        BigDecimal unitPriceWithRatio = new BigDecimal("9.09").multiply(ratio);
+        BigDecimal total = new BigDecimal("40");
+        checkItem(item, patient, product, author, quantity, quantity, unitPriceWithRatio, unitPriceWithRatio,
+                  fixedPriceWithRatio, discount, discount, total, total);
 
         // verify no errors were logged
         assertTrue(errors.isEmpty());
@@ -352,9 +350,9 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
 
         BigDecimal quantity = BigDecimal.ONE;
         BigDecimal unitCost = BigDecimal.valueOf(5);
-        BigDecimal unitPrice = BigDecimal.valueOf(5.55);
+        BigDecimal unitPrice = BigDecimal.valueOf(5.05);
         BigDecimal fixedCost = BigDecimal.valueOf(0.5);
-        BigDecimal fixedPrice = BigDecimal.valueOf(5.55);
+        BigDecimal fixedPrice = BigDecimal.valueOf(5.05);
         BigDecimal discount = BigDecimal.ZERO;
         BigDecimal ratio = BigDecimal.valueOf(2);
 
@@ -367,8 +365,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
-        editor.setDoseManager(doseManager);
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate,
+                                                           new ChargeEditContext(customer, location, layout), layout);
         editor.getComponent();
 
         // populate quantity, patient, clinician.
@@ -399,13 +397,16 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
     @Test
     public void testProductDose() {
         BigDecimal unitCost = BigDecimal.valueOf(5);
-        BigDecimal unitPrice = BigDecimal.valueOf(10);
+        BigDecimal unitPrice = new BigDecimal("9.09");
+        BigDecimal unitPriceIncTax = BigDecimal.TEN;
         BigDecimal fixedCost = BigDecimal.valueOf(1);
-        BigDecimal fixedPrice = BigDecimal.valueOf(2);
+        BigDecimal fixedPrice = new BigDecimal("1.82");
+        BigDecimal fixedPriceIncTax = BigDecimal.valueOf(2);
         Product product = createProduct(ProductArchetypes.MEDICATION, fixedCost, fixedPrice, unitCost, unitPrice);
         IMObjectBean bean = new IMObjectBean(product);
         bean.setValue("concentration", BigDecimal.ONE);
-        Entity dose = ProductTestHelper.createDose(null, BigDecimal.ZERO, BigDecimal.TEN, BigDecimal.ONE);
+        Entity dose = ProductTestHelper.createDose(null, BigDecimal.ZERO, BigDecimal.TEN, BigDecimal.ONE,
+                                                   BigDecimal.ONE);
         ProductTestHelper.addDose(product, dose);
 
         PatientTestHelper.createWeight(patient, new Date(), new BigDecimal("4.2"), WeightUnits.KILOGRAMS);
@@ -414,8 +415,8 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
 
         // create the editor
-        EstimateItemEditor editor = new EstimateItemEditor(item, estimate, layout);
-        editor.setDoseManager(doseManager);
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate,
+                                                           new ChargeEditContext(customer, location, layout), layout);
         editor.getComponent();
         assertFalse(editor.isValid());
 
@@ -434,8 +435,101 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
         BigDecimal highDiscount = BigDecimal.ZERO;
         BigDecimal lowTotal1 = new BigDecimal("44.00");
         BigDecimal highTotal1 = new BigDecimal("44.00");
-        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPrice, unitPrice, fixedPrice,
-                  lowDiscount, highDiscount, lowTotal1, highTotal1);
+        checkItem(item, patient, product, author, lowQuantity, highQuantity, unitPriceIncTax, unitPriceIncTax,
+                  fixedPriceIncTax, lowDiscount, highDiscount, lowTotal1, highTotal1);
+    }
+
+    /**
+     * Verifies that the editor is invalid if a low quantity is less than a minimum quantity.
+     * <p/>
+     * Note that in practice, the minimum quantity is set by expanding a template.
+     */
+    @Test
+    public void testMinimumQuantities() {
+        BigDecimal two = BigDecimal.valueOf(2);
+        Product product = createProduct(ProductArchetypes.MEDICATION);
+
+        Act item = (Act) create(EstimateArchetypes.ESTIMATE_ITEM);
+        Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
+
+        // create the editor
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate,
+                                                           new ChargeEditContext(customer, location, layout), layout);
+        editor.getComponent();
+        assertFalse(editor.isValid());
+
+        editor.setPatient(patient);
+        editor.setProduct(product);
+        editor.setMinimumQuantity(two);
+        editor.setLowQuantity(two);
+        editor.setHighQuantity(two);
+        assertTrue(editor.isValid());
+
+        // editor should be invalid when low quantity set below minimum
+        editor.setLowQuantity(BigDecimal.ONE);
+        assertFalse(editor.isValid());
+
+        // now set above
+        editor.setLowQuantity(two);
+        assertTrue(editor.isValid());
+    }
+
+    /**
+     * Verifies that a user with the appropriate user type can override minimum quantities.
+     * <p/>
+     * Note that in practice, the minimum quantity is set by expanding a template.
+     */
+    @Test
+    public void testMinimumQuantitiesOverride() {
+        Lookup userType = TestHelper.getLookup("lookup.userType", "MINIMUM_QTY_OVERRIDE");
+        Party practice = getPractice();
+        IMObjectBean bean = new IMObjectBean(practice);
+        bean.setValue("minimumQuantitiesOverride", userType.getCode());
+        bean.save();
+        author.addClassification(userType);
+
+        BigDecimal two = BigDecimal.valueOf(2);
+        Product product = createProduct(ProductArchetypes.MEDICATION);
+
+        Act item = (Act) create(EstimateArchetypes.ESTIMATE_ITEM);
+        Act estimate = EstimateTestHelper.createEstimate(customer, author, item);
+
+        // create the editor
+        EstimateItemEditor editor = new EstimateItemEditor(item, estimate,
+                                                           new ChargeEditContext(customer, location, layout), layout);
+        editor.getComponent();
+        assertFalse(editor.isValid());
+
+        editor.setPatient(patient);
+        editor.setProduct(product);
+        editor.setLowQuantity(two);
+        editor.setHighQuantity(BigDecimal.TEN);
+        editor.setMinimumQuantity(two);
+        assertTrue(editor.isValid());
+
+        // set the low quantity above the minimum. The minimum quantity shouldn't change
+        editor.setLowQuantity(BigDecimal.TEN);
+        checkEquals(two, editor.getMinimumQuantity());
+
+        // now set the low quantity. As the user has the override type, the minimum quantity should update
+        editor.setLowQuantity(BigDecimal.ONE);
+        checkEquals(BigDecimal.ONE, editor.getMinimumQuantity());
+        assertTrue(editor.isValid());
+
+        // now set an invalid low quantity and verify the minimum quantity doesn't update
+        editor.setLowQuantity(BigDecimal.valueOf(-1));
+        assertFalse(editor.isValid());
+        checkEquals(BigDecimal.ONE, editor.getMinimumQuantity());
+
+        // set the low quantity to zero. This should disable the minimum quantity
+        editor.setLowQuantity(BigDecimal.ZERO);
+        checkEquals(BigDecimal.ZERO, editor.getMinimumQuantity());
+        assertTrue(editor.isValid());
+
+        // verify the minimum is disabled
+        editor.setLowQuantity(BigDecimal.ONE);
+        checkEquals(BigDecimal.ZERO, editor.getMinimumQuantity());
+        assertTrue(editor.isValid());
     }
 
     /**
@@ -445,10 +539,10 @@ public class EstimateItemEditorTestCase extends AbstractEstimateEditorTestCase {
      * @param editor   the charge item editor
      */
     private void checkSave(final Act estimate, final EstimateItemEditor editor) {
-        TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
-        boolean saved = template.execute(new TransactionCallback<Boolean>() {
-            public Boolean doInTransaction(TransactionStatus status) {
-                return SaveHelper.save(estimate) && editor.save();
+        boolean saved = SaveHelper.save(editor, new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                ServiceHelper.getArchetypeService().save(estimate);
             }
         });
         assertTrue(saved);

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.lookup;
@@ -26,12 +24,13 @@ import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 
+import java.util.Set;
+
 
 /**
  * Assembles {@link Lookup}s from {@link LookupDO}s and vice-versa.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class LookupAssembler extends IMObjectAssembler<Lookup, LookupDO> {
 
@@ -58,8 +57,8 @@ public class LookupAssembler extends IMObjectAssembler<Lookup, LookupDO> {
      * @param context the assembly context
      */
     @Override
-    protected void assembleDO(LookupDO target, Lookup source, DOState state,
-                              Context context) {
+    @SuppressWarnings("unchecked")
+    protected void assembleDO(LookupDO target, Lookup source, DOState state, Context context) {
         super.assembleDO(target, source, state, context);
 
         if (!ObjectUtils.equals(target.getCode(), source.getCode())) {
@@ -70,12 +69,10 @@ public class LookupAssembler extends IMObjectAssembler<Lookup, LookupDO> {
         }
 
         RELATIONSHIPS.assembleDO(target.getSourceLookupRelationships(),
-                                 source.getSourceLookupRelationships(),
-                                 state, context);
+                                 (Set<LookupRelationship>) (Set) source.getSourceLookupRelationships(), state, context);
 
         RELATIONSHIPS.assembleDO(target.getTargetLookupRelationships(),
-                                 source.getTargetLookupRelationships(),
-                                 state, context);
+                                 (Set<LookupRelationship>) (Set) source.getTargetLookupRelationships(), state, context);
     }
 
     /**
@@ -86,19 +83,17 @@ public class LookupAssembler extends IMObjectAssembler<Lookup, LookupDO> {
      * @param context the assembly context
      */
     @Override
-    protected void assembleObject(Lookup target, LookupDO source,
-                                  Context context) {
+    @SuppressWarnings("unchecked")
+    protected void assembleObject(Lookup target, LookupDO source, Context context) {
         super.assembleObject(target, source, context);
         target.setCode(source.getCode());
         target.setDefaultLookup(source.isDefaultLookup());
 
-        RELATIONSHIPS.assembleObject(target.getSourceLookupRelationships(),
-                                     source.getSourceLookupRelationships(),
-                                     context);
+        RELATIONSHIPS.assembleObject((Set<LookupRelationship>) (Set) target.getSourceLookupRelationships(),
+                                     source.getSourceLookupRelationships(), context);
 
-        RELATIONSHIPS.assembleObject(target.getTargetLookupRelationships(),
-                                     source.getTargetLookupRelationships(),
-                                     context);
+        RELATIONSHIPS.assembleObject((Set<LookupRelationship>) (Set) target.getTargetLookupRelationships(),
+                                     source.getTargetLookupRelationships(), context);
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -19,12 +19,10 @@ package org.openvpms.web.component.im.doc;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.Participation;
-import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.property.Property;
 
 
@@ -56,20 +54,11 @@ public class DocumentTemplateParticipationEditor extends ParticipationEditor<Ent
     protected IMObjectReferenceEditor<Entity> createEntityEditor(Property property) {
         LayoutContext context = getLayoutContext();
         LayoutContext subContext = new DefaultLayoutContext(context, context.getHelpContext().topic("template"));
-        return new AbstractIMObjectReferenceEditor<Entity>(property, getObject(), subContext) {
-
-            @Override
-            @SuppressWarnings("unchecked")
-            protected Query<Entity> createQuery(String name) {
-                Query query = super.createQuery(name);
-                if (getParent() != null) {
-                    String shortname = getParent().getArchetypeId().getShortName();
-                    if (shortname != null && query instanceof DocumentTemplateQuery) {
-                        ((DocumentTemplateQuery) query).setTypes(shortname);
-                    }
-                }
-                return query;
-            }
-        };
+        DocumentTemplateReferenceEditor editor = new DocumentTemplateReferenceEditor(property, getObject(), subContext);
+        if (getParent() != null) {
+            String shortname = getParent().getArchetypeId().getShortName();
+            editor.setTypes(shortname);
+        }
+        return editor;
     }
 }

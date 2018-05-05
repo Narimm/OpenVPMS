@@ -11,15 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin;
 
+import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowser;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.component.workspace.ResultSetCRUDWorkspace;
@@ -39,9 +41,9 @@ public class OrganisationWorkspace extends ResultSetCRUDWorkspace<Entity> {
      * @param context the context
      */
     public OrganisationWorkspace(Context context) {
-        super("admin", "organisation", context);
+        super("admin.organisation", context);
         setArchetypes(Entity.class, "party.organisation*", "entity.organisation*", "entity.SMSConfig*",
-                      "entity.job*");
+                      "entity.mailServer", InsuranceArchetypes.INSURANCE_SERVICES);
     }
 
     /**
@@ -78,6 +80,18 @@ public class OrganisationWorkspace extends ResultSetCRUDWorkspace<Entity> {
     @Override
     public boolean canUpdate(String shortName) {
         return false;
+    }
+
+    /**
+     * Creates a new query to populate the browser.
+     *
+     * @return a new query
+     */
+    @Override
+    protected Query<Entity> createQuery() {
+        Query<Entity> query = super.createQuery();
+        query.setContains(true);
+        return query;
     }
 
     /**

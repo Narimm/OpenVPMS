@@ -11,14 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
 import org.junit.Test;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.workflow.MessageArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -46,18 +48,17 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 import org.openvpms.web.workspace.admin.hl7.PharmacyGroupEditor;
-import org.openvpms.web.workspace.admin.lookup.AlertTypeEditor;
 import org.openvpms.web.workspace.admin.lookup.CurrencyEditor;
+import org.openvpms.web.workspace.admin.lookup.CustomerAlertTypeEditor;
 import org.openvpms.web.workspace.admin.lookup.LookupEditor;
 import org.openvpms.web.workspace.admin.lookup.MacroEditor;
 import org.openvpms.web.workspace.admin.lookup.SpeciesLookupEditor;
 import org.openvpms.web.workspace.admin.lookup.SuburbLookupEditor;
 import org.openvpms.web.workspace.admin.template.DocumentTemplatePrinterEditor;
-import org.openvpms.web.workspace.admin.type.ReminderTypeTemplateEditor;
 import org.openvpms.web.workspace.customer.CustomerEditor;
 import org.openvpms.web.workspace.customer.PatientOwnerRelationshipEditor;
 import org.openvpms.web.workspace.customer.account.AdjustmentActEditor;
-import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
+import org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActEditor;
 import org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActItemEditor;
 import org.openvpms.web.workspace.customer.estimate.EstimateEditor;
 import org.openvpms.web.workspace.customer.estimate.EstimateItemEditor;
@@ -81,6 +82,7 @@ import org.openvpms.web.workspace.workflow.messaging.UserMessageEditor;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -135,14 +137,11 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
                 case "entityRelationship.productReminder":
                     checkCreate(shortName, ProductReminderRelationshipEditor.class);
                     break;
-                case "entityRelationship.reminderTypeTemplate":
-                    checkCreate(shortName, ReminderTypeTemplateEditor.class);
-                    break;
                 case "entityRelationship.scheduleDocumentTemplate":
                 case "entityRelationship.worklistDocumentTemplate":
                     checkCreate(shortName, ScheduleTemplateRelationshipEditor.class);
                     break;
-                case "entityRelationship.productStockLocation":
+                case "entityLink.productStockLocation":
                     checkCreate(shortName, ProductStockLocationEditor.class);
                     break;
                 default:
@@ -200,41 +199,36 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     @Test
     public void testCreateEstimationItemEditor() {
-        checkCreate("act.customerEstimationItem", "act.customerEstimation",
-                    EstimateItemEditor.class);
+        checkNoValidConstructor("act.customerEstimationItem", "act.customerEstimation", EstimateItemEditor.class);
     }
 
     /**
-     * Verifies that a {@link CustomerChargeActEditor} is returned for
+     * Verifies that a {@link DefaultCustomerChargeActEditor} is returned for
      * <em>act.customerAccountChargesInvoice, act.customerAccountChargesCredit,
      * act.customerAccountChargesCounter</em>
      */
     @Test
     public void testCreateChargeEditor() {
         checkCreate("act.customerAccountChargesInvoice",
-                    CustomerChargeActEditor.class);
+                    DefaultCustomerChargeActEditor.class);
         checkCreate("act.customerAccountChargesCredit",
-                    CustomerChargeActEditor.class);
+                    DefaultCustomerChargeActEditor.class);
         checkCreate("act.customerAccountChargesCounter",
-                    CustomerChargeActEditor.class);
+                    DefaultCustomerChargeActEditor.class);
     }
 
     /**
-     * Verifies that a {@link org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActItemEditor} is created for
-     * <em>act.customerAccountInvoiceItem, act.customerAccountCreditItem and
-     * act.customerAccountCounterItem</em>
+     * Verifies that an {@link IllegalStateException} is thrown for <em>act.customerAccountInvoiceItem,
+     * act.customerAccountCreditItem and act.customerAccountCounterItem</em>
      */
     @Test
     public void testCreateCustomerInvoiceItemEditor() {
-        checkCreate("act.customerAccountInvoiceItem",
-                    "act.customerAccountChargesInvoice",
-                    DefaultCustomerChargeActItemEditor.class);
-        checkCreate("act.customerAccountCreditItem",
-                    "act.customerAccountChargesCredit",
-                    DefaultCustomerChargeActItemEditor.class);
-        checkCreate("act.customerAccountCounterItem",
-                    "act.customerAccountChargesCounter",
-                    DefaultCustomerChargeActItemEditor.class);
+        checkNoValidConstructor("act.customerAccountInvoiceItem", "act.customerAccountChargesInvoice",
+                                DefaultCustomerChargeActItemEditor.class);
+        checkNoValidConstructor("act.customerAccountCreditItem", "act.customerAccountChargesCredit",
+                                DefaultCustomerChargeActItemEditor.class);
+        checkNoValidConstructor("act.customerAccountCounterItem", "act.customerAccountChargesCounter",
+                                DefaultCustomerChargeActItemEditor.class);
     }
 
     /**
@@ -270,36 +264,22 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
      */
     @Test
     public void testCreatePaymentItemEditor() {
-        checkCreate("act.customerAccountPaymentCash",
-                    PaymentItemEditor.class);
-        checkCreate("act.customerAccountPaymentCheque",
-                    PaymentItemEditor.class);
-        checkCreate("act.customerAccountPaymentCredit",
-                    PaymentItemEditor.class);
-        checkCreate("act.customerAccountPaymentEFT",
-                    PaymentItemEditor.class);
-        checkCreate("act.customerAccountRefundCash",
-                    PaymentItemEditor.class);
-        checkCreate("act.customerAccountRefundCredit",
-                    PaymentItemEditor.class);
-        checkCreate("act.customerAccountRefundEFT",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountPaymentCash",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountPaymentCheque",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountPaymentCredit",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountPaymentEFT",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundCash",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundCheque",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundCredit",
-                    PaymentItemEditor.class);
-        checkCreate("act.supplierAccountRefundEFT",
-                    PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.PAYMENT_CASH, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.PAYMENT_CHEQUE, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.PAYMENT_CREDIT, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.PAYMENT_EFT, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.REFUND_CASH, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.REFUND_CHEQUE, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.REFUND_CREDIT, PaymentItemEditor.class);
+        checkCreate(CustomerAccountArchetypes.REFUND_EFT, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.PAYMENT_CASH, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.PAYMENT_CHEQUE, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.PAYMENT_CREDIT, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.PAYMENT_EFT, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.REFUND_CASH, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.REFUND_CHEQUE, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.REFUND_CREDIT, PaymentItemEditor.class);
+        checkCreate(SupplierArchetypes.REFUND_EFT, PaymentItemEditor.class);
     }
 
     /**
@@ -507,14 +487,11 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     }
 
     /**
-     * Verifies that a {@link AlertTypeEditor} is created for <em>lookup.customerAlertType</em> and
-     * <em>lookup.patientAlertType</em>.
+     * Verifies that a {@link CustomerAlertTypeEditor} is created for <em>lookup.customerAlertType</em>
      */
     @Test
     public void testCreateAlertTypeEditor() {
-        checkCreate("lookup.customerAlertType", AlertTypeEditor.class);
-        checkCreate("lookup.patientAlertType", AlertTypeEditor.class);
-
+        checkCreate("lookup.customerAlertType", CustomerAlertTypeEditor.class);
     }
 
     /**
@@ -597,6 +574,8 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
     private void checkCreate(String shortName, Class type) {
         LocalContext context = new LocalContext();
         context.setPractice(TestHelper.getPractice());
+        context.setCustomer(TestHelper.createCustomer());
+        context.setLocation(TestHelper.createLocation());
 
         LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
         IMObject object = service.create(shortName);
@@ -624,6 +603,28 @@ public class IMObjectEditorFactoryTestCase extends AbstractAppTest {
         IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, parent, context);
         assertNotNull("Failed to create editor", editor);
         assertEquals(type, editor.getClass());
+    }
+
+    /**
+     * Verifies that an IllegalStateException is thrown if an editor doesn't provide a valid constructor.
+     *
+     * @param shortName       name the archetype short name
+     * @param parentShortName the parent archetype short name
+     * @param type            the expected editor class
+     */
+    private void checkNoValidConstructor(String shortName, String parentShortName, Class type) {
+        LayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
+        context.getContext().setPractice(TestHelper.getPractice());
+        IMObject object = service.create(shortName);
+        assertNotNull("Failed to create object with shortname=" + shortName, object);
+        IMObject parent = service.create(parentShortName);
+        assertNotNull("Failed to create object with shortname=" + parentShortName, parent);
+        try {
+            ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, parent, context);
+            fail("Expected IllegalStateException to be thrown");
+        } catch (IllegalStateException exception) {
+            assertEquals("No valid constructor found for class: " + type.getName(), exception.getMessage());
+        }
     }
 
 }

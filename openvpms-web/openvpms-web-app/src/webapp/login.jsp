@@ -1,8 +1,8 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="org.openvpms.version.Version" %>
+<%@ page import="org.openvpms.web.component.subscription.SubscriptionHelper" %>
 <%@ page import="org.openvpms.web.echo.button.ShortcutHelper" %>
 <%@ page import="org.openvpms.web.resource.i18n.Messages" %>
-<%@ page import="org.openvpms.web.resource.subscription.SubscriptionHelper" %>
-<%@ page import="org.openvpms.web.resource.version.Version" %>
 <%@ page import="org.openvpms.web.system.ServiceHelper" %>
 <%--
   ~ Version: 1.0
@@ -17,7 +17,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   --%>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -156,14 +156,14 @@
 
     <script type="text/javascript">
         function onReady() {
-            document.getElementById("j_username").focus();
+            document.getElementById("username").focus();
         }
     </script>
 
 </head>
 <body onload='onReady();'>
 
-<form id="loginForm" action="j_spring_security_check" method="post">
+<form id="loginForm" action="login" method="post">
     <!-- the following divitis puts a shadow border around the login 'dialog' in keeping with the L&F of the rest
          of the app. A basic discussion of the technique can be found here
          http://www.webcredible.co.uk/user-friendly-resources/css/css-round-corners-boxes.shtml
@@ -182,7 +182,7 @@
                                     <div class="header"><%= Messages.get("title.login")%>
                                     </div>
                                     <div class="content">
-                                        <img style="padding:5px" src="images/openvpms.gif" alt="OpenVPMS">
+                                        <img style="padding:5px" src="images/openvpms.png" alt="OpenVPMS">
 
                                         <table style="border-collapse: collapse;">
                                             <tbody>
@@ -191,7 +191,7 @@
                                                     <span class="label"><%= Messages.get("label.username") %></span>
                                                 </td>
                                                 <td style="padding: 5px;">
-                                                    <input id="j_username" class="textfield" name="j_username"
+                                                    <input id="username" class="textfield" name="username"
                                                            type="text" tabindex="1">
                                                 </td>
                                             </tr>
@@ -200,7 +200,7 @@
                                                     <span class="label"><%= Messages.get("label.password") %></span>
                                                 </td>
                                                 <td style="padding: 5px;">
-                                                    <input class="textfield" name="j_password" type="password"
+                                                    <input class="textfield" name="password" type="password"
                                                            tabindex="2">
                                                 </td>
                                             </tr>
@@ -234,7 +234,7 @@
     </div>
 </form>
 <div class="footer">
-    <div><%=SubscriptionHelper.formatSubscription(ServiceHelper.getArchetypeService())%>
+    <div style="white-space:pre"><%=SubscriptionHelper.formatSubscription(ServiceHelper.getArchetypeService())%>
     </div>
     <div class="version"><%=Messages.format("openvpms.version", Version.VERSION, Version.REVISION)%>
     </div>

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -34,7 +34,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.hl7.util.HL7Archetypes;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -67,18 +66,17 @@ public class CustomerChargeTestHelper {
      * @param patient  the patient
      * @param product  the product
      * @param quantity the quantity. If {@code null}, indicates the quantity won't be changed
-     * @param mgr      the popup editor manager
+     * @param queue    the popup editor manager
      * @return the editor for the new item
      */
-    public static CustomerChargeActItemEditor addItem(AbstractCustomerChargeActEditor editor, Party patient,
-                                                      Product product, BigDecimal quantity,
-                                                      ChargeEditorQueue mgr) {
+    public static CustomerChargeActItemEditor addItem(CustomerChargeActEditor editor, Party patient,
+                                                      Product product, BigDecimal quantity, EditorQueue queue) {
         CustomerChargeActItemEditor itemEditor = editor.addItem();
         itemEditor.getComponent();
         assertTrue(editor.isValid());
         assertFalse(itemEditor.isValid());
 
-        setItem(editor, itemEditor, patient, product, quantity, mgr);
+        setItem(editor, itemEditor, patient, product, quantity, queue);
         return itemEditor;
     }
 
@@ -90,10 +88,10 @@ public class CustomerChargeTestHelper {
      * @param patient    the patient
      * @param product    the product
      * @param quantity   the quantity. If {@code null}, indicates the quantity won't be changed
-     * @param mgr        the popup editor manager
+     * @param queue      the popup editor manager
      */
-    public static void setItem(AbstractCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
-                               Party patient, Product product, BigDecimal quantity, ChargeEditorQueue mgr) {
+    public static void setItem(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
+                               Party patient, Product product, BigDecimal quantity, EditorQueue queue) {
         if (itemEditor.getProperty("patient") != null) {
             itemEditor.setPatient(patient);
         }
@@ -103,12 +101,12 @@ public class CustomerChargeTestHelper {
         }
         if (TypeHelper.isA(editor.getObject(), CustomerAccountArchetypes.INVOICE)) {
             if (!TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
-                checkSavePopups(editor, itemEditor, product, mgr);
+                checkSavePopups(editor, itemEditor, product, queue);
             } else {
                 EntityBean bean = new EntityBean(product);
                 List<Entity> includes = bean.getNodeTargetEntities("includes");
                 for (Entity include : includes) {
-                    checkSavePopups(editor, itemEditor, (Product) include, mgr);
+                    checkSavePopups(editor, itemEditor, (Product) include, queue);
                 }
             }
         }
@@ -120,42 +118,51 @@ public class CustomerChargeTestHelper {
         assertTrue(itemEditor.isValid());
     }
 
-    private static void checkSavePopups(AbstractCustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
-                                        Product product, ChargeEditorQueue mgr) {
+    public static void checkSavePopups(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor,
+                                       Product product, EditorQueue queue) {
         if (TypeHelper.isA(product, ProductArchetypes.MEDICATION)) {
             // invoice items have a dispensing node
-            assertFalse(itemEditor.isValid());  // not valid while popup is displayed
+            IMObjectBean bean = new IMObjectBean(product);
+            if (bean.getBoolean("label")) {
+                // dispensing label should be displayed
+                assertFalse("Editor should invalid after setting " + product.getName(), itemEditor.isValid());
+                // not valid while popup is displayed
 
-            checkSavePopup(mgr, PatientArchetypes.PATIENT_MEDICATION, true);
-            // save the popup editor - should be a medication
+                checkSavePopup(queue, PatientArchetypes.PATIENT_MEDICATION, true);
+                // save the popup editor - should be a medication
+            }
         }
 
         EntityBean bean = new EntityBean(product);
         for (int i = 0; i < bean.getNodeTargetEntityRefs("investigationTypes").size(); ++i) {
             assertFalse(editor.isValid()); // not valid while popup is displayed
-            checkSavePopup(mgr, InvestigationArchetypes.PATIENT_INVESTIGATION, false);
+            checkSavePopup(queue, InvestigationArchetypes.PATIENT_INVESTIGATION, false);
         }
         for (int i = 0; i < bean.getNodeTargetEntityRefs("reminders").size(); ++i) {
             assertFalse(editor.isValid()); // not valid while popup is displayed
-            checkSavePopup(mgr, ReminderArchetypes.REMINDER, false);
+            checkSavePopup(queue, ReminderArchetypes.REMINDER, false);
+        }
+        for (int i = 0; i < bean.getNodeTargetEntityRefs("alerts").size(); ++i) {
+            assertFalse(editor.isValid()); // not valid while popup is displayed
+            checkSavePopup(queue, PatientArchetypes.ALERT, false);
         }
     }
 
     /**
      * Saves the current popup editor.
      *
-     * @param mgr          the popup editor manager
+     * @param queue        the popup editor manager
      * @param shortName    the expected archetype short name of the object being edited
      * @param prescription if {@code true} process prescription prompts
      */
-    public static void checkSavePopup(ChargeEditorQueue mgr, String shortName, boolean prescription) {
+    public static void checkSavePopup(EditorQueue queue, String shortName, boolean prescription) {
         if (prescription) {
-            PopupDialog dialog = mgr.getCurrent();
+            PopupDialog dialog = queue.getCurrent();
             if (dialog instanceof ConfirmationDialog) {
                 fireDialogButton(dialog, PopupDialog.OK_ID);
             }
         }
-        PopupDialog dialog = mgr.getCurrent();
+        PopupDialog dialog = queue.getCurrent();
         assertTrue(dialog instanceof EditDialog);
         IMObjectEditor editor = ((EditDialog) dialog).getEditor();
         assertTrue(TypeHelper.isA(editor.getObject(), shortName));
@@ -168,12 +175,11 @@ public class CustomerChargeTestHelper {
      *
      * @param shortName  the product archetype short name
      * @param fixedPrice the fixed price
-     * @param practice   the practice, used to determine the tax rate
      * @return a new product
      */
-    public static Product createProduct(String shortName, BigDecimal fixedPrice, Party practice) {
+    public static Product createProduct(String shortName, BigDecimal fixedPrice) {
         Product product = createProduct(shortName);
-        product.addProductPrice(createFixedPrice(product, BigDecimal.ZERO, fixedPrice, practice));
+        product.addProductPrice(createFixedPrice(BigDecimal.ZERO, fixedPrice));
         TestHelper.save(product);
         return product;
     }
@@ -183,17 +189,16 @@ public class CustomerChargeTestHelper {
      *
      * @param shortName  the product archetype short name
      * @param fixedCost  the fixed cost
-     * @param fixedPrice the fixed price
+     * @param fixedPrice the fixed price, tax-exclusive
      * @param unitCost   the unit cost
-     * @param unitPrice  the unit price
-     * @param practice   the practice, used to determine the tax rate
+     * @param unitPrice  the unit price, tax-exclusive
      * @return a new product
      */
     public static Product createProduct(String shortName, BigDecimal fixedCost, BigDecimal fixedPrice,
-                                        BigDecimal unitCost, BigDecimal unitPrice, Party practice) {
+                                        BigDecimal unitCost, BigDecimal unitPrice) {
         Product product = createProduct(shortName);
-        product.addProductPrice(createFixedPrice(product, fixedCost, fixedPrice, practice));
-        product.addProductPrice(createUnitPrice(product, unitCost, unitPrice, practice));
+        product.addProductPrice(createFixedPrice(fixedCost, fixedPrice));
+        product.addProductPrice(createUnitPrice(unitCost, unitPrice));
         TestHelper.save(product);
         return product;
     }
@@ -211,32 +216,26 @@ public class CustomerChargeTestHelper {
     /**
      * Helper to create a new fixed price.
      *
-     * @param product  the product
-     * @param cost     the cost price
-     * @param price    the price after markup
-     * @param practice the practice, used to determine the tax rate
+     * @param cost  the cost price
+     * @param price the price after markup
      * @return a new unit price
      */
-    public static ProductPrice createFixedPrice(Product product, BigDecimal cost, BigDecimal price, Party practice) {
-        return createPrice(product, ProductArchetypes.FIXED_PRICE, cost, price, practice);
+    public static ProductPrice createFixedPrice(BigDecimal cost, BigDecimal price) {
+        return createPrice(ProductArchetypes.FIXED_PRICE, cost, price);
     }
 
     /**
      * Helper to create a new product price.
      *
-     * @param product   the product
      * @param shortName the product price archetype short name
      * @param cost      the cost price
      * @param price     the price after markup
-     * @param practice  the practice, used to determine the tax rate
      * @return a new unit price
      */
-    public static ProductPrice createPrice(Product product, String shortName, BigDecimal cost, BigDecimal price,
-                                           Party practice) {
+    public static ProductPrice createPrice(String shortName, BigDecimal cost, BigDecimal price) {
         ProductPrice result = (ProductPrice) TestHelper.create(shortName);
-        ProductPriceRules rules = new ProductPriceRules(ArchetypeServiceHelper.getArchetypeService(),
-                                                        LookupServiceHelper.getLookupService());
-        BigDecimal markup = rules.getMarkup(product, cost, price, practice);
+        ProductPriceRules rules = new ProductPriceRules(ArchetypeServiceHelper.getArchetypeService());
+        BigDecimal markup = rules.getMarkup(cost, price);
         result.setName("XPrice");
         IMObjectBean bean = new IMObjectBean(result);
         bean.setValue("cost", cost);
@@ -248,14 +247,12 @@ public class CustomerChargeTestHelper {
     /**
      * Helper to create a new unit price.
      *
-     * @param product  the product
-     * @param cost     the cost price
-     * @param price    the price after markup
-     * @param practice the practice, used to determine the tax rate
+     * @param cost  the cost price
+     * @param price the price after markup
      * @return a new unit price
      */
-    public static ProductPrice createUnitPrice(Product product, BigDecimal cost, BigDecimal price, Party practice) {
-        return createPrice(product, ProductArchetypes.UNIT_PRICE, cost, price, practice);
+    public static ProductPrice createUnitPrice(BigDecimal cost, BigDecimal price) {
+        return createPrice(ProductArchetypes.UNIT_PRICE, cost, price);
     }
 
     /**

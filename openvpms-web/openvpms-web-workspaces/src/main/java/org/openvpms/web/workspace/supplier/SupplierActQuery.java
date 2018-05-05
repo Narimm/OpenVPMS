@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier;
@@ -65,7 +65,7 @@ public abstract class SupplierActQuery<T extends Act> extends DateRangeActQuery<
     public SupplierActQuery(String[] shortNames, ActStatuses statuses, Class type, LayoutContext context) {
         super(null, "supplier", SupplierArchetypes.SUPPLIER_PARTICIPATION, shortNames, statuses, type);
 
-        supplier = new IMObjectSelector<Party>(Messages.get("supplier.type"), context, "party.supplier*");
+        supplier = new SupplierSelector(context);
         supplier.setListener(new AbstractIMObjectSelectorListener<Party>() {
             public void selected(Party object) {
                 setSupplier(object);
@@ -73,8 +73,8 @@ public abstract class SupplierActQuery<T extends Act> extends DateRangeActQuery<
             }
         });
 
-        stockLocation = new IMObjectSelector<Party>(Messages.get("product.stockLocation"), context,
-                                                    "party.organisationStockLocation");
+        stockLocation = new IMObjectSelector<>(Messages.get("product.stockLocation"), context,
+                                               "party.organisationStockLocation");
         stockLocation.setListener(new AbstractIMObjectSelectorListener<Party>() {
             public void selected(Party object) {
                 onQuery();
@@ -130,16 +130,14 @@ public abstract class SupplierActQuery<T extends Act> extends DateRangeActQuery<
      */
     @Override
     protected ResultSet<T> createResultSet(SortConstraint[] sort) {
-        List<ParticipantConstraint> list
-                = new ArrayList<ParticipantConstraint>();
+        List<ParticipantConstraint> list = new ArrayList<>();
         ParticipantConstraint supplier = getParticipantConstraint();
         if (supplier != null) {
             list.add(supplier);
         }
         if (stockLocation.getObject() != null) {
-            ParticipantConstraint location = new ParticipantConstraint(
-                    "stockLocation", "participation.stockLocation",
-                    stockLocation.getObject());
+            ParticipantConstraint location = new ParticipantConstraint("stockLocation", "participation.stockLocation",
+                                                                       stockLocation.getObject());
             list.add(location);
         }
         ParticipantConstraint[] participants = list.toArray(new ParticipantConstraint[list.size()]);

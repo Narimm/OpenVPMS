@@ -11,21 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.patient.charge;
 
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.workspace.customer.charge.ChargeItemRelationshipCollectionEditor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,11 +33,6 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelationshipCollectionEditor {
-
-    /**
-     * The templates.
-     */
-    private List<TemplateChargeItems> templates = new ArrayList<TemplateChargeItems>();
 
     /**
      * Constructs a {@link VisitChargeItemRelationshipCollectionEditor}.
@@ -70,22 +64,6 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
     }
 
     /**
-     * Returns the templates that were expanded.
-     *
-     * @return the templates
-     */
-    public List<TemplateChargeItems> getTemplates() {
-        return templates;
-    }
-
-    /**
-     * Clears the templates.
-     */
-    public void clearTemplates() {
-        templates.clear();
-    }
-
-    /**
      * Returns the current patient.
      *
      * @return the current patient. May be {@code null}
@@ -103,27 +81,8 @@ public class VisitChargeItemRelationshipCollectionEditor extends ChargeItemRelat
      */
     @Override
     public IMObjectEditor createEditor(IMObject object, LayoutContext context) {
-        VisitChargeItemEditor editor = new VisitChargeItemEditor((Act) object, (Act) getObject(), context);
-        initialiseEditor(editor);
-        editor.setProductListener(getProductListener());
-        return editor;
-    }
-
-    /**
-     * Copies an act item for each product referred to in its template.
-     *
-     * @param editor   the editor
-     * @param template the product template
-     * @return the acts generated from the template
-     */
-    @Override
-    protected List<Act> createTemplateActs(ActItemEditor editor, Product template) {
-        List<Act> acts = super.createTemplateActs(editor, template);
-        if (!acts.isEmpty()) {
-            TemplateChargeItems items = new TemplateChargeItems(template, acts);
-            templates.add(items);
-        }
-        return acts;
+        return initialiseEditor(new VisitChargeItemEditor((FinancialAct) object, (Act) getObject(), getEditContext(),
+                                                          context));
     }
 
 }

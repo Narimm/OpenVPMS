@@ -11,19 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper.tools;
 
 import com.martiansoftware.jsap.JSAP;
-import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
-import com.martiansoftware.jsap.Switch;
+import net.sf.jasperreports.engine.DefaultJasperReportsContext;
 import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.design.JasperDesign;
-import net.sf.jasperreports.engine.xml.JRXmlWriter;
 import net.sf.jasperreports.view.JasperViewer;
 import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
@@ -40,8 +37,7 @@ import org.openvpms.report.jasper.JasperReportHelper;
 import org.openvpms.report.jasper.TemplatedJasperIMObjectReport;
 import org.openvpms.report.tools.ReportTool;
 
-import java.io.PrintStream;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.openvpms.report.ReportException.ErrorCode.FailedToCreateReport;
@@ -50,28 +46,19 @@ import static org.openvpms.report.ReportException.ErrorCode.UnsupportedTemplate;
 
 
 /**
- * {@link ReportTool} extension for Jasper based reports, providing facilities
- * to view the generated report and XML.
+ * {@link ReportTool} extension for Jasper based reports, providing facilities to view the generated report.
  *
  * @author Tim Anderson
  */
 public class JasperReportTool extends ReportTool {
 
     /**
-     * If <code>true</code> display the generated .jrxml
-     */
-    private final boolean showXML;
-
-
-    /**
-     * Constructs a new <code>JasperReportTool</code>.
+     * Constructs a {@link JasperReportTool}.
      *
      * @param contextPath the application context path
-     * @param showXML     if  <code>true</code> display the .jrxml
      */
-    public JasperReportTool(String contextPath, boolean showXML) {
+    public JasperReportTool(String contextPath) {
         super(contextPath);
-        this.showXML = showXML;
     }
 
     /**
@@ -84,7 +71,7 @@ public class JasperReportTool extends ReportTool {
         IMReport<IMObject> report = getReport(object);
         if (report instanceof JasperIMReport) {
             JasperIMReport<IMObject> r = (JasperIMReport<IMObject>) report;
-            List<IMObject> list = Arrays.asList(object);
+            List<IMObject> list = Collections.singletonList(object);
             JasperViewer viewer = new JasperViewer(r.report(list), true);
             viewer.setVisible(true);
         } else {
@@ -112,13 +99,12 @@ public class JasperReportTool extends ReportTool {
                 long id = config.getLong("id", -1);
                 String name = config.getString("name");
                 String output = config.getString("output");
-                boolean xml = config.getBoolean("xml");
 
                 if (list && shortName != null) {
-                    JasperReportTool reporter = create(contextPath, xml);
+                    JasperReportTool reporter = new JasperReportTool(contextPath);
                     reporter.list(shortName);
                 } else if (report && shortName != null) {
-                    JasperReportTool reporter = create(contextPath, xml);
+                    JasperReportTool reporter = new JasperReportTool(contextPath);
                     IMObject object;
                     if (id == -1) {
                         object = reporter.get(shortName, name);
@@ -162,56 +148,20 @@ public class JasperReportTool extends ReportTool {
             throw new ReportException(NoTemplateForArchetype, shortName);
         }
 
+        JasperDesign design;
         JasperIMReport<IMObject> report;
         try {
             if (doc.getName().endsWith(DocFormats.JRXML_EXT)) {
-                JasperDesign design = JasperReportHelper.getReport(doc, handlers);
-                report = new TemplatedJasperIMObjectReport(design, service, lookups, handlers, factory.create(service));
+                design = JasperReportHelper.getReport(doc, handlers, DefaultJasperReportsContext.getInstance());
+                report = new TemplatedJasperIMObjectReport(design, service, lookups, handlers, factory.create());
             } else {
                 throw new ReportException(UnsupportedTemplate, doc.getName());
             }
         } catch (JRException exception) {
-            throw new ReportException(exception, FailedToCreateReport, exception.getMessage());
+            throw new ReportException(exception, FailedToCreateReport, doc.getName(), exception.getMessage());
         }
 
-        if (showXML) {
-            try {
-                JRXmlWriter.writeReport(report.getReport(), new PrintStream(System.out), "UTF-8");
-                for (JasperReport subreport : report.getSubreports()) {
-                    JRXmlWriter.writeReport(subreport, new PrintStream(System.out), "UTF-8");
-                }
-            } catch (JRException exception) {
-                exception.printStackTrace();
-            }
-        }
         return report;
-    }
-
-    /**
-     * Creates the report tool.
-     *
-     * @param contextPath the application context path
-     * @param showXML     if <code>true</code> display the generated .jrxml
-     * @return a new report tool
-     */
-    private static JasperReportTool create(String contextPath,
-                                           boolean showXML) {
-        return new JasperReportTool(contextPath, showXML);
-    }
-
-    /**
-     * Creates a new command line parser.
-     *
-     * @return a new parser
-     * @throws JSAPException if the parser can't be created
-     */
-    protected static JSAP createParser() throws JSAPException {
-        JSAP parser = ReportTool.createParser();
-
-        parser.registerParameter(new Switch("xml").setShortFlag('x')
-                                         .setLongFlag("xml")
-                                         .setHelp("Display generated XML. Use with -r"));
-        return parser;
     }
 
     /**

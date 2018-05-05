@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.app;
@@ -24,15 +24,10 @@ import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.NodeSelectConstraint;
-import org.openvpms.component.system.common.query.ObjectRefConstraint;
-import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
+import org.openvpms.web.component.prefs.UserPreferences;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.spring.SpringApplicationInstance;
 import org.openvpms.web.echo.style.Style;
@@ -83,6 +78,11 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
     private final UserRules userRules;
 
     /**
+     * The user preferences.
+     */
+    private final UserPreferences preferences;
+
+    /**
      * Constructs a {@link ContextApplicationInstance}.
      *
      * @param context       the context
@@ -97,6 +97,7 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
         this.practiceRules = practiceRules;
         this.locationRules = locationRules;
         this.userRules = userRules;
+        this.preferences = preferences;
         initUser();
         initPractice();
         initLocation();
@@ -211,6 +212,15 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
     }
 
     /**
+     * Returns the user preferences.
+     *
+     * @return the user preferences
+     */
+    public UserPreferences getPreferences() {
+        return preferences;
+    }
+
+    /**
      * Clears the current context.
      */
     protected void clearContext() {
@@ -263,7 +273,7 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
     private void initUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
-            User user = userRules.getUser(auth.getName());
+            User user = userRules.getUser(auth);
             if (user != null) {
                 context.setUser(user);
                 if (userRules.isClinician(user)) {
@@ -312,9 +322,9 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
      * @param preferences the preferences
      */
     private void initPrefs(UserPreferences preferences) {
-        Party practice = context.getPractice();
-        if (practice != null) {
-            preferences.initialise(practice);
+        User user = context.getUser();
+        if (user != null) {
+            preferences.initialise(user);
         }
     }
 
@@ -326,7 +336,6 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
     private void updateLocation(Party location) {
         Party deposit = null;
         Party till = null;
-        Entity scheduleView = null;
         Entity workListView = null;
         Party stockLocation = null;
 
@@ -334,54 +343,16 @@ public abstract class ContextApplicationInstance extends SpringApplicationInstan
             // initialise the defaults for the location
             deposit = locationRules.getDefaultDepositAccount(location);
             till = locationRules.getDefaultTill(location);
-            scheduleView = locationRules.getDefaultScheduleView(location);
             workListView = locationRules.getDefaultWorkListView(location);
-            stockLocation = getStockLocation(locationRules, location);
+            stockLocation = locationRules.getDefaultStockLocation(location);
         }
         context.setDeposit(deposit);
         context.setTill(till);
-        context.setScheduleView(scheduleView);
+        context.setScheduleView(null);
         context.setSchedule(null);
         context.setWorkListView(workListView);
         context.setWorkList(null);
         context.setStockLocation(stockLocation);
-    }
-
-    /**
-     * Helper to return the stock location for a location.
-     * <p/>
-     * NOTE: this implementation returns a partially populated object, as
-     * stock locations may have a large no. of product relationships.
-     * <p/>
-     * The version of the object is set to {@code -1} so that it cannot
-     * be used to overwrite the actual stock location.
-     *
-     * @param rules    the location rules
-     * @param location the location
-     * @return the stock location, or {@code null} if none is found
-     */
-    private Party getStockLocation(LocationRules rules, Party location) {
-        Party result = null;
-        IMObjectReference ref = rules.getDefaultStockLocationRef(location);
-        if (ref != null) {
-            ObjectRefConstraint constraint
-                    = new ObjectRefConstraint("loc", ref);
-            ArchetypeQuery query = new ArchetypeQuery(constraint);
-            query.add(new NodeSelectConstraint("loc.name"));
-            query.add(new NodeSelectConstraint("loc.description"));
-            ObjectSetQueryIterator iter = new ObjectSetQueryIterator(query);
-            if (iter.hasNext()) {
-                ObjectSet set = iter.next();
-                result = new Party();
-                result.setId(ref.getId());
-                result.setArchetypeId(ref.getArchetypeId());
-                result.setLinkId(ref.getLinkId());
-                result.setName(set.getString("loc.name"));
-                result.setDescription(set.getString("loc.description"));
-                result.setVersion(-1);
-            }
-        }
-        return result;
     }
 
 }

@@ -1,32 +1,29 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.sms.mail.template;
 
-import org.openvpms.archetype.rules.practice.PracticeArchetypes;
-import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.apache.commons.lang.ObjectUtils;
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.sms.SMSException;
 import org.openvpms.sms.i18n.SMSMessages;
@@ -37,11 +34,10 @@ import javax.annotation.PreDestroy;
 
 /**
  * An {@link MailTemplateConfig} that obtains the template from the <em>party.organisationPractice</em>.
- * <p/>
+ * <p>
  * The practice must have an <em>entity.SMSemail*</em> associated with it.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class PracticeMailTemplateConfig implements MailTemplateConfig {
 
@@ -51,14 +47,24 @@ public class PracticeMailTemplateConfig implements MailTemplateConfig {
     private IArchetypeService service;
 
     /**
+     * The practice.
+     */
+    private Party practice;
+
+    /**
+     * The version of the practice.
+     */
+    private long version;
+
+    /**
      * The mail template.
      */
     private MailTemplate template;
 
     /**
-     * The practice rules.
+     * The practice service.
      */
-    private final PracticeRules rules;
+    private final PracticeService practiceService;
 
     /**
      * Listener for archetype service events.
@@ -67,15 +73,16 @@ public class PracticeMailTemplateConfig implements MailTemplateConfig {
 
 
     /**
-     * Constructs a <tt>PracticeMailTemplateConfig</tt>.
+     * Constructs a {@link PracticeMailTemplateConfig}.
      *
-     * @param service the archetype service
-     * @param rules   the practice rules
+     * @param service         the archetype service
+     * @param practiceService the practice service
      */
-    public PracticeMailTemplateConfig(IArchetypeService service, PracticeRules rules) {
+    public PracticeMailTemplateConfig(IArchetypeService service, PracticeService practiceService) {
         this.service = service;
-        this.rules = rules;
+        this.practiceService = practiceService;
         listener = new AbstractArchetypeServiceListener() {
+
             public void saved(IMObject object) {
                 clear();
             }
@@ -85,7 +92,6 @@ public class PracticeMailTemplateConfig implements MailTemplateConfig {
             }
         };
 
-        service.addListener(PracticeArchetypes.PRACTICE, listener);
         service.addListener(SMSArchetypes.EMAIL_CONFIGURATIONS, listener);
     }
 
@@ -95,18 +101,12 @@ public class PracticeMailTemplateConfig implements MailTemplateConfig {
      * @return the email template
      */
     public synchronized MailTemplate getTemplate() {
-        if (template == null) {
-            Party practice = rules.getPractice();
-            if (practice != null) {
-                EntityBean bean = new EntityBean(practice, service);
-                Entity config = bean.getTargetEntity(SMSArchetypes.PRACTICE_SMS_CONFIGURATION);
-                if (TypeHelper.isA(config, SMSArchetypes.EMAIL_CONFIGURATIONS)) {
-                    template = new MailTemplateFactory(service).getTemplate(config);
-                } else {
-                    throw new SMSException(SMSMessages.SMSNotConfigured(practice));
-                }
+        if (practiceUpdated() || template == null) {
+            Entity config = practiceService.getSMS();
+            if (TypeHelper.isA(config, SMSArchetypes.EMAIL_CONFIGURATIONS)) {
+                template = new MailTemplateFactory(service).getTemplate(config);
             } else {
-                throw new SMSException(SMSMessages.practiceNotFound());
+                throw new SMSException(SMSMessages.SMSNotConfigured(practice));
             }
         }
         return template;
@@ -117,7 +117,6 @@ public class PracticeMailTemplateConfig implements MailTemplateConfig {
      */
     @PreDestroy
     public void dispose() {
-        service.removeListener(PracticeArchetypes.PRACTICE, listener);
         service.removeListener(SMSArchetypes.EMAIL_CONFIGURATIONS, listener);
     }
 
@@ -128,4 +127,24 @@ public class PracticeMailTemplateConfig implements MailTemplateConfig {
         template = null;
     }
 
+    /**
+     * Determines if the practice has been updated.
+     *
+     * @return {@code true} if the practice has been updated
+     * @throws SMSException if the practice is not configured
+     */
+    private boolean practiceUpdated() {
+        boolean updated = false;
+        Party current = practiceService.getPractice();
+        if (current == null) {
+            throw new SMSException(SMSMessages.practiceNotFound());
+        }
+        if (practice == null || !ObjectUtils.equals(current, practice)
+            || current.getVersion() > version) {
+            practice = current;
+            version = practice.getVersion();
+            updated = true;
+        }
+        return updated;
+    }
 }

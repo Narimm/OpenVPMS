@@ -11,11 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
 
+import org.openvpms.archetype.rules.contact.AddressFormatter;
+import org.openvpms.archetype.rules.contact.BasicAddressFormatter;
 import org.openvpms.archetype.rules.patient.reminder.ReminderQuery;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -39,14 +41,24 @@ import java.util.List;
 public class CustomerRules extends PartyRules {
 
     /**
-     * /**
-     * Constructs a {@code CustomerRules}.
+     * Constructs a {@link CustomerRules}.
      *
-     * @param service the archetype service
-     * @param lookups the lookup service
+     * @param service          the archetype service
+     * @param lookups          the lookup service
      */
     public CustomerRules(IArchetypeService service, ILookupService lookups) {
-        super(service, lookups);
+        this(service, lookups, new BasicAddressFormatter(service, lookups));
+    }
+
+    /**
+     * Constructs a {@link CustomerRules}.
+     *
+     * @param service          the archetype service
+     * @param lookups          the lookup service
+     * @param addressFormatter the address formatter
+     */
+    public CustomerRules(IArchetypeService service, ILookupService lookups, AddressFormatter addressFormatter) {
+        super(service, lookups, addressFormatter);
     }
 
     /**
@@ -74,7 +86,7 @@ public class CustomerRules extends PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void mergeCustomers(Party from, Party to) {
-        CustomerMerger merger = new CustomerMerger(getArchetypeService(), getLookupService());
+        CustomerMerger merger = new CustomerMerger(getArchetypeService(), this);
         merger.merge(from, to);
     }
 
@@ -82,7 +94,7 @@ public class CustomerRules extends PartyRules {
      * Returns reminders for the specified customer's patients.
      *
      * @param customer       the customer
-     * @param dueInterval    the due interval, relative to the current date
+     * @param dueInterval    the due interval, relative to the current date/time
      * @param dueUnits       the due interval units
      * @param includeOverdue if {@code true}, include reminders that are overdue (i.e. those with a due date prior to
      *                       today's date)

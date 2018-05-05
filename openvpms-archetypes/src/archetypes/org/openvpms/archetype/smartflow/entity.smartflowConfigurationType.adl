@@ -1,0 +1,44 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="entity.smartflowConfigurationType.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.common.Entity"
+               displayName="Smart Flow Sheet Configuration">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="1" maxLength="100"
+              defaultValue="'Smart Flow Sheet Configuration'">
+            <assertion name="propercase"/>
+        </node>
+        <node name="description" type="java.lang.String" path="/description"
+              defaultValue="'Practice configuration parameters for SmartFlow Sheet'"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="synchroniseNotes" path="/details/synchroniseNotes" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="minimumWordCount" path="/details/minimumWordCount" type="java.lang.Integer" defaultValue="5"/>
+        <node name="saveFlowSheetReportOnDischarge" path="/details/saveFlowSheetReportOnDischarge"
+              type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="saveMedicalRecordsReportOnDischarge" path="/details/saveMedicalRecordsReportOnDischarge"
+              type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="saveBillingReportOnDischarge" path="/details/saveBillingReportOnDischarge" type="java.lang.Boolean"
+              defaultValue="true()"/>
+        <node name="saveNotesReportOnDischarge" path="/details/saveNotesReportOnDischarge" type="java.lang.Boolean"
+              defaultValue="true()"/>
+        <node name="saveFormsReportOnDischarge" path="/details/saveFormsReportOnDischarge" type="java.lang.Boolean"
+              defaultValue="true()"/>
+        <node name="saveAnestheticsReportsOnDischarge" path="/details/saveAnestheticsReportsOnDischarge"
+              type="java.lang.Boolean" defaultValue="true()"/>
+    </archetype>
+</archetypes>

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -23,7 +23,9 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.system.common.exception.OpenVPMSException;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
 import org.openvpms.web.component.edit.Editor;
@@ -37,6 +39,7 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategyFactory;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.lookup.LookupField;
 import org.openvpms.web.component.im.lookup.LookupPropertyEditor;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.AbstractIMObjectView;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
 import org.openvpms.web.component.im.view.IMObjectView;
@@ -45,13 +48,14 @@ import org.openvpms.web.component.im.view.layout.EditLayoutStrategyFactory;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
 import org.openvpms.web.component.property.AbstractModifiable;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ErrorListener;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.PropertyTransformer;
+import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
@@ -117,7 +121,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Lookup editors. These may need to be refreshed.
      */
-    private Map<PropertyEditor, ModifiableListener> lookups = new HashMap<PropertyEditor, ModifiableListener>();
+    private Map<PropertyEditor, ModifiableListener> lookups = new HashMap<>();
 
     /**
      * The layout context.
@@ -183,7 +187,6 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
             }
         });
     }
-
 
     /**
      * Disposes of the editor.
@@ -258,29 +261,18 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Save any edits.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
-    public boolean save() {
+    public void save() {
         if (cancelled) {
-            return false;
+            throw new IllegalStateException("Editor has been cancelled");
         }
-        boolean result = false;
-        Validator validator = createValidator();
-        if (validator.validate(this)) {
-            boolean isNew = object.isNew();
-            if (!isNew && !isModified()) {
-                result = true;
-            } else {
-                result = doSave();
-                if (result) {
-                    saved = true;
-                    clearModified();
-                }
-            }
-        } else {
-            showErrors(validator);
+        boolean isNew = object.isNew();
+        if (isNew || isModified()) {
+            doSave();
+            saved = true;
+            clearModified();
         }
-        return result;
     }
 
     /**
@@ -293,17 +285,16 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     }
 
     /**
-     * Delete the current object.
+     * Perform deletion.
      *
-     * @return {@code true} if the object was deleted successfully
+     * @throws OpenVPMSException if the delete fails
      */
-    public boolean delete() {
+    public void delete() {
         if (cancelled) {
-            return false;
+            throw new IllegalStateException("Editor has been cancelled");
         }
-        boolean result = doDelete();
-        deleted |= result;
-        return result;
+        doDelete();
+        deleted = true;
     }
 
     /**
@@ -380,6 +371,26 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     }
 
     /**
+     * Registers a listener to be notified of alerts.
+     *
+     * @param listener the listener. May be {@code null}
+     */
+    @Override
+    public void setAlertListener(AlertListener listener) {
+        editors.setAlertListener(listener);
+    }
+
+    /**
+     * Returns the listener to be notified of alerts.
+     *
+     * @return the listener. May be {@code null}
+     */
+    @Override
+    public AlertListener getAlertListener() {
+        return editors.getAlertListener();
+    }
+
+    /**
      * Cancel any edits. Once complete, query methods may be invoked, but the behaviour of other methods is undefined.
      */
     public void cancel() {
@@ -435,7 +446,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * Returns the focus group.
      *
      * @return the focus group, or {@code null} if the editor hasn't been
-     *         rendered
+     * rendered
      */
     public FocusGroup getFocusGroup() {
         return getView().getFocusGroup();
@@ -499,32 +510,23 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     }
 
     /**
-     * Creates a validator to perform validation on save.
+     * Creates a new instance of the editor, with the latest instance of the object to edit.
      *
-     * @return a new validator
+     * @return {@code null}
      */
-    protected Validator createValidator() {
-        return new DefaultValidator();
+    @Override
+    public IMObjectEditor newInstance() {
+        return null;
     }
-
-    /**
-     * Displays validation errors.
-     *
-     * @param validator the validator
-     */
-    protected void showErrors(Validator validator) {
-        ValidationHelper.showError(validator);
-    }
-
 
     /**
      * Resets the cached validity state of the object.
      *
-     * @param elements if {@code true} reset the validity state of the elements as well
+     * @param descendants if {@code true} reset the validity state of any descendants as well
      */
-    protected void resetValid(boolean elements) {
-        super.resetValid(elements);
-        if (elements) {
+    protected void resetValid(boolean descendants) {
+        super.resetValid(descendants);
+        if (descendants) {
             editors.resetValid();
         }
     }
@@ -552,82 +554,70 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Save any edits.
-     * <p/>
-     * This uses {@link #saveChildren()} to save the children prior to
-     * invoking {@link #saveObject()}.
+     * <p>
+     * This uses {@link #saveChildren()} to save the children prior to invoking {@link #saveObject()}.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
-    protected boolean doSave() {
-        boolean saved = saveChildren();
-        if (saved) {
-            saved = saveObject();
-        }
-        return saved;
+    protected void doSave() {
+        saveChildren();
+        saveObject();
     }
 
     /**
      * Saves the object.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
-    protected boolean saveObject() {
+    protected void saveObject() {
         IMObject object = getObject();
-        return SaveHelper.save(object);
+        ServiceHelper.getArchetypeService().save(object);
     }
 
     /**
      * Save any modified child Saveable instances.
      *
-     * @return {@code true} if the save was successful
+     * @throws OpenVPMSException if the save fails
      */
-    protected boolean saveChildren() {
+    protected void saveChildren() {
         for (Saveable saveable : editors.getModifiedSaveable()) {
-            if (!saveable.save()) {
-                return false;
-            }
+            saveable.save();
         }
-        return true;
     }
 
     /**
      * Deletes the object.
-     * <p/>
-     * This uses {@link #deleteChildren()} to delete the children prior to
-     * invoking {@link #deleteObject()}.
+     * <p>
+     * This uses {@link #deleteChildren()} to delete the children prior to invoking {@link #deleteObject()}.
      *
-     * @return {@code true} if the delete was successful
+     * @throws OpenVPMSException if the delete fails
      */
-    protected boolean doDelete() {
-        boolean result = deleteChildren();
-        if (result) {
-            result = deleteObject();
-        }
-        return result;
+    protected void doDelete() {
+        deleteChildren();
+        deleteObject();
     }
 
     /**
      * Deletes the object.
      *
-     * @return {@code true} if the delete was successful
+     * @throws OpenVPMSException if the delete fails
      */
-    protected boolean deleteObject() {
+    protected void deleteObject() {
         IMObject object = getObject();
-        return object.isNew() || SaveHelper.delete(object, getLayoutContext().getDeletionListener());
+        if (!object.isNew()) {
+            ServiceHelper.getArchetypeService().remove(object);
+        }
     }
 
     /**
      * Deletes any child Deletable instances.
      *
-     * @return {@code true} if the delete was successful
+     * @throws OpenVPMSException if the delete fails
      */
-    protected boolean deleteChildren() {
+    protected void deleteChildren() {
         for (Deletable deletable : editors.getDeletable()) {
-            if (!deletable.delete()) {
-                return false;
-            }
+            deletable.delete();
         }
-        return true;
     }
 
     /**
@@ -711,16 +701,6 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     }
 
     /**
-     * Removes listeners associated with lookup nodes.
-     */
-    private void disposeLookups() {
-        for (Map.Entry<PropertyEditor, ModifiableListener> entry : lookups.entrySet()) {
-            entry.getKey().removeModifiableListener(entry.getValue());
-        }
-        lookups.clear();
-    }
-
-    /**
      * Returns the layout context.
      *
      * @return the layout context
@@ -744,7 +724,6 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * Change the layout.
      */
     protected void onLayout() {
-        Component oldValue = getComponent();
         disposeOnChangeLayout();
         if (getView().getLayout() instanceof ExpandableLayoutStrategy) {
             ExpandableLayoutStrategy expandable = (ExpandableLayoutStrategy) getView().getLayout();
@@ -765,13 +744,12 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
                 }
             }
         }
-        Component newValue = getComponent();
-        firePropertyChange(COMPONENT_CHANGED_PROPERTY, oldValue, newValue);
+        firePropertyChange(COMPONENT_CHANGED_PROPERTY, null, this);
     }
 
     /**
      * Invoked by {@link #onLayout} to dispose of existing editors.
-     * <p/>
+     * <p>
      * This implementation disposes each editor for which {@link #disposeOnChangeLayout(Editor)} returns {@code true}.
      */
     protected void disposeOnChangeLayout() {
@@ -797,7 +775,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Invoked when layout has completed.
-     * <p/>
+     * <p>
      * This can be used to perform processing that requires all editors to be created.
      */
     protected void onLayoutCompleted() {
@@ -805,7 +783,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Invoked when any of the child editors or properties update.
-     * <p/>
+     * <p>
      * This resets the cached valid state
      *
      * @param modifiable the updated object
@@ -861,7 +839,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Helper to return an editor associated with a property, given the property
      * name.
-     * <p/>
+     * <p>
      * This performs a layout of the component if it hasn't already been done, to ensure the editors are created
      *
      * @param name the property name
@@ -899,7 +877,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Helper to return an object given its reference.
-     * <p/>
+     * <p>
      * This implementation uses the cache associated with the layout context.
      *
      * @param reference the reference. May be {@code null}
@@ -923,6 +901,78 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
             result = true;
         }
         return result;
+    }
+
+    /**
+     * Reloads an object, if it has been saved previously.
+     *
+     * @param object the object to reload. May be {@code null}
+     * @return the reloaded object
+     * @throws IllegalStateException if the object no longer exists
+     */
+    protected <T extends IMObject> T reload(T object) {
+        T result = object;
+        if (object != null && !object.isNew()) {
+            result = IMObjectHelper.reload(object);
+            if (result == null) {
+                throw new IllegalStateException(Messages.format("imobject.noexist",
+                                                                DescriptorHelper.getDisplayName(object)));
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Disables macro expansion of a node, to avoid it expanding itself.
+     *
+     * @param name the node name
+     */
+    protected void disableMacroExpansion(String name) {
+        Property property = getProperty(name);
+        if (property != null) {
+            PropertyTransformer transformer = property.getTransformer();
+            if (transformer instanceof StringPropertyTransformer) {
+                ((StringPropertyTransformer) transformer).setExpandMacros(false);
+            }
+        }
+    }
+
+    /**
+     * Helper to add a validation error for a required property.
+     *
+     * @param name      the required property name
+     * @param validator the validator
+     * @return {@code false}
+     */
+    protected boolean reportRequired(String name, Validator validator) {
+        Property property = getProperty(name);
+        if (property != null) {
+            reportRequired(property, validator);
+        }
+        return false;
+    }
+
+    /**
+     * Helper to add a validation error for a required property.
+     *
+     * @param property  the required property
+     * @param validator the validator
+     * @return {@code false}
+     */
+    protected boolean reportRequired(Property property, Validator validator) {
+        String message = Messages.format("property.error.required", property.getDisplayName());
+        validator.add(property, new ValidatorError(property, message));
+        return false;
+    }
+
+    /**
+     * Removes listeners associated with lookup nodes.
+     */
+    private void disposeLookups() {
+        for (Map.Entry<PropertyEditor, ModifiableListener> entry : lookups.entrySet()) {
+            entry.getKey().removeModifiableListener(entry.getValue());
+        }
+        lookups.clear();
     }
 
     private class ComponentFactory extends NodeEditorFactory {

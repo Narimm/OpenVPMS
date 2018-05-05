@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.print;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.help.HelpContext;
 
@@ -31,22 +32,23 @@ public abstract class ExportPrintDialog extends PrintDialog {
     /**
      * The export button identifier.
      */
-    private static final String EXPORT_ID = "export";
+    public static final String EXPORT_ID = "export";
 
     /**
      * The export mail button identifier.
      */
-    private static final String EXPORT_MAIL_ID = "exportMail";
+    public static final String EXPORT_MAIL_ID = "exportMail";
 
 
     /**
      * Constructs a {@link ExportPrintDialog}.
      *
-     * @param title the window title
-     * @param help  the help context. May be {@code null}
+     * @param title    the window title
+     * @param location the current practice location. May be {@code null}
+     * @param help     the help context. May be {@code null}
      */
-    public ExportPrintDialog(String title, HelpContext help) {
-        super(title, true, true, false, help);
+    public ExportPrintDialog(String title, Party location, HelpContext help) {
+        super(title, true, true, false, location, help);
         setStyleName("ExportPrintDialog");
     }
 

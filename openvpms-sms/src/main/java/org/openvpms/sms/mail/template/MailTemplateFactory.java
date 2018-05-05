@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.sms.mail.template;
@@ -29,25 +27,25 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 /**
  * Factory for creating {@link MailTemplate} instances from <em>entity.SMSConfigEmail*</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class MailTemplateFactory {
 
     /**
      * The archetype service.
      */
-    private IArchetypeService service;
+    private final IArchetypeService service;
 
     /**
      * Nodes which may not appear as variables.
      */
     private static final String[] RESERVED = {"name", "description", "website", "from", "fromExpression", "to",
                                               "toExpression", "replyTo", "replyToExpression", "subject",
-                                              "subjectExpression", "text", "textExpression", "phone", "message"};
+                                              "subjectExpression", "text", "textExpression", "phone", "message",
+                                              "active"};
 
     /**
-     * Constructs a <tt>MailTemplatePopulator</tt>.
+     * Constructs a {@link MailTemplateFactory}.
      *
      * @param service the service
      */
@@ -77,11 +75,20 @@ public class MailTemplateFactory {
         result.setSubjectExpression(getString(configBean, "subjectExpression"));
         result.setText(getString(configBean, "text"));
         result.setTextExpression(getString(configBean, "textExpression"));
+        int maxParts = 1;
+        if (configBean.hasNode("parts")) {
+            maxParts = configBean.getInt("parts", 1);
+            if (maxParts < 1) {
+                maxParts = 1;
+            }
+        }
+        result.setMaxParts(maxParts);
         for (NodeDescriptor descriptor : archetype.getNodeDescriptorsAsArray()) {
-            if (String.class.getName().equals(descriptor.getType())
+            String type = descriptor.getType();
+            if ((String.class.getName().equals(type) || Boolean.class.getName().equals(type))
                 && !ArrayUtils.contains(RESERVED, descriptor.getName())) {
                 Object value = descriptor.getValue(config);
-                result.addVariable(descriptor.getName(), value != null ? value.toString() : null);
+                result.addVariable(descriptor.getName(), value);
             }
         }
         return result;
@@ -92,7 +99,7 @@ public class MailTemplateFactory {
      *
      * @param bean the bean
      * @param name the node name
-     * @return the string value. May be <tt>null</tt>
+     * @return the string value. May be {@code null}
      */
     private String getString(IMObjectBean bean, String name) {
         String result = null;

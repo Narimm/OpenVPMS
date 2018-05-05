@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -29,6 +29,10 @@
     <import resource="openvpms-hl7.xml"/>
     <import resource="openvpms-smartflow.xml"/>
     <import resource="openvpms-authentication.xml"/>
+    <import resource="openvpms-webdav.xml"/>
+    <import resource="openvpms-booking.xml"/>
+    <import resource="openvpms-plugins.xml"/>
+    <import resource="openvpms-insurance.xml"/>
     <import resource="openvpms-web-app.xml"/>
 
 </beans>

@@ -11,13 +11,11 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.otc;
 
-import nextapp.echo2.app.event.WindowPaneEvent;
-import nextapp.echo2.app.event.WindowPaneListener;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -34,7 +32,6 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.payment.PaymentItemEditor;
 import org.openvpms.web.echo.dialog.PopupDialog;
-import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditorTest;
 import org.openvpms.web.workspace.workflow.WorkflowTestHelper;
 
@@ -59,7 +56,7 @@ public class OverTheCounterWorkflowTestCase extends AbstractCustomerChargeActEdi
     /**
      * Tracks errors logged.
      */
-    private List<String> errors = new ArrayList<String>();
+    private List<String> errors = new ArrayList<>();
 
     /**
      * Test context.
@@ -141,9 +138,9 @@ public class OverTheCounterWorkflowTestCase extends AbstractCustomerChargeActEdi
 
     /**
      * Verifies that an error is raised if the charge is posted externally.
-     * <p/>
+     * <p>
      * This could happen if a user goes into the OTC account and posts the charge while the workflow is active.
-     * <p/>
+     * <p>
      * At present, the workflow will terminate with an error, and both the charge and payment will need to be
      * manually cleaned up. TODO
      */
@@ -181,9 +178,9 @@ public class OverTheCounterWorkflowTestCase extends AbstractCustomerChargeActEdi
 
     /**
      * Verifies that an error is raised if the payment is posted externally.
-     * <p/>
+     * <p>
      * This could happen if a user goes into the OTC account and posts the payment while the workflow is active.
-     * <p/>
+     * <p>
      * At present, the workflow will terminate with an error, and both the charge and payment will need to be
      * manually cleaned up. TODO
      */
@@ -243,19 +240,7 @@ public class OverTheCounterWorkflowTestCase extends AbstractCustomerChargeActEdi
         context.setTill(till);
 
         // register an ErrorHandler to collect errors
-        ErrorHandler.setInstance(new ErrorHandler() {
-            @Override
-            public void error(Throwable cause) {
-                errors.add(cause.getMessage());
-            }
-
-            public void error(String title, String message, Throwable cause, WindowPaneListener listener) {
-                errors.add(message);
-                if (listener != null) {
-                    listener.windowPaneClosing(new WindowPaneEvent(this));
-                }
-            }
-        });
+        initErrorHandler(errors);
     }
 
     /**
@@ -321,10 +306,10 @@ public class OverTheCounterWorkflowTestCase extends AbstractCustomerChargeActEdi
 
         TestOTCChargeTask chargeTask = workflow.getChargeTask();
         OTCChargeEditor chargeEditor = workflow.getChargeEditor();
-        addItem(chargeEditor, null, product, ONE, chargeTask.getEditorQueue());
+        addItem(chargeEditor, null, product, ONE, chargeTask.getQueue());
         fireDialogButton(chargeTask.getEditDialog(), PopupDialog.APPLY_ID); // force the charge to save
 
-        FinancialAct charge = (FinancialAct) get(chargeEditor.getObject());
+        FinancialAct charge = get(chargeEditor.getObject());
         assertNotNull(charge);
         checkCharge(charge, otc, author, null, BigDecimal.ZERO, ONE);
         assertEquals(ActStatus.IN_PROGRESS, charge.getStatus());

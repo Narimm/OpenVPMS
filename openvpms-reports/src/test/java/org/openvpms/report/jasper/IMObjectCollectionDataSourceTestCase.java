@@ -11,52 +11,54 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report.jasper;
 
 import org.apache.commons.jxpath.Functions;
-import org.junit.Test;
-import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ResolvingPropertySet;
 import org.openvpms.component.system.common.util.PropertySet;
+import org.openvpms.report.Parameters;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the {@link IMObjectCollectionDataSource} class.
  *
  * @author Tim Anderson
  */
-public class IMObjectCollectionDataSourceTestCase extends AbstractIMObjectDataSourceTestCase {
+public class IMObjectCollectionDataSourceTestCase extends AbstractDataSourceTest<IMObject> {
 
     /**
-     * Tests the {@link IMObjectCollectionDataSource#getExpressionDataSource(String)} method.
+     * Creates a new data source.
      *
-     * @throws Exception for any error
+     * @param objects    the objects
+     * @param parameters the parameters
+     * @param fields     the fields
+     * @param handlers   the document handlers
+     * @param functions  the functions
+     * @return a new data source
      */
-    @Test
-    public void testExpressionDataSource() throws Exception {
-        Party customer = TestHelper.createCustomer(false);
-        List<IMObject> objects = Arrays.<IMObject>asList(customer);
-        Map<String, Object> fields = new HashMap<String, Object>();
-        fields.put("Globals.A", "A");
-        fields.put("Globals.1", 1);
-        PropertySet f = new ResolvingPropertySet(fields, getArchetypeService());
-        Functions functions = applicationContext.getBean(Functions.class);
-        IMObjectCollectionDataSource ds = new IMObjectCollectionDataSource(objects, f,
-                                                                           getArchetypeService(), getLookupService(),
-                                                                           handlers, functions);
-        assertTrue(ds.next());
-        checkExpressionDataSource(ds, f);
+    @Override
+    protected DataSource createDataSource(List<IMObject> objects, Parameters parameters, PropertySet fields,
+                                          DocumentHandlers handlers, Functions functions) {
+        return new IMObjectCollectionDataSource(objects, parameters, fields, getArchetypeService(),
+                                                getLookupService(), handlers, functions);
+    }
+
+    /**
+     * Creates a collection of customers to pass to the data source.
+     *
+     * @param customers the customers
+     * @return a collection to pass to the data source
+     */
+    @Override
+    protected List<IMObject> createCollection(Party... customers) {
+        return Arrays.<IMObject>asList(customers);
     }
 
 }

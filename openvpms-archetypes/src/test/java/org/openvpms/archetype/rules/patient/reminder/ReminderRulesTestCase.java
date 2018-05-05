@@ -11,20 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
-import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -34,7 +34,6 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -47,18 +46,28 @@ import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.archetype.rules.act.ActStatus.COMPLETED;
+import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderStatus.CANCELLED;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.addReminderCount;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createAlert;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createEmailReminder;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createEmailRule;
+import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createPrintReminder;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createReminderType;
 import static org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper.createReminderWithDueDate;
 import static org.openvpms.archetype.test.TestHelper.getDate;
+import static org.openvpms.archetype.test.TestHelper.getDatetime;
 
 
 /**
@@ -75,8 +84,19 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
 
 
     /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        IArchetypeService service = getArchetypeService();
+        PracticeRules practiceRules = new PracticeRules(service, null);
+        PatientRules patientRules = new PatientRules(practiceRules, service, getLookupService(), null);
+        rules = new ReminderRules(service, patientRules);
+    }
+
+    /**
      * Tests the {@link ReminderRules#markMatchingRemindersCompleted(Act)}
-     * method, when invoked via the <em>archetypeService.save.act.patientReminder.before</em> rule.
+     * method.
      */
     @Test
     public void testMarkMatchingRemindersCompleted() {
@@ -89,84 +109,53 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         // create a reminder for patient1, with an entity.reminderType with
         // no lookup.reminderGroup
         Act reminder0 = createReminder(patient1);
-        checkReminder(reminder0, ReminderStatus.IN_PROGRESS);
+        checkReminder(reminder0, IN_PROGRESS);
+        rules.markMatchingRemindersCompleted(reminder0);
 
         // create a reminder for patient1, with an entity.reminderType with
         // group1 lookup.reminderGroup. Verify it has not changed reminder0
         Act reminder1 = createReminder(patient1, group1);
-        checkReminder(reminder1, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder0, ReminderStatus.IN_PROGRESS);
+        rules.markMatchingRemindersCompleted(reminder1);
+        checkReminder(reminder1, IN_PROGRESS);
+        checkReminder(reminder0, IN_PROGRESS);
 
         // create a reminder for patient2, with an entity.reminderType with
         // group2 lookup.reminderGroup. Verify it has not changed reminder1
         Act reminder2 = createReminder(patient2, group2);
-        checkReminder(reminder2, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder1, ReminderStatus.IN_PROGRESS);
+        rules.markMatchingRemindersCompleted(reminder2);
+        checkReminder(reminder2, IN_PROGRESS);
+        checkReminder(reminder1, IN_PROGRESS);
 
         // create a reminder for patient1, with an entity.reminderType with
         // group1 lookup.reminderGroup. Verify it marks reminder1 COMPLETED.
         Act reminder3 = createReminder(patient1, group1);
-        checkReminder(reminder3, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder1, ReminderStatus.COMPLETED);
+        rules.markMatchingRemindersCompleted(reminder3);
+        checkReminder(reminder3, IN_PROGRESS);
+        checkReminder(reminder1, COMPLETED);
 
         // create a reminder for patient2, with an entity.reminderType with
         // both group1 and group2 lookup.reminderGroup. Verify it marks
         // reminder2 COMPLETED.
         Act reminder4 = createReminder(patient2, group1, group2);
-        checkReminder(reminder4, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder2, ReminderStatus.COMPLETED);
+        rules.markMatchingRemindersCompleted(reminder4);
+        checkReminder(reminder4, IN_PROGRESS);
+        checkReminder(reminder2, COMPLETED);
 
         // create a reminder type with no group, and create 2 reminders using it.
         Entity reminderType = ReminderTestHelper.createReminderType();
         Act reminder5 = createReminder(patient1, reminderType);
         Act reminder6 = createReminder(patient2, reminderType);
-        checkReminder(reminder5, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder6, ReminderStatus.IN_PROGRESS);
+        rules.markMatchingRemindersCompleted(reminder5);
+        rules.markMatchingRemindersCompleted(reminder6);
+        checkReminder(reminder5, IN_PROGRESS);
+        checkReminder(reminder6, IN_PROGRESS);
 
         // now create a reminder for patient1. Verify it marks reminder5 COMPLETED
         Act reminder7 = createReminder(patient1, reminderType);
-        checkReminder(reminder5, ReminderStatus.COMPLETED);
-        checkReminder(reminder6, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder7, ReminderStatus.IN_PROGRESS);
-    }
-
-    /**
-     * Verifies that {@link ReminderRules#markMatchingRemindersCompleted(Act)} cannot mark matching reminders
-     * completed if they are saved within the same transaction.
-     * This is because the new reminders cannot be queried until the transaction completes.
-     * If this occurs, consider using {@link ReminderRules#markMatchingRemindersCompleted(List)}.
-     */
-    @Test
-    public void testMarkMatchingRemindersCompletedInTxn() {
-        Entity reminderType = ReminderTestHelper.createReminderType();
-
-        Party patient1 = TestHelper.createPatient();
-        Party patient2 = TestHelper.createPatient();
-
-        // verify that when reminders are saved in different transactions, they are updated correctly
-        Act reminder1 = ReminderTestHelper.createReminder(patient1, reminderType);
-        Act reminder1dup = ReminderTestHelper.createReminder(patient1, reminderType);
-        save(reminder1dup);
-        save(reminder1);
-
-        checkReminder(reminder1dup, ReminderStatus.COMPLETED);
-        checkReminder(reminder1, ReminderStatus.IN_PROGRESS);
-
-        // verify that when reminders are saved in the same transaction, they don't update
-        Act reminder2 = ReminderTestHelper.createReminder(patient2, reminderType);
-        Act reminder2dup = ReminderTestHelper.createReminder(patient2, reminderType);
-
-        // save in same transaction. The rule won't be able to query the new acts
-        save(reminder2, reminder2dup);
-
-        // verify all acts (including duplicate) are in progress
-        checkReminder(reminder2, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder2dup, ReminderStatus.IN_PROGRESS);
-
-        // now save reminder2 again. As it is no longer new, it shouldn't update reminder2dup
-        save(reminder2);
-        checkReminder(reminder2, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder2dup, ReminderStatus.IN_PROGRESS);
+        rules.markMatchingRemindersCompleted(reminder7);
+        checkReminder(reminder5, COMPLETED);
+        checkReminder(reminder6, IN_PROGRESS);
+        checkReminder(reminder7, IN_PROGRESS);
     }
 
     /**
@@ -183,8 +172,8 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Act reminder0 = ReminderTestHelper.createReminder(patient1, reminderType);
         Act reminder1 = ReminderTestHelper.createReminder(patient2, reminderType);
         save(reminder0, reminder1);
-        checkReminder(reminder0, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder1, ReminderStatus.IN_PROGRESS);
+        checkReminder(reminder0, IN_PROGRESS);
+        checkReminder(reminder1, IN_PROGRESS);
 
         Act reminder2 = ReminderTestHelper.createReminder(patient1, reminderType);
         Act reminder3 = ReminderTestHelper.createReminder(patient2, reminderType);
@@ -200,11 +189,11 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
             }
         });
 
-        checkReminder(reminder0, ReminderStatus.COMPLETED);
-        checkReminder(reminder1, ReminderStatus.COMPLETED);
-        checkReminder(reminder2, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder3, ReminderStatus.IN_PROGRESS);
-        checkReminder(reminder3dup, ReminderStatus.COMPLETED); // as it duplicates reminder3
+        checkReminder(reminder0, COMPLETED);
+        checkReminder(reminder1, COMPLETED);
+        checkReminder(reminder2, IN_PROGRESS);
+        checkReminder(reminder3, IN_PROGRESS);
+        checkReminder(reminder3dup, COMPLETED); // as it duplicates reminder3
     }
 
     /**
@@ -231,96 +220,6 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ReminderRules#countReminders(Party)} method.
-     * Requires <em>Reminder.hbm.xml</em>.
-     */
-    @Test
-    public void testCountReminders() {
-        Party patient = TestHelper.createPatient();
-        assertEquals(0, rules.countReminders(patient));
-        int count = 5;
-        Act[] reminders = new Act[count];
-        for (int i = 0; i < count; ++i) {
-            reminders[i] = createReminder(patient);
-        }
-        assertEquals(count, rules.countReminders(patient));
-
-        Act reminder0 = reminders[0];
-        reminder0.setStatus(ActStatus.COMPLETED);
-        save(reminder0);
-        assertEquals(count - 1, rules.countReminders(patient));
-
-        Act reminder1 = reminders[1];
-        reminder1.setStatus(ActStatus.CANCELLED);
-        save(reminder1);
-        assertEquals(count - 2, rules.countReminders(patient));
-    }
-
-    /**
-     * Tests the {@link ReminderRules#countAlerts} method.
-     * Requires <em>Reminder.hbm.xml</em>.
-     */
-    @Test
-    public void testCountAlerts() {
-        Party patient = TestHelper.createPatient();
-        Date date = new Date();
-        assertEquals(0, rules.countAlerts(patient, date));
-        int count = 5;
-        Act[] alerts = new Act[count];
-        for (int i = 0; i < count; ++i) {
-            alerts[i] = createAlert(patient);
-        }
-        assertEquals(count, rules.countAlerts(patient, date));
-
-        Act alert0 = alerts[0];
-        alert0.setStatus(ActStatus.COMPLETED);
-        save(alert0);
-        assertEquals(count - 1, rules.countAlerts(patient, date));
-
-        Act alert1 = alerts[1];
-        alert1.setActivityEndTime(date);
-        save(alert1);
-        assertEquals(count - 2, rules.countAlerts(patient, date));
-    }
-
-    /**
-     * Tests the {@link ReminderRules#isDue(Act, Date, Date)} method.
-     */
-    @Test
-    public void testIsDue() {
-        Lookup group = ReminderTestHelper.createReminderGroup();
-        Party patient = TestHelper.createPatient();
-        Entity reminderType = ReminderTestHelper.createReminderType(
-                1, DateUnits.MONTHS, group);
-        Date start = java.sql.Date.valueOf("2007-01-01");
-        Date due = rules.calculateReminderDueDate(start, reminderType);
-        Act reminder = createReminderWithDueDate(patient, reminderType,
-                                                 due);
-
-        checkDue(reminder, null, null, true);
-        checkDue(reminder, null, "2007-01-01", false);
-        checkDue(reminder, "2007-01-01", null, true);
-        checkDue(reminder, "2007-01-01", "2007-01-31", false);
-        checkDue(reminder, "2007-01-01", "2007-02-01", true);
-
-        // Now add a template to the reminderType, due 2 weeks after the current
-        // due date.
-        EntityRelationship reminderTypeTemplate = (EntityRelationship) create(
-                ReminderArchetypes.REMINDER_TYPE_TEMPLATE);
-        Entity template = (Entity) create("entity.documentTemplate");
-        template.setName("XTestTemplate_" + System.currentTimeMillis());
-        IMObjectBean bean = new IMObjectBean(reminderTypeTemplate);
-        bean.setValue("reminderCount", 0);
-        bean.setValue("interval", 2);
-        bean.setValue("units", DateUnits.WEEKS);
-        bean.setValue("source", reminderType.getObjectReference());
-        bean.setValue("target", template.getObjectReference());
-        save(reminderTypeTemplate, template);
-        checkDue(reminder, "2007-01-01", "2007-02-14", false);
-        checkDue(reminder, "2007-01-01", "2007-02-15", true);
-    }
-
-    /**
      * Tests the {@link ReminderRules#shouldCancel(Act, Date)} method.
      */
     @Test
@@ -332,7 +231,9 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Date start = java.sql.Date.valueOf("2007-01-01");
         Act reminder = ReminderTestHelper.createReminder(patient, reminderType);
         reminder.setActivityStartTime(start);
-        rules.calculateReminderDueDate(reminder);
+        Date due = rules.calculateReminderDueDate(start, reminderType);
+        reminder.setActivityStartTime(due);
+        reminder.setActivityEndTime(due);
 
         checkShouldCancel(reminder, "2007-01-01", false);
         checkShouldCancel(reminder, "2007-01-31", false);
@@ -354,50 +255,33 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         patientBean.setValue("deceased", true);
         patientBean.save();
         checkShouldCancel(reminder, "2007-02-01", true);
-
     }
 
     /**
-     * Tests the {@link ReminderRules#getContact(Set)} method.
+     * Tests the {@link ReminderRules#updateReminder(Act, Act)} method.
      */
     @Test
-    public void testGetContact() {
-        // create a patient, and owner. Remove default contacts from owner
-        Party owner = TestHelper.createCustomer();
-        Contact[] contacts = owner.getContacts().toArray(new Contact[owner.getContacts().size()]);
-        for (Contact contact : contacts) {
-            owner.removeContact(contact);
-        }
+    public void testUpdateReminder() {
+        Party patient = TestHelper.createPatient();
+        Entity reminderType = ReminderTestHelper.createReminderType(3, DateUnits.MONTHS);
+        addReminderCount(reminderType, 0, 0, DateUnits.WEEKS, null, createEmailRule());
+        addReminderCount(reminderType, 1, 1, DateUnits.MONTHS, null, createEmailRule());
 
-        // add an email contact to the owner, and verify it is returned
-        Contact email = createEmail();
-        checkContact(owner, email, email);
-
-        // add a location contact to the owner, and verify it is returned
-        // instead of the email contact
-        Contact location = createLocation(false);
-        checkContact(owner, location, location);
-
-        // add a preferred phone contact to the owner, and verify the location
-        // contact is still returned
-        Contact phone = createPhone(true);
-        checkContact(owner, phone, location);
-
-        // add a preferred location contact to the owner, and verify it is
-        // returned instead of the non-preferred location contact
-        Contact preferredLocation = createLocation(true);
-        checkContact(owner, preferredLocation, preferredLocation);
-
-        // add a REMINDER classification to the email contact and verify it is
-        // returned instead of the preferred location contact
-        Lookup reminder = TestHelper.getLookup(ContactArchetypes.PURPOSE, "REMINDER");
-        email.addClassification(reminder);
-        checkContact(owner, email, email);
-
-        // add a REMINDER classification to the location contact and verify it
-        // is returned instead of the email contact
-        preferredLocation.addClassification(reminder);
-        checkContact(owner, preferredLocation, preferredLocation);
+        Act reminder = createReminder(patient, reminderType, "2016-01-01 00:00:00", IN_PROGRESS);
+        Date due = TestHelper.getDate("2016-04-01");
+        assertEquals(due, reminder.getActivityStartTime());
+        assertEquals(due, reminder.getActivityEndTime());
+        Act item1 = createEmailReminder(due, due, ReminderItemStatus.PENDING, 0);
+        Act item2 = createPrintReminder(due, due, ReminderItemStatus.PENDING, 0);
+        ActBean bean = new ActBean(reminder);
+        bean.addNodeRelationship("items", item1);
+        bean.addNodeRelationship("items", item2);
+        save(reminder, item1, item2);
+        assertFalse(rules.updateReminder(reminder, item1));
+        item2.setStatus(ReminderItemStatus.COMPLETED);
+        save(item2);
+        assertTrue(rules.updateReminder(reminder, item1));
+        assertEquals(getDate("2016-05-01"), reminder.getActivityStartTime());
     }
 
     /**
@@ -470,7 +354,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         assertNotNull(reminder1);
         assertTrue(reminder1.isNew()); // reminders from products should not be persistent
         Date dueDate1 = rules.calculateProductReminderDueDate(form.getActivityStartTime(), productReminder1);
-        checkReminder(reminder1, reminderType1, patient, product, form, dueDate1);
+        checkReminder(reminder1, reminderType1, patient, product, dueDate1);
 
         Entity reminderType2 = createReminderType();
         EntityRelationship productReminder2 = productBean.addNodeRelationship("reminders", reminderType2);
@@ -482,7 +366,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Act reminder2 = rules.getDocumentFormReminder(form);
         assertNotNull(reminder2);
         assertTrue(reminder2.isNew()); // reminders from products should not be persistent
-        checkReminder(reminder2, reminderType2, patient, product, form, dueDate2);
+        checkReminder(reminder2, reminderType2, patient, product, dueDate2);
     }
 
     /**
@@ -504,7 +388,7 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         Act reminder1 = rules.getDocumentFormReminder(form);
         assertNotNull(reminder1);
         assertTrue(reminder1.isNew()); // reminders from products should not be persistent
-        checkReminder(reminder1, reminderType1, patient, product, form, dueDate1);
+        checkReminder(reminder1, reminderType1, patient, product, dueDate1);
 
         // create an invoice item and associate the form with it
         Act item = FinancialTestHelper.createChargeItem(CustomerAccountArchetypes.INVOICE_ITEM, patient, product, Money.ONE
@@ -519,16 +403,6 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         itemBean.addNodeRelationship("reminders", reminder2);
         save(item, reminder2);
         assertEquals(reminder2, rules.getDocumentFormReminder(form));
-    }
-
-    private void checkReminder(Act reminder, Entity reminderType, Party patient, Product product, DocumentAct form,
-                               Date dueDate) {
-        ActBean bean = new ActBean(reminder);
-        assertEquals(patient, bean.getNodeParticipant("patient"));
-        assertEquals(reminderType, bean.getNodeParticipant("reminderType"));
-        assertEquals(product, bean.getNodeParticipant("product"));
-        assertEquals(form.getActivityStartTime(), reminder.getActivityStartTime());
-        assertEquals(dueDate, reminder.getActivityEndTime());
     }
 
     /**
@@ -562,48 +436,224 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Verifies that reminders are marked COMPLETED if they are IN_PROGRESS on save and
-     * {@link ReminderRules#shouldCancel(Act, Date)} is {@code true}.
-     * <p/>
-     * Note that COMPLETED is used an not CANCELLED, which is only used when processing reminders.
-     * This behaviour is to support reminders that complete other reminders, but should also be marked COMPLETED rather
-     * than left IN_PROGRESS.
+     * Verifies that if a entityRelationship.productReminder is missing the periodUom, it is treated as YEARS.
      */
     @Test
-    public void testCompleteOnSave() {
+    public void testCalculateProductReminderDueDateForMissingPeriodUOM() {
+        Product product = TestHelper.createProduct();
+        EntityBean productBean = new EntityBean(product);
+        Entity reminderType = createReminderType();
+        EntityRelationship productReminder = productBean.addNodeRelationship("reminders", reminderType);
+        IMObjectBean bean = new IMObjectBean(productReminder);
+
+        bean.setValue("period", 1);
+        bean.setValue("periodUom", "MONTHS");
+
+        Date start = getDate("2015-03-25");
+        Date due1 = rules.calculateProductReminderDueDate(start, productReminder);
+        assertEquals(getDate("2015-04-25"), due1);
+
+        bean.setValue("periodUom", null);
+
+        Date due2 = rules.calculateProductReminderDueDate(start, productReminder);
+        assertEquals(getDate("2016-03-25"), due2);
+    }
+
+    /**
+     * Tests the {@link ReminderRules#getReminders(Party, Date, Date)} method.
+     */
+    @Test
+    public void testGetReminders() {
         Party patient = TestHelper.createPatient();
-        Entity reminderType = ReminderTestHelper.createReminderType(0, DateUnits.MONTHS, 0, DateUnits.MONTHS);
-        Act reminder = ReminderTestHelper.createReminder(patient, reminderType);
-        reminder.setActivityEndTime(new Date());
-        assertEquals(ActStatus.IN_PROGRESS, reminder.getStatus());
-        assertTrue(rules.shouldCancel(reminder, new Date()));
-        save(reminder);
-        assertEquals(ActStatus.COMPLETED, reminder.getStatus());
+        Entity reminderType = ReminderTestHelper.createReminderType();
+        Act reminder1 = createReminder(patient, reminderType, "2016-04-13 11:59:59", IN_PROGRESS);
+        Act reminder2 = createReminder(patient, reminderType, "2016-04-14 10:10:10", IN_PROGRESS);
+        Act reminder3 = createReminder(patient, reminderType, "2016-04-14 11:10:10", COMPLETED);
+        Act reminder4 = createReminder(patient, reminderType, "2016-04-15 10:10:10", CANCELLED);
+        Act reminder5 = createReminder(patient, reminderType, "2016-04-15 11:00:00", IN_PROGRESS);
+
+        List<Act> acts = getActs(rules.getReminders(patient, getDatetime("2016-04-14 10:00:00"),
+                                                    getDatetime("2016-04-15 11:00:00")));
+        assertEquals(3, acts.size());
+        assertFalse(acts.contains(reminder1));
+        assertTrue(acts.contains(reminder2));
+        assertTrue(acts.contains(reminder3));
+        assertTrue(acts.contains(reminder4));
+        assertFalse(acts.contains(reminder5));
     }
 
     /**
-     * Sets up the test case.
+     * Tests the {@link ReminderRules#getReminders(Party, String, Date, Date)} method.
      */
-    @Before
-    public void setUp() {
-        IArchetypeService service = getArchetypeService();
-        PracticeRules practiceRules = new PracticeRules(service, null);
-        PatientRules patientRules = new PatientRules(practiceRules, service, getLookupService(), null);
-        rules = new ReminderRules(service, patientRules);
+    @Test
+    public void testGetRemindersForProductType() {
+        Party patient = TestHelper.createPatient();
+        Entity productType1 = ProductTestHelper.createProductType("Z Vaccination 1");
+        Entity productType2 = ProductTestHelper.createProductType("Z Vaccination 2");
+        Product product1 = ProductTestHelper.createMedication(productType1);
+        Product product2 = ProductTestHelper.createMedication(productType2);
+        Product product3 = TestHelper.createProduct();
+        Entity reminderType = ReminderTestHelper.createReminderType();
+        Act reminder1 = createReminder(patient, reminderType, product1, "2016-04-13 11:59:59", IN_PROGRESS);
+        Act reminder2 = createReminder(patient, reminderType, product2, "2016-04-14 10:10:10", IN_PROGRESS);
+        Act reminder3 = createReminder(patient, reminderType, product1, "2016-04-14 11:10:10", COMPLETED);
+        Act reminder4 = createReminder(patient, reminderType, product3, "2016-04-15 10:10:10", CANCELLED);
+        Act reminder5 = createReminder(patient, reminderType, product1, "2016-04-15 11:00:00", IN_PROGRESS);
+
+        List<Act> acts1 = getActs(rules.getReminders(patient, productType1.getName(), getDatetime("2016-04-14 10:00:00"),
+                                                     getDatetime("2016-04-15 11:00:00")));
+        assertEquals(1, acts1.size());
+        assertFalse(acts1.contains(reminder1));
+        assertFalse(acts1.contains(reminder2));
+        assertTrue(acts1.contains(reminder3));
+        assertFalse(acts1.contains(reminder4));
+        assertFalse(acts1.contains(reminder5));
+
+        List<Act> acts2 = getActs(rules.getReminders(patient, productType2.getName(), getDatetime("2016-04-14 10:00:00"),
+                                                     getDatetime("2016-04-15 11:00:00")));
+        assertEquals(1, acts2.size());
+        assertTrue(acts2.contains(reminder2));
+
+        List<Act> acts3 = getActs(rules.getReminders(patient, "Z Vacc*", getDatetime("2016-04-14 10:00:00"),
+                                                     getDatetime("2016-04-15 11:00:00")));
+        assertEquals(2, acts3.size());
+        assertTrue(acts3.contains(reminder2));
+        assertTrue(acts3.contains(reminder3));
     }
 
     /**
-     * Adds a contact to a customer and verifies the expected contact returned by {@link ReminderRules#getContact(Set)}.
+     * Tests the {@link ReminderRules#markMatchingAlertsCompleted(Act)} method.
+     */
+    @Test
+    public void testMarkMatchingAlertsCompleted() {
+        Entity alertTypeA = ReminderTestHelper.createAlertType("Z Alert A");
+        Entity alertTypeB = ReminderTestHelper.createAlertType("Z Alert B");
+        Party patient1 = TestHelper.createPatient();
+        Party patient2 = TestHelper.createPatient();
+
+        // create an alert for patient1, and mark matching alerts completed. The alert should still be IN_PROGRESS
+        Act alert0 = createAlert(patient1, alertTypeA);
+        rules.markMatchingAlertsCompleted(alert0);
+        checkAlert(alert0, IN_PROGRESS);
+
+        // create another alert for patient1, with a different reminder type. Verify it has not changed alert0
+        Act alert1 = createAlert(patient1, alertTypeB);
+        rules.markMatchingAlertsCompleted(alert1);
+        checkAlert(alert1, IN_PROGRESS);
+        checkAlert(alert0, IN_PROGRESS);
+
+        // create an alert for patient2. Marking matching alerts completed should not affect patient1 alerts
+        Act alert2 = createAlert(patient2, alertTypeA);
+        rules.markMatchingAlertsCompleted(alert2);
+        checkAlert(alert2, IN_PROGRESS);
+        checkAlert(alert1, IN_PROGRESS);
+        checkAlert(alert0, IN_PROGRESS);
+
+        // create another alert for patient1 for alertB. Verify it marks reminder1 COMPLETED.
+        Act alert3 = createAlert(patient1, alertTypeB);
+        rules.markMatchingAlertsCompleted(alert3);
+        checkAlert(alert3, IN_PROGRESS);
+        checkAlert(alert1, COMPLETED);
+    }
+
+    /**
+     * Tests the {@link ReminderRules#markMatchingAlertsCompleted(List)} method.
+     */
+    @Test
+    public void testMarkMatchingAlertsCompletedForList() {
+        Entity alertType = ReminderTestHelper.createAlertType("Z Alert");
+
+        Party patient1 = TestHelper.createPatient();
+        Party patient2 = TestHelper.createPatient();
+
+        // create alerts for patient1 and patient2
+        Act alert0 = ReminderTestHelper.createAlert(patient1, alertType);
+        Act alert1 = ReminderTestHelper.createAlert(patient2, alertType);
+        save(alert0, alert1);
+
+        Act alert2 = ReminderTestHelper.createAlert(patient1, alertType);
+        Act alert3 = ReminderTestHelper.createAlert(patient2, alertType);
+        Act alert3dup = ReminderTestHelper.createAlert(patient2, alertType); // duplicates alert3
+        final List<Act> alerts = Arrays.asList(alert2, alert3, alert3dup);
+        PlatformTransactionManager mgr = (PlatformTransactionManager) applicationContext.getBean("txnManager");
+        TransactionTemplate template = new TransactionTemplate(mgr);
+        template.execute(new TransactionCallback<Object>() {
+            public Object doInTransaction(TransactionStatus status) {
+                rules.markMatchingAlertsCompleted(alerts);
+                return null;
+            }
+        });
+
+        checkAlert(alert0, COMPLETED);
+        checkAlert(alert1, COMPLETED);
+        checkAlert(alert2, IN_PROGRESS);
+        checkAlert(alert3, IN_PROGRESS);
+        checkAlert(alert3dup, COMPLETED); // as it duplicates alert3
+    }
+
+    /**
+     * Helper to convert an iterable of acts to a list.
      *
-     * @param customer the customer
-     * @param contact  the contact to add
-     * @param expected the expected contact
+     * @param acts the acts
+     * @return the list of acts
      */
-    private void checkContact(Party customer, Contact contact,
-                              Contact expected) {
-        customer.addContact(contact);
-        Contact c = rules.getContact(customer.getContacts());
-        assertEquals(expected, c);
+    private List<Act> getActs(Iterable<Act> acts) {
+        List<Act> result = new ArrayList<>();
+        CollectionUtils.addAll(result, acts);
+        return result;
+    }
+
+    /**
+     * Creates a reminder.
+     *
+     * @param patient      the reminder
+     * @param reminderType the reminder type
+     * @param startTime    the start time
+     * @param status       the status
+     * @return a new reminder
+     */
+    private Act createReminder(Party patient, Entity reminderType, String startTime, String status) {
+        Act reminder = ReminderTestHelper.createReminder(patient, reminderType, TestHelper.getDatetime(startTime));
+        reminder.setStatus(status);
+        save(reminder);
+        return reminder;
+    }
+
+    /**
+     * Creates a reminder.
+     *
+     * @param patient      the reminder
+     * @param reminderType the reminder type
+     * @param product      the product
+     * @param startTime    the start time
+     * @param status       the status
+     * @return a new reminder
+     */
+    private Act createReminder(Party patient, Entity reminderType, Product product, String startTime, String status) {
+        Act reminder = ReminderTestHelper.createReminder(patient, reminderType, TestHelper.getDatetime(startTime));
+        ActBean bean = new ActBean(reminder);
+        bean.addNodeParticipation("product", product);
+        reminder.setStatus(status);
+        save(reminder);
+        return reminder;
+    }
+
+    /**
+     * Verifies a reminder matches that expected.
+     *
+     * @param reminder     the reminder
+     * @param reminderType the expected reminder type
+     * @param patient      the expected patient
+     * @param product      the expected product
+     * @param dueDate      the expected due date
+     */
+    private void checkReminder(Act reminder, Entity reminderType, Party patient, Product product, Date dueDate) {
+        ActBean bean = new ActBean(reminder);
+        assertEquals(patient, bean.getNodeParticipant("patient"));
+        assertEquals(reminderType, bean.getNodeParticipant("reminderType"));
+        assertEquals(product, bean.getNodeParticipant("product"));
+        assertEquals(dueDate, reminder.getActivityStartTime());
+        assertEquals(dueDate, reminder.getActivityEndTime());
     }
 
     /**
@@ -642,10 +692,26 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         assertEquals(status, reminder.getStatus());
         ActBean bean = new ActBean(reminder);
         Date date = bean.getDate("completedDate");
-        if (ReminderStatus.COMPLETED.equals(status)) {
+        if (COMPLETED.equals(status)) {
             assertNotNull(date);
         } else {
             assertNull(date);
+        }
+    }
+
+    /**
+     * Verifies an alert has the expected state.
+     * For COMPLETED status, checks that the 'endTime' node is non-null.
+     *
+     * @param alert  the reminder
+     * @param status the expected alert status
+     */
+    private void checkAlert(Act alert, String status) {
+        alert = get(alert);
+        assertNotNull(alert);
+        assertEquals(status, alert.getStatus());
+        if (COMPLETED.equals(status)) {
+            assertNotNull(alert.getActivityEndTime());
         }
     }
 
@@ -692,22 +758,6 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Checks if a reminder is due using
-     * {@link ReminderRules#isDue(Act, Date, Date)}.
-     *
-     * @param reminder the reminder
-     * @param fromDate the from date. May be <tt>null</tt>
-     * @param toDate   the to date. May be <tt>null</tt>
-     * @param expected the expected isDue result
-     */
-    private void checkDue(Act reminder, String fromDate, String toDate,
-                          boolean expected) {
-        Date from = (fromDate != null) ? java.sql.Date.valueOf(fromDate) : null;
-        Date to = (toDate != null) ? java.sql.Date.valueOf(toDate) : null;
-        assertEquals(expected, rules.isDue(reminder, from, to));
-    }
-
-    /**
      * Checks if a reminder should be cancelled using
      * {@link ReminderRules#shouldCancel(Act, Date)}.
      *
@@ -719,66 +769,6 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
                                    boolean expected) {
         assertEquals(expected, rules.shouldCancel(reminder,
                                                   java.sql.Date.valueOf(date)));
-    }
-
-    /**
-     * Helper to create an email contact.
-     *
-     * @return a new email contact
-     */
-    private Contact createEmail() {
-        Contact contact = (Contact) create(ContactArchetypes.EMAIL);
-        IMObjectBean bean = new IMObjectBean(contact);
-        bean.setValue("emailAddress", "foo@bar.com");
-        bean.save();
-        return contact;
-    }
-
-    /**
-     * Helper to create a phone contact.
-     *
-     * @param preferred determines if it is the preferred contact
-     * @return a new phone contact
-     */
-    private Contact createPhone(boolean preferred) {
-        Contact contact = (Contact) create(ContactArchetypes.PHONE);
-        IMObjectBean bean = new IMObjectBean(contact);
-        bean.setValue("preferred", preferred);
-        save(contact);
-        return contact;
-    }
-
-    /**
-     * Helper to create a location contact.
-     *
-     * @param preferred determines if it is the preferred contact
-     * @return a new location contact
-     */
-    private Contact createLocation(boolean preferred) {
-        Contact contact = (Contact) create(ContactArchetypes.LOCATION);
-        IMObjectBean bean = new IMObjectBean(contact);
-        bean.setValue("preferred", preferred);
-        save(contact);
-        return contact;
-    }
-
-    /**
-     * Helper to create and save an <em>act.patientAlert</tt> for a patient.
-     *
-     * @param patient the patient
-     * @return a new alert
-     */
-    private Act createAlert(Party patient) {
-        Act act = (Act) create("act.patientAlert");
-        ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.patient", patient);
-        Lookup alertType = TestHelper.getLookup("lookup.patientAlertType", "OTHER", false);
-        IMObjectBean lookupBean = new IMObjectBean(alertType);
-        lookupBean.setValue("colour", "0xFFFFFF");
-        lookupBean.save();
-        bean.setValue("alertType", alertType.getCode());
-        bean.save();
-        return act;
     }
 
 }

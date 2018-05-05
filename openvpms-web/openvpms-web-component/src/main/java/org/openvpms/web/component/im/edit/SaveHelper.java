@@ -11,32 +11,28 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.hibernate.ObjectNotFoundException;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.web.component.error.ExceptionHelper;
-import org.openvpms.web.component.im.util.DefaultIMObjectDeletionListener;
+import org.openvpms.web.component.im.delete.DefaultIMObjectDeletionListener;
+import org.openvpms.web.component.im.delete.IMObjectDeletionListener;
 import org.openvpms.web.component.im.util.DefaultIMObjectSaveListener;
-import org.openvpms.web.component.im.util.IMObjectDeletionListener;
 import org.openvpms.web.component.im.util.IMObjectSaveListener;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 
 
 /**
@@ -47,30 +43,14 @@ import java.util.Collection;
 public class SaveHelper {
 
     /**
-     * The logger.
-     */
-    private static final Log log = LogFactory.getLog(SaveHelper.class);
-
-
-    /**
      * Saves an editor in a transaction.
      *
      * @param editor the editor to save
      * @return {@code true} if the object was saved successfully
      */
     public static boolean save(final IMObjectEditor editor) {
-        Boolean result = null;
-        try {
-            TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
-            result = template.execute(new TransactionCallback<Boolean>() {
-                public Boolean doInTransaction(TransactionStatus status) {
-                    return editor.save();
-                }
-            });
-        } catch (Throwable exception) {
-            error(editor, exception);
-        }
-        return (result != null) && result;
+        IMObjectEditorSaver saver = new IMObjectEditorSaver();
+        return saver.save(editor);
     }
 
     /**
@@ -80,43 +60,15 @@ public class SaveHelper {
      * @param callback the callback
      * @return {@code true} if the object was saved and the callback returned {@code true}
      */
-    public static boolean save(final IMObjectEditor editor, final TransactionCallback<Boolean> callback) {
-        Boolean result = null;
-        try {
-            TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
-            result = template.execute(new TransactionCallback<Boolean>() {
-                public Boolean doInTransaction(TransactionStatus status) {
-                    boolean result = false;
-                    if (editor.save()) {
-                        Boolean success = callback.doInTransaction(status);
-                        result = success != null && success;
-                    }
-                    return result;
-                }
-            });
-        } catch (Throwable exception) {
-            error(editor, exception);
-        }
-        return (result != null) && result;
-    }
-
-    /**
-     * Invokes a callback to save objects.
-     *
-     * @param displayName the primary display name, for error reporting
-     * @param callback    the callback to execute
-     * @return {@code true} if the save was successful
-     */
-    public static boolean save(String displayName, TransactionCallback<Boolean> callback) {
-        boolean saved = false;
-        try {
-            TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
-            Boolean result = template.execute(callback);
-            saved = (result != null) && result;
-        } catch (Throwable exception) {
-            error(displayName, null, exception);
-        }
-        return saved;
+    public static boolean save(final IMObjectEditor editor, final TransactionCallbackWithoutResult callback) {
+        IMObjectEditorSaver saver = new IMObjectEditorSaver() {
+            @Override
+            protected void save(IMObjectEditor editor, TransactionStatus status) {
+                super.save(editor, status);
+                callback.doInTransaction(status);
+            }
+        };
+        return saver.save(editor);
     }
 
     /**
@@ -138,7 +90,7 @@ public class SaveHelper {
      * @return {@code true} if the object was saved; otherwise {@code false}
      */
     public static boolean save(IMObject object, IArchetypeService service) {
-        return save(Arrays.asList(object), service);
+        return save(Collections.singletonList(object), service);
     }
 
     /**
@@ -209,7 +161,7 @@ public class SaveHelper {
      * @return {@code true} if the object was removed; otherwise {@code false}
      */
     public static boolean delete(IMObject object) {
-        return delete(object, new DefaultIMObjectDeletionListener<IMObject>());
+        return delete(object, new DefaultIMObjectDeletionListener<>());
     }
 
     /**
@@ -250,8 +202,7 @@ public class SaveHelper {
      * @param insert the object to insert
      * @return {@code true} if the operation was successful
      */
-    public static boolean replace(final IMObject delete,
-                                  final IMObject insert) {
+    public static boolean replace(final IMObject delete, final IMObject insert) {
         Boolean result = null;
         try {
             TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
@@ -268,42 +219,6 @@ public class SaveHelper {
             ErrorHelper.show(title, exception);
         }
         return (result != null) && result;
-    }
-
-    /**
-     * Displays an editor save error.
-     *
-     * @param editor    the editor
-     * @param exception the cause
-     */
-    private static void error(IMObjectEditor editor, Throwable exception) {
-        IMObject object = editor.getObject();
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String user = (authentication != null) ? authentication.getName() : null;
-        String context = Messages.format("logging.error.editcontext", object.getObjectReference(),
-                                         editor.getClass().getName(), user);
-        error(editor.getDisplayName(), context, exception);
-    }
-
-    /**
-     * Displays a save error.
-     *
-     * @param displayName the display name of the object that failed to save
-     * @param context     the context message. May be {@code null}
-     * @param exception   the cause
-     */
-    @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
-    private static void error(String displayName, String context, Throwable exception) {
-        Throwable cause = ExceptionHelper.getRootCause(exception);
-        String title = Messages.format("imobject.save.failed", displayName);
-        if (cause instanceof ObjectNotFoundException) {
-            // Don't propagate the exception
-            String message = Messages.format("imobject.notfound", displayName);
-            log.error(message, exception);
-            ErrorHelper.show(title, message);
-        } else {
-            ErrorHelper.show(title, displayName, context, exception);
-        }
     }
 
 }

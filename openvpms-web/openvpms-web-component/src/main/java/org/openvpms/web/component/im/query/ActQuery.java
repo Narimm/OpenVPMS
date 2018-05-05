@@ -360,10 +360,11 @@ public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
     }
 
     /**
-     * Invoked when a status is selected.
+     * Invoked when a status is selected. Invokes {@link #onQuery()}.
      */
     protected void onStatusChanged() {
         setStatus(statusSelector.getSelectedCode());
+        onQuery();
     }
 
     /**

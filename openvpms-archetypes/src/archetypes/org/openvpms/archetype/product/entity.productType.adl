@@ -11,14 +11,15 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
     <archetype name="entity.productType.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.common.Entity" displayName="Product Type">
         <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
-        <node name="name" displayName="Product Type" type="java.lang.String" path="/name" minCardinality="1"/>
+        <node name="name" displayName="Product Type" type="java.lang.String" path="/name" minCardinality="1"
+              maxLength="100"/>
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="sortOrder" displayName="Invoice Sort Order" path="/details/sortOrder" type="java.lang.Integer"
               minCardinality="0" defaultValue="1"/>
@@ -30,32 +31,14 @@
               filter="entityLink.productPharmacy"/>
         <node name="taxes" path="/classifications" parentChild="false"
               type="java.util.HashSet" baseName="Classification" minCardinality="0" maxCardinality="*"
-              filter="lookup.taxType">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="lookup.taxType"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
-        </node>
-        <node name="discounts" path="/sourceEntityRelationships"
-              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="0" maxCardinality="*"
-              filter="entityRelationship.discountProductType">
-            <assertion name="archetypeRange">
-                <propertyList name="archetypes">
-                    <propertyMap name="archetype">
-                        <property name="shortName"
-                                  value="entityRelationship.discountProductType"/>
-                    </propertyMap>
-                </propertyList>
-                <errorMessage>errorMessage</errorMessage>
-            </assertion>
+              filter="lookup.taxType"/>
+        <node name="discounts" path="/entityLinks" type="java.util.HashSet" baseName="EntityLink"
+              minCardinality="0" maxCardinality="*" filter="entityLink.productTypeDiscount">
             <assertion name="uniqueEntityRelationship">
                 <errorMessage>Duplicate active discount product type relationship</errorMessage>
             </assertion>
         </node>
+        <node name="synchroniseWithSFS" displayName="Synchronise With Smart Flow Sheet"
+              path="/details/synchroniseWithSFS" type="java.lang.Boolean" defaultValue="false()" minCardinality="0"/>
     </archetype>
 </archetypes>

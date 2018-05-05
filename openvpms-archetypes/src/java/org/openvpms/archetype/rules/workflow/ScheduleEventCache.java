@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -236,7 +236,7 @@ class ScheduleEventCache {
      * @return the new events
      */
     private List<Event> addEvents(List<PropertySet> events) {
-        List<Event> result = new ArrayList<Event>();
+        List<Event> result = new ArrayList<>();
         for (PropertySet set : events) {
             Event event = update(set)[1];
             result.add(event);
@@ -443,7 +443,7 @@ class ScheduleEventCache {
          * <p/>
          * This is required as events may be updated whilst they are being fetched from the database.
          */
-        private List<Change> changes = new ArrayList<Change>();
+        private List<Change> changes = new ArrayList<>();
 
         /**
          * The owning schedule. This reference is kept to ensure that the Schedule instance isn't garbage collected
@@ -481,7 +481,7 @@ class ScheduleEventCache {
          * @param events the events to register
          */
         public synchronized void setEvents(List<Event> events) {
-            map = new HashMap<Long, EventHandle>();
+            map = new HashMap<>();
             long scheduleId = schedule.getId();
             for (Event event : events) {
                 EventHandle handle = event.getHandle(scheduleId, day);
@@ -514,7 +514,7 @@ class ScheduleEventCache {
                 return Collections.emptyList();
             }
             long id = schedule.getId();
-            List<PropertySet> result = new ArrayList<PropertySet>();
+            List<PropertySet> result = new ArrayList<>();
             for (Iterator<EventHandle> iterator = map.values().iterator(); iterator.hasNext(); ) {
                 EventHandle handle = iterator.next();
                 PropertySet event = handle.getEvent(id, day);
@@ -683,7 +683,7 @@ class ScheduleEventCache {
          */
         public synchronized boolean intersects(Date day) {
             Date startTime = DateRules.getDate(event.getDate(ScheduleEvent.ACT_START_TIME));
-            Date endTime = DateRules.getDate(event.getDate(ScheduleEvent.ACT_END_TIME));
+            Date endTime = event.getDate(ScheduleEvent.ACT_END_TIME);
             return DateRules.between(day, startTime, endTime);
         }
 

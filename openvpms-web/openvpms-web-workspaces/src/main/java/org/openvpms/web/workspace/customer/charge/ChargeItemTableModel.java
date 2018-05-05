@@ -11,17 +11,21 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
+import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
+import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -32,14 +36,18 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.cache.IMObjectCache;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.app.UserPreferences;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.web.component.im.util.VirtualNodeSortConstraint;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
-import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.component.prefs.UserPreferences;
+import org.openvpms.web.echo.table.TableHelper;
+import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.resource.i18n.format.NumberFormatter;
+import org.openvpms.web.workspace.customer.StockOnHand;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -50,6 +58,11 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableModel<T> {
+
+    /**
+     * Used to display stock on hand. May be {@code null} if no On Hand column is to be rendered.
+     */
+    private final StockOnHand stock;
 
     /**
      * Determines if the template column should be shown.
@@ -92,6 +105,11 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
     private int clinicianIndex;
 
     /**
+     * The on-hand column index, or {@code -1} if it is not displayed.
+     */
+    private int onHandIndex = -1;
+
+    /**
      * The template column.
      */
     private TableColumn template;
@@ -108,8 +126,14 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
 
     /**
      * Used to access the product type name node from a charge/estimate item.
+     * NOTE: this must be prefixed by the alias.
      */
-    private static final String PRODUCT_TYPE = "product.entity.type.source.name";
+    private static final String PRODUCT_TYPE = "act.product.entity.type.target.name";
+
+    /**
+     * The id node name
+     */
+    private static final String ITEM_ID = "id";
 
     /**
      * The start time node name.
@@ -125,6 +149,11 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
      * The batch node name.
      */
     private static final String BATCH = "batch";
+
+    /**
+     * The quantity node.
+     */
+    private static final String QUANTITY = "quantity";
 
     /**
      * The clinician node name.
@@ -144,11 +173,23 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
      * @param context    the layout context
      */
     public ChargeItemTableModel(String[] shortNames, LayoutContext context) {
+        this(shortNames, null, context);
+    }
+
+    /**
+     * Constructs a {@link ChargeItemTableModel}.
+     *
+     * @param shortNames the archetype short names
+     * @param stock      if non-null, used to display a stock-on-hand column
+     * @param context    the layout context
+     */
+    public ChargeItemTableModel(String[] shortNames, StockOnHand stock, LayoutContext context) {
         super(context);
-        UserPreferences preferences = ServiceHelper.getPreferences();
-        showTemplate = preferences.getShowTemplateDuringCharging();
-        showProductType = preferences.getShowProductTypeDuringCharging();
-        showBatch = preferences.getShowBatchDuringCharging();
+        this.stock = stock;
+        Preferences preferences = context.getPreferences();
+        showTemplate = preferences.getBoolean(PreferenceArchetypes.CHARGE, "showTemplate", false);
+        showProductType = preferences.getBoolean(PreferenceArchetypes.CHARGE, "showProductType", false);
+        showBatch = preferences.getBoolean(PreferenceArchetypes.CHARGE, "showBatch", false);
         setTableColumnModel(createColumnModel(shortNames, context));
         if (showTemplate) {
             setDefaultSortColumn(templateIndex);
@@ -228,11 +269,13 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
     public SortConstraint[] getSortConstraints(int column, boolean ascending) {
         if (column == productTypeIndex) {
             return new SortConstraint[]{new VirtualNodeSortConstraint(PRODUCT_TYPE, ascending),
-                                        new NodeSortConstraint(START_TIME, false)};
+                                        new NodeSortConstraint(START_TIME, false),
+                                        new NodeSortConstraint(ITEM_ID, true)};
         } else if (column == templateIndex) {
             return new SortConstraint[]{new NodeSortConstraint(TEMPLATE, ascending),
                                         new VirtualNodeSortConstraint(PRODUCT_TYPE, ascending),
-                                        new NodeSortConstraint(START_TIME, false)};
+                                        new NodeSortConstraint(START_TIME, false),
+                                        new NodeSortConstraint(ITEM_ID, true)};
         }
         return super.getSortConstraints(column, ascending);
     }
@@ -248,6 +291,8 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
     protected Object getValue(T object, TableColumn column, int row) {
         if (column.getModelIndex() == productTypeIndex) {
             return getProductType(object);
+        } else if (column.getModelIndex() == onHandIndex) {
+            return getOnHand(object);
         }
         return super.getValue(object, column, row);
     }
@@ -275,6 +320,13 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
             }
         } else {
             beforeBatchIndex = -1;
+        }
+        if (stock != null) {
+            onHandIndex = getNextModelIndex(model);
+            TableColumn onHand = new TableColumn(onHandIndex);
+            onHand.setHeaderValue(Messages.get("product.stock.onhand"));
+            TableColumn quantity = getColumn(model, QUANTITY);
+            addColumnAfter(onHand, quantity.getModelIndex(), model);
         }
         productTypeIndex = templateIndex + 1;
         productType = new TableColumn(productTypeIndex);
@@ -308,12 +360,34 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
         Product product = (Product) cache.get(bean.getNodeParticipantRef(PRODUCT));
         if (product != null) {
             IMObjectBean productBean = new IMObjectBean(product);
-            IMObjectReference type = productBean.getNodeSourceObjectRef("type");
+            IMObjectReference type = productBean.getNodeTargetObjectRef("type");
             if (type != null) {
                 return new IMObjectReferenceViewer(type, null, context.getContext()).getComponent();
             }
         }
         return null;
+    }
+
+    /**
+     * Returns a component representing the stock on hand.
+     *
+     * @param object the act
+     * @return a component representing the stock on
+     */
+    private Component getOnHand(IMObject object) {
+        Component result = null;
+        FinancialAct act = (FinancialAct) object;
+        BigDecimal value = stock.getAvailableStock(act);
+        if (value != null) {
+            Label label = TableHelper.rightAlign(NumberFormatter.format(value));
+            if (value.compareTo(BigDecimal.ZERO) <= 0) {
+                TableHelper.mergeStyle(label, "OutOfStock.Table");
+                // need to explicitly set the style, as the cell renderer styles take precedence
+                // label.setStyle(ApplicationInstance.getActive().getStyle(Label.class, "OutOfStock.Table"));
+            }
+            result = label;
+        }
+        return result;
     }
 
     /**
@@ -355,17 +429,13 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
      *
      * @param column the column
      * @param show   if {@code true}, show it, otherwise hide it
-     * @param after the model index of the column to place the column after, if its being shown
+     * @param after  the model index of the column to place the column after, if its being shown
      * @param model  the model
      * @return {@code show}
      */
     private boolean show(TableColumn column, boolean show, int after, DefaultTableColumnModel model) {
         if (show) {
-            model.addColumn(column);
-            int columnOffset = getColumnOffset(model, after);
-            if (columnOffset != -1) {
-                model.moveColumn(model.getColumnCount() - 1, columnOffset + 1);
-            }
+            addColumnAfter(column, after, model);
         } else {
             model.removeColumn(column);
         }

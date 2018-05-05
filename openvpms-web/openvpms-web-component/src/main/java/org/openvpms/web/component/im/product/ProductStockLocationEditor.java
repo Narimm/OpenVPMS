@@ -11,27 +11,27 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
 
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.relationship.EntityRelationshipEditor;
+import org.openvpms.web.component.im.relationship.EntityLinkEditor;
 import org.openvpms.web.component.im.view.ComponentState;
 
 /**
- * Editor for <em>entityRelationship.productStockLocation</em> relationships that constrains preferred suppliers
+ * Editor for <em>entityLink.productStockLocation</em> relationships that constrains preferred suppliers
  * to those linked to the product.
  *
  * @author Tim Anderson
  */
-public class ProductStockLocationEditor extends EntityRelationshipEditor {
+public class ProductStockLocationEditor extends EntityLinkEditor {
 
     /**
      * The preferred supplier reference editor.
@@ -50,7 +50,7 @@ public class ProductStockLocationEditor extends EntityRelationshipEditor {
      * @param parent       the parent object
      * @param context      the layout context
      */
-    public ProductStockLocationEditor(EntityRelationship relationship, IMObject parent, LayoutContext context) {
+    public ProductStockLocationEditor(EntityLink relationship, IMObject parent, LayoutContext context) {
         super(relationship, parent, context);
         supplier = new PreferredSupplierEditor(this, getProperty("supplier"), getLayoutContext());
         getEditors().add(supplier);

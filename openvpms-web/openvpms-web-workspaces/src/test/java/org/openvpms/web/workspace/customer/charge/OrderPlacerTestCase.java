@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -22,9 +22,11 @@ import org.mockito.Mockito;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
+import org.openvpms.archetype.rules.patient.InvestigationActStatus;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
+import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -37,10 +39,10 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.system.common.cache.MapIMObjectCache;
+import org.openvpms.hl7.impl.LaboratoriesImpl;
 import org.openvpms.hl7.impl.PharmaciesImpl;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.laboratory.Laboratories;
-import org.openvpms.hl7.laboratory.LaboratoryOrderService;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientEventServices;
@@ -94,9 +96,19 @@ public class OrderPlacerTestCase extends AbstractAppTest {
     private Entity pharmacy;
 
     /**
-     * The order service.
+     * The laboratory.
      */
-    private TestPharmacyOrderService service;
+    private Entity laboratory;
+
+    /**
+     * The pharmacy order service.
+     */
+    private TestPharmacyOrderService pharmacyOrderService;
+
+    /**
+     * The laboratory order service.
+     */
+    private TestLaboratoryOrderService laboratoryOrderService;
 
     /**
      * The order placer.
@@ -125,30 +137,32 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         location = TestHelper.createLocation();
         clinician = TestHelper.createClinician();
         pharmacy = CustomerChargeTestHelper.createPharmacy(location);
-        service = new TestPharmacyOrderService();
+        laboratory = CustomerChargeTestHelper.createLaboratory(location);
+        pharmacyOrderService = new TestPharmacyOrderService();
+        laboratoryOrderService = new TestLaboratoryOrderService();
         user = TestHelper.createUser();
-        Pharmacies pharmacies = new PharmaciesImpl(getArchetypeService(), Mockito.mock(Connectors.class),
-                                                   Mockito.mock(PatientEventServices.class));
+        Connectors connectors = Mockito.mock(Connectors.class);
+        PatientEventServices patientEventServices = Mockito.mock(PatientEventServices.class);
+        Pharmacies pharmacies = new PharmaciesImpl(getArchetypeService(), connectors, patientEventServices);
+        Laboratories laboratories = new LaboratoriesImpl(getArchetypeService(), connectors, patientEventServices);
         PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
         informationService = Mockito.mock(PatientInformationService.class);
         MapIMObjectCache cache = new MapIMObjectCache(ServiceHelper.getArchetypeService());
 
-        OrderServices services = new OrderServices(service, pharmacies,
-                                                   Mockito.mock(LaboratoryOrderService.class),
-                                                   Mockito.mock(Laboratories.class), factory,
-                                                   informationService,
+        OrderServices services = new OrderServices(pharmacyOrderService, pharmacies, laboratoryOrderService,
+                                                   laboratories, factory, informationService,
                                                    ServiceHelper.getBean(MedicalRecordRules.class));
         placer = new OrderPlacer(customer, location, user, cache, services);
     }
 
     /**
-     * Tests the {@link OrderPlacer#order(List, PatientHistoryChanges)} method.
+     * Tests the {@link OrderPlacer#order(List, PatientHistoryChanges)} method for a pharmacy order.
      */
     @Test
-    public void testOrder() {
+    public void testPharmacyOrder() {
         Entity productType = createProductType(pharmacy);
-        Product product1 = createProduct(pharmacy);
-        Product product2 = ProductTestHelper.createProduct(productType);
+        Product product1 = createPharmacyProduct(pharmacy);
+        Product product2 = ProductTestHelper.createMedication(productType);
         Product product3 = TestHelper.createProduct(); // not ordered via a pharmacy
         Act event = PatientTestHelper.createEvent(patient, clinician);
         Act item1 = createItem(product1, ONE, event);
@@ -159,7 +173,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
 
         placer.order(Arrays.asList(item1, item2, item3), changes);
 
-        List<TestPharmacyOrderService.Order> orders = service.getOrders();
+        List<TestPharmacyOrderService.Order> orders = pharmacyOrderService.getOrders();
         assertEquals(2, orders.size());
         checkOrder(orders.get(0), CREATE, patient, product1, ONE, item1.getId(), item1.getActivityStartTime(),
                    clinician, pharmacy);
@@ -171,11 +185,39 @@ public class OrderPlacerTestCase extends AbstractAppTest {
     }
 
     /**
+     * Tests creation of a laboratory order.
+     */
+    @Test
+    public void testLaboratoryOrder() {
+        Entity investigationType = ProductTestHelper.createInvestigationType(laboratory, "1234567890");
+        Product product = createLaboratoryProduct(investigationType);
+        Act event = PatientTestHelper.createEvent(patient, clinician);
+        FinancialAct item1 = createItem(product, ONE, event);
+        Act investigation = createInvestigation(investigationType, event);
+        ActBean bean = new ActBean(item1);
+        bean.addNodeRelationship("investigations", investigation);
+        save(item1, investigation);
+        assertEquals(InvestigationActStatus.PENDING, investigation.getStatus2());
+
+        PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
+        placer.order(Arrays.asList(item1, investigation), changes);
+
+        List<TestLaboratoryOrderService.LabOrder> orders = laboratoryOrderService.getOrders();
+        assertEquals(1, orders.size());
+        checkOrder(orders.get(0), TestLaboratoryOrderService.LabOrder.Type.CREATE, patient, investigation.getId(),
+                   investigation.getActivityStartTime(), clinician, laboratory);
+        assertEquals(InvestigationActStatus.SENT, investigation.getStatus2());
+
+        // patient information updates should not be sent
+        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
+    }
+
+    /**
      * Verifies that when a quantity is changed, an update order is placed.
      */
     @Test
     public void testChangeQuantity() {
-        Product product = createProduct(pharmacy);
+        Product product = createPharmacyProduct(pharmacy);
         Act event = PatientTestHelper.createEvent(patient, clinician);
         FinancialAct item = createItem(product, ONE, event);
 
@@ -186,7 +228,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
 
         placer.order(Collections.<Act>singletonList(item), changes);
 
-        List<TestPharmacyOrderService.Order> orders = service.getOrders();
+        List<TestPharmacyOrderService.Order> orders = pharmacyOrderService.getOrders();
         assertEquals(1, orders.size());
         checkOrder(orders.get(0), UPDATE, patient, product, TEN, item.getId(),
                    item.getActivityStartTime(), clinician, pharmacy);
@@ -200,7 +242,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
      */
     @Test
     public void testChangePatient() {
-        Product product = createProduct(pharmacy);
+        Product product = createPharmacyProduct(pharmacy);
         Act event1 = PatientTestHelper.createEvent(patient, clinician);
         FinancialAct item = createItem(product, ONE, event1);
         Party patient2 = TestHelper.createPatient(true);
@@ -218,7 +260,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
 
         placer.order(items, changes);
 
-        List<TestPharmacyOrderService.Order> orders = service.getOrders();
+        List<TestPharmacyOrderService.Order> orders = pharmacyOrderService.getOrders();
         assertEquals(2, orders.size());
         checkOrder(orders.get(0), CANCEL, patient, product, ONE, item.getId(),
                    item.getActivityStartTime(), clinician, pharmacy);
@@ -234,8 +276,8 @@ public class OrderPlacerTestCase extends AbstractAppTest {
      */
     @Test
     public void testChangeProduct() {
-        Product product1 = createProduct(pharmacy);
-        Product product2 = createProduct(pharmacy);
+        Product product1 = createPharmacyProduct(pharmacy);
+        Product product2 = createPharmacyProduct(pharmacy);
         Act event = PatientTestHelper.createEvent(patient, clinician);
         FinancialAct item = createItem(product1, ONE, event);
 
@@ -248,7 +290,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
 
         placer.order(items, changes);
 
-        List<TestPharmacyOrderService.Order> orders = service.getOrders();
+        List<TestPharmacyOrderService.Order> orders = pharmacyOrderService.getOrders();
         assertEquals(2, orders.size());
         checkOrder(orders.get(0), CANCEL, patient, product1, ONE, item.getId(),
                    item.getActivityStartTime(), clinician, pharmacy);
@@ -267,7 +309,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
      */
     @Test
     public void testChangeProductToNonPharmacyProduct() {
-        Product product1 = createProduct(pharmacy);
+        Product product1 = createPharmacyProduct(pharmacy);
         Product product2 = TestHelper.createProduct();
         Act event = PatientTestHelper.createEvent(patient, clinician);
         FinancialAct item = createItem(product1, ONE, event);
@@ -281,7 +323,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
 
         placer.order(items, changes);
 
-        List<TestPharmacyOrderService.Order> orders = service.getOrders();
+        List<TestPharmacyOrderService.Order> orders = pharmacyOrderService.getOrders();
         assertEquals(1, orders.size());
         checkOrder(orders.get(0), CANCEL, patient, product1, ONE, item.getId(),
                    item.getActivityStartTime(), clinician, pharmacy);
@@ -299,7 +341,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
      */
     @Test
     public void testChangeProductAndPharmacy() {
-        Product product1 = createProduct(pharmacy);
+        Product product1 = createPharmacyProduct(pharmacy);
         Act event = PatientTestHelper.createEvent(patient, clinician);
         FinancialAct item = createItem(product1, ONE, event);
 
@@ -307,7 +349,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         placer.initialise(item);
 
         Entity pharmacy2 = CustomerChargeTestHelper.createPharmacy(location);
-        Product product2 = createProduct(pharmacy2);
+        Product product2 = createPharmacyProduct(pharmacy2);
 
         ActBean bean = new ActBean(item);
         bean.setNodeParticipant("product", product2);
@@ -315,7 +357,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
         placer.order(items, changes);
 
-        List<TestPharmacyOrderService.Order> orders = service.getOrders();
+        List<TestPharmacyOrderService.Order> orders = pharmacyOrderService.getOrders();
         assertEquals(2, orders.size());
         checkOrder(orders.get(0), CANCEL, patient, product1, ONE, item.getId(),
                    item.getActivityStartTime(), clinician, pharmacy);
@@ -331,7 +373,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
      */
     @Test
     public void testChangeClinician() {
-        Product product = createProduct(pharmacy);
+        Product product = createPharmacyProduct(pharmacy);
         User clinician2 = TestHelper.createClinician();
         Act event = PatientTestHelper.createEvent(patient, clinician);
         FinancialAct item = createItem(product, ONE, event);
@@ -346,7 +388,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
 
         placer.order(items, changes);
 
-        List<TestPharmacyOrderService.Order> orders = service.getOrders();
+        List<TestPharmacyOrderService.Order> orders = pharmacyOrderService.getOrders();
         assertEquals(1, orders.size());
         checkOrder(orders.get(0), UPDATE, patient, product, ONE, item.getId(),
                    item.getActivityStartTime(), clinician2, pharmacy);
@@ -360,8 +402,8 @@ public class OrderPlacerTestCase extends AbstractAppTest {
      */
     @Test
     public void testOrderWithCancel() {
-        Product product1 = createProduct(pharmacy);
-        Product product2 = createProduct(pharmacy);
+        Product product1 = createPharmacyProduct(pharmacy);
+        Product product2 = createPharmacyProduct(pharmacy);
         Act event = PatientTestHelper.createEvent(patient, clinician);
         Act item1 = createItem(product1, ONE, event);
         Act item2 = createItem(product2, TEN, event);
@@ -371,7 +413,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
         placer.order(Collections.singletonList(item2), changes);
 
-        List<TestPharmacyOrderService.Order> orders = service.getOrders();
+        List<TestPharmacyOrderService.Order> orders = pharmacyOrderService.getOrders();
         assertEquals(2, orders.size());
         checkOrder(orders.get(0), CREATE, patient, product2, TEN, item2.getId(),
                    item2.getActivityStartTime(), clinician, pharmacy);
@@ -387,8 +429,8 @@ public class OrderPlacerTestCase extends AbstractAppTest {
      */
     @Test
     public void testCancel() {
-        Product product1 = createProduct(pharmacy);
-        Product product2 = createProduct(pharmacy);
+        Product product1 = createPharmacyProduct(pharmacy);
+        Product product2 = createPharmacyProduct(pharmacy);
         Product product3 = TestHelper.createProduct(); // not ordered via a pharmacy
         Act event = PatientTestHelper.createEvent(patient, clinician);
         Act item1 = createItem(product1, ONE, event);
@@ -401,7 +443,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         }
         placer.cancel();
 
-        List<TestPharmacyOrderService.Order> orders = service.getOrders(true);
+        List<TestPharmacyOrderService.Order> orders = pharmacyOrderService.getOrders(true);
         assertEquals(2, orders.size());
         checkOrder(orders.get(0), CANCEL, patient, product1, ONE, item1.getId(), item1.getActivityStartTime(),
                    clinician, pharmacy);
@@ -418,7 +460,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
      */
     @Test
     public void testPatientInformationNotificationForNewEvent() {
-        Product product = createProduct(pharmacy);
+        Product product = createPharmacyProduct(pharmacy);
         FinancialAct item = createItem(product, ONE);
         PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
         ChargeItemEventLinker linker = new ChargeItemEventLinker(getArchetypeService());
@@ -426,7 +468,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         changes.save();
         placer.order(Collections.<Act>singletonList(item), changes);
 
-        List<TestPharmacyOrderService.Order> orders = service.getOrders();
+        List<TestPharmacyOrderService.Order> orders = pharmacyOrderService.getOrders();
         assertEquals(1, orders.size());
         checkOrder(orders.get(0), CREATE, patient, product, ONE, item.getId(), item.getActivityStartTime(),
                    clinician, pharmacy);
@@ -441,7 +483,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
      */
     @Test
     public void testPatientInformationNotificationForCompletedEvent() {
-        Product product = createProduct(pharmacy);
+        Product product = createPharmacyProduct(pharmacy);
         Act event = PatientTestHelper.createEvent(patient, clinician);
         event.setActivityEndTime(new Date());
         save(event);
@@ -453,7 +495,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         changes.save();
         placer.order(Collections.<Act>singletonList(item), changes);
 
-        List<TestPharmacyOrderService.Order> orders = service.getOrders();
+        List<TestPharmacyOrderService.Order> orders = pharmacyOrderService.getOrders();
         assertEquals(1, orders.size());
         checkOrder(orders.get(0), CREATE, patient, product, ONE, item.getId(), item.getActivityStartTime(),
                    clinician, pharmacy);
@@ -477,6 +519,21 @@ public class OrderPlacerTestCase extends AbstractAppTest {
     }
 
     /**
+     * Creates an investigation linked to an event.
+     *
+     * @param investigationType the investigation type
+     * @param event             the event
+     * @return a new investigation
+     */
+    private Act createInvestigation(Entity investigationType, Act event) {
+        Act investigation = PatientTestHelper.createInvestigation(patient, clinician, investigationType);
+        ActBean bean = new ActBean(event);
+        bean.addNodeRelationship("items", investigation);
+        save(event, investigation);
+        return investigation;
+    }
+
+    /**
      * Adds a charge item to an event.
      *
      * @param event the event
@@ -484,7 +541,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
      */
     private void addChargeItem(Act event, FinancialAct item) {
         ActBean itemBean = new ActBean(item);
-        for (IMObject object : itemBean.getValues("event")) {
+        for (IMObject object : itemBean.getValues("event", IMObject.class)) {
             itemBean.removeValue("event", object);
         }
         ActBean bean = new ActBean(event);
@@ -515,7 +572,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
      * @param pharmacy the pharmacy
      * @return a new product
      */
-    private Product createProduct(Entity pharmacy) {
+    private Product createPharmacyProduct(Entity pharmacy) {
         Product product = TestHelper.createProduct();
         EntityBean bean = new EntityBean(product);
         bean.addNodeTarget("pharmacy", pharmacy);
@@ -523,6 +580,26 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         return product;
     }
 
+    /**
+     * Creates a product ordered via a laboratory.
+     *
+     * @param investigationType the investigation type
+     * @return a new product
+     */
+    private Product createLaboratoryProduct(Entity investigationType) {
+        Product product = TestHelper.createProduct(ProductArchetypes.SERVICE, null);
+        EntityBean bean = new EntityBean(product);
+        bean.addNodeTarget("investigationTypes", investigationType);
+        bean.save();
+        return product;
+    }
+
+    /**
+     * Creates a product type linked to a pharmacy.
+     *
+     * @param pharmacy the pharmacy
+     * @return a new product type
+     */
     private Entity createProductType(Entity pharmacy) {
         Entity productType = ProductTestHelper.createProductType("ZTestProductType");
         EntityBean bean = new EntityBean(productType);
@@ -530,6 +607,5 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         bean.save();
         return productType;
     }
-
 
 }

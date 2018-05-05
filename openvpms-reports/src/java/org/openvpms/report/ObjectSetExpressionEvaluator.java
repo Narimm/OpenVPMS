@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.report;
@@ -46,29 +46,32 @@ public class ObjectSetExpressionEvaluator extends AbstractExpressionEvaluator<Ob
     /**
      * Constructs a {@link ObjectSetExpressionEvaluator}.
      *
-     * @param set       the object set
-     * @param fields    additional report fields. These override any in the report. May be {@code null}
-     * @param service   the archetype service
-     * @param lookups   the lookup service
-     * @param functions the JXPath extension functions
+     * @param set        the object set
+     * @param parameters parameters available to expressions as variables. May be {@code null}
+     * @param fields     additional report fields. These override any in the report. May be {@code null}
+     * @param service    the archetype service
+     * @param lookups    the lookup service
+     * @param functions  the JXPath extension functions
      */
-    public ObjectSetExpressionEvaluator(ObjectSet set, Map<String, Object> fields, IArchetypeService service,
-                                        ILookupService lookups, Functions functions) {
-        this(set, fields != null ? new ResolvingPropertySet(fields, service) : null, service, lookups, functions);
+    public ObjectSetExpressionEvaluator(ObjectSet set, Parameters parameters, Map<String, Object> fields,
+                                        IArchetypeService service, ILookupService lookups, Functions functions) {
+        this(set, parameters, fields != null ? new ResolvingPropertySet(fields, service, lookups) : null, service,
+             lookups, functions);
     }
 
     /**
      * Constructs a {@link ObjectSetExpressionEvaluator}.
      *
-     * @param set       the object set
-     * @param fields    additional report fields. These override any in the report. May be {@code null}
-     * @param service   the archetype service
-     * @param lookups   the lookup service
-     * @param functions the JXPath extension functions
+     * @param set        the object set
+     * @param parameters parameters available to expressions as variables. May be {@code null}
+     * @param fields     additional report fields. These override any in the report. May be {@code null}
+     * @param service    the archetype service
+     * @param lookups    the lookup service
+     * @param functions  the JXPath extension functions
      */
-    public ObjectSetExpressionEvaluator(ObjectSet set, PropertySet fields, IArchetypeService service,
-                                        ILookupService lookups, Functions functions) {
-        super(set, fields, service, lookups, functions);
+    public ObjectSetExpressionEvaluator(ObjectSet set, Parameters parameters, PropertySet fields,
+                                        IArchetypeService service, ILookupService lookups, Functions functions) {
+        super(set, parameters, fields, service, lookups, functions);
     }
 
     /**
@@ -77,7 +80,7 @@ public class ObjectSetExpressionEvaluator extends AbstractExpressionEvaluator<Ob
      * @param name the node name
      * @return the node value
      */
-    protected Object getNodeValue(String name) {
+    public Object getNodeValue(String name) {
         int index = 0;
         String objectName = name;
         String nodeName = "";
@@ -88,7 +91,7 @@ public class ObjectSetExpressionEvaluator extends AbstractExpressionEvaluator<Ob
                 object = set.get(objectName);
                 if (object instanceof IMObject) {
                     if (!StringUtils.isEmpty(nodeName)) {
-                        NodeResolver resolver = new NodeResolver((IMObject) object, getService());
+                        NodeResolver resolver = new NodeResolver((IMObject) object, getService(), getLookups());
                         object = getValue(nodeName, resolver);
                         break;
                     }

@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.sms.mail.template;
@@ -19,6 +19,7 @@ package org.openvpms.sms.mail.template;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.practice.PracticeRules;
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
@@ -27,6 +28,7 @@ import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.sms.SMSException;
 import org.openvpms.sms.mail.AbstractSMSTest;
 import org.openvpms.sms.mail.SMSArchetypes;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -61,7 +63,11 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
             bean.removeRelationship(relationship);
         }
         save(practice);
-        config = new PracticeMailTemplateConfig(getArchetypeService(), new PracticeRules(getArchetypeService(), null));
+
+        PracticeService practiceService = new PracticeService(getArchetypeService(),
+                                                              new PracticeRules(getArchetypeService(), null),
+                                                              createPool());
+        config = new PracticeMailTemplateConfig(getArchetypeService(), practiceService);
     }
 
     /**
@@ -83,8 +89,14 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
      */
     @Test
     public void testNoPractice() {
-        remove(practice);
-        config = new PracticeMailTemplateConfig(getArchetypeService(), new PracticeRules(getArchetypeService(), null));
+        PracticeService practiceService = new PracticeService(
+                getArchetypeService(), new PracticeRules(getArchetypeService(), null), null) {
+            @Override
+            public synchronized Party getPractice() {
+                return null;
+            }
+        };
+        config = new PracticeMailTemplateConfig(getArchetypeService(), practiceService);
         try {
             config.getTemplate();
             fail("Expected getTemplate() to fail");
@@ -139,6 +151,17 @@ public class PracticeMailTemplateConfigTestCase extends AbstractSMSTest {
         assertEquals(from2, template.getFrom());
         assertEquals(to1, template.getToExpression());
         assertEquals("$message", template.getTextExpression());
+    }
+
+    /**
+     * Helper to create a thread pool.
+     *
+     * @return a new thread pool
+     */
+    protected ThreadPoolTaskExecutor createPool() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.afterPropertiesSet();
+        return executor;
     }
 
 }

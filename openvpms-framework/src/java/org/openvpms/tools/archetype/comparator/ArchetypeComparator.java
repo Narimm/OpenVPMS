@@ -1,3 +1,19 @@
+/*
+ * Version: 1.0
+ *
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
+ *
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ */
+
 package org.openvpms.tools.archetype.comparator;
 
 import org.apache.commons.lang.ObjectUtils;
@@ -43,10 +59,11 @@ public class ArchetypeComparator extends AbstractComparator {
         return result;
     }
 
+    @SuppressWarnings("unchecked")
     private List<NodeChange> getNodeChanges(ArchetypeDescriptor oldVersion, ArchetypeDescriptor newVersion) {
-        List<NodeChange> result = new ArrayList<NodeChange>();
-        Map<String, NodeDescriptor> oldNodes = oldVersion.getNodeDescriptors();
-        Map<String, NodeDescriptor> newNodes = newVersion.getNodeDescriptors();
+        List<NodeChange> result = new ArrayList<>();
+        Map<String, NodeDescriptor> oldNodes = (Map<String, NodeDescriptor>) (Map) oldVersion.getNodeDescriptors();
+        Map<String, NodeDescriptor> newNodes = (Map<String, NodeDescriptor>) (Map) newVersion.getNodeDescriptors();
         Set<String> added = getAdded(oldNodes, newNodes);
         Set<String> deleted = getDeleted(oldNodes, newNodes);
         Set<String> retained = getRetained(oldNodes, newNodes);
@@ -70,7 +87,7 @@ public class ArchetypeComparator extends AbstractComparator {
     }
 
     private List<FieldChange> getFieldChanges(ArchetypeDescriptor oldVersion, ArchetypeDescriptor newVersion) {
-        List<FieldChange> result = new ArrayList<FieldChange>();
+        List<FieldChange> result = new ArrayList<>();
         compare(FieldChange.Field.NAME, oldVersion.getName(), newVersion.getName(), result);
         compare(FieldChange.Field.DISPLAY_NAME, oldVersion.getDisplayName(), newVersion.getDisplayName(), result);
         compare(FieldChange.Field.CLASS_NAME, oldVersion.getClassName(), newVersion.getClassName(), result);
