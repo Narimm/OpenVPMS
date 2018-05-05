@@ -22,9 +22,12 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.object.Identity;
+import org.openvpms.component.model.object.Relationship;
 
 import javax.xml.stream.Location;
 import javax.xml.stream.XMLStreamConstants;
@@ -54,11 +57,6 @@ import static org.openvpms.tools.data.loader.ArchetypeDataLoaderException.ErrorC
 class DataLoader {
 
     /**
-     * The load context.
-     */
-    private LoadContext context;
-
-    /**
      * The load cache.
      */
     private final LoadCache cache;
@@ -69,17 +67,7 @@ class DataLoader {
     private final IArchetypeService service;
 
     /**
-     * The batch size.
-     */
-    private int batchSize;
-
-    /**
-     * Objects to be saved, keyed on their references.
-     */
-    private Map<IMObjectReference, LoadState> queue = new LinkedHashMap<>();
-
-    /**
-     * If <tt>true</tt> perform verbose logging.
+     * If {@code true} perform verbose logging.
      */
     private final boolean verbose;
 
@@ -95,33 +83,48 @@ class DataLoader {
     private final Map<String, Long> statistics;
 
     /**
-     * Object's whose save has been deferred as they aren't complete.
-     */
-    private List<LoadState> deferred = new ArrayList<>();
-
-    /**
      * The logger.
      */
     private final Log log = LogFactory.getLog(DataLoader.class);
 
+    /**
+     * The load context.
+     */
+    private LoadContext context;
 
     /**
-     * Creates a new <tt>DataLoader</tt>.
+     * The batch size.
+     */
+    private int batchSize;
+
+    /**
+     * Objects to be saved, keyed on their references.
+     */
+    private Map<IMObjectReference, LoadState> queue = new LinkedHashMap<>();
+
+    /**
+     * Object's whose save has been deferred as they aren't complete.
+     */
+    private List<LoadState> deferred = new ArrayList<>();
+
+
+    /**
+     * Constructs a {@link DataLoader}.
      *
      * @param batchSize the batch size
      */
     public DataLoader(int batchSize) {
         this(new LoadCache(), ArchetypeServiceHelper.getArchetypeService(),
-             false, false, batchSize, new HashMap<String, Long>());
+             false, false, batchSize, new HashMap<>());
     }
 
     /**
-     * Creates a new <tt>DataLoader</tt>.
+     * Constructs a {@link DataLoader}.
      *
      * @param cache        the load cache
      * @param service      the archetype service
-     * @param verbose      if <tt>true</tt> perform verbose logging
-     * @param validateOnly if <tt>true</tt> only validate, don't save
+     * @param verbose      if {@code true} perform verbose logging
+     * @param validateOnly if {@code true} only validate, don't save
      * @param batchSize    the batch size
      * @param statistics   the statistucs
      */
@@ -254,15 +257,12 @@ class DataLoader {
      * @param stack  the stack of load states
      * @param path   a path representing the stream source, for logging purposes
      */
-    private void startData(XMLStreamReader reader, Stack<LoadState> stack,
-                           String path) {
+    private void startData(XMLStreamReader reader, Stack<LoadState> stack, String path) {
         LoadState current;
         Data data = new Data(reader);
         if (verbose) {
-            String archetypeId = stack.isEmpty() ? "none"
-                                                 : stack.peek().getArchetypeId().toString();
-            log.info("[START PROCESSING element, parent="
-                     + archetypeId + "]" + data);
+            String archetypeId = stack.isEmpty() ? "none" : stack.peek().getArchetypeId().toString();
+            log.info("[START PROCESSING element, parent=" + archetypeId + "]" + data);
         }
 
         try {
@@ -272,6 +272,8 @@ class DataLoader {
                 current = processData(null, data, path);
             }
             stack.push(current);
+        } catch (ArchetypeDataLoaderException exception) {
+            log.error(exception.getMessage());
         } catch (Exception exception) {
             Location location = reader.getLocation();
             log.error("Error in start element, line "
@@ -285,7 +287,7 @@ class DataLoader {
      * Process the specified data. If the parent object is specified then the
      * specified element is in a parent-child relationship.
      *
-     * @param parent the parent object. May be <tt>null</tt>
+     * @param parent the parent object. May be {@code null}
      * @param data   the data to process
      * @param path   a path representing the data source, for logging purposes
      * @return the load state corresponding to the data
@@ -338,12 +340,11 @@ class DataLoader {
      * Creates a new load state for the specified data.
      *
      * @param data   the data
-     * @param parent the parent state. May be <tt>null</tt>
+     * @param parent the parent state. May be {@code null}
      * @param path   a path representing the data source, for logging purposes
      * @return a new load state
      */
-    private LoadState create(Data data, LoadState parent,
-                             String path) {
+    private LoadState create(Data data, LoadState parent, String path) {
         String shortName = data.getShortName();
         ArchetypeDescriptor descriptor
                 = service.getArchetypeDescriptor(shortName);
@@ -360,6 +361,11 @@ class DataLoader {
                     InvalidArchetype, location.getLineNumber(),
                     location.getColumnNumber(), shortName);
         }
+        if ((object instanceof Relationship || object instanceof Identity || object instanceof Contact)
+            && parent == null) {
+            throw new ArchetypeDataLoaderException(ArchetypeDataLoaderException.ErrorCode.ObjectMustBeInCollection,
+                                                   location.getLineNumber(), location.getColumnNumber(), shortName);
+        }
         cache.add(object, data.getId());
         return new LoadState(parent, object, descriptor, path,
                              data.getLocation().getLineNumber());
@@ -375,7 +381,10 @@ class DataLoader {
             deferred.add(state);
         } else {
             IMObject object = state.getObject();
-            queue(state);
+            if (queue(state)) {
+                // objects were saved. Process any deferred objects
+                processDeferred();
+            }
 
             // update the stats
             String shortName = state.getArchetypeId().getShortName();
@@ -396,8 +405,10 @@ class DataLoader {
      * This method will queue the state and save it only when the size of the queue reaches the batch size.
      *
      * @param state the object to save
+     * @return {@code true} if the objects were saved
      */
-    private void queue(LoadState state) {
+    private boolean queue(LoadState state) {
+        boolean saved = false;
         IMObject object = state.getObject();
         service.deriveValues(object);
         if (validateOnly) {
@@ -413,16 +424,18 @@ class DataLoader {
             queue.put(object.getObjectReference(), state);
             if (queue.size() >= batchSize) {
                 save();
-                processDeferred();
+                saved = true;
             }
         }
+        return saved;
     }
 
     /**
      * Saves all queued objects that have all their dependencies met.
      */
     private void save() {
-        LoadState[] objects = queue.values().toArray(new LoadState[0]);
+        Collection<LoadState> values = queue.values();
+        LoadState[] objects = values.toArray(new LoadState[values.size()]);
         Map<IMObjectReference, IMObject> batch = new HashMap<>();
 
         // collect all unsaved objects whose dependencies are present
@@ -466,18 +479,17 @@ class DataLoader {
     /**
      * Processes any deferred objects.
      *
-     * @return <tt>true</tt> if any objects were processed
+     * @return {@code true} if any objects were processed
      */
     private boolean processDeferred() {
         boolean result = false;
         while (true) {
             boolean processed = false;
-            LoadState[] states = deferred.toArray(new LoadState[0]);
+            LoadState[] states = deferred.toArray(new LoadState[deferred.size()]);
             for (LoadState state : states) {
                 Collection<DeferredUpdater> updaters = state.getDeferred();
                 if (!updaters.isEmpty()) {
-                    for (DeferredUpdater updater
-                            : updaters.toArray(new DeferredUpdater[0])) {
+                    for (DeferredUpdater updater : updaters.toArray(new DeferredUpdater[updaters.size()])) {
                         String id = updater.getId();
                         IMObjectReference ref = context.getReference(id);
                         if (ref != null && updater.update(ref, context)) {
@@ -500,14 +512,13 @@ class DataLoader {
 
     /**
      * Collects all queued objects required by the specified reference,
-     * adding them to <tt>objects</tt>.
+     * adding them to {@code objects}.
      *
      * @param ref     the reference
      * @param objects the unsaved objects
-     * @return <tt>true</tt> if all unsaved objects could be resolved
+     * @return {@code true} if all unsaved objects could be resolved
      */
-    private boolean getPending(IMObjectReference ref,
-                               Map<IMObjectReference, IMObject> objects) {
+    private boolean getPending(IMObjectReference ref, Map<IMObjectReference, IMObject> objects) {
         boolean resolved = true;
         LoadState state = queue.get(ref);
         if (state != null) {
@@ -536,15 +547,25 @@ class DataLoader {
         service.save(objects.values());
         this.queue.keySet().removeAll(saved);
 
-        // now update the references of any queued object that need the
-        // saved references.
+        // now update the references of any object that need the saved references.
         for (IMObject object : objects.values()) {
             IMObjectReference reference = object.getObjectReference();
             cache.update(reference);
-            for (LoadState state : queue.values()) {
-                if (state.getUnsaved().contains(reference)) {
-                    state.update(reference);
-                }
+            update(reference, queue.values());
+            update(reference, deferred);
+        }
+    }
+
+    /**
+     * Updates any states that refer to an unsaved reference with the actual reference.
+     *
+     * @param reference the reference
+     * @param states    the states to update
+     */
+    private void update(IMObjectReference reference, Collection<LoadState> states) {
+        for (LoadState state : states) {
+            if (state.getUnsaved().contains(reference)) {
+                state.update(reference);
             }
         }
     }

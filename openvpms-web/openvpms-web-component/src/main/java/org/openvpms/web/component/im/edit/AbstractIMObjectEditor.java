@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
@@ -554,7 +555,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Save any edits.
-     * <p>
+     * <p/>
      * This uses {@link #saveChildren()} to save the children prior to invoking {@link #saveObject()}.
      *
      * @throws OpenVPMSException if the save fails
@@ -587,7 +588,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Deletes the object.
-     * <p>
+     * <p/>
      * This uses {@link #deleteChildren()} to delete the children prior to invoking {@link #deleteObject()}.
      *
      * @throws OpenVPMSException if the delete fails
@@ -749,7 +750,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Invoked by {@link #onLayout} to dispose of existing editors.
-     * <p>
+     * <p/>
      * This implementation disposes each editor for which {@link #disposeOnChangeLayout(Editor)} returns {@code true}.
      */
     protected void disposeOnChangeLayout() {
@@ -775,7 +776,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Invoked when layout has completed.
-     * <p>
+     * <p/>
      * This can be used to perform processing that requires all editors to be created.
      */
     protected void onLayoutCompleted() {
@@ -783,7 +784,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Invoked when any of the child editors or properties update.
-     * <p>
+     * <p/>
      * This resets the cached valid state
      *
      * @param modifiable the updated object
@@ -839,7 +840,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Helper to return an editor associated with a property, given the property
      * name.
-     * <p>
+     * <p/>
      * This performs a layout of the component if it hasn't already been done, to ensure the editors are created
      *
      * @param name the property name
@@ -877,7 +878,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Helper to return an object given its reference.
-     * <p>
+     * <p/>
      * This implementation uses the cache associated with the layout context.
      *
      * @param reference the reference. May be {@code null}
@@ -920,6 +921,16 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
             }
         }
         return result;
+    }
+
+    /**
+     * Returns a bean for an object.
+     *
+     * @param object the object
+     * @return a bean wrapping the object
+     */
+    protected IMObjectBean getBean(IMObject object) {
+        return ServiceHelper.getArchetypeService().getBean(object);
     }
 
     /**

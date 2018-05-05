@@ -56,7 +56,7 @@ public class Context {
     private final Session session;
 
     /**
-     * Key used to bind the context with {@code TransactionSynchronizationManager.bindResource()}
+     * Key used to bind the context with {@code TransactionSynchronizationManager.bindResource()}.
      */
     private final ResourceKey key;
 
@@ -106,7 +106,7 @@ public class Context {
     private ContextHandler handler;
 
     /**
-     * Creates a new {@code Context}.
+     * Constructs a {@link Context}.
      *
      * @param assembler  the assembler
      * @param session    the hibernate session
@@ -345,10 +345,9 @@ public class Context {
         if (Hibernate.isInitialized(object)) {
             return object.getObjectReference();
         }
-        Query query = session.createQuery("select archetypeId, linkId"
-                                          + " from " + type.getName()
-                                          + " where id=:id");
-        query.setParameter("id", object.getId());
+        Query query = session.createQuery("select archetypeId, linkId from "
+                                          + type.getName() + " where id=?");
+        query.setParameter(0, object.getId());
         List result = query.list();
         if (!result.isEmpty()) {
             Object[] values = (Object[]) result.get(0);
@@ -441,6 +440,25 @@ public class Context {
             }
             deferred.clear();
         }
+    }
+
+    /**
+     * Invoked after successful commit.
+     * <p/>
+     * This propagates identifier and version changes from the committed
+     * {@code IMObjectDO}s to their corresponding {@code IMObject}s.
+     */
+    public void commit() {
+        DOState.updateIds(getSaved(), this);
+    }
+
+    /**
+     * Invoked on transaction rollback.
+     * <p/>
+     * This reverts identifier and version changes.
+     */
+    public void rollback() {
+        DOState.rollbackIds(getSaved());
     }
 
     /**

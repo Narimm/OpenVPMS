@@ -87,7 +87,7 @@ public final class Predicates {
     }
 
     /**
-     * Returns a predicate that determines if the source of an {@link Relationship} is that of the supplied
+     * Returns a predicate that determines if the source of a {@link Relationship} is that of the supplied
      * reference.
      *
      * @param object the object. May be {@code null}
@@ -98,7 +98,7 @@ public final class Predicates {
     }
 
     /**
-     * Returns a predicate that determines if the target of an {@link Relationship} is that of the supplied
+     * Returns a predicate that determines if the target of a {@link Relationship} is that of the supplied
      * object.
      *
      * @param object the object. May be {@code null}
@@ -106,6 +106,34 @@ public final class Predicates {
      */
     public static <T extends Relationship> Predicate<T> targetEquals(IMObject object) {
         return new RefEquals<>(object, Relationship::getTarget);
+    }
+
+    /**
+     * Returns a predicate that determines if the source of a {@link Relationship} is one of the specified set of
+     * archetypes.
+     *
+     * @param archetypes the archetypes
+     * @return a predicate
+     */
+    public static <T extends Relationship> Predicate<T> sourceIsA(String... archetypes) {
+        return relationship -> {
+            Reference reference = relationship.getSource();
+            return (reference != null && reference.isA(archetypes));
+        };
+    }
+
+    /**
+     * Returns a predicate that determines if the target of a {@link Relationship} is one of the specified set of
+     * archetypes.
+     *
+     * @param archetypes the archetypes
+     * @return a predicate
+     */
+    public static <T extends Relationship> Predicate<T> targetIsA(String... archetypes) {
+        return t -> {
+            Reference reference = t.getTarget();
+            return (reference != null && reference.isA(archetypes));
+        };
     }
 
     /**

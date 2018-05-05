@@ -38,8 +38,6 @@ import org.openvpms.component.system.common.query.NodeConstraint;
 import org.openvpms.component.system.common.query.RelationalOp;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
@@ -243,7 +241,7 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
     }
 
     /**
-     * Verifies that the {@link IArchetypeService#save(Collection<IMObject>)}
+     * Verifies that the {@link IArchetypeService#save(Collection)}
      * method can be used to save 2 or more acts that reference the same
      * ActRelationship.
      *
@@ -294,7 +292,7 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
     }
 
     /**
-     * Verifies that the {@link IArchetypeService#save(Collection<IMObject>)}
+     * Verifies that the {@link IArchetypeService#save(Collection)}
      * method and {@link IArchetypeService#save(IMObject) method can be used
      * to save the same object.
      *
@@ -365,20 +363,18 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
         addRelationship(act1, act2, "act1->act2", true);
 
         // now try to save each act within a transaction.
-        template.execute(new TransactionCallback<Object>() {
-            public Object doInTransaction(TransactionStatus status) {
-                save(act1);
-                // act has been saved, but the identifier cannot be assigned
-                // until the related act is also saved
-                assertEquals(-1, act1.getId());
+        template.execute(status -> {
+            save(act1);
+            // act has been saved, but the identifier cannot be assigned
+            // until the related act is also saved
+            assertEquals(-1, act1.getId());
 
-                save(act2);
+            save(act2);
 
-                // identifiers should have updated
-                assertFalse(act1.getId() == -1);
-                assertFalse(act2.getId() == -1);
-                return null;
-            }
+            // identifiers should have updated
+            assertFalse(act1.getId() == -1);
+            assertFalse(act2.getId() == -1);
+            return null;
         });
     }
 
@@ -399,30 +395,28 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
         assertNull(get(act2.getObjectReference()));
 
         // now try to save each act within a transaction.
-        template.execute(new TransactionCallback<Object>() {
-            public Object doInTransaction(TransactionStatus status) {
-                save(act1);
-                // act has been saved, but the identifier cannot be assigned
-                // until the related act is also saved
-                assertEquals(-1, act1.getId());
+        template.execute(status -> {
+            save(act1);
+            // act has been saved, but the identifier cannot be assigned
+            // until the related act is also saved
+            assertEquals(-1, act1.getId());
 
-                // verify that the act can be retrieved by reference, and is
-                // the same object
-                assertSame(act1, get(act1.getObjectReference()));
+            // verify that the act can be retrieved by reference, and is
+            // the same object
+            assertSame(act1, get(act1.getObjectReference()));
 
-                assertNull(get(act2.getObjectReference()));
-                save(act2);
+            assertNull(get(act2.getObjectReference()));
+            save(act2);
 
-                // identifiers should have updated
-                assertFalse(act1.getId() == -1);
-                assertFalse(act2.getId() == -1);
+            // identifiers should have updated
+            assertFalse(act1.getId() == -1);
+            assertFalse(act2.getId() == -1);
 
-                // verify that the acts can be retrieved by reference, and are
-                // the same objects
-                assertSame(act1, get(act1.getObjectReference()));
-                assertSame(act2, get(act2.getObjectReference()));
-                return null;
-            }
+            // verify that the acts can be retrieved by reference, and are
+            // the same objects
+            assertSame(act1, get(act1.getObjectReference()));
+            assertSame(act2, get(act2.getObjectReference()));
+            return null;
         });
 
         IMObject reload1 = get(act1.getObjectReference());
@@ -632,49 +626,45 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
 
         save(Arrays.asList(act1, act2, act3));
 
-        template.execute(new TransactionCallback<Object>() {
-            public Object doInTransaction(TransactionStatus status) {
-                remove(act1);
-                assertNull(reload(act1));
+        template.execute(status -> {
+            remove(act1);
+            assertNull(reload(act1));
 
-                // reload act2 and verify that it no longer has a relationship
-                // to act1, and can be saved again
-                Act act2reloaded = reload(act2);
-                Set<ActRelationship> relationships
-                        = act2reloaded.getActRelationships();
-                assertFalse(relationships.contains(relAct1Act2));
-                assertTrue(relationships.contains(relAct2Act3));
-                act2reloaded.setStatus("POSTED");
-                save(act2reloaded);
+            // reload act2 and verify that it no longer has a relationship
+            // to act1, and can be saved again
+            Act act2reloaded = reload(act2);
+            Set<ActRelationship> relationships
+                    = act2reloaded.getActRelationships();
+            assertFalse(relationships.contains(relAct1Act2));
+            assertTrue(relationships.contains(relAct2Act3));
+            act2reloaded.setStatus("POSTED");
+            save(act2reloaded);
 
-                // reload act3 and verify that it no longer has a relationship
-                // to act1, and can be saved again
-                Act act3reloaded = reload(act3);
-                relationships = act3reloaded.getActRelationships();
-                assertFalse(relationships.contains(relAct1Act3));
-                act3reloaded.setStatus("POSTED");
-                save(act3reloaded);
-                return null;
-            }
+            // reload act3 and verify that it no longer has a relationship
+            // to act1, and can be saved again
+            Act act3reloaded = reload(act3);
+            relationships = act3reloaded.getActRelationships();
+            assertFalse(relationships.contains(relAct1Act3));
+            act3reloaded.setStatus("POSTED");
+            save(act3reloaded);
+            return null;
         });
         assertNull(reload(act1));
         assertNotNull(reload(act2));
         assertNotNull(reload(act3));
 
-        template.execute(new TransactionCallback<Object>() {
-            public Object doInTransaction(TransactionStatus status) {
-                Act act3reloaded = reload(act3);
-                remove(act3reloaded);
-                assertNull(reload(act3reloaded));
+        template.execute(status -> {
+            Act act3reloaded = reload(act3);
+            remove(act3reloaded);
+            assertNull(reload(act3reloaded));
 
-                // reload act2 and verify that it no longer has a relationship
-                // to act3
-                Act act2reloaded = reload(act2);
-                assertFalse(act2reloaded.getActRelationships().contains(
-                        relAct2Act3));
-                assertEquals("POSTED", act2reloaded.getStatus());
-                return null;
-            }
+            // reload act2 and verify that it no longer has a relationship
+            // to act3
+            Act act2reloaded = reload(act2);
+            assertFalse(act2reloaded.getActRelationships().contains(
+                    relAct2Act3));
+            assertEquals("POSTED", act2reloaded.getStatus());
+            return null;
         });
 
         assertNull(reload(act3));
@@ -696,21 +686,19 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
                                                             "act1->act2");
 
         save(Arrays.asList(act1, act2));
-        template.execute(new TransactionCallback<Object>() {
-            public Object doInTransaction(TransactionStatus status) {
-                remove(act2);
-                Act reloaded = reload(act1);
+        template.execute(status -> {
+            remove(act2);
+            Act reloaded = reload(act1);
 
-                // relationship should be removed
-                assertFalse(reloaded.getActRelationships().contains(
-                        relAct1Act2));
+            // relationship should be removed
+            assertFalse(reloaded.getActRelationships().contains(
+                    relAct1Act2));
 
-                // add a new relationship
-                addRelationship(reloaded, act3, "act1->act3");
-                save(reloaded);
-                save(act3);
-                return null;
-            }
+            // add a new relationship
+            addRelationship(reloaded, act3, "act1->act3");
+            save(reloaded);
+            save(act3);
+            return null;
         });
 
         Act reloaded = reload(act1);
@@ -745,19 +733,17 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
         assertTrue(act4.getActRelationships().contains(relAct2Act4));
         assertTrue(act4.getActRelationships().contains(relAct3Act4));
 
-        template.execute(new TransactionCallback<Object>() {
-            public Object doInTransaction(TransactionStatus status) {
-                remove(act1);
+        template.execute(status -> {
+            remove(act1);
 
-                // reload act4 and verify it no longer has any relationships
-                Act reloaded = reload(act4);
-                assertTrue(reloaded.getActRelationships().isEmpty());
+            // reload act4 and verify it no longer has any relationships
+            Act reloaded = reload(act4);
+            assertTrue(reloaded.getActRelationships().isEmpty());
 
-                // verify it can be re-saved
-                reloaded.setName("A test");
-                save(reloaded);
-                return null;
-            }
+            // verify it can be re-saved
+            reloaded.setName("A test");
+            save(reloaded);
+            return null;
         });
 
         assertNull(reload(act1)); // deletion of act1 should have cascaded to
@@ -795,26 +781,24 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
         // the objects should be assigned identifiers. After rollback, they
         // should be reset to -1.
         try {
-            template.execute(new TransactionCallback<Object>() {
-                public Object doInTransaction(TransactionStatus status) {
-                    save(act1);
-                    save(act2);
-                    act1.setName("f0o");
-                    save(act1);
+            template.execute(status -> {
+                save(act1);
+                save(act2);
+                act1.setName("f0o");
+                save(act1);
 
-                    // objects should have ids assigned now
-                    assertFalse(-1 == act1.getId());
-                    assertFalse(-1 == act2.getId());
-                    assertFalse(-1 == rel.getId());
-                    assertFalse(-1 == rel.getSource().getId());
-                    assertFalse(-1 == rel.getTarget().getId());
+                // objects should have ids assigned now
+                assertFalse(-1 == act1.getId());
+                assertFalse(-1 == act2.getId());
+                assertFalse(-1 == rel.getId());
+                assertFalse(-1 == rel.getSource().getId());
+                assertFalse(-1 == rel.getTarget().getId());
 
-                    // versions don't get updated until commit
-                    assertEquals(0, act1.getVersion());
-                    assertEquals(0, act2.getVersion());
+                // versions don't get updated until commit
+                assertEquals(0, act1.getVersion());
+                assertEquals(0, act2.getVersion());
 
-                    throw new RuntimeException("Trigger rollback");
-                }
+                throw new RuntimeException("Trigger rollback");
             });
             fail("Expected transaction to fail");
         } catch (Exception expected) {
@@ -834,12 +818,10 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
         // now verify the objects can be saved. Save twice to inc version.
         for (int i = 0; i < 2; ++i) {
             try {
-                template.execute(new TransactionCallback<Object>() {
-                    public Object doInTransaction(TransactionStatus status) {
-                        save(act1);
-                        save(act2);
-                        return null;
-                    }
+                template.execute(status -> {
+                    save(act1);
+                    save(act2);
+                    return null;
                 });
             } catch (Exception error) {
                 error.printStackTrace();
@@ -858,12 +840,10 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
         // now verfiy that a subsequent rollback of persistent objects
         // doesn't reset the ids
         try {
-            template.execute(new TransactionCallback<Object>() {
-                public Object doInTransaction(TransactionStatus status) {
-                    save(act1);
-                    save(act2);
-                    throw new RuntimeException("Trigger rollback");
-                }
+            template.execute(status -> {
+                save(act1);
+                save(act2);
+                throw new RuntimeException("Trigger rollback");
             });
             fail("Expected transaction to fail");
         } catch (Exception expected) {
@@ -895,17 +875,15 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
 
         final String newName = "act1->act2 changed";
 
-        template.execute(new TransactionCallback<Object>() {
-            public Object doInTransaction(TransactionStatus status) {
-                // reload act2 and verify it contains the relationship
-                Act reloaded = reload(act2);
-                assertTrue(reloaded.getTargetActRelationships().contains(rel));
+        template.execute(status -> {
+            // reload act2 and verify it contains the relationship
+            Act reloaded = reload(act2);
+            assertTrue(reloaded.getTargetActRelationships().contains(rel));
 
-                // update the relationship and save act1
-                rel.setName(newName);
-                save(act1);
-                return null;
-            }
+            // update the relationship and save act1
+            rel.setName(newName);
+            save(act1);
+            return null;
         });
 
         // reload act1 and verify it contains the relationship
@@ -924,6 +902,40 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
         // verify the acts can be saved again
         save(act1);
         save(act2);
+    }
+
+    /**
+     * Verifies that the act version is updated correctly.
+     */
+    @Test
+    public void testVersion() {
+        Act parent = createSimpleAct("parent", "IN_PROGRESS");
+        save(parent);
+
+        Act act1 = template.execute(status -> {
+            Act result = createSimpleAct("act1", "IN_PROGRESS");
+            addRelationship(parent, result, "parent->act1", false);
+            save(result);
+            save(parent);
+            return result;
+        });
+        assertEquals(1, parent.getVersion());
+
+        // remove act1, and add act2 and verify the parent version updates
+        template.execute(status -> {
+            ActRelationship relationship = parent.getActRelationships().iterator().next();
+            act1.removeActRelationship(relationship);
+            parent.removeActRelationship(relationship);
+            Act act2 = createSimpleAct("act2", "IN_PROGRESS");
+            addRelationship(parent, act2, "parent->act2", false);
+
+            save(act1);
+            save(parent);
+            save(act2);
+            remove(act1);
+            return null;
+        });
+        assertEquals(2, parent.getVersion());
     }
 
     /**

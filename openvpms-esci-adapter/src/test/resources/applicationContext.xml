@@ -110,6 +110,7 @@
                 <ref bean="currencies"/>
                 <ref bean="lookupService"/>
                 <ref bean="txnManager"/>
+                <ref bean="customerBalanceUpdater"/>
             </list>
         </property>
     </bean>
@@ -128,6 +129,10 @@
     <bean id="customerRules" class="org.openvpms.archetype.rules.party.CustomerRules">
         <constructor-arg ref="defaultArchetypeService"/>
         <constructor-arg ref="lookupService"/>
+    </bean>
+
+    <bean id="customerBalanceUpdater" class="org.openvpms.archetype.rules.finance.account.CustomerBalanceUpdater">
+        <constructor-arg ref="defaultArchetypeService"/>
     </bean>
 
     <bean id="customerAccountRules" class="org.openvpms.archetype.rules.finance.account.CustomerAccountRules">

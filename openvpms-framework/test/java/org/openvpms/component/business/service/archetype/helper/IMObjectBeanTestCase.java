@@ -39,6 +39,7 @@ import org.openvpms.component.business.service.archetype.functor.SequenceCompara
 import org.openvpms.component.model.act.Participation;
 import org.openvpms.component.model.bean.Policies;
 import org.openvpms.component.model.bean.Policy;
+import org.openvpms.component.model.bean.Predicates;
 import org.openvpms.component.model.object.Relationship;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -343,12 +344,35 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
     }
 
     /**
+     * Tests the {@link IMObjectBean#removeValues(String)} method.
+     */
+    @Test
+    public void testRemoveValues() {
+        IMObjectBean bean = createBean("party.customerperson");
+        IMObject location = create("contact.location");
+        IMObject phone = create("contact.phoneNumber");
+        assertNotNull(location);
+        assertNotNull(phone);
+
+        bean.addValue("contacts", location);
+        bean.addValue("contacts", phone);
+        checkEquals(bean.getValues("contacts"), location, phone);
+
+        checkEquals(bean.removeValues("contacts"), location, phone);
+        assertEquals(0, bean.getValues("contacts").size());
+
+        checkEquals(bean.removeValues("contacts"));
+        assertEquals(0, bean.getValues("contacts").size());
+    }
+
+    /**
      * Tests the {@link IMObjectBean#getValues(String, Class)} method.
+     *
      */
     @Test
     public void testGetValuesTypeSafeCast() {
         IMObjectBean bean = createBean("party.customerperson");
-        List<org.openvpms.component.model.object.IMObject>  values = bean.getValues("contacts");
+        List<org.openvpms.component.model.object.IMObject> values = bean.getValues("contacts");
         assertNotNull(values);
         assertEquals(0, values.size());
         IMObjectBean locationBean = createBean("contact.location");
@@ -373,6 +397,24 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
                          + " but got " + Contact.class.getName(),
                          exception.getMessage());
         }
+    }
+
+    /**
+     * Tests the {@link IMObjectBean#getValue(String, Predicate, Class)} method.
+     */
+    @Test
+    public void testGetValuePredicate() {
+        IMObjectBean bean = createBean("party.customerperson");
+        IMObject location = create("contact.location");
+        IMObject phone = create("contact.phoneNumber");
+        assertNotNull(location);
+        assertNotNull(phone);
+
+        bean.addValue("contacts", location);
+        bean.addValue("contacts", phone);
+
+        assertEquals(location, bean.getValue("contacts", Contact.class, Predicates.isA("contact.location")));
+        assertEquals(phone, bean.getValue("contacts", Contact.class, Predicates.isA("contact.phoneNumber")));
     }
 
     /**
@@ -615,7 +657,7 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
 
     /**
      * Tests the {@link IMObjectBean#getTarget}, {@link IMObjectBean#getTarget(String, Class)},
-     *  and {@link IMObjectBean#getTarget(String, Class, Policy)} methods.
+     * and {@link IMObjectBean#getTarget(String, Class, Policy)} methods.
      */
     @Test
     public void testGetTarget() {

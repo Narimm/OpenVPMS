@@ -37,16 +37,18 @@ import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.entity.EntityIdentity;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
@@ -58,8 +60,6 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
@@ -116,7 +116,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
         // set a minimum price for calculated prices.
         Lookup currency = TestHelper.getLookup(Currencies.LOOKUP, "AUD");
-        IMObjectBean bean = new IMObjectBean(currency);
+        IMObjectBean bean = getBean(currency);
         bean.setValue("minPrice", new BigDecimal("0.20"));
         bean.save();
     }
@@ -254,6 +254,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         FinancialAct item = acts.get(1);
 
         Product product = createProduct(ProductArchetypes.MERCHANDISE, fixedCost, fixedPrice, unitCost, unitPrice);
+        addTemplate(product, PatientArchetypes.DOCUMENT_FORM);
+        addTemplate(product, PatientArchetypes.DOCUMENT_LETTER);
 
         // set up the context
         layout.getContext().setUser(author); // to propagate to acts
@@ -455,12 +457,12 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
     /**
      * Tests a product with a 10% discount where discounts are disabled at the practice location.
-     * <p>
+     * <p/>
      * The calculated discount should be zero.
      */
     @Test
     public void testDisableDiscounts() {
-        IMObjectBean bean = new IMObjectBean(context.getLocation());
+        IMObjectBean bean = getBean(context.getLocation());
         bean.setValue("disableDiscounts", true);
 
         List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(new BigDecimal(100), customer, null, null,
@@ -594,7 +596,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         FinancialAct item = acts.get(1);
 
         Product product = createProduct(ProductArchetypes.MERCHANDISE);
-        IMObjectBean bean = new IMObjectBean(product);
+        IMObjectBean bean = getBean(product);
         bean.setValue("patientIdentity", PatientArchetypes.MICROCHIP);
         bean.save();
 
@@ -625,7 +627,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
     /**
      * Verifies that the editor is invalid if a quantity is less than a minimum quantity.
-     * <p>
+     * <p/>
      * Note that in practice, the minimum quantity is set by expanding a template or invoicing an estimate.
      */
     @Test
@@ -663,7 +665,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
     /**
      * Verifies that a user with the appropriate user type can override minimum quantities.
-     * <p>
+     * <p/>
      * Note that in practice, the minimum quantity is set by expanding a template or invoicing an estimate.
      */
     @Test
@@ -673,7 +675,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         // set up a user that can override minimum quantities
         Lookup userType = TestHelper.getLookup("lookup.userType", "MINIMUM_QTY_OVERRIDE");
         Party practice = getPractice();
-        IMObjectBean bean = new IMObjectBean(practice);
+        IMObjectBean bean = getBean(practice);
         bean.setValue("minimumQuantitiesOverride", userType.getCode());
         bean.save();
         User author = TestHelper.createUser();
@@ -828,13 +830,13 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
         // create a 100% discount, and associate it with the product nad patient.
         Entity discount = DiscountTestHelper.createDiscount(MathRules.ONE_HUNDRED, true, DiscountRules.PERCENTAGE);
-        IMObjectBean patientBean = new IMObjectBean(patient);
-        patientBean.addNodeTarget("discounts", discount);
+        IMObjectBean patientBean = getBean(patient);
+        patientBean.addTarget("discounts", discount);
 
         product.addProductPrice(fixedPrice1);
         product.addProductPrice(fixedPrice2);
-        IMObjectBean productBean = new IMObjectBean(product);
-        productBean.addNodeTarget("discounts", discount);
+        IMObjectBean productBean = getBean(product);
+        productBean.addTarget("discounts", discount);
         save(patient, product);
 
         List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(new BigDecimal(100), customer, null, null,
@@ -863,6 +865,58 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         checkEquals(BigDecimal.ZERO, editor.getTotal());
     }
 
+    /**
+     * Verifies that when a product is charged that generates a patient letter, the letter is deleted if the
+     * charge is cancelled.
+     */
+    @Test
+    public void testCancelProductWithLetterDeletesLetter() {
+        LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        Party patient = TestHelper.createPatient();
+        User author = TestHelper.createUser();
+        User clinician = TestHelper.createClinician();
+
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(new BigDecimal(100), customer, null, null,
+                                                                           ActStatus.IN_PROGRESS);
+        FinancialAct charge = acts.get(0);
+        FinancialAct item = acts.get(1);
+
+        Product product = createProduct(ProductArchetypes.MERCHANDISE);
+        Entity template = addTemplate(product, PatientArchetypes.DOCUMENT_LETTER);
+
+        // set up the context
+        layout.getContext().setUser(author); // to propagate to acts
+
+        CustomerChargeEditContext editContext = createEditContext(layout);
+
+        // create the editor
+        TestCustomerChargeActItemEditor editor = createEditor(charge, item, editContext, layout);
+        assertFalse(editor.isValid());
+
+        // populate quantity, patient, clinician.
+        editor.setQuantity(BigDecimal.ONE);
+        editor.setPatient(patient);
+        editor.setClinician(clinician);
+
+        // set the product
+        editor.setProduct(product);
+
+        // editor should now be valid
+        assertTrue(editor.isValid());
+
+        DocumentAct act = getDocument(item, template);
+        Document document = (Document) get(act.getDocument());
+        assertNotNull(document);
+
+        editor.cancel();
+
+        // verify the document is now deleted.
+        assertNull(get(act));
+        assertNull(get(document));
+
+        // verify no errors were logged
+        assertTrue(errors.isEmpty());
+    }
     /**
      * Verifies stock matches that expected.
      *
@@ -987,7 +1041,8 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         Product product1 = createProduct(productShortName, fixedCost1, fixedPrice1, unitCost1, unitPrice1);
         Entity reminderType = addReminder(product1);
         Entity investigationType = addInvestigation(product1);
-        Entity template = addTemplate(product1);
+        Entity template1 = addTemplate(product1, PatientArchetypes.DOCUMENT_FORM);
+        Entity template2 = addTemplate(product1, PatientArchetypes.DOCUMENT_LETTER);
         Entity alertType = addAlertType(product1);
 
         // create  product2 with no reminder no investigation type, and a service ratio that doubles the unit and
@@ -1074,12 +1129,13 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
             assertEquals(1, itemBean.getActs(InvestigationArchetypes.PATIENT_INVESTIGATION).size());
             assertEquals(1, itemBean.getActs(ReminderArchetypes.REMINDER).size());
-            assertEquals(1, itemBean.getActs("act.patientDocument*").size());
+            assertEquals(2, itemBean.getActs("act.patientDocument*").size());
             assertEquals(1, itemBean.getActs(PatientArchetypes.ALERT).size());
 
             checkInvestigation(item, patient1, investigationType, author1, clinician1);
             checkReminder(item, patient1, product1, reminderType, author1, clinician1);
-            checkDocument(item, patient1, product1, template, author1, clinician1);
+            checkDocument(item, patient1, product1, template1, author1, clinician1);
+            checkDocument(item, patient1, product1, template2, author1, clinician1);
             checkAlert(item, patient1, product1, alertType, author1, clinician1);
         } else {
             // verify there are no medication, investigation, reminder nor document acts
@@ -1152,7 +1208,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
     /**
      * Checks populating a charge item with a template product.
-     * <p>
+     * <p/>
      * NOTE: currently, charge items with template products validate correctly, but fail to save.
      * <p/>This is because the charge item relationship editor will only expand templates if the charge item itself
      * is valid - marking the item invalid for having a template would prevent this.
@@ -1298,7 +1354,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         BigDecimal doseQuantity = new BigDecimal("4.2");
 
         Product product = createProduct(ProductArchetypes.MEDICATION, fixedCost, fixedPrice, unitCost, unitPrice);
-        IMObjectBean bean = new IMObjectBean(product);
+        IMObjectBean bean = getBean(product);
         bean.setValue("concentration", BigDecimal.ONE);
         Entity dose = ProductTestHelper.createDose(null, BigDecimal.ZERO, BigDecimal.TEN, BigDecimal.ONE,
                                                    BigDecimal.ONE);
@@ -1364,19 +1420,17 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
      */
     private boolean save(final FinancialAct charge, final CustomerChargeActItemEditor editor) {
         TransactionTemplate template = new TransactionTemplate(ServiceHelper.getTransactionManager());
-        return template.execute(new TransactionCallback<Boolean>() {
-            public Boolean doInTransaction(TransactionStatus status) {
-                PatientHistoryChanges changes = new PatientHistoryChanges(null, null, getArchetypeService());
-                ChargeSaveContext context = editor.getSaveContext();
-                context.setHistoryChanges(changes);
-                boolean saved = SaveHelper.save(charge);
-                editor.save();
-                if (saved) {
-                    context.save();
-                }
-                context.setHistoryChanges(null);
-                return saved;
+        return template.execute(status -> {
+            PatientHistoryChanges changes = new PatientHistoryChanges(null, null, getArchetypeService());
+            ChargeSaveContext context1 = editor.getSaveContext();
+            context1.setHistoryChanges(changes);
+            boolean saved = SaveHelper.save(charge);
+            editor.save();
+            if (saved) {
+                context1.save();
             }
+            context1.setHistoryChanges(null);
+            return saved;
         });
     }
 
@@ -1384,7 +1438,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
         /**
          * Constructs a {@link TestCustomerChargeActItemEditor}.
-         * <p>
+         * <p/>
          * This recalculates the tax amount.
          *
          * @param act           the act to edit

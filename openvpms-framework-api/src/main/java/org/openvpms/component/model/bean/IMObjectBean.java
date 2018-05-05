@@ -223,9 +223,9 @@ public interface IMObjectBean {
 
     /**
      * Returns the object at the specified node.
-     * <p>
+     * <p/>
      * If the named object is an {@link Reference}, it will be resolved.
-     * <p>
+     * <p/>
      * If the node is a collection, the first value will be returned. If the collection has multiple elements, the
      * element that is returned is non-deterministic, so this should be only used for collections with 0..1 cardinality.
      *
@@ -236,9 +236,9 @@ public interface IMObjectBean {
 
     /**
      * Returns the object at the specified node.
-     * <p>
+     * <p/>
      * If the named object is an {@link Reference}, it will be resolved.
-     * <p>
+     * <p/>
      * If the node is a collection, the first value will be returned. If the collection has multiple elements, the
      * element that is returned is non-deterministic, so this should be only used for collections with 0..1 cardinality.
      *
@@ -299,6 +299,33 @@ public interface IMObjectBean {
      * @return the objects matching the predicate
      */
     <T extends IMObject> List<T> getValues(String name, Class<T> type, Predicate<T> predicate);
+
+    /**
+     * Returns the first value of a collection node that matches the supplied predicate.
+     *
+     * @param name      the node name
+     * @param type      the epected object type
+     * @param predicate tyhe predicate
+     * @return the object matching the predicate, or {@code null} if none is found
+     */
+    <T extends IMObject> T getValue(String name, Class<T> type, Predicate<T> predicate);
+
+    /**
+     * Removes and returns the values of a collection node.
+     *
+     * @param name the node name
+     * @return the removed values
+     */
+    List<IMObject> removeValues(String name);
+
+    /**
+     * Removes and returns the values of a collection node.
+     *
+     * @param name the node name
+     * @param type the expected object type
+     * @return the removed values
+     */
+    <T extends IMObject> List<T> removeValues(String name, Class<T> type);
 
     /**
      * Returns the source object from the first {@link Relationship} with source object, for the specified relationship
@@ -568,7 +595,7 @@ public interface IMObjectBean {
 
     /**
      * Sets the target of a relationship.
-     * <p>
+     * <p/>
      * If no relationship exists and:
      * <ul>
      * <li>{@code target} is non-null, one will be created.
@@ -576,7 +603,7 @@ public interface IMObjectBean {
      * </ul>
      * If multiple relationships exist, the first available will be selected.<br/>
      * <em>NOTE that this is not deterministic.</em>
-     * <p>
+     * <p/>
      * If the returned relationship is bidirectional and new, the caller is responsible for adding it to the target.
      *
      * @param name   the node name
@@ -587,7 +614,7 @@ public interface IMObjectBean {
 
     /**
      * Sets the target of a relationship.
-     * <p>
+     * <p/>
      * If no relationship exists and:
      * <ul>
      * <li>{@code target} is non-null, one will be created.
@@ -595,7 +622,7 @@ public interface IMObjectBean {
      * </ul>
      * If multiple relationships exist, the first available will be selected.<br/>
      * <em>NOTE that this is not deterministic.</em>
-     * <p>
+     * <p/>
      * If the returned relationship is bidirectional and new, the caller is responsible for adding it to the target.
      *
      * @param name   the node name
@@ -606,7 +633,7 @@ public interface IMObjectBean {
 
     /**
      * Adds a new relationship between the current object (the source), and the supplied target.
-     * <p>
+     * <p/>
      * If the relationship is bidirectional, the caller is responsible for adding the returned relationship
      * to the target.
      *
@@ -618,7 +645,7 @@ public interface IMObjectBean {
 
     /**
      * Adds a new relationship between the current object (the source), and the supplied target.
-     * <p>
+     * <p/>
      * If the relationship is bidirectional, the caller is responsible for adding the returned relationship
      * to the target.
      *
@@ -630,7 +657,7 @@ public interface IMObjectBean {
 
     /**
      * Adds a new relationship between the current object (the source), and the supplied target.
-     * <p>
+     * <p/>
      * If the relationship is bidirectional, the caller is responsible for adding the returned relationship
      * to the target.
      *
@@ -643,7 +670,7 @@ public interface IMObjectBean {
 
     /**
      * Adds a new relationship between the current object (the source), and the supplied target.
-     * <p>
+     * <p/>
      * If the relationship is bidirectional, the caller is responsible for adding the returned relationship
      * to the target.
      *
@@ -692,14 +719,14 @@ public interface IMObjectBean {
 
     /**
      * Derived values for the object.
-     * <p>
+     * <p/>
      * For each node with {@code derived=true}, the node will be evaluated and the corresponding value set.
      */
     void deriveValues();
 
     /**
      * Saves the object.
-     * <p>
+     * <p/>
      * Any derived nodes will have their values derived prior to the object being saved.
      */
     void save();

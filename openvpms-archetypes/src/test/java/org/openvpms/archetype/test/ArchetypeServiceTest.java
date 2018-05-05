@@ -23,6 +23,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.object.Reference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -140,6 +141,16 @@ public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTe
      */
     protected IMObject get(Reference ref) {
         return service.get(ref);
+    }
+
+    /**
+     * Returns a bean for an object.
+     *
+     * @param object the object
+     * @return the bean
+     */
+    protected IMObjectBean getBean(org.openvpms.component.model.object.IMObject object) {
+        return service.getBean(object);
     }
 
     /**

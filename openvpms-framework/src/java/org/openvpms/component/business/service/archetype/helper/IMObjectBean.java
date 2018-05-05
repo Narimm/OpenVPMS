@@ -53,6 +53,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -535,6 +536,48 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     public <T extends org.openvpms.component.model.object.IMObject> List<T> getValues(
             String name, Class<T> type, java.util.function.Predicate<T> predicate) {
         return getValues(name, type).stream().filter(predicate).collect(Collectors.toList());
+    }
+
+    /**
+     * Returns the first value of a collection node that matches the supplied predicate.
+     *
+     * @param name      the node name
+     * @param type      the epected object type
+     * @param predicate tyhe predicate
+     * @return the object matching the predicate, or {@code null} if none is found
+     */
+    @Override
+    public <T extends org.openvpms.component.model.object.IMObject> T getValue(
+            String name, Class<T> type, java.util.function.Predicate<T> predicate) {
+        Optional<T> first = getValues(name, type).stream().filter(predicate).findFirst();
+        return first.isPresent() ? first.get() : null;
+    }
+
+    /**
+     * Removes and returns the values of a collection node.
+     *
+     * @param name the node name
+     * @return the removed values
+     */
+    @Override
+    public List<org.openvpms.component.model.object.IMObject> removeValues(String name) {
+        return removeValues(name, org.openvpms.component.model.object.IMObject.class);
+    }
+
+    /**
+     * Removes and returns the values of a collection node.
+     *
+     * @param name the node name
+     * @param type the expected object type
+     * @return the removed values
+     */
+    @Override
+    public <T extends org.openvpms.component.model.object.IMObject> List<T> removeValues(String name, Class<T> type) {
+        List<T> values = getValues(name, type);
+        for (T value : values) {
+            removeValue(name, value);
+        }
+        return values;
     }
 
     /**

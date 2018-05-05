@@ -11,18 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.invoice;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
-import org.openvpms.archetype.rules.product.ProductArchetypes;
-import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -32,9 +29,9 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -111,13 +108,13 @@ public class ChargeItemDocumentLinker {
         Map<IMObjectReference, EntityRelationship> productTemplates = new HashMap<>();
 
         // template references associated with the current document acts
-        Set<IMObjectReference> templateRefs = new HashSet<>();
+        Set<Reference> templateRefs = new HashSet<>();
 
         // determine the templates associated with the item's product
-        ActBean itemBean = new ActBean(item, service);
-        Product product = (Product) itemBean.getParticipant(ProductArchetypes.PRODUCT_PARTICIPATION);
+        IMObjectBean itemBean = service.getBean(item);
+        Product product = itemBean.getTarget("product", Product.class);
         if (product != null) {
-            EntityBean productBean = new EntityBean(product, service);
+            IMObjectBean productBean = service.getBean(product);
             if (productBean.hasNode("documents")) {
                 for (EntityRelationship r : productBean.getValues("documents", EntityRelationship.class)) {
                     IMObjectReference target = r.getTarget();
@@ -129,17 +126,17 @@ public class ChargeItemDocumentLinker {
         }
 
         // get document acts associated with the item
-        List<Act> documents = itemBean.getNodeActs("documents");
+        List<Act> documents = itemBean.getTargets("documents", Act.class);
 
         // for each document, determine if the product, patient, author or clinician has changed. If so, remove it
         for (Act document : documents.toArray(new Act[documents.size()])) {
-            ActBean bean = new ActBean(document, service);
+            IMObjectBean bean = service.getBean(document);
             if (productChanged(bean, product) || patientChanged(bean, itemBean) || authorChanged(bean, itemBean)
                 || clinicianChanged(bean, itemBean)) {
                 changes.removeItemDocument(item, document);
                 documents.remove(document);
             } else {
-                IMObjectReference templateRef = bean.getNodeParticipantRef("documentTemplate");
+                Reference templateRef = bean.getTargetRef("documentTemplate");
                 if (templateRef != null) {
                     templateRefs.add(templateRef);
                 }
@@ -166,34 +163,34 @@ public class ChargeItemDocumentLinker {
      * @param changes  the patient history changes
      * @throws ArchetypeServiceException for any error
      */
-    private void addDocument(ActBean itemBean, Entity document, PatientHistoryChanges changes) {
-        EntityBean bean = new EntityBean(document, service);
-        String shortName = bean.getString("archetype");
-        if (StringUtils.isEmpty(shortName)) {
-            shortName = PatientArchetypes.DOCUMENT_FORM;
+    private void addDocument(IMObjectBean itemBean, Entity document, PatientHistoryChanges changes) {
+        IMObjectBean bean = service.getBean(document);
+        String archetype = bean.getString("archetype");
+        if (StringUtils.isEmpty(archetype)) {
+            archetype = PatientArchetypes.DOCUMENT_FORM;
         }
-        if (TypeHelper.matches(shortName, "act.patientDocument*")) {
-            Act act = (Act) service.create(shortName);
+        if (TypeHelper.matches(archetype, "act.patientDocument*")) {
+            Act act = (Act) service.create(archetype);
             if (act == null) {
-                throw new IllegalStateException("Failed to create :" + shortName);
+                throw new IllegalStateException("Failed to create :" + archetype);
             }
-            act.setActivityStartTime(itemBean.getAct().getActivityStartTime());
-            ActBean documentAct = new ActBean(act, service);
-            IMObjectReference patient = itemBean.getParticipantRef(PatientArchetypes.PATIENT_PARTICIPATION);
-            documentAct.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
-            documentAct.addParticipation(DocumentArchetypes.DOCUMENT_TEMPLATE_PARTICIPATION, document);
-            IMObjectReference author = itemBean.getParticipantRef(UserArchetypes.AUTHOR_PARTICIPATION);
+            act.setActivityStartTime(((Act) itemBean.getObject()).getActivityStartTime());
+            IMObjectBean documentAct = service.getBean(act);
+            Reference patient = itemBean.getTargetRef("patient");
+            documentAct.setTarget("patient", patient);
+            documentAct.setTarget("documentTemplate", document);
+            Reference author = itemBean.getTargetRef("author");
             if (author != null) {
-                documentAct.addParticipation(UserArchetypes.AUTHOR_PARTICIPATION, author);
+                documentAct.setTarget("author", author);
             }
-            IMObjectReference clinician = itemBean.getParticipantRef(UserArchetypes.CLINICIAN_PARTICIPATION);
+            Reference clinician = itemBean.getTargetRef("clinician");
             if (clinician != null) {
-                documentAct.addParticipation(UserArchetypes.CLINICIAN_PARTICIPATION, clinician);
+                documentAct.setTarget("clinician", clinician);
             }
 
-            if (TypeHelper.isA(act, PatientArchetypes.DOCUMENT_FORM, PatientArchetypes.DOCUMENT_LETTER)) {
-                IMObjectReference product = itemBean.getParticipantRef(ProductArchetypes.PRODUCT_PARTICIPATION);
-                documentAct.addParticipation(ProductArchetypes.PRODUCT_PARTICIPATION, product);
+            if (documentAct.isA(PatientArchetypes.DOCUMENT_FORM, PatientArchetypes.DOCUMENT_LETTER)) {
+                Reference product = itemBean.getTargetRef("product");
+                documentAct.setTarget("product", product);
             }
             changes.addItemDocument(item, act);
         }
@@ -206,9 +203,9 @@ public class ChargeItemDocumentLinker {
      * @param product the item product
      * @return {@code true} if the product has changed
      */
-    private boolean productChanged(ActBean bean, Product product) {
-        return bean.hasNode("product") &&
-               !ObjectUtils.equals(bean.getNodeParticipantRef("product"), product.getObjectReference());
+    private boolean productChanged(IMObjectBean bean, Product product) {
+        return bean.hasNode("product")
+               && !ObjectUtils.equals(bean.getTargetRef("product"), product.getObjectReference());
     }
 
     /**
@@ -218,7 +215,7 @@ public class ChargeItemDocumentLinker {
      * @param itemBean the item bean
      * @return {@code true} if the patient has changed
      */
-    private boolean patientChanged(ActBean docBean, ActBean itemBean) {
+    private boolean patientChanged(IMObjectBean docBean, IMObjectBean itemBean) {
         return checkParticipant(docBean, itemBean, "patient");
     }
 
@@ -229,7 +226,7 @@ public class ChargeItemDocumentLinker {
      * @param itemBean the item bean
      * @return {@code true} if the author has changed
      */
-    private boolean authorChanged(ActBean docBean, ActBean itemBean) {
+    private boolean authorChanged(IMObjectBean docBean, IMObjectBean itemBean) {
         return checkParticipant(docBean, itemBean, "author");
     }
 
@@ -240,7 +237,7 @@ public class ChargeItemDocumentLinker {
      * @param itemBean the item bean
      * @return {@code true} if the clinician has changed
      */
-    private boolean clinicianChanged(ActBean docBean, ActBean itemBean) {
+    private boolean clinicianChanged(IMObjectBean docBean, IMObjectBean itemBean) {
         return checkParticipant(docBean, itemBean, "clinician");
     }
 
@@ -252,17 +249,15 @@ public class ChargeItemDocumentLinker {
      * @param node     the participant node to check
      * @return {@code true} if the participant has changed
      */
-    private boolean checkParticipant(ActBean docBean, ActBean itemBean, String node) {
-        return docBean.hasNode(node) &&
-               !ObjectUtils.equals(docBean.getNodeParticipantRef(node), itemBean.getNodeParticipantRef(node));
+    private boolean checkParticipant(IMObjectBean docBean, IMObjectBean itemBean, String node) {
+        return docBean.hasNode(node) && !ObjectUtils.equals(docBean.getTargetRef(node), itemBean.getTargetRef(node));
     }
 
     /**
      * Helper to retrieve an object given its reference.
      *
      * @param ref the reference
-     * @return the object corresponding to the reference, or {@code null}
-     *         if it can't be retrieved
+     * @return the object corresponding to the reference, or {@code null}if it can't be retrieved
      * @throws ArchetypeServiceException for any error
      */
     private IMObject getObject(IMObjectReference ref) {

@@ -100,7 +100,7 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
     /**
      * Tracks unprinted documents.
      */
-    private CustomerChargeDocuments unprintedDocuments;
+    private ChargeDocumentPrinter unprintedDocuments;
 
     /**
      * The reminder rules.
@@ -145,7 +145,7 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
             List<Act> acts = getOrderActs();
             orderPlacer.initialise(acts);
         }
-        unprintedDocuments = new CustomerChargeDocuments(this, context);
+        unprintedDocuments = new ChargeDocumentPrinter(this, context);
     }
 
     /**
@@ -338,7 +338,7 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
      *
      * @return the unprinted documents
      */
-    public CustomerChargeDocuments getUnprintedDocuments() {
+    public ChargeDocumentPrinter getUnprintedDocuments() {
         return unprintedDocuments;
     }
 

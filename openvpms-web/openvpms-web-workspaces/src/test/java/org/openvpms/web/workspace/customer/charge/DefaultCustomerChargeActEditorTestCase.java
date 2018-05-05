@@ -461,7 +461,7 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         Entity reminderType2 = addReminder(product2);
         Entity investigationType2 = addInvestigation(product2);
         Entity investigationType3 = addInvestigation(product2);
-        Entity template2 = addTemplate(product2);
+        Entity template2 = addTemplate(product2, PatientArchetypes.DOCUMENT_LETTER);
         Entity alertType2 = addAlertType(product2);
 
         Product product3 = createProduct(ProductArchetypes.SERVICE, fixedPrice);
@@ -1511,7 +1511,7 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         addReminder(product2);
         addAlertType(product2);
         addInvestigation(product2);
-        addTemplate(product2);
+        addTemplate(product2, PatientArchetypes.DOCUMENT_LETTER);
         int product2Acts = invoice ? 4 : 0;
 
         Product product3 = createProduct(ProductArchetypes.SERVICE, fixedPrice);

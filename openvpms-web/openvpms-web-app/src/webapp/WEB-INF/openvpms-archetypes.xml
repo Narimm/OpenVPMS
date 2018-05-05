@@ -52,7 +52,7 @@
         <constructor-arg index="2">
             <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
                 <property name="diskPersistent" value="false"/>
-                <property name="cacheName" value="appointmentCache"/>
+                <property name="cacheName" value="taskCache"/>
                 <property name="maxEntriesLocalHeap" value="30"/>
                 <!-- 30 days of data -->
                 <property name="overflowToDisk" value="false"/>
@@ -108,6 +108,10 @@
     <bean id="customerRules" class="org.openvpms.archetype.rules.party.CustomerRules">
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="lookupService"/>
+    </bean>
+
+    <bean id="customerBalanceUpdater" class="org.openvpms.archetype.rules.finance.account.CustomerBalanceUpdater">
+        <constructor-arg ref="archetypeService"/>
     </bean>
 
     <bean id="customerAccountRules" class="org.openvpms.archetype.rules.finance.account.CustomerAccountRules">

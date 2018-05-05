@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -20,7 +20,6 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.junit.Before;
-import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -44,8 +43,9 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.web.component.im.doc.DocumentTestHelper;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 
@@ -80,11 +80,21 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         // NOTE: need to create the practice prior to the application as it caches the practice in the context 
         practice = TestHelper.getPractice();
         practice.addClassification(TestHelper.createTaxType(BigDecimal.TEN));
-        IMObjectBean bean = new IMObjectBean(practice);
+        IMObjectBean bean = getBean(practice);
         bean.setValue("minimumQuantities", true);
         bean.setValue("minimumQuantitiesOverride", null);
         save(practice);
         super.setUp();
+    }
+
+    /**
+     * Helper to create a product.
+     *
+     * @param shortName the product archetype short name
+     * @return a new product
+     */
+    protected Product createProduct(String shortName) {
+        return CustomerChargeTestHelper.createProduct(shortName);
     }
 
     /**
@@ -228,7 +238,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
                 ++count;
             }
             List<Entity> templates = bean.getNodeTargetEntities("documents");
-            assertEquals(templates.size(), itemBean.getNodeActs("documents").size());
+            assertEquals(templates.size(), itemBean.getTargets("documents").size());
             for (Entity docTemplate : templates) {
                 // verify there is a document for each template, and it is linked to the event
                 Act document = checkDocument(item, patient, product, docTemplate, author, clinician);
@@ -286,7 +296,6 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
             checkEventRelationship(event, act);
         }
     }
-
 
     /**
      * Finds an item in a list of items, by patient and product.
@@ -529,7 +538,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         Act alert = getAlert(item, alertType);
         ActBean bean = new ActBean(alert);
         assertEquals(item.getActivityStartTime(), alert.getActivityStartTime());
-        IMObjectBean alertBean = new IMObjectBean(alertType);
+        IMObjectBean alertBean = getBean(alertType);
         if (alertBean.getString("durationUnits") != null) {
             int duration = alertBean.getInt("duration");
             DateUnits units = DateUnits.fromString(alertBean.getString("durationUnits"));
@@ -551,13 +560,13 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param template the document template
      * @return the corresponding reminder
      */
-    protected Act getDocument(Act item, Entity template) {
-        ActBean itemBean = new ActBean(item);
-        List<Act> documents = itemBean.getNodeActs("documents");
-        for (Act document : documents) {
-            ActBean bean = new ActBean(document);
+    protected DocumentAct getDocument(Act item, Entity template) {
+        IMObjectBean itemBean = getBean(item);
+        List<DocumentAct> documents = itemBean.getTargets("documents", DocumentAct.class);
+        for (DocumentAct document : documents) {
+            IMObjectBean bean = getBean(document);
             assertTrue(bean.isA("act.patientDocument*"));
-            if (ObjectUtils.equals(bean.getNodeParticipantRef("documentTemplate"), template.getObjectReference())) {
+            if (ObjectUtils.equals(bean.getTargetRef("documentTemplate"), template.getObjectReference())) {
                 return document;
             }
         }
@@ -579,13 +588,14 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     protected Act checkDocument(Act item, Party patient, Product product, Entity template, User author,
                                 User clinician) {
         Act document = getDocument(item, template);
-        ActBean bean = new ActBean(document);
-        assertTrue(bean.isA(PatientArchetypes.DOCUMENT_FORM));
-        assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
-        assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
-        assertEquals(template.getObjectReference(), bean.getNodeParticipantRef("documentTemplate"));
-        assertEquals(author.getObjectReference(), bean.getNodeParticipantRef("author"));
-        assertEquals(clinician.getObjectReference(), bean.getNodeParticipantRef("clinician"));
+        String archetype = getBean(template).getString("archetype");
+        IMObjectBean bean = getBean(document);
+        assertTrue(bean.isA(archetype));
+        assertEquals(product.getObjectReference(), bean.getTargetRef("product"));
+        assertEquals(patient.getObjectReference(), bean.getTargetRef("patient"));
+        assertEquals(template.getObjectReference(), bean.getTargetRef("documentTemplate"));
+        assertEquals(author.getObjectReference(), bean.getTargetRef("author"));
+        assertEquals(clinician.getObjectReference(), bean.getTargetRef("clinician"));
         return document;
     }
 
@@ -634,16 +644,6 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         Act event = (Act) item.getNodeSourceObject("event");
         assertNotNull(event);
         return event;
-    }
-
-    /**
-     * Helper to create a product.
-     *
-     * @param shortName the product archetype short name
-     * @return a new product
-     */
-    public Product createProduct(String shortName) {
-        return CustomerChargeTestHelper.createProduct(shortName);
     }
 
     /**
@@ -729,16 +729,27 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     }
 
     /**
-     * Adds a document template to a product.
+     * Adds a document template to a product that creates an <em>act.patientDocumentForm</em>.
      *
      * @param product the product
      * @return the document template
      */
     protected Entity addTemplate(Product product) {
-        Entity template = (Entity) create(DocumentArchetypes.DOCUMENT_TEMPLATE);
-        template.setName("X-TestDocumentTemplate-" + template.hashCode());
-        EntityBean productBean = new EntityBean(product);
-        productBean.addNodeRelationship("documents", template);
+        return addTemplate(product, PatientArchetypes.DOCUMENT_FORM);
+    }
+
+    /**
+     * Adds a document template to a product.
+     *
+     * @param product   the product
+     * @param archetype the document archetype
+     * @return the document template
+     */
+    protected Entity addTemplate(Product product, String archetype) {
+        Entity template = DocumentTestHelper.createDocumentTemplate(archetype);
+        IMObjectBean productBean = getBean(product);
+        EntityRelationship relationship = (EntityRelationship) productBean.addTarget("documents", template);
+        template.addEntityRelationship(relationship);
         save(template, product);
         return template;
     }
@@ -764,7 +775,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     protected void addReminder(Product product, Entity reminderType) {
         EntityBean productBean = new EntityBean(product);
         EntityRelationship rel = productBean.addNodeRelationship("reminders", reminderType);
-        IMObjectBean relBean = new IMObjectBean(rel);
+        IMObjectBean relBean = getBean(rel);
         relBean.setValue("interactive", true);
         save(product, reminderType);
     }
@@ -788,8 +799,8 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param alertType the alert type
      */
     protected void addAlertType(Product product, Entity alertType) {
-        IMObjectBean bean = new IMObjectBean(product);
-        bean.addNodeTarget("alerts", alertType);
+        IMObjectBean bean = getBean(product);
+        bean.addTarget("alerts", alertType);
         bean.save();
     }
 
@@ -799,7 +810,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param customer the customer
      */
     protected void addTaxExemption(Party customer) {
-        IMObjectBean bean = new IMObjectBean(getPractice());
+        IMObjectBean bean = getBean(getPractice());
         List<Lookup> taxes = bean.getValues("taxes", Lookup.class);
         assertEquals(1, taxes.size());
         customer.addClassification(taxes.get(0));
@@ -813,8 +824,8 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
      * @param discount the discount
      */
     protected void addDiscount(Entity entity, Entity discount) {
-        IMObjectBean bean = new IMObjectBean(entity);
-        bean.addNodeTarget("discounts", discount);
+        IMObjectBean bean = getBean(entity);
+        bean.addTarget("discounts", discount);
         bean.save();
     }
 
