@@ -23,9 +23,11 @@
         classname="org.openvpms.etl.kettle.LoaderPluginMeta">
     <libraries>
         <library name="openvpms-archetypes-${project.version}.jar"/>
+        <library name="openvpms-framework-api-${project.version}.jar"/>
         <library name="openvpms-framework-${project.version}.jar"/>
         <library name="openvpms-etl-load-${project.version}.jar"/>
-        <library name="antlr-${antlr.version}.jar"/>
+        <library name="aspectjweaver-1.8.7.jar"/>
+        <library name="aopalliance-1.0.jar"/>
         <library name="castor-core-${castor.version}.jar"/>
         <library name="castor-xml-${castor.version}.jar"/>
         <library name="commons-jxpath-${commons.jxpath.version}.jar"/>
@@ -34,24 +36,33 @@
         <library name="commons-collections4-${commons.collections4.version}.jar"/>
         <library name="dom4j-${dom4j.version}.jar"/>
         <library name="ehcache-core-${ehcache.version}.jar"/>
+        <library name="hibernate-commons-annotations-4.0.5.Final.jar"/>
         <library name="hibernate-core-${hibernate.version}.jar"/>
+        <library name="hibernate-jpa-${hibernate.version}.jar"/>
         <library name="hibernate-ehcache-${hibernate.version}.jar"/>
-        <library name="javassist-${javassist.version}.jar"/>
+
+        <!-- dependencies required by hibernate -->
+        <library name="antlr-2.7.7.jar"/>
+        <library name="hibernate-jpa-2.1-api-1.0.0.Final.jar"/>
+        <library name="javassist-3.18.1-GA.jar"/>
+        <library name="jboss-logging-3.1.3.GA.jar"/>
+        <library name="jboss-transaction-api_1.2_spec-1.0.0.Final.jar"/>
+
         <library name="joda-time-${joda.time.version}.jar"/>
         <library name="jta-${jta.version}.jar"/>
         <library name="slf4j-api-${slf4j.version}.jar"/>
         <library name="slf4j-log4j12-${slf4j.version}.jar"/>
-        <library name="spring-hibernate-${spring.version}.jar"/>
-        <library name="spring-asm-${spring.version}.jar"/>
+        <library name="spring-aop-${spring.version}.jar"/>
         <library name="spring-context-${spring.version}.jar"/>
         <library name="spring-context-support-${spring.version}.jar"/>
         <library name="spring-core-${spring.version}.jar"/>
         <library name="spring-beans-${spring.version}.jar"/>
         <library name="spring-expression-${spring.version}.jar"/>
+        <library name="spring-hibernate-${spring.version}.jar"/>
         <library name="spring-jdbc-${spring.version}.jar"/>
         <library name="spring-orm-${spring.version}.jar"/>
         <library name="spring-security-core-${spring.security.version}.jar"/>
-        <library name="spring-tx-${spring.version}.jar"/>
+        <library name="org.apache.servicemix.bundles.spring-tx-${servicemix.spring.version}.jar"/>
         <library name="xstream-${xstream.version}.jar"/>
         <library name="xpp3_min-${xpp3.version}.jar"/>
     </libraries>
