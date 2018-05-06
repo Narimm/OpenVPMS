@@ -189,7 +189,7 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
      * @return a page of objects that match the query criteria
      * @throws IMObjectDAOException for any error
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public IPage<IMObject> get(IArchetypeQuery query) {
         return getQueryDelegator(query).get(query);
     }
@@ -209,7 +209,7 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
      * @return a page of objects that match the query criteria
      * @throws IMObjectDAOException for any error
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public IPage<IMObject> get(IArchetypeQuery query, Collection<String> nodes) {
         return getQueryDelegator(query).get(query, nodes);
     }
@@ -221,7 +221,7 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
      * @return a page of objects that match the query criteria
      * @throws IMObjectDAOException for any error
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public IPage<ObjectSet> getObjects(IArchetypeQuery query) {
         return getQueryDelegator(query).getObjects(query);
     }
@@ -234,7 +234,7 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
      * @return the nodes for each object that matches the query criteria
      * @throws IMObjectDAOException for any error
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public IPage<NodeSet> getNodes(IArchetypeQuery query, Collection<String> nodes) {
         return getQueryDelegator(query).getNodes(query, nodes);
     }
@@ -243,12 +243,12 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
      * Retrieve the objects that matches the specified search criteria.
      * This is a very generic method that provides a mechanism to return
      * objects based on, one or more criteria.
-     * <p/>
+     * <p>
      * All parameters are optional and can either denote an exact or partial
      * match semantics. If a parameter has a '*' at the start or end of the
      * value then it will perform a wildcard match.  If not '*' is specified in
      * the value then it will only return objects with the exact value.
-     * <p/>
+     * <p>
      * If two or more parameters are specified then it will return entities
      * that matching all criteria.
      * <p>
@@ -265,7 +265,7 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
      * @return a page of the results
      * @throws IMObjectDAOException a runtime exception if the request cannot complete
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public IPage<IMObject> get(String shortName, String instanceName,
                                String clazz, boolean activeOnly,
                                int firstResult, int maxResults) {
@@ -348,7 +348,7 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
      * @throws IMObjectDAOException for any error
      */
     @Override
-    @Transactional(readOnly=true)
+    @Transactional
     public IMObject get(Reference reference) {
         return getObject(reference, null);
     }
@@ -361,7 +361,7 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
      * @return the corresponding object, or <tt>null</tt> if none exists
      * @throws IMObjectDAOException for any error
      */
-    @Transactional(readOnly=true)
+    @Transactional
     public IMObject get(final Reference reference, boolean active) {
         return getObject(reference, active);
     }
@@ -380,7 +380,7 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
      *                    returning it in {@link IPage#getTotalResults()}
      * @throws IMObjectDAOException for any error
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public void getByNamedQuery(String query, Map<String, Object> parameters,
                                 ResultCollector collector, int firstResult,
                                 int maxResults, boolean count) {
@@ -420,7 +420,7 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
 
     /**
      * Invoked on transaction rollback.
-     * <p/>
+     * <p>
      * This reverts identifier and version changes.
      *
      * @param context the assembly context
@@ -473,7 +473,7 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
         Session session = getSession();
         Context context = getContext(session);
         DOState state = context.getCached(reference);
-        IMObject cached  = (state != null) ? state.getSource() : null;
+        IMObject cached = (state != null) ? state.getSource() : null;
         if (cached != null) {
             result = (active != null && active != cached.isActive()) ? null : cached;
         } else if (!reference.isNew()) {
@@ -662,7 +662,7 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
         if (clazz == null) {
             throw new IMObjectDAOException(ClassNameMustBeSpecified);
         }
-        StringBuilder queryString = new StringBuilder ();
+        StringBuilder queryString = new StringBuilder();
 
         queryString.append("select entity from ");
         queryString.append(clazz);
@@ -837,133 +837,133 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
         throw new IllegalArgumentException("Unsupported query: " + query.getClass().getName());
     }
 
-/**
- * Helper to map query parameters into a form used by hibernate.
- */
-private static class Params {
+    /**
+     * Helper to map query parameters into a form used by hibernate.
+     */
+    private static class Params {
 
-    private String[] names;
+        private String[] names;
 
-    private Object[] values;
+        private Object[] values;
 
-    public Params(List<String> names, List<Object> values) {
-        this.names = names.toArray(new String[names.size()]);
-        this.values = values.toArray();
-    }
+        public Params(List<String> names, List<Object> values) {
+            this.names = names.toArray(new String[names.size()]);
+            this.values = values.toArray();
+        }
 
-    public Params(Map<String, Object> params) {
-        names = params.keySet().toArray(new String[params.keySet().size()]);
-        values = new Object[names.length];
-        for (int i = 0; i < names.length; ++i) {
-            values[i] = params.get(names[i]);
+        public Params(Map<String, Object> params) {
+            names = params.keySet().toArray(new String[params.keySet().size()]);
+            values = new Object[names.length];
+            for (int i = 0; i < names.length; ++i) {
+                values[i] = params.get(names[i]);
+            }
+        }
+
+        public void setParameters(Query query) {
+            for (int i = 0; i < names.length; ++i) {
+                if (values[i] instanceof Collection) {
+                    query.setParameterList(names[i], (Collection) values[i]);
+                } else if (values[i] instanceof Object[]) {
+                    query.setParameterList(names[i], (Object[]) values[i]);
+                } else {
+                    query.setParameter(names[i], values[i]);
+                }
+            }
+        }
+
+        public String[] getNames() {
+            return names;
+        }
+
+        public Object[] getValues() {
+            return values;
         }
     }
 
-    public void setParameters(Query query) {
-        for (int i = 0; i < names.length; ++i) {
-            if (values[i] instanceof Collection) {
-                query.setParameterList(names[i], (Collection) values[i]);
-            } else if (values[i] instanceof Object[]) {
-                query.setParameterList(names[i], (Object[]) values[i]);
-            } else {
-                query.setParameter(names[i], values[i]);
+    abstract class QueryDelegator {
+
+        public IPage<IMObject> get(IArchetypeQuery query) {
+            HibernateResultCollector<IMObject> collector = new IMObjectResultCollector();
+            collector.setLoader(new DefaultObjectLoader());
+            get(query, collector);
+            return collector.getPage();
+        }
+
+        public IPage<IMObject> get(IArchetypeQuery query, Collection<String> nodes) {
+            HibernateResultCollector<IMObject> collector = new IMObjectNodeResultCollector(cache, nodes);
+            collector.setLoader(new DefaultObjectLoader());
+            get(query, collector);
+            return collector.getPage();
+        }
+
+        public IPage<NodeSet> getNodes(IArchetypeQuery query, Collection<String> nodes) {
+            HibernateResultCollector<NodeSet> collector = new NodeSetResultCollector(cache, nodes);
+            collector.setLoader(new DefaultObjectLoader());
+            get(query, collector);
+            return collector.getPage();
+        }
+
+        public abstract IPage<ObjectSet> getObjects(IArchetypeQuery query);
+
+        protected abstract void get(IArchetypeQuery query, ResultCollector collector);
+    }
+
+    class DefaultQueryDelegator extends QueryDelegator {
+
+        public IPage<ObjectSet> getObjects(IArchetypeQuery query) {
+            QueryBuilder builder = new QueryBuilder(cache, assembler);
+            QueryContext context = builder.build((ArchetypeQuery) query);
+            HibernateResultCollector<ObjectSet> collector
+                    = new ObjectSetResultCollector(context.getSelectNames(), context.getRefSelectNames(),
+                                                   context.getSelectTypes());
+            collector.setLoader(new DefaultObjectLoader());
+            get(context, query, collector);
+            return collector.getPage();
+        }
+
+        protected void get(IArchetypeQuery query, ResultCollector collector) {
+            QueryBuilder builder = new QueryBuilder(cache, assembler);
+            QueryContext context = builder.build((ArchetypeQuery) query);
+            get(context, query, collector);
+        }
+
+        private void get(QueryContext context, IArchetypeQuery query, ResultCollector collector) {
+            String queryString = context.getQueryString();
+            String countQuery = null;
+            if (log.isDebugEnabled()) {
+                log.debug("ArchetypeService.get: query " + queryString);
+            }
+
+            try {
+                if (query.countResults()) {
+                    countQuery = context.getQueryString(true);
+                }
+                executeQuery(queryString, countQuery, new Params(context.getParameters()),
+                             (HibernateResultCollector) collector, query.getFirstResult(), query.getMaxResults());
+            } catch (Exception exception) {
+                throw new IMObjectDAOException(FailedToExecuteQuery, exception, queryString);
             }
         }
     }
 
-    public String[] getNames() {
-        return names;
-    }
+    class NamedQueryDelegator extends QueryDelegator {
 
-    public Object[] getValues() {
-        return values;
-    }
-}
-
-abstract class QueryDelegator {
-
-    public IPage<IMObject> get(IArchetypeQuery query) {
-        HibernateResultCollector<IMObject> collector = new IMObjectResultCollector();
-        collector.setLoader(new DefaultObjectLoader());
-        get(query, collector);
-        return collector.getPage();
-    }
-
-    public IPage<IMObject> get(IArchetypeQuery query, Collection<String> nodes) {
-        HibernateResultCollector<IMObject> collector = new IMObjectNodeResultCollector(cache, nodes);
-        collector.setLoader(new DefaultObjectLoader());
-        get(query, collector);
-        return collector.getPage();
-    }
-
-    public IPage<NodeSet> getNodes(IArchetypeQuery query, Collection<String> nodes) {
-        HibernateResultCollector<NodeSet> collector = new NodeSetResultCollector(cache, nodes);
-        collector.setLoader(new DefaultObjectLoader());
-        get(query, collector);
-        return collector.getPage();
-    }
-
-    public abstract IPage<ObjectSet> getObjects(IArchetypeQuery query);
-
-    protected abstract void get(IArchetypeQuery query, ResultCollector collector);
-}
-
-class DefaultQueryDelegator extends QueryDelegator {
-
-    public IPage<ObjectSet> getObjects(IArchetypeQuery query) {
-        QueryBuilder builder = new QueryBuilder(cache, assembler);
-        QueryContext context = builder.build((ArchetypeQuery) query);
-        HibernateResultCollector<ObjectSet> collector
-                = new ObjectSetResultCollector(context.getSelectNames(), context.getRefSelectNames(),
-                                               context.getSelectTypes());
-        collector.setLoader(new DefaultObjectLoader());
-        get(context, query, collector);
-        return collector.getPage();
-    }
-
-    protected void get(IArchetypeQuery query, ResultCollector collector) {
-        QueryBuilder builder = new QueryBuilder(cache, assembler);
-        QueryContext context = builder.build((ArchetypeQuery) query);
-        get(context, query, collector);
-    }
-
-    private void get(QueryContext context, IArchetypeQuery query, ResultCollector collector) {
-        String queryString = context.getQueryString();
-        String countQuery = null;
-        if (log.isDebugEnabled()) {
-            log.debug("ArchetypeService.get: query " + queryString);
+        public IPage<ObjectSet> getObjects(IArchetypeQuery query) {
+            NamedQuery q = (NamedQuery) query;
+            List<String> names = (q.getNames() != null) ? new ArrayList<>(q.getNames()) : null;
+            List<String> refNames = Collections.emptyList();
+            HibernateResultCollector<ObjectSet> collector = new ObjectSetResultCollector(names, refNames, null);
+            collector.setLoader(new DefaultObjectLoader());
+            get(query, collector);
+            return collector.getPage();
         }
 
-        try {
-            if (query.countResults()) {
-                countQuery = context.getQueryString(true);
-            }
-            executeQuery(queryString, countQuery, new Params(context.getParameters()),
-                         (HibernateResultCollector) collector, query.getFirstResult(), query.getMaxResults());
-        } catch (Exception exception) {
-            throw new IMObjectDAOException(FailedToExecuteQuery, exception, queryString);
+        protected void get(IArchetypeQuery query, ResultCollector collector) {
+            NamedQuery q = (NamedQuery) query;
+            getByNamedQuery(q.getQuery(), q.getParameters(), collector,
+                            q.getFirstResult(), q.getMaxResults(),
+                            q.countResults());
         }
     }
-}
-
-class NamedQueryDelegator extends QueryDelegator {
-
-    public IPage<ObjectSet> getObjects(IArchetypeQuery query) {
-        NamedQuery q = (NamedQuery) query;
-        List<String> names = (q.getNames() != null) ? new ArrayList<>(q.getNames()) : null;
-        List<String> refNames = Collections.emptyList();
-        HibernateResultCollector<ObjectSet> collector = new ObjectSetResultCollector(names, refNames, null);
-        collector.setLoader(new DefaultObjectLoader());
-        get(query, collector);
-        return collector.getPage();
-    }
-
-    protected void get(IArchetypeQuery query, ResultCollector collector) {
-        NamedQuery q = (NamedQuery) query;
-        getByNamedQuery(q.getQuery(), q.getParameters(), collector,
-                        q.getFirstResult(), q.getMaxResults(),
-                        q.countResults());
-    }
-}
 
 }
