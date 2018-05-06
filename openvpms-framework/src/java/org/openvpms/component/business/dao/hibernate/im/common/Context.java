@@ -122,7 +122,7 @@ public class Context {
     /**
      * Returns the context for the given assembler and session and current
      * thread.
-     * <p/>
+     * <p>
      * If one does not exist, it will be created.
      *
      * @param assembler the assembler
@@ -186,8 +186,7 @@ public class Context {
      * Determines if a data object is being assembled.
      *
      * @param state the data object state
-     * @return {@code true} if the object is being assembled; otherwise
-     *         {@code false}
+     * @return {@code true} if the object is being assembled; otherwise {@code false}
      */
     public boolean isAssembling(DOState state) {
         return assembling.containsKey(state);
@@ -215,8 +214,7 @@ public class Context {
      * Determines if a data object is being assembled.
      *
      * @param object the object
-     * @return {@code true} if the object is being assembled; otherwise
-     *         {@code false}
+     * @return {@code true} if the object is being assembled; otherwise {@code false}
      */
     public boolean isAssembling(IMObject object) {
         return assembling.containsKey(object);
@@ -235,8 +233,7 @@ public class Context {
      * Determines if transaction synchronization is active.
      * TODO - still required?
      *
-     * @return {@code true} if synchronization is active, otherwise
-     *         {@code false}
+     * @return {@code true} if synchronization is active, otherwise {@code false}
      */
     public boolean isSynchronizationActive() {
         return syncActive;
@@ -297,8 +294,7 @@ public class Context {
      * Returns the assembled {@code IMObject} for the specified data object.
      *
      * @param source the data object
-     * @return the corresponding {@code IMObject} or {@code null{@code  if none is
-     *         found
+     * @return the corresponding {@code IMObject} or {@code null}  if none is found
      */
     public IMObject getCached(IMObjectDO source) {
         return doToObjectMap.get(source);
@@ -355,8 +351,7 @@ public class Context {
         List result = query.list();
         if (!result.isEmpty()) {
             Object[] values = (Object[]) result.get(0);
-            return new IMObjectReference((ArchetypeId) values[0],
-                                         object.getId(), (String) values[1]);
+            return new IMObjectReference((ArchetypeId) values[0], object.getId(), (String) values[1]);
 
         }
         return null;
@@ -389,28 +384,16 @@ public class Context {
             // sort the ids so the references are retrieved in index order
             Collections.sort(ids);
         }
-        int index = 0;
-        while (index < size) {
-            int max = index + 100 < size ? 100 : size - index;
-            StringBuffer hql
-                    = new StringBuffer("select id, archetypeId, linkId from ")
-                    .append(type.getName()).append(" where id in (?");
-            for (int i = 1; i < max; ++i) {
-                hql.append(",?");
-            }
-            hql.append(")");
-            Query query = session.createQuery(hql.toString());
-            for (int i = 0; i < max; ++i) {
-                query.setParameter(i, ids.get(i + index));
-            }
-            for (Object match : query.list()) {
-                Object[] values = (Object[]) match;
-                long id = (Long) values[0];
-                ArchetypeId archId = (ArchetypeId) values[1];
-                String linkId = (String) values[2];
-                result.put(id, new IMObjectReference(archId, id, linkId));
-            }
-            index += max;
+        Query query = session.createQuery("select id, archetypeId, linkId"
+                                          + " from " + type.getName()
+                                          + " where id in (:ids)");
+        query.setParameterList("ids", ids);
+        for (Object match : query.list()) {
+            Object[] values = (Object[]) match;
+            long id = (Long) values[0];
+            ArchetypeId archId = (ArchetypeId) values[1];
+            String linkId = (String) values[2];
+            result.put(id, new IMObjectReference(archId, id, linkId));
         }
         return result;
     }
@@ -565,14 +548,12 @@ public class Context {
 
         @Override
         public void suspend() {
-            TransactionSynchronizationManager.unbindResource(
-                    context.getResourceKey());
+            TransactionSynchronizationManager.unbindResource(context.getResourceKey());
         }
 
         @Override
         public void resume() {
-            TransactionSynchronizationManager.bindResource(
-                    context.getResourceKey(), context);
+            TransactionSynchronizationManager.bindResource(context.getResourceKey(), context);
         }
 
         @Override
@@ -602,8 +583,7 @@ public class Context {
     }
 
     /**
-     * Helper class for binding the context with
-     * {@code TransactionSynchronizationManager}.
+     * Helper class for binding the context with {@code TransactionSynchronizationManager}.
      */
     private static class ResourceKey {
 
@@ -636,20 +616,12 @@ public class Context {
          * Indicates whether some other object is "equal to" this one.
          *
          * @param obj the reference object with which to compare.
-         * @return {@code true} if this object is the same as the obj
-         *         argument; {@code false} otherwise.
+         * @return {@code true} if this object is the same as the obj argument; {@code false} otherwise.
          */
         @Override
         public boolean equals(Object obj) {
-            if (obj == this) {
-                return true;
-            }
-            if (obj instanceof ResourceKey) {
-                return session.equals(((ResourceKey) obj).session);
-            }
-            return false;
+            return obj == this || obj instanceof ResourceKey && session.equals(((ResourceKey) obj).session);
         }
-
     }
 
 }

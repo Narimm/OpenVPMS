@@ -17,8 +17,15 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:tx="http://www.springframework.org/schema/tx"
        xmlns:plugin="http://openvpms.org/schema/plugin/spring"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       xsi:schemaLocation="http://www.springframework.org/schema/aop
+                           http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+                           http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://www.springframework.org/schema/tx
+                           http://www.springframework.org/schema/tx/spring-tx-4.2.xsd
                            http://openvpms.org/schema/plugin/spring http://openvpms.org/schema/plugin/spring/plugin.xsd">
 
     <bean id="testService" class="org.openvpms.plugin.test.service.impl.TestServiceImpl">
@@ -44,21 +51,29 @@
     </bean>
 
     <!--  Hibernate session factory -->
-    <bean id="sessionFactory"
-          class="org.springframework.orm.hibernate3.LocalSessionFactoryBean">
-        <property name="dataSource">
-            <ref local="dataSource"/>
-        </property>
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+
         <property name="hibernateProperties">
             <props>
-                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+                <prop key="hibernate.dialect">org.hibernate.dialect.MySQL5InnoDBDialect</prop>
+                <prop key="hibernate.hbm2ddl.auto">update</prop>
                 <prop key="hibernate.show_sql">false</prop>
-                <prop key="hibernate.max_fetch_depth">3</prop>
-                <prop key="hibernate.jdbc.use_scrollable_resultset">false</prop>
-                <prop key="hibernate.cache.use_query_cache">true</prop>
-                <prop key="hibernate.cache.provider_class">org.hibernate.cache.SingletonEhCacheProvider</prop>
-                <prop key="hibernate.cache.use_second_level_cache">true</prop>
+                <prop key="hibernate.max_fetch_depth">4</prop>
+                <prop key="hibernate.jdbc.use_scrollable_resultset">true</prop>
                 <prop key="hibernate.jdbc.batch_size">30</prop>
+                <prop key="hibernate.c3p0.min_size">5</prop>
+                <prop key="hibernate.c3p0.max_size">20</prop>
+                <prop key="hibernate.c3p0.timeout">1800</prop>
+                <prop key="hibernate.c3p0.max_statements">50</prop>
+                <prop key="hibernate.cache.region.factory_class">
+                    org.hibernate.cache.ehcache.SingletonEhCacheRegionFactory
+                </prop>
+                <prop key="hibernate.cache.use_query_cache">true</prop>
+                <prop key="hibernate.cache.use_second_level_cache">false</prop>
+                <prop key="hibernate.query.factory_class">
+                    org.hibernate.hql.internal.ast.ASTQueryTranslatorFactory
+                </prop>
             </props>
         </property>
         <property name="mappingLocations">
@@ -69,17 +84,17 @@
         </property>
     </bean>
 
-    <bean id="txnManager"
-          class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+    <bean id="txnManager" class="org.springframework.orm.hibernate4.HibernateTransactionManager">
         <property name="sessionFactory" ref="sessionFactory"/>
     </bean>
 
+    <aop:config proxy-target-class="true"/>
+    <tx:annotation-driven transaction-manager="txnManager"/>
+
     <!--  The IMObject DAO bean -->
-    <bean id="imObjectDao" class="org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate">
+    <bean id="imObjectDao"
+          class="org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate">
         <constructor-arg ref="sessionFactory"/>
-        <property name="transactionManager">
-            <ref local="txnManager"/>
-        </property>
     </bean>
 
     <bean id="archetypeDescriptorCache"
@@ -100,18 +115,12 @@
     </bean>
 
     <bean id="lookupService" class="org.openvpms.component.business.service.lookup.LookupService">
-        <constructor-arg index="0">
-            <ref local="archetypeService"/>
-        </constructor-arg>
-        <constructor-arg index="1">
-            <ref local="imObjectDao"/>
-        </constructor-arg>
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="imObjectDao"/>
     </bean>
 
     <bean id="lookupServiceHelper" class="org.openvpms.component.business.service.lookup.LookupServiceHelper">
-        <constructor-arg>
-            <ref local="lookupService"/>
-        </constructor-arg>
+        <constructor-arg ref="lookupService"/>
     </bean>
 
     <bean id="currencies" class="org.openvpms.archetype.rules.math.Currencies">

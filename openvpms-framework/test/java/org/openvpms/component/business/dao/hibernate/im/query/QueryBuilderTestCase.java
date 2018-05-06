@@ -22,6 +22,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.AssemblerImpl;
 import org.openvpms.component.business.dao.hibernate.im.act.ActDO;
@@ -669,6 +670,19 @@ public class QueryBuilderTestCase extends AbstractJUnit4SpringContextTests {
 
         checkQuery(query, expected);
     }
+
+    @Ignore
+    @Test
+    public void testQueryOnDetailsNode() {
+        String expected = "select party0 "
+                          + "from " + PartyDO.class.getName() + " as party0 "
+                          + "where (party0.archetypeId.shortName = :shortName0 and party0.details['title'] = :title0)";
+        ArchetypeQuery query = new ArchetypeQuery("party.customerperson");
+        query.add(Constraints.eq("title", "MR"));
+        QueryContext context = builder.build(query);
+        assertEquals(expected, context.getQueryString());
+    }
+
 
     /**
      * Verifies that count can be used.

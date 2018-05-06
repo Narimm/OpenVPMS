@@ -156,14 +156,14 @@
 
     <script type="text/javascript">
         function onReady() {
-            document.getElementById("j_username").focus();
+            document.getElementById("username").focus();
         }
     </script>
 
 </head>
 <body onload='onReady();'>
 
-<form id="loginForm" action="j_spring_security_check" method="post">
+<form id="loginForm" action="login" method="post">
     <!-- the following divitis puts a shadow border around the login 'dialog' in keeping with the L&F of the rest
          of the app. A basic discussion of the technique can be found here
          http://www.webcredible.co.uk/user-friendly-resources/css/css-round-corners-boxes.shtml
@@ -191,7 +191,7 @@
                                                     <span class="label"><%= Messages.get("label.username") %></span>
                                                 </td>
                                                 <td style="padding: 5px;">
-                                                    <input id="j_username" class="textfield" name="j_username"
+                                                    <input id="username" class="textfield" name="username"
                                                            type="text" tabindex="1">
                                                 </td>
                                             </tr>
@@ -200,7 +200,7 @@
                                                     <span class="label"><%= Messages.get("label.password") %></span>
                                                 </td>
                                                 <td style="padding: 5px;">
-                                                    <input class="textfield" name="j_password" type="password"
+                                                    <input class="textfield" name="password" type="password"
                                                            tabindex="2">
                                                 </td>
                                             </tr>

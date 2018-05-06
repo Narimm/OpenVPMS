@@ -18,7 +18,6 @@ package org.openvpms.component.business.dao.hibernate.im.security;
 
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.dao.hibernate.im.HibernateInfoModelTestCase;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDO;
@@ -29,6 +28,8 @@ import org.openvpms.component.business.dao.hibernate.im.party.PartyDO;
 import org.openvpms.component.business.dao.hibernate.im.party.PartyDOImpl;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.security.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
 import org.openvpms.component.model.entity.EntityRelationship;
 import org.openvpms.component.model.party.Contact;
 
@@ -42,7 +43,14 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Jim Alateras
  */
+@ContextConfiguration("/userdao-context.xml")
 public class UserDAOHibernateTestCase extends HibernateInfoModelTestCase {
+
+    /**
+     * The user DAO.
+     */
+    @Autowired
+    private UserDAOHibernate dao;
 
     /**
      * Default user id.
@@ -74,10 +82,6 @@ public class UserDAOHibernateTestCase extends HibernateInfoModelTestCase {
      */
     private static final ArchetypeId USER_LOCATION_ID = new ArchetypeId("entityRelationship.userLocation.1.0");
 
-    /**
-     * The user DAO.
-     */
-    private UserDAOHibernate dao;
 
     /**
      * Tests the {@link UserDAOHibernate#getByUserName(String)} method.
@@ -205,15 +209,6 @@ public class UserDAOHibernateTestCase extends HibernateInfoModelTestCase {
         User retrieved = list.get(0);
         Set<Contact> contacts = retrieved.getContacts();
         assertEquals(2, contacts.size());
-    }
-
-    /**
-     * Sets up the test case.
-     */
-    @Before
-    public void setUp() {
-        dao = new UserDAOHibernate();
-        dao.setSessionFactory(getSessionFactory());
     }
 
     /**

@@ -16,21 +16,18 @@
 
 package org.openvpms.web.jobs.recordlocking;
 
-import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.springframework.orm.hibernate3.HibernateCallback;
-import org.springframework.orm.hibernate3.HibernateTemplate;
+import org.springframework.orm.hibernate4.HibernateTemplate;
 
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
 /**
  * Locks medical records starting prior to a certain time.
- * <p/>
+ * <p>
  * This bypasses the Archetype Service in order to efficiently update large numbers of records.
  *
  * @author Tim Anderson
@@ -38,7 +35,7 @@ import java.util.List;
 class MedicalRecordLocker {
 
     /**
-     * The Hibernate template.
+     * The session factory.
      */
     private final HibernateTemplate template;
 
@@ -60,16 +57,13 @@ class MedicalRecordLocker {
      * @return the no. of locked records
      */
     public int lock(final String[] shortNames, final Date startTime, final int batchSize) {
-        return template.execute(new HibernateCallback<Integer>() {
-            @Override
-            public Integer doInHibernate(Session session) throws HibernateException, SQLException {
-                int updated = 0;
-                List ids = getIds(session, shortNames, startTime, batchSize);
-                if (!ids.isEmpty()) {
-                    updated = update(session, ids);
-                }
-                return updated;
+        return template.execute(session -> {
+            int updated = 0;
+            List ids = getIds(session, shortNames, startTime, batchSize);
+            if (!ids.isEmpty()) {
+                updated = update(session, ids);
             }
+            return updated;
         });
     }
 
@@ -97,7 +91,7 @@ class MedicalRecordLocker {
 
     /**
      * Finalises acts matching the supplied identifiers.
-     * <p/>
+     * <p>
      * This ensures updated acts have their version numbers incremented.
      *
      * @param session the session

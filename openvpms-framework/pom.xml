@@ -89,6 +89,8 @@
                 <directory>${basedir}/test/resources</directory>
                 <includes>
                     <include>datasource-context.xml</include>
+                    <include>userdao-context.xml</include>
+                    <include>spy.properties</include>
                 </includes>
             </testResource>
             <testResource>
@@ -149,9 +151,9 @@
                         <version>${jdbc.version}</version>
                     </dependency>
                     <dependency>
-                        <!-- this dependency is required to get hibernate to 
+                        <!-- this dependency is required to get hibernate to
                              work with cobertura during site generation
-                             see http://jira.codehaus.org/browse/MCOBERTURA-26 
+                             see http://jira.codehaus.org/browse/MCOBERTURA-26
                          -->
                         <groupId>net.sourceforge.cobertura</groupId>
                         <artifactId>cobertura</artifactId>
@@ -227,25 +229,6 @@
         <dependency>
             <groupId>log4j</groupId>
             <artifactId>log4j</artifactId>
-            <version>${log4j.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.mail</groupId>
-                    <artifactId>mail</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>javax.jms</groupId>
-                    <artifactId>jms</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.jdmk</groupId>
-                    <artifactId>jmxtools</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.sun.jmx</groupId>
-                    <artifactId>jmxri</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>commons-resources</groupId>
@@ -280,13 +263,10 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-core</artifactId>
-            <version>${spring.security.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-config</artifactId>
-            <version>${spring.security.version}</version>
-            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -302,27 +282,25 @@
             <!-- servicemix bundle of org.springframework:spring-tx -->
             <groupId>org.apache.servicemix.bundles</groupId>
             <artifactId>org.apache.servicemix.bundles.spring-tx</artifactId>
-            <version>${servicemix.spring.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>
-            <version>${spring.version}</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-aop</artifactId>
-            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <!-- used by spring-aop -->
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjweaver</artifactId>
+            <version>${aspectj.version}</version>
         </dependency>
         <dependency>
             <groupId>springmodules</groupId>
             <artifactId>springmodules</artifactId>
             <version>${springmodules.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>aopalliance</groupId>
-            <artifactId>aopalliance</artifactId>
-            <version>${aopalliance.version}</version>
         </dependency>
         <dependency>
             <groupId>drools</groupId>
@@ -375,27 +353,27 @@
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-core</artifactId>
-            <version>${hibernate.version}</version>
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-ehcache</artifactId>
-            <version>${hibernate.version}</version>
-            <scope>runtime</scope>
-            <exclusions>
-                <exclusion>
-                    <!-- want later version of ehcache-core -->
-                    <groupId>net.sf.ehcache</groupId>
-                    <artifactId>ehcache</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
-            <!-- required by hibernate -->
-            <groupId>javassist</groupId>
-            <artifactId>javassist</artifactId>
-            <version>${javassist.version}</version>
-            <scope>runtime</scope>
+            <!-- NOTE: this is not really required, but if javax.validation:validation-api is on the classpath -->
+            <!-- Hibernate performs validation, and requires a javax.el implementation                         -->
+            <!-- The validation-api is pulled in by org.glassfish.jersey.core                                  -->
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
+        <dependency>
+            <!-- see comment about hibernate-validator -->
+            <groupId>javax.el</groupId>
+            <artifactId>javax.el-api</artifactId>
+        </dependency>
+        <dependency>
+            <!-- see comment about hibernate-validator -->
+            <groupId>org.glassfish.web</groupId>
+            <artifactId>javax.el</artifactId>
         </dependency>
         <dependency>
             <groupId>oro</groupId>
@@ -474,6 +452,12 @@
             <artifactId>mockito-all</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>p6spy</groupId>
+            <artifactId>p6spy</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 </project>

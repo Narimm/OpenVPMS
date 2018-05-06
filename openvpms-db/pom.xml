@@ -207,28 +207,6 @@
                 <version>1.7</version>
                 <executions>
                     <execution>
-                        <id>go-live</id>
-                        <configuration>
-                            <target>
-                                <!-- go live! -->
-                                <exec executable="${basedir}/deploy2server.sh" failonerror="true" dir="${basedir}">
-                                    <arg value="deploy"/>
-                                    <arg value="${deploy.to.server}"/>
-                                    <arg value="${jetty.port.live}"/>
-                                </exec>
-                            </target>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-                <version>1.7</version>
-                <executions>
-                    <execution>
                         <id>dump-db</id>
                         <configuration>
                             <tasks>

@@ -59,8 +59,7 @@ public class AuditDAOHibernate extends HibernateDaoSupport
     public List<AuditRecord> getByObjectId(String archetypeId, long objectId) {
         List<AuditRecord> results;
         try {
-            Object[] values = new Object[]{archetypeId, objectId};
-            results = getHibernateTemplate().find(AUDIT_QUERY, values);
+            results = (List<AuditRecord>) getHibernateTemplate().find(AUDIT_QUERY, archetypeId, objectId);
         } catch (Exception exception) {
             throw new AuditDAOException(
                     AuditDAOException.ErrorCode.FailedToFindAuditRecords,

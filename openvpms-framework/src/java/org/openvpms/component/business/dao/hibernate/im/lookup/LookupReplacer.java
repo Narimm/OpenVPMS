@@ -123,7 +123,7 @@ public class LookupReplacer {
     /**
      * The mappings.
      */
-    private static final Map<Class, Mapping> mappings = new HashMap<Class, Mapping>();
+    private static final Map<Class, Mapping> mappings = new HashMap<>();
 
     static {
         addMapping(Act.class, "acts", "act_details", "act_id", ActDOImpl.class);
@@ -279,10 +279,8 @@ public class LookupReplacer {
     private boolean isUsedHQL(Lookup lookup, NodeDescriptor node, ArchetypeDescriptor archetype, Session session) {
         Mapping mapping = getMapping(archetype, node);
         String name = node.getPath().substring(1);
-        StringBuilder hql = new StringBuilder("select id from ").append(mapping.getPersistentClass().getName())
-                .append(" where archetypeId.shortName = :archetype and ")
-                .append(name).append(" = :code");
-        Query query = session.createQuery(hql.toString());
+        Query query = session.createQuery("select id from " + mapping.getPersistentClass().getName()
+                                          + " where archetypeId.shortName = :archetype and " + name + " = :code");
         query.setString("archetype", archetype.getType().getShortName());
         query.setString("code", lookup.getCode());
         query.setMaxResults(1);
@@ -335,10 +333,9 @@ public class LookupReplacer {
                                 Session session) {
         Mapping mapping = getMapping(archetype, node);
         String name = node.getPath().substring(1);
-        StringBuilder hql = new StringBuilder("update ").append(mapping.getPersistentClass().getName())
-                .append(" set ").append(name).append(" = :newCode where archetypeId.shortName = :archetype and ")
-                .append(name).append(" = :oldCode");
-        Query query = session.createQuery(hql.toString());
+        Query query = session.createQuery("update " + mapping.getPersistentClass().getName()
+                                          + " set " + name + " = :newCode"
+                                          + " where archetypeId.shortName = :archetype and " + name + " = :oldCode");
         query.setString("archetype", archetype.getType().getShortName());
         query.setString("oldCode", source.getCode());
         query.setString("newCode", target.getCode());

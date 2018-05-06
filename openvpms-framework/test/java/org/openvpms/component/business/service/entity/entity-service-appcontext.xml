@@ -18,7 +18,7 @@
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
-           http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
+           http://www.springframework.org/schema/beans/spring-beans-4.2.xsd">
 
     <import resource="classpath:/datasource-context.xml"/>
 
@@ -26,10 +26,7 @@
     <bean id="imObjectDao"
           class="org.openvpms.component.business.dao.hibernate.im.IMObjectDAOHibernate">
         <constructor-arg ref="sessionFactory"/>
-        <property name="transactionManager" ref="txnManager"/>
-        <property name="archetypeDescriptorCache">
-            <ref local="archetypeDescriptorCache"/>
-        </property>
+        <property name="archetypeDescriptorCache" ref="archetypeDescriptorCache"/>
     </bean>
 
     <!--  The Archetype Descriptor Cache -->
@@ -48,37 +45,25 @@
     <!--  The Archetype Service -->
     <bean id="archetypeService"
           class="org.openvpms.component.business.service.archetype.ArchetypeService">
-        <constructor-arg index="0">
-            <ref local="archetypeDescriptorCache"/>
-        </constructor-arg>
-        <property name="dao">
-            <ref local="imObjectDao"/>
-        </property>
+        <constructor-arg ref="archetypeDescriptorCache"/>
+        <property name="dao" ref="imObjectDao"/>
     </bean>
 
     <!--  Instantiate the archetype service helper bean and inject their dependencies -->
     <bean id="archetypeServiceHelper"
           class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">
-        <constructor-arg index="0">
-            <ref local="archetypeService"/>
-        </constructor-arg>
+        <constructor-arg ref="archetypeService"/>
     </bean>
 
     <!--  The Lookup Service -->
     <bean id="lookupService" class="org.openvpms.component.business.service.lookup.LookupService">
-        <constructor-arg index="0">
-            <ref local="archetypeService"/>
-        </constructor-arg>
-        <constructor-arg index="1">
-            <ref local="imObjectDao"/>
-        </constructor-arg>
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="imObjectDao"/>
     </bean>
 
     <!--  Instantiate the lookup service helper bean and inject their dependencies -->
     <bean id="lookupServiceHelper" class="org.openvpms.component.business.service.lookup.LookupServiceHelper">
-        <constructor-arg>
-            <ref local="lookupService"/>
-        </constructor-arg>
+        <constructor-arg ref="lookupService"/>
     </bean>
 
     <bean id="archetypeServiceFunctions"

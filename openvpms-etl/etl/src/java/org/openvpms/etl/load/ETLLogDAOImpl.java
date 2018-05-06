@@ -22,18 +22,15 @@ import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import org.hibernate.cfg.Configuration;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
 
 /**
  * Implementation of {@link ETLLogDAO} using hibernate.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class ETLLogDAOImpl implements ETLLogDAO {
 
@@ -44,23 +41,7 @@ public class ETLLogDAOImpl implements ETLLogDAO {
 
 
     /**
-     * Constructs a new <tt>ETLLogDAOImpl</tt>.
-     */
-    public ETLLogDAOImpl() {
-        this(new Configuration());
-    }
-
-    /**
-     * Constructs a new <tt>ETLLogDAOImpl</tt>.
-     *
-     * @param properties configuration properties
-     */
-    public ETLLogDAOImpl(Properties properties) {
-        this(new Configuration().addProperties(properties));
-    }
-
-    /**
-     * Constructs a new <tt>ETLLogDAOImpl<tt>.
+     * Constructs an {@link ETLLogDAOImpl}.
      *
      * @param factory the hibernate session factory
      */
@@ -69,22 +50,12 @@ public class ETLLogDAOImpl implements ETLLogDAO {
     }
 
     /**
-     * Constructs a new <tt>ETLLogDAOImpl<tt>.
-     *
-     * @param config the hibernate configuration
-     */
-    protected ETLLogDAOImpl(Configuration config) {
-        config.addClass(ETLLog.class);
-        factory = config.buildSessionFactory();
-    }
-
-    /**
      * Saves a log.
      *
      * @param log the log to save
      */
     public void save(ETLLog log) {
-        save(Arrays.asList(log));
+        save(Collections.singletonList(log));
     }
 
     /**
@@ -115,12 +86,12 @@ public class ETLLogDAOImpl implements ETLLogDAO {
      * Returns an {@link ETLLog} given its identifier.
      *
      * @param logId the log identifier
-     * @return the corresponding log, or <tt>null</tt> if none is found
+     * @return the corresponding log, or {@code null} if none is found
      */
     @SuppressWarnings("HardCodedStringLiteral")
     public ETLLog get(long logId) {
         ETLLog result = null;
-        StringBuffer queryString = new StringBuffer();
+        StringBuilder queryString = new StringBuilder();
 
         queryString.append("select l from ");
         queryString.append(ETLLog.class.getName());
@@ -146,18 +117,16 @@ public class ETLLogDAOImpl implements ETLLogDAO {
      * Returns all {@link ETLLog}s associated with a loader, legacy row
      * identifier and archetype.
      *
-     * @param loader    the loader name. May be <tt>null</tt> to indicate all
-     *                  loaders
+     * @param loader    the loader name. May be {@code null} to indicate all loaders
      * @param rowId     the legacy row identifier
-     * @param archetype the archetype short name. May be <tt>null</tt> to
-     *                  indicate all objects with the same legacy identifier.
-     *                  May contain '*' wildcards.
+     * @param archetype the archetype short name. May be {@code null} to indicate all objects with the same legacy
+     *                  identifier. May contain '*' wildcards.
      * @return all logs matching the criteria
      */
     @SuppressWarnings({"unchecked", "HardCodedStringLiteral"})
     public List<ETLLog> get(String loader, String rowId, String archetype) {
         List result;
-        StringBuffer queryString = new StringBuffer();
+        StringBuilder queryString = new StringBuilder();
 
         queryString.append("select l from ");
         queryString.append(ETLLog.class.getName());
@@ -198,12 +167,12 @@ public class ETLLogDAOImpl implements ETLLogDAO {
      *
      * @param loader the loader name
      * @param rowId  the legacy row identifier
-     * @return <tt>true> if the row has been sucessfully processed
+     * @return {@code true} if the row has been successfully processed
      */
     @SuppressWarnings("HardCodedStringLiteral")
     public boolean processed(String loader, String rowId) {
         boolean processed;
-        StringBuffer queryString = new StringBuffer();
+        StringBuilder queryString = new StringBuilder();
 
         queryString.append("select errors from ");
         queryString.append(ETLLog.class.getName());
@@ -240,7 +209,7 @@ public class ETLLogDAOImpl implements ETLLogDAO {
      */
     @SuppressWarnings("HardCodedStringLiteral")
     public void remove(String loader, String rowId) {
-        StringBuffer queryString = new StringBuffer();
+        StringBuilder queryString = new StringBuilder();
 
         queryString.append("delete from ");
         queryString.append(ETLLog.class.getName());

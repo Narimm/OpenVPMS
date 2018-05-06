@@ -39,8 +39,7 @@ import java.io.IOException;
  *
  * @author Tim Anderson
  */
-public class EchoAuthenticationEntryPoint
-        extends LoginUrlAuthenticationEntryPoint {
+public class EchoAuthenticationEntryPoint extends LoginUrlAuthenticationEntryPoint {
 
     /**
      * Constructs an {@link EchoAuthenticationEntryPoint}.

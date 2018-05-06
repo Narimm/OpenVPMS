@@ -35,7 +35,6 @@
             <scope>runtime</scope>
             <excludes>
                 <exclude>stax:stax</exclude>
-                <exclude>xalan:xalan</exclude>
             </excludes>
         </dependencySet>
     </dependencySets>

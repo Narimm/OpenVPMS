@@ -13,12 +13,10 @@
   #  License.
   #
   #  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
-  #
-  #  $Id$
 -->
 <!DOCTYPE hibernate-mapping PUBLIC
         "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
-        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+        "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
 <hibernate-mapping>
     <class name="org.openvpms.component.business.dao.hibernate.im.lookup.LookupRelationshipDOImpl"
            proxy="org.openvpms.component.business.dao.hibernate.im.lookup.LookupRelationshipDO"

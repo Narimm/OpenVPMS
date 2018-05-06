@@ -17,7 +17,7 @@
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd">
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd">
 
     <!-- ================================================================== -->
     <!--                    APPOINTMENT SERVICE                             -->
@@ -31,9 +31,11 @@
             <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
                 <property name="diskPersistent" value="false"/>
                 <property name="cacheName" value="appointmentCache"/>
-                <property name="maxElementsInMemory" value="30"/>
+                <property name="maxEntriesLocalHeap" value="30"/>
                 <!-- 30 days of data -->
                 <property name="overflowToDisk" value="false"/>
+                <property name="timeToIdleSeconds" value="0"/>
+                <property name="timeToLiveSeconds" value="0"/>
                 <property name="eternal" value="true"/>
             </bean>
         </constructor-arg>
@@ -50,10 +52,12 @@
         <constructor-arg index="2">
             <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
                 <property name="diskPersistent" value="false"/>
-                <property name="cacheName" value="appointmentCache"/>
-                <property name="maxElementsInMemory" value="30"/>
+                <property name="cacheName" value="taskCache"/>
+                <property name="maxEntriesLocalHeap" value="30"/>
                 <!-- 30 days of data -->
                 <property name="overflowToDisk" value="false"/>
+                <property name="timeToIdleSeconds" value="0"/>
+                <property name="timeToLiveSeconds" value="0"/>
                 <property name="eternal" value="true"/>
             </bean>
         </constructor-arg>

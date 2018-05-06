@@ -16,10 +16,16 @@
 
 package org.openvpms.component.business.service.archetype;
 
+import org.hibernate.Query;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.openvpms.component.business.dao.hibernate.im.party.PartyDO;
 import org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -411,7 +417,7 @@ public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest 
     }
 
     /**
-     * Verifies entity links can be joined on.
+     * Verifies that joins can be performed on {@link EntityLink} nodes.
      */
     @Test
     public void testQueryEntityLinks() {
@@ -428,14 +434,14 @@ public class ArchetypeServiceQueryTestCase extends AbstractArchetypeServiceTest 
 
         // query all customers for location1
         ArchetypeQuery query1 = new ArchetypeQuery("party.customerperson");
-        query1.add(join("location").add(eq("target", location1.getObjectReference())));
+        query1.add(join("location").add(eq("target", location1)));
         List<IMObject> customers1 = get(query1);
         assertEquals(1, customers1.size());
         assertEquals(person1, customers1.get(0));
 
         // query all customers for location2
         ArchetypeQuery query2 = new ArchetypeQuery("party.customerperson");
-        query2.add(join("location").add(eq("target", location2.getObjectReference())));
+        query2.add(join("location").add(eq("target", location2)));
         List<IMObject> customers2 = get(query2);
         assertEquals(2, customers2.size());
         assertFalse(customers2.contains(person1));

@@ -62,7 +62,7 @@ import static org.openvpms.component.business.service.archetype.ArchetypeService
 /**
  * Test that ability to create and query on acts.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @author Jim Alateras
  */
 @ContextConfiguration("archetype-service-appcontext.xml")
 public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
@@ -310,12 +310,10 @@ public class ArchetypeServiceActTestCase extends AbstractArchetypeServiceTest {
 
         save(act1);
         act1.setStatus("POSTED");
-        Collection<Act> objects = Collections.singletonList(act1);
-        save(objects);
+        save(Collections.singletonList(act1));
 
         act1.removeParticipation(p1);
-        objects = Collections.singletonList(act1);
-        save(objects);
+        save(Collections.singletonList(act1));
 
         save(act1);
     }
