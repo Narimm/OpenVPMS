@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
@@ -84,6 +84,11 @@ public class CalendarEventSeries {
     private final IArchetypeService service;
 
     /**
+     * The maximum no. of events that can be created.
+     */
+    private final int maxEvents;
+
+    /**
      * The series or {@code null}, if the event isn't associated with a series.
      */
     private Act series;
@@ -102,11 +107,6 @@ public class CalendarEventSeries {
      * The current state.
      */
     private State current;
-
-    /**
-     * The maximum no. of events that can be created.
-     */
-    private final int maxEvents;
 
     /**
      * If {@code true} only update the times of existing events in the series.
@@ -214,7 +214,7 @@ public class CalendarEventSeries {
 
     /**
      * Determines if only the times of existing events should be updated.
-     * <p/>
+     * <p>
      * This should be set {@code true} when moving a series.
      *
      * @param updateTimesOnly if {@code true}, only update the times, otherwise update all event fields
@@ -294,7 +294,7 @@ public class CalendarEventSeries {
      * @return the time
      */
     public Date getStartTime() {
-        return series != null ? series.getActivityStartTime() : event.getActivityStartTime();
+        return current.getStartTime();
     }
 
     /**
@@ -334,7 +334,7 @@ public class CalendarEventSeries {
 
     /**
      * Updates an event.
-     * <p/>
+     * <p>
      * If {@link #updateTimesOnly} is {@code false}, then {@link #populate(ActBean, State)} will be invoked to
      * populate the event with the {@code state}.
      *
@@ -725,6 +725,15 @@ public class CalendarEventSeries {
             endTime = act.getActivityEndTime();
             schedule = event.getNodeParticipantRef("schedule");
             author = event.getNodeParticipantRef("author");
+        }
+
+        /**
+         * Returns the event start time.
+         *
+         * @return the start time
+         */
+        public Date getStartTime() {
+            return startTime;
         }
 
         /**

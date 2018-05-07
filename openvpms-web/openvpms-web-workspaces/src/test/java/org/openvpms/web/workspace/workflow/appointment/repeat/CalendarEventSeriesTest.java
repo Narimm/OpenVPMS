@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
@@ -42,6 +42,7 @@ import static org.openvpms.web.workspace.workflow.appointment.repeat.Repeats.dai
 import static org.openvpms.web.workspace.workflow.appointment.repeat.Repeats.monthly;
 import static org.openvpms.web.workspace.workflow.appointment.repeat.Repeats.once;
 import static org.openvpms.web.workspace.workflow.appointment.repeat.Repeats.times;
+import static org.openvpms.web.workspace.workflow.appointment.repeat.Repeats.weekdays;
 import static org.openvpms.web.workspace.workflow.appointment.repeat.Repeats.yearly;
 
 /**
@@ -317,6 +318,43 @@ public abstract class CalendarEventSeriesTest extends ArchetypeServiceTest {
 
         checkSave(series);
         checkSeries(series, event, 1, DateUnits.MONTHS, 12);
+    }
+
+    /**
+     * Verifies that when changing the start and end times for a cron expression, it propagates to the rest of the
+     * acts in the series.
+     */
+    @Test
+    public void testChangeTimesWithCronRepeat() {
+        startTime = TestHelper.getDatetime("2018-05-07 09:00:00");
+        endTime = TestHelper.getDatetime("2018-05-07 10:00:00");
+        Act event = createEvent(startTime, endTime);
+
+        CalendarEventSeries series = createSeries(event, weekdays(startTime), times(4));
+        List<Act> acts1 = series.getEvents();
+        assertEquals(5, acts1.size());
+
+        for (int i = 0; i < acts1.size(); ++i) {
+            assertEquals(DateRules.getDate(startTime, i, DateUnits.DAYS), acts1.get(i).getActivityStartTime());
+            assertEquals(DateRules.getDate(endTime, i, DateUnits.DAYS), acts1.get(i).getActivityEndTime());
+        }
+
+        // change the times and verify that each of the acts in the series have the new time
+        startTime = TestHelper.getDatetime("2018-05-07 09:30:00");
+        endTime = TestHelper.getDatetime("2018-05-07 10:30:00");
+        event.setActivityStartTime(startTime);
+        event.setActivityEndTime(endTime);
+        series.refresh();
+        series.setExpression(weekdays(series.getStartTime()));
+        checkSave(series);
+
+        List<Act> acts2 = series.getEvents();
+        assertEquals(5, acts2.size());
+
+        for (int i = 0; i < acts2.size(); ++i) {
+            assertEquals(DateRules.getDate(startTime, i, DateUnits.DAYS), acts2.get(i).getActivityStartTime());
+            assertEquals(DateRules.getDate(endTime, i, DateUnits.DAYS), acts2.get(i).getActivityEndTime());
+        }
     }
 
     /**
