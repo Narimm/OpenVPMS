@@ -607,10 +607,11 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
     }
 
     /**
-     * Tests the {@link IMObjectBean#addTarget(String, org.openvpms.component.model.object.IMObject)} method.
+     * Tests the {@link IMObjectBean#addTarget(String, org.openvpms.component.model.object.IMObject)}
+     * and {@link IMObjectBean#removeTarget(String, org.openvpms.component.model.object.IMObject)} method.
      */
     @Test
-    public void testAddTarget() {
+    public void testAddRemoveTarget() {
         Party customer = createCustomer();
         Party location = createLocation();
         Party patient = createPatient();
@@ -633,6 +634,9 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         assertEquals(location.getObjectReference(), bean.getTargetRef("location"));
         assertEquals(patient, bean.getTarget("owns"));
         assertEquals(patient.getObjectReference(), bean.getTargetRef("owns"));
+
+        assertEquals(rel1, bean.removeTarget("location", location));
+        assertNull(bean.getTarget("location"));
     }
 
     /**

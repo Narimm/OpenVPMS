@@ -1043,6 +1043,44 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     }
 
     /**
+     * Removes a relationship between the current object (the source), and the supplied target.
+     * <p/>
+     * If there are multiple relationships, the first one found will be removed.
+     * <p/>
+     * If the relationship is bidirectional, the caller is responsible for removing the returned relationship
+     * from the target.
+     *
+     * @param name   the name
+     * @param target the target
+     * @return the relationship, or {@code null} if the relationship was not found
+     */
+    @Override
+    public Relationship removeTarget(String name, Reference target) {
+        Relationship result = getValue(name, Relationship.class, targetEquals(target));
+        if (result != null) {
+            removeValue(name, result);
+        }
+        return result;
+    }
+
+    /**
+     * Removes a relationship between the current object (the source), and the supplied target.
+     * <p/>
+     * If there are multiple relationships, the first one found will be removed.
+     * <p/>
+     * If the relationship is bidirectional, the caller is responsible for removing the returned relationship
+     * from the target.
+     *
+     * @param name   the name
+     * @param target the target
+     * @return the relationship, or {@code null} if the relationship was not found
+     */
+    @Override
+    public Relationship removeTarget(String name, org.openvpms.component.model.object.IMObject target) {
+        return removeTarget(name, target.getObjectReference());
+    }
+
+    /**
      * Removes all bidirectional relationships between the current object (the source), and the supplied target.
      *
      * @param sourceName the source node name
