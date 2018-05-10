@@ -692,6 +692,34 @@ public interface IMObjectBean {
     Relationship addTarget(String sourceName, IMObject target, String targetName);
 
     /**
+     * Removes a relationship between the current object (the source), and the supplied target.
+     * <p/>
+     * If there are multiple relationships, the first one found will be removed.
+     * <p/>
+     * If the relationship is bidirectional, the caller is responsible for removing the returned relationship
+     * from the target.
+     *
+     * @param name   the name
+     * @param target the target
+     * @return the relationship, or {@code null} if the relationship was not found
+     */
+    Relationship removeTarget(String name, Reference target);
+
+    /**
+     * Removes a relationship between the current object (the source), and the supplied target.
+     * <p/>
+     * If there are multiple relationships, the first one found will be removed.
+     * <p/>
+     * If the relationship is bidirectional, the caller is responsible for removing the returned relationship
+     * from the target.
+     *
+     * @param name   the name
+     * @param target the target
+     * @return the relationship, or {@code null} if the relationship was not found
+     */
+    Relationship removeTarget(String name, IMObject target);
+
+    /**
      * Removes all bidirectional relationships between the current object (the source), and the supplied target.
      *
      * @param sourceName the source node name
