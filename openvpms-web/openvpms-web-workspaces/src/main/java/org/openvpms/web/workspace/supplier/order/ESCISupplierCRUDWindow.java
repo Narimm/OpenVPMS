@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.order;
@@ -22,10 +22,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.NodeSelectConstraint;
-import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.service.scheduler.JobScheduler;
 import org.openvpms.esci.adapter.dispatcher.ESCIDispatcher;
 import org.openvpms.esci.adapter.dispatcher.ErrorHandler;
 import org.openvpms.web.component.app.Context;
@@ -44,10 +42,7 @@ import org.quartz.SimpleTrigger;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
-
-import static org.openvpms.component.system.common.query.Constraints.shortName;
 
 
 /**
@@ -137,12 +132,10 @@ public class ESCISupplierCRUDWindow extends SupplierActCRUDWindow<FinancialAct> 
      */
     private String getESCIJobName() {
         String name = null;
-        ArchetypeQuery query = new ArchetypeQuery(shortName("job", "entity.jobESCIInboxReader", true));
-        query.setMaxResults(1);
-        query.add(new NodeSelectConstraint("job.name"));
-        Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(query);
-        if (iterator.hasNext()) {
-            name = iterator.next().getString("job.name");
+        JobScheduler scheduler = ServiceHelper.getBean(JobScheduler.class);
+        List<IMObject> jobs = scheduler.getJobs("entity.jobESCIInboxReader");
+        if (!jobs.isEmpty()) {
+            name = scheduler.getJobName(jobs.get(0));
         }
         return name;
     }
@@ -152,7 +145,7 @@ public class ESCISupplierCRUDWindow extends SupplierActCRUDWindow<FinancialAct> 
         /**
          * The errors.
          */
-        private List<Throwable> errors = new ArrayList<Throwable>();
+        private List<Throwable> errors = new ArrayList<>();
 
         /**
          * Determines if the dispatcher should terminate on error.

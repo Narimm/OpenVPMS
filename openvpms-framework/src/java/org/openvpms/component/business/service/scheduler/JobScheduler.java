@@ -56,25 +56,25 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
     private final Scheduler scheduler;
 
     /**
-     * The application context.
-     */
-    private ApplicationContext context;
-
-    /**
      * The archetype service.
      */
     private final IArchetypeService service;
 
     /**
-     * The logger.
+     * The application context.
      */
-    private static final Log log = LogFactory.getLog(JobScheduler.class);
+    private ApplicationContext context;
 
     /**
      * The set of configurations pending removal. These are used to ensure that previous jobs are unscheduled if
      * their name changes.
      */
     private Map<Long, IMObject> pending = Collections.synchronizedMap(new HashMap<Long, IMObject>());
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(JobScheduler.class);
 
     /**
      * The job archetype short name prefix.
@@ -199,6 +199,16 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
     }
 
     /**
+     * Returns the job name for a configuration.
+     *
+     * @param configuration the configuration
+     * @return the job name
+     */
+    public String getJobName(IMObject configuration) {
+        return getJobConfig(configuration).getJobName();
+    }
+
+    /**
      * Schedules all active configured jobs.
      */
     protected void scheduleJobs() {
@@ -247,7 +257,7 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
 
     /**
      * Invoked prior to an event being added or removed from the cache.
-     * <p/>
+     * <p>
      * If the event is already persistent, the persistent instance will be
      * added to the map of acts that need to be removed prior to any new
      * instance being cached.
@@ -265,23 +275,13 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
 
     /**
      * Invoked on transaction rollback.
-     * <p/>
+     * <p>
      * This removes the associated configuration from the map of configurations pending removal.
      *
      * @param configuration the rolled back configuration
      */
     private void removePending(IMObject configuration) {
         pending.remove(configuration.getId());
-    }
-
-    /**
-     * Returns the job name for a configuration.
-     *
-     * @param configuration the configuration
-     * @return the job name
-     */
-    private String getJobName(IMObject configuration) {
-        return getJobConfig(configuration).getJobName();
     }
 
     /**
@@ -292,34 +292,6 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      */
     private JobConfig getJobConfig(IMObject configuration) {
         return new JobConfig(configuration, service);
-    }
-
-    private class UpdateListener extends AbstractArchetypeServiceListener {
-
-        @Override
-        public void save(IMObject object) {
-            addPending(object);
-        }
-
-        @Override
-        public void saved(IMObject object) {
-            onSaved(object);
-        }
-
-        @Override
-        public void remove(IMObject object) {
-            addPending(object);
-        }
-
-        @Override
-        public void removed(IMObject object) {
-            unschedule(object);
-        }
-
-        @Override
-        public void rollback(IMObject object) {
-            removePending(object);
-        }
     }
 
     private static final class JobConfig {
@@ -417,6 +389,34 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
                 throw new SchedulerException(exception);
             }
             return trigger;
+        }
+    }
+
+    private class UpdateListener extends AbstractArchetypeServiceListener {
+
+        @Override
+        public void save(IMObject object) {
+            addPending(object);
+        }
+
+        @Override
+        public void saved(IMObject object) {
+            onSaved(object);
+        }
+
+        @Override
+        public void remove(IMObject object) {
+            addPending(object);
+        }
+
+        @Override
+        public void removed(IMObject object) {
+            unschedule(object);
+        }
+
+        @Override
+        public void rollback(IMObject object) {
+            removePending(object);
         }
     }
 }
