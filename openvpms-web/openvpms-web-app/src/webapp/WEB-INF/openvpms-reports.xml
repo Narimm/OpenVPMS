@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -43,7 +43,7 @@
     </bean>
 
     <bean id="reportingDataSource" class="org.apache.commons.dbcp2.BasicDataSource" autowire-candidate="false">
-        <property name="driverClassName" value="${hibernate.connection.driver_class}"/>
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
         <property name="url" value="${hibernate.reportingconnection.url}"/>
         <property name="username" value="${hibernate.reportingconnection.username}"/>
         <property name="password" value="${hibernate.reportingconnection.password}"/>

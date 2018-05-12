@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -63,15 +63,15 @@
 
     <!--  The DataSource -->
     <bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
-        <property name="driverClassName" value="${hibernate.connection.driver_class}"/>
-        <property name="url" value="${hibernate.connection.url}"/>
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
+        <property name="url" value="${jdbc.url}"/>
         <property name="username" value="${jdbc.username}"/>
         <property name="password" value="${jdbc.password}"/>
     </bean>
 
     <bean id="databaseService" class="org.openvpms.db.service.impl.DatabaseServiceImpl">
-        <constructor-arg value="${hibernate.connection.driver_class}"/>
-        <constructor-arg value="${hibernate.connection.url}"/>
+        <constructor-arg value="${jdbc.driverClassName}"/>
+        <constructor-arg value="${jdbc.url}"/>
         <constructor-arg ref="dataSource"/>
     </bean>
 
@@ -88,16 +88,11 @@
                 <prop key="hibernate.dialect">${hibernate.dialect}</prop>
                 <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
                 <prop key="hibernate.max_fetch_depth">${hibernate.max_fetch_depth}</prop>
-                <prop key="hibernate.c3p0.min_size">${hibernate.c3p0.min_size}</prop>
-                <prop key="hibernate.c3p0.max_size">${hibernate.c3p0.max_size}</prop>
-                <prop key="hibernate.c3p0.timeout">${hibernate.c3p0.timeout}</prop>
-                <prop key="hibernate.c3p0.max_statements">${hibernate.c3p0.max_statements}</prop>
                 <prop key="hibernate.cache.region.factory_class">${hibernate.cache.region.factory_class}</prop>
                 <prop key="hibernate.cache.use_second_level_cache">${hibernate.cache.use_second_level_cache}</prop>
                 <prop key="hibernate.cache.use_query_cache">${hibernate.cache.use_query_cache}</prop>
                 <prop key="hibernate.jdbc.use_scrollable_resultset">true</prop>
                 <prop key="hibernate.jdbc.batch_size">${hibernate.jdbc.batch_size}</prop>
-                <prop key="hibernate.c3p0.max_statements">${hibernate.c3p0.max_statements}</prop>
                 <prop key="net.sf.ehcache.configurationResourceName">/ehcache.xml</prop>
                 <prop key="hibernate.generate_statistics">true</prop>
             </props>

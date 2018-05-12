@@ -12,7 +12,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.db.tool;
@@ -177,10 +177,10 @@ public class DBTool {
                 String path = config.getString("properties");
                 Properties properties = new Properties();
                 properties.load(new FileInputStream(path));
-                String driver = getRequired("hibernate.connection.driver_class", properties);
-                String url = getRequired("hibernate.connection.url", properties);
-                String user = getRequired("hibernate.connection.username", properties);
-                String password = getRequired("hibernate.connection.password", properties);
+                String driver = getRequired("jdbc.driverClassName", properties);
+                String url = getRequired("jdbc.url", properties);
+                String user = getRequired("jdbc.username", properties);
+                String password = getRequired("jdbc.password", properties);
 
                 DBTool tool = new DBTool(driver, url, user, password, new FlywayLogger());
                 String create = config.getString("create");
