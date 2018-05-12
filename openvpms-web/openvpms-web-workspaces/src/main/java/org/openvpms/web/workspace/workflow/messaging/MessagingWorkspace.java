@@ -28,6 +28,8 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.component.workspace.QueryBrowserCRUDWorkspace;
 
+import java.util.List;
+
 
 /**
  * Messaging workspace.
@@ -73,6 +75,55 @@ public class MessagingWorkspace extends QueryBrowserCRUDWorkspace<User, Act> {
             Browser<Act> browser = getBrowser();
             browser.setSelected(act);
             getCRUDWindow().setObject(act);
+        }
+    }
+
+    /**
+     * Lays out the workspace.
+     *
+     * @param refresh if {@code true} and the workspace exists, refresh the workspace, otherwise recreate it
+     */
+    @Override
+    protected void layoutWorkspace(boolean refresh) {
+        Browser<Act> browser = getBrowser();
+        Act selected = null;
+        if (browser != null) {
+            selected = browser.getSelected();
+        }
+        super.layoutWorkspace(refresh);
+        if (selected != null) {
+            browser = getBrowser();
+            if (!browser.getObjects().contains(selected)) {
+                selected = null;
+            }
+            browser.setSelected(selected);
+            getCRUDWindow().setObject(selected);
+        }
+    }
+
+    /**
+     * Invoked when the object needs to be refreshed.
+     *
+     * @param object the object
+     */
+    @Override
+    protected void onRefresh(Act object) {
+        Browser<Act> browser = getBrowser();
+        int index = browser.getObjects().indexOf(object);
+        super.onRefresh(object);
+        CRUDWindow<Act> window = getCRUDWindow();
+        if (index != -1 && window.getObject() == null) {
+            // object no longer exists
+            List<Act> objects = browser.getObjects();
+            if (index > objects.size() - 1) {
+                index = objects.size() - 1;
+            }
+            if (index >= 0) {
+                Act act = objects.get(index);
+                if (browser.setSelected(act)) {
+                    window.setObject(act);
+                }
+            }
         }
     }
 
