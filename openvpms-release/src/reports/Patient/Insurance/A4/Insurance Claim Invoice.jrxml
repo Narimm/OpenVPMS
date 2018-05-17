@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <!-- Created with Jaspersoft Studio version 6.1.0.final using JasperReports Library version 5.5.2  -->
@@ -100,9 +100,6 @@
 	</variable>
 	<variable name="RefName" class="java.lang.String">
 		<variableExpression><![CDATA[($F{customer.entity.companyName} != null) ? ($F{customer.entity.companyName}+"     ").substring(0,5).toUpperCase(): ($F{customer.entity.lastName}+"     ").substring(0,5).toUpperCase()]]></variableExpression>
-	</variable>
-	<variable name="isOTC" class="java.lang.Boolean">
-		<initialValueExpression><![CDATA[Boolean.FALSE]]></initialValueExpression>
 	</variable>
 	<group name="Dummy group" footerPosition="ForceAtBottom">
 		<groupFooter>
@@ -519,9 +516,6 @@
 				</subreportParameter>
 				<subreportParameter name="patientCount">
 					<subreportParameterExpression><![CDATA[$F{[count(list:distinct(., "items.target.patient.entity.id"))]}.intValue()]]></subreportParameterExpression>
-				</subreportParameter>
-				<subreportParameter name="isOTC">
-					<subreportParameterExpression><![CDATA[$V{isOTC}]]></subreportParameterExpression>
 				</subreportParameter>
 				<subreportParameter name="claim">
 					<subreportParameterExpression><![CDATA[$P{claim}]]></subreportParameterExpression>
