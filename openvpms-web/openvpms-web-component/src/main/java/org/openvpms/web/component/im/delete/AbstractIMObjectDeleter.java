@@ -11,11 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.delete;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.help.HelpContext;
@@ -32,6 +34,11 @@ public abstract class AbstractIMObjectDeleter<T extends IMObject> implements IMO
      * The deletion handler factory.
      */
     private final IMObjectDeletionHandlerFactory factory;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(AbstractIMObjectDeleter.class);
 
     /**
      * Constructs an {@link AbstractIMObjectDeleter}.
@@ -66,6 +73,8 @@ public abstract class AbstractIMObjectDeleter<T extends IMObject> implements IMO
                 deactivated(object, help);
             }
         } catch (Throwable exception) {
+            log.error("Failed to delete object=" + object.getObjectReference() + ": " + exception.getMessage(),
+                      exception);
             listener.failed(object, exception);
         }
     }
@@ -122,6 +131,8 @@ public abstract class AbstractIMObjectDeleter<T extends IMObject> implements IMO
             handler.delete(context, help);
             listener.deleted(object);
         } catch (Throwable exception) {
+            log.error("Failed to delete object=" + object.getObjectReference() + ": " + exception.getMessage(),
+                      exception);
             listener.failed(object, exception);
         }
     }
@@ -138,6 +149,8 @@ public abstract class AbstractIMObjectDeleter<T extends IMObject> implements IMO
             handler.deactivate();
             listener.deactivated(object);
         } catch (Throwable exception) {
+            log.error("Failed to deactivate object=" + object.getObjectReference() + ": " + exception.getMessage(),
+                      exception);
             listener.failed(object, exception);
         }
     }

@@ -204,6 +204,16 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
     }
 
     /**
+     * Returns the job name for a configuration.
+     *
+     * @param configuration the configuration
+     * @return the job name
+     */
+    public String getJobName(IMObject configuration) {
+        return getJobConfig(configuration).getJobName();
+    }
+
+    /**
      * Schedules all active configured jobs.
      */
     protected void scheduleJobs() {
@@ -277,16 +287,6 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      */
     private void removePending(IMObject configuration) {
         pending.remove(configuration.getId());
-    }
-
-    /**
-     * Returns the job name for a configuration.
-     *
-     * @param configuration the configuration
-     * @return the job name
-     */
-    private String getJobName(IMObject configuration) {
-        return getJobConfig(configuration).getJobName();
     }
 
     /**

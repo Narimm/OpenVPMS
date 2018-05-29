@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Invoice Items" pageWidth="612" pageHeight="792" whenNoDataType="AllSectionsNoDetail" columnWidth="554" leftMargin="0" rightMargin="58" topMargin="0" bottomMargin="0" resourceBundle="localisation.reports" uuid="686e7611-94db-45b0-b0e3-4aa94b5c752b">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -44,28 +60,14 @@
 	<field name="target.product.entity.name" class="java.lang.String"/>
 	<field name="target.product.entity.displayName" class="java.lang.String"/>
 	<field name="target.product.entity.printedName" class="java.lang.String"/>
-	<field name="target.template.entity.id" class="java.lang.Long"/>
-	<field name="target.template.entity.name" class="java.lang.String"/>
-	<field name="target.template.entity.printedName" class="java.lang.String"/>
-	<field name="target.template.entity.printAggregate" class="java.lang.Boolean"/>
-	<field name="target.print" class="java.lang.Boolean"/>
 	<field name="target.shortName" class="java.lang.String"/>
 	<field name="target.product.entity.sellingUnits.printedName" class="java.lang.String"/>
 	<field name="target.id" class="java.lang.Long"/>
 	<field name="[insurance:claimed($P.claim, openvpms:get(., &apos;target&apos;))]" class="java.lang.Boolean"/>
 	<sortField name="target.patient.entity.name"/>
-	<sortField name="showTemplate" order="Descending" type="Variable"/>
-	<sortField name="target.template.entity.name"/>
 	<sortField name="target.startTime"/>
 	<variable name="taxR" class="java.math.BigDecimal">
 		<variableExpression><![CDATA[$F{target.tax}.setScale(2, BigDecimal.ROUND_HALF_UP)]]></variableExpression>
-	</variable>
-	<variable name="showTemplate" class="java.lang.Boolean">
-		<variableExpression><![CDATA[($F{target.template.entity.printAggregate} == null)?Boolean.FALSE:
-$F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
-	</variable>
-	<variable name="noTemplate" class="java.lang.Boolean">
-		<variableExpression><![CDATA[$F{target.template.entity.id} == null]]></variableExpression>
 	</variable>
 	<variable name="SUM_target.total" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{target.total}]]></variableExpression>
@@ -250,8 +252,6 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 		<band height="32" splitType="Stretch">
 			<property name="local_mesure_unitheight" value="pixel"/>
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<printWhenExpression><![CDATA[(!$V{showTemplate})&&($F{target.total}.compareTo(BigDecimal.ZERO) == 0?
-($F{target.print} == null?Boolean.TRUE:$F{target.print}):Boolean.TRUE)]]></printWhenExpression>
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="textField-7" isPrintRepeatedValues="false" x="13" y="0" width="56" height="12" uuid="81ba3aaf-4bac-41af-b085-8324bd30ea36"/>
 				<textElement textAlignment="Right" verticalAlignment="Top">
