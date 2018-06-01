@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -110,6 +110,8 @@
         <security:session-management invalid-session-url="/login"/>
         <security:headers>
             <security:content-type-options disabled="true"/>
+            <security:frame-options policy="SAMEORIGIN"/>
+            <!-- required for file upload support -->
         </security:headers>
         <security:csrf disabled="true"/>
         <!--security:custom-filter before="FORM_LOGIN_FILTER" ref="skipLoginFilter"/>
