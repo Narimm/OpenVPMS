@@ -178,7 +178,7 @@ public class ReminderProcessor {
             }
         } else if (TypeHelper.isA(contact, ContactArchetypes.LOCATION)) {
             if (!generatePrint(bean, dueDate, contacts, reminderCount, toSave)) {
-                throw new IllegalStateException("Failed to generate SMS");
+                throw new IllegalStateException("Failed to generate print");
             }
         } else {
             throw new IllegalArgumentException("Invalid archetype for contact: " + contact.getArchetype());

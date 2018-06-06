@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.error;
 
 import org.hibernate.ObjectNotFoundException;
 import org.hibernate.StaleObjectStateException;
+import org.springframework.transaction.UnexpectedRollbackException;
 
 /**
  * Exception helper methods.
@@ -46,7 +47,8 @@ public class ExceptionHelper {
      * @return {@code true} if the object was modified externally
      */
     public static boolean isModifiedExternally(Throwable exception) {
-        return exception instanceof StaleObjectStateException || exception instanceof ObjectNotFoundException;
+        return exception instanceof StaleObjectStateException || exception instanceof ObjectNotFoundException
+                || exception instanceof UnexpectedRollbackException;
     }
 
 
