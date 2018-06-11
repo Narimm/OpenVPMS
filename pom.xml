@@ -37,8 +37,9 @@
     </prerequisites>
 
     <scm>
-        <connection>scm:svn:svn://svn.openvpms.org/openvpms/projects/openvpms/trunk</connection>
-        <developerConnection>scm:svn:svn://svn.openvpms.org/openvpms/projects/openvpms/trunk</developerConnection>
+        <connection>scm:git:ssh://git@bitbucket.org/OpenVPMS/openvpms.git</connection>
+        <developerConnection>scm:git:ssh://git@bitbucket.org/OpenVPMS/openvpms.git</developerConnection>
+        <url>https://bitbucket.org/OpenVPMS/openvpms.git</url>
     </scm>
 
     <issueManagement>
@@ -52,21 +53,6 @@
             <url>http://dev.openvpms.org/license/LICENSE.txt</url>
         </license>
     </licenses>
-
-    <mailingLists>
-        <mailingList>
-            <name>OpenVPMS Developers Mailing List</name>
-            <subscribe>http://lists.openvpms.org/mailman/listinfo/developers</subscribe>
-            <unsubscribe>http://lists.openvpms.org/mailman/listinfo/developers</unsubscribe>
-            <archive>http://lists.openvpms.org/pipermail/developers/</archive>
-        </mailingList>
-        <mailingList>
-            <name>OpenVPMS Users Mailing List</name>
-            <subscribe>http://lists.openvpms.org/mailman/listinfo/users</subscribe>
-            <unsubscribe>http://lists.openvpms.org/mailman/listinfo/users</unsubscribe>
-            <archive>http://lists.openvpms.org/pipermail/users/</archive>
-        </mailingList>
-    </mailingLists>
 
     <developers>
         <developer>
