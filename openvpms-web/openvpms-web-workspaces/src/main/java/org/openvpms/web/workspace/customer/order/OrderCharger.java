@@ -65,12 +65,6 @@ import java.util.List;
  */
 public class OrderCharger {
 
-    public interface CompletionListener {
-
-        void completed();
-
-    }
-
     /**
      * The customer to query orders for.
      */
@@ -85,6 +79,11 @@ public class OrderCharger {
      * The customer order rules.
      */
     private final OrderRules rules;
+
+    /**
+     * The customer account rules.
+     */
+    private final CustomerAccountRules accountRules;
 
     /**
      * The current context.
@@ -104,28 +103,33 @@ public class OrderCharger {
     /**
      * Constructs an {@link OrderCharger}.
      *
-     * @param customer the customer
-     * @param rules    the order rules
-     * @param context  the context
-     * @param help     the help context
+     * @param customer     the customer
+     * @param rules        the order rules
+     * @param accountRules the customer account rules
+     * @param context      the context
+     * @param help         the help context
      */
-    public OrderCharger(Party customer, OrderRules rules, Context context, HelpContext help) {
-        this(customer, null, rules, context, help);
+    public OrderCharger(Party customer, OrderRules rules, CustomerAccountRules accountRules,
+                        Context context, HelpContext help) {
+        this(customer, null, rules, accountRules, context, help);
     }
 
     /**
      * Constructs an {@link OrderCharger}.
      *
-     * @param customer the customer
-     * @param patient  the patient. May be {@code null}
-     * @param rules    the order rules
-     * @param context  the context
-     * @param help     the help context
+     * @param customer     the customer
+     * @param patient      the patient. May be {@code null}
+     * @param rules        the order rules
+     * @param accountRules the customer account rules
+     * @param context      the context
+     * @param help         the help context
      */
-    public OrderCharger(Party customer, Party patient, OrderRules rules, Context context, HelpContext help) {
+    public OrderCharger(Party customer, Party patient, OrderRules rules, CustomerAccountRules accountRules,
+                        Context context, HelpContext help) {
         this.customer = customer;
         this.patient = patient;
         this.rules = rules;
+        this.accountRules = accountRules;
         this.context = context;
         this.help = help;
     }
@@ -141,7 +145,7 @@ public class OrderCharger {
 
     /**
      * Determines if the customer has pending orders.
-     * <p/>
+     * <p>
      * If a patient was supplied at construction, this limits the query to those orders that are for the patient.
      *
      * @return {@code true} if the customer has pending orders
@@ -169,7 +173,7 @@ public class OrderCharger {
 
     /**
      * Clears any charged orders.
-     * <p/>
+     * <p>
      * This should be invoked after a successful {@link #save()}
      */
     public void clear() {
@@ -191,26 +195,28 @@ public class OrderCharger {
      * @param act      the order/return
      * @param listener the listener to notify when charging completes
      */
-    public void charge(FinancialAct act, final CompletionListener listener) {
-        final OrderInvoicer charger = createInvoicer(act);
+    public void charge(FinancialAct act, CompletionListener listener) {
+        OrderInvoicer invoicer = createInvoicer(act);
         Validator validator = new DefaultValidator();
-        if (charger != null && charger.validate(validator)) {
-            FinancialAct invoice = charger.getInvoice();
+        if (invoicer != null && invoicer.validate(validator)) {
+            FinancialAct invoice = invoicer.getInvoice();
             if (invoice == null || ActStatus.POSTED.equals(invoice.getStatus())) {
-                // the order doesn't relate to an invoice, or the invoice is POSTED
-                if (charger.canInvoice()) {
-                    invoice(act, charger, listener);
-                } else if (charger.canCredit()) {
-                    credit(act, charger, listener);
+                // the order/return doesn't relate to an invoice, or the invoice is POSTED
+                if (invoicer.notFromInvoice()) {
+                    invoiceOrCredit(act, invoicer, listener);
+                } else if (invoicer.canInvoice()) {
+                    invoice(act, invoicer, listener);
+                } else if (invoicer.canCredit()) {
+                    credit(act, invoicer, listener);
                 } else {
                     show(Messages.format("customer.order.invoice.unsupported", DescriptorHelper.getDisplayName(act)),
                          listener);
                 }
             } else {
-                if (charger.canInvoice()) {
-                    doCharge(act, charger, invoice, new DefaultLayoutContext(context, help), listener);
-                } else if (charger.canCredit()) {
-                    credit(act, charger, listener);
+                if (invoicer.canInvoice()) {
+                    doCharge(act, invoicer, invoice, new DefaultLayoutContext(context, help), listener);
+                } else if (invoicer.canCredit()) {
+                    credit(act, invoicer, listener);
                 } else {
                     show(Messages.format("customer.order.invoice.unsupported", DescriptorHelper.getDisplayName(act)),
                          listener);
@@ -243,7 +249,7 @@ public class OrderCharger {
                 show(Messages.format("customer.order.unsaved", customer.getName()), listener);
             }
         } else {
-            final PendingOrderBrowser browser = new PendingOrderBrowser(query, new DefaultLayoutContext(context, help));
+            PendingOrderBrowser browser = new PendingOrderBrowser(query, new DefaultLayoutContext(context, help));
             browser.query();
             PendingOrderDialog dialog = new PendingOrderDialog(Messages.get("customer.order.invoice.title"),
                                                                browser, new LocalContext(context), help);
@@ -301,27 +307,22 @@ public class OrderCharger {
     private void charge(List<Act> orders, CustomerChargeActEditor editor, final CompletionListener listener) {
         StringBuilder messages = new StringBuilder();
         for (Act order : orders) {
-            OrderInvoicer charger = createInvoicer(order);
-            if (charger != null) {
-                if (!charger.isValid()) {
+            OrderInvoicer invoicer = createInvoicer(order);
+            if (invoicer != null) {
+                if (!invoicer.isValid()) {
                     append(messages, Messages.format("customer.order.incomplete", order.getId(),
                                                      DescriptorHelper.getDisplayName(order)));
-                } else if (patient != null && !charger.canCharge(patient)) {
+                } else if (patient != null && !invoicer.canCharge(patient)) {
                     append(messages, Messages.format("customer.order.multiplePatient", order.getId(),
                                                      DescriptorHelper.getDisplayName(order)));
-                } else if (!charger.canCharge(editor)) {
-                    FinancialAct invoice = charger.getInvoice();
-                    if (invoice != null && invoice.getId() != editor.getObject().getId()) {
-                        append(messages, Messages.format("customer.order.differentInvoice", order.getId(),
-                                                         DescriptorHelper.getDisplayName(order), invoice.getId()));
-                    } else {
-                        append(messages, Messages.format("customer.order.cannotcharge", order.getId(),
-                                                         DescriptorHelper.getDisplayName(order),
-                                                         editor.getDisplayName()));
-                    }
                 } else {
-                    charger.charge(editor);
-                    charged.add(order);
+                    OrderInvoicer.Status status = invoicer.getChargeStatus(editor);
+                    if (!status.canCharge()) {
+                        append(messages, status.getReason());
+                    } else {
+                        invoicer.charge(editor);
+                        charged.add(order);
+                    }
                 }
             }
         }
@@ -341,8 +342,7 @@ public class OrderCharger {
      */
     private void invoice(FinancialAct act, OrderInvoicer invoicer, CompletionListener listener) {
         if (invoicer.requiresEdit()) {
-            CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
-            final FinancialAct current = rules.getInvoice(invoicer.getCustomer());
+            FinancialAct current = accountRules.getInvoice(invoicer.getCustomer());
             charge(act, current, invoicer, listener);
         } else {
             invoicer.charge();
@@ -358,14 +358,69 @@ public class OrderCharger {
      * @param listener the listener to notify on completion
      */
     private void credit(FinancialAct act, OrderInvoicer invoicer, CompletionListener listener) {
-        CustomerAccountRules rules = ServiceHelper.getBean(CustomerAccountRules.class);
-        final FinancialAct current = rules.getCredit(invoicer.getCustomer());
+        FinancialAct current = accountRules.getCredit(invoicer.getCustomer());
         charge(act, current, invoicer, listener);
     }
 
     /**
+     * Invoices or credits an order/return that is unrelated to an existing invoice.
+     *
+     * @param act      the order/return
+     * @param invoicer the order invoicer
+     * @param listener the listener to notify on completion
+     */
+    private void invoiceOrCredit(FinancialAct act, OrderInvoicer invoicer, CompletionListener listener) {
+        if (invoicer.isOrder()) {
+            invoice(act, invoicer, listener);
+        } else {
+            FinancialAct current = accountRules.getInvoice(invoicer.getCustomer());
+            if (current == null || !returnItems(act, current, invoicer, listener)) {
+                credit(act, invoicer, listener);
+            }
+        }
+    }
+
+    /**
+     * Attempts to apply an order return to an invoice.
+     * For this to be successful
+     * <ul>
+     * <li>the order return must not be related to an invoice.q<br>i.e. it must not be in response to an order that
+     * originated from an invoice. <br/>
+     * This is necessary to avoid interfering with other orders</li>
+     * <li>each line item in the order return must have a corresponding invoice item in the invoice</li>
+     * <li>the quantities in the order return cannot exceed those in the invoice</li>
+     * <p>
+     *
+     * @param act      the order return
+     * @param invoice  the invoice
+     * @param invoicer the invoicer
+     * @param listener the listener to notify on completion
+     * @return {@code true} if the order return was applied
+     */
+    private boolean returnItems(FinancialAct act, FinancialAct invoice, OrderInvoicer invoicer,
+                                CompletionListener listener) {
+        boolean result = false;
+        DefaultLayoutContext context = new DefaultLayoutContext(this.context, help);
+        CustomerChargeActEditDialog dialog = invoicer.returnItems(invoice, this, context);
+        if (dialog != null) {
+            dialog.addWindowPaneListener(new WindowPaneListener() {
+                @Override
+                public void onClose(WindowPaneEvent event) {
+                    listener.completed();
+                }
+            });
+            if (ActStatus.POSTED.equals(act.getStatus())) {
+                charged.add(act);
+                dialog.checkOrders();
+            }
+            result = true;
+        }
+        return result;
+    }
+
+    /**
      * Charges an order or order return.
-     * <p/>
+     * <p>
      * If there is no current invoice, the item will be charged and the invoice/credit displayed in an editor.
      * If there is an invoice, a dialog will be displayed to invoice the order to a the current invoice, or a new
      * invoice.
@@ -375,9 +430,8 @@ public class OrderCharger {
      * @param invoicer the order invoicer
      * @param listener the listener to notify on completion
      */
-    private void charge(final FinancialAct act, final FinancialAct current, final OrderInvoicer invoicer,
-                        final CompletionListener listener) {
-        final DefaultLayoutContext context = new DefaultLayoutContext(this.context, help);
+    private void charge(FinancialAct act, FinancialAct current, OrderInvoicer invoicer, CompletionListener listener) {
+        DefaultLayoutContext context = new DefaultLayoutContext(this.context, help);
         if (current == null) {
             // no current invoice
             doCharge(act, invoicer, null, context, listener);
@@ -445,6 +499,12 @@ public class OrderCharger {
             buffer.append("\n");
         }
         buffer.append(message);
+    }
+
+    public interface CompletionListener {
+
+        void completed();
+
     }
 
     private static class SelectChargeDialog extends ConfirmationDialog {

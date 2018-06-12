@@ -47,9 +47,11 @@ import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditorTest;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditDialog;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActEditor;
+import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeTestHelper;
 import org.openvpms.web.workspace.customer.charge.TestChargeEditor;
 import org.openvpms.web.workspace.customer.charge.TestPharmacyOrderService;
@@ -59,10 +61,12 @@ import java.util.Date;
 import java.util.List;
 
 import static java.math.BigDecimal.ONE;
+import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.ZERO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.web.workspace.customer.order.PharmacyTestHelper.createOrder;
 import static org.openvpms.web.workspace.customer.order.PharmacyTestHelper.createReturn;
@@ -129,7 +133,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         BigDecimal fixedPrice = new BigDecimal("1.82");
         BigDecimal unitPrice = new BigDecimal("9.09");
         fixedPriceIncTax = BigDecimal.valueOf(2);
-        unitPriceIncTax = BigDecimal.TEN;
+        unitPriceIncTax = TEN;
 
         // create a product linked to a pharmacy
         Party location = TestHelper.createLocation();
@@ -141,7 +145,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         ProductTestHelper.addPharmacy(product, pharmacy);
 
         // add a dose to the product. This should always be overridden
-        Entity dose = ProductTestHelper.createDose(null, BigDecimal.ZERO, BigDecimal.TEN, BigDecimal.TEN,
+        Entity dose = ProductTestHelper.createDose(null, BigDecimal.ZERO, TEN, TEN,
                                                    BigDecimal.ONE);
         ProductTestHelper.addDose(product, dose);
 
@@ -164,7 +168,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
 
     /**
      * Tests charging an order that isn't linked to an existing invoice.
-     * <p/>
+     * <p>
      * This should create a new invoice.
      */
     @Test
@@ -198,7 +202,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
 
     /**
      * Tests charging a return that isn't linked to an existing invoice.
-     * <p/>
+     * <p>
      * This should create a Credit.
      */
     @Test
@@ -214,7 +218,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         PharmacyOrderInvoicer charger = new TestPharmacyOrderInvoicer(orderReturn, rules);
         assertTrue(charger.isValid());
         assertTrue(charger.canCredit());
-        assertFalse(charger.canInvoice());
+        assertTrue(charger.canInvoice());
 
         Date now = new Date();
         DefaultLayoutContext layoutContext = new DefaultLayoutContext(context, new HelpContext("foo", null));
@@ -232,7 +236,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
 
     /**
      * Tests charging an order that is linked to an existing IN_PROGRESS invoice.
-     * <p/>
+     * <p>
      * The invoice quantity should remain the same, and the receivedQuantity updated.
      */
     @Test
@@ -266,7 +270,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
     /**
      * Tests charging an order that is linked to an existing IN_PROGRESS invoice, with a greater quantity than that
      * invoiced.
-     * <p/>
+     * <p>
      * The invoice quantity should be updated.
      */
     @Test
@@ -303,7 +307,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
     /**
      * Tests charging an order that is linked to an existing POSTED invoice, with a greater quantity than that
      * invoiced.
-     * <p/>
+     * <p>
      * A new invoice should be created with the difference between that invoiced and that ordered.
      */
     @Test
@@ -346,7 +350,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
     /**
      * Tests charging an order that is linked to an existing IN_PROGRESS invoice, with a lesser quantity than that
      * invoiced.
-     * <p/>
+     * <p>
      * The invoice quantity should be updated.
      */
     @Test
@@ -385,7 +389,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
 
     /**
      * Tests charging an order that is linked to an existing POSTED invoice, with a lesser quantity than that invoiced.
-     * <p/>
+     * <p>
      * A new credit should be created with the difference between that invoiced and that ordered.
      */
     @Test
@@ -454,7 +458,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
 
     /**
      * Tests applying an order and return for the same quantity to an IN_PROGRESS invoice.
-     * <p/>
+     * <p>
      * This will set the invoice quantity to 0.
      */
     @Test
@@ -485,7 +489,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
     /**
      * Tests charging an order that is linked to an existing POSTED invoice, with a the same quantity that was
      * invoiced.
-     * <p/>
+     * <p>
      * No new invoice should be created.
      */
     @Test
@@ -657,8 +661,101 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
     }
 
     /**
+     * Tests applying order returns to an invoice where the order returns aren't related to any invoice item.
+     */
+    @Test
+    public void testApplyUnlinkedOrderReturnsToInvoice() {
+        BigDecimal fixedPrice = new BigDecimal("1.82");
+        BigDecimal unitPrice = new BigDecimal("9.09");
+        Product product = createProduct(ProductArchetypes.MEDICATION, fixedPrice, unitPrice);
+
+        BigDecimal five = BigDecimal.valueOf(5);
+        FinancialAct act1 = createReturn(customer, patient, product, five, null); // not linked to an invoice item
+        TestChargeEditor editor = createEditor();
+        editor.setStatus(ActStatus.IN_PROGRESS);
+        PharmacyOrderInvoicer invoicer1 = new TestPharmacyOrderInvoicer(act1, rules);
+        OrderInvoicer.Status status1 = invoicer1.getChargeStatus(editor);
+        assertFalse(status1.canCharge());
+        String message1 = Messages.format("customer.order.return.notinvoiced", act1.getId(), "Pharmacy Return",
+                                          "Invoice", product.getName());
+        assertEquals(message1, status1.getReason());
+
+        // now add one of the product to the invoice
+        CustomerChargeActItemEditor itemEditor = addItem(editor, patient, product, BigDecimal.ONE, editor.getQueue());
+
+        OrderInvoicer.Status status2 = invoicer1.getChargeStatus(editor);
+        assertFalse(status2.canCharge());
+        String message2 = Messages.format("customer.order.return.qtyexceeded", act1.getId(), "Pharmacy Return",
+                                          "Invoice", product.getName());
+        assertEquals(message2, status2.getReason());
+
+        itemEditor.setQuantity(BigDecimal.valueOf(6));
+        OrderInvoicer.Status status3 = invoicer1.getChargeStatus(editor);
+        assertTrue(status3.canCharge());
+        assertNull(status3.getReason());
+
+        invoicer1.charge(editor);
+        assertEquals(ActStatus.POSTED, act1.getStatus());
+
+        assertTrue(SaveHelper.save(editor));
+        FinancialAct charge1 = get(editor.getObject());
+        assertTrue(TypeHelper.isA(charge1, CustomerAccountArchetypes.INVOICE));
+        BigDecimal tax = new BigDecimal("1.091");
+        BigDecimal total = BigDecimal.valueOf(12);
+        checkItem(charge1, patient, product, ONE, unitPriceIncTax, fixedPriceIncTax, tax, total, null, null);
+        checkCharge(charge1, customer, author, clinician, new BigDecimal("1.09"), total);
+
+        // now do another return this time reducing the quantity to zero. This should remove the line item.
+        FinancialAct act2 = createReturn(customer, patient, product, ONE, null);
+        PharmacyOrderInvoicer invoicer2 = new TestPharmacyOrderInvoicer(act2, rules);
+        invoicer2.charge(editor);
+        assertEquals(ActStatus.POSTED, act2.getStatus());
+
+        assertTrue(SaveHelper.save(editor));
+        FinancialAct charge2 = get(editor.getObject());
+        assertEquals(0, new IMObjectBean(charge2).getValues("items").size()); // no items
+        checkCharge(charge2, customer, author, clinician, ZERO, ZERO);
+    }
+
+    /**
+     * Verifies that when an order return that is not related to any invoice item is applied to an invoice item with a
+     * mininum quantity, the invoice item is not deleted when its quantity falls to zero.
+     */
+    @Test
+    public void testApplyUnlinkedOrderReturnsToInvoiceWithMinimumQuantity() {
+        BigDecimal fixedPrice = new BigDecimal("1.82");
+        BigDecimal unitPrice = new BigDecimal("9.09");
+        Product product = createProduct(ProductArchetypes.MEDICATION, fixedPrice, unitPrice);
+
+        TestChargeEditor editor = createEditor();
+        editor.setStatus(ActStatus.IN_PROGRESS);
+
+        // now add one of the product to the invoice, and set the minimum quantity to one
+        CustomerChargeActItemEditor itemEditor = addItem(editor, patient, product, ONE, editor.getQueue());
+        itemEditor.setMinimumQuantity(ONE);
+        assertTrue(SaveHelper.save(editor));
+
+        // create a return for the product, and invoice it
+        FinancialAct act1 = createReturn(customer, patient, product, ONE, null); // not linked to an invoice item
+        PharmacyOrderInvoicer invoicer1 = new TestPharmacyOrderInvoicer(act1, rules);
+        OrderInvoicer.Status status1 = invoicer1.getChargeStatus(editor);
+        assertTrue(status1.canCharge());
+        invoicer1.charge(editor);
+        assertEquals(ActStatus.POSTED, act1.getStatus());
+
+        // shouldn't be able to save the item, as its quantity is now zero
+        checkEquals(ZERO, itemEditor.getQuantity());
+        assertFalse(SaveHelper.save(editor));
+
+        // set the minimum quantity to allow the invoice to save
+        itemEditor.setMinimumQuantity(ZERO);
+        assertTrue(SaveHelper.save(editor));
+    }
+
+
+    /**
      * Verifies that a validation error is raised if a required field is missing.
-     * <p/>
+     * <p>
      * Validation cannot occur using the archetype as as the delivery processor must be able to save incomplete/invalid
      * orders and returns.
      *

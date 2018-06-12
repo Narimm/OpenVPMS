@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.patient.visit;
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -122,8 +123,9 @@ public class VisitChargeCRUDWindow extends AbstractCRUDWindow<FinancialAct> impl
               context, help);
         this.event = event;
         OrderRules rules = ServiceHelper.getBean(OrderRules.class);
-        OrderCharger charger = new OrderCharger(context.getCustomer(), context.getPatient(), rules, context,
-                                                help.subtopic("order"));
+        CustomerAccountRules accountRules = ServiceHelper.getBean(CustomerAccountRules.class);
+        OrderCharger charger = new OrderCharger(context.getCustomer(), context.getPatient(), rules, accountRules,
+                                                context, help.subtopic("order"));
         alerts = new AlertManager(container, 2);
         manager = new OrderChargeManager(charger, alerts.getListener());
     }

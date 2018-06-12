@@ -20,15 +20,19 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
@@ -53,6 +57,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.math.BigDecimal.ZERO;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE;
 
 /**
  * This class is responsible for creating charges from <em>act.customerOrder*</em> and <em>act.customerReturn*</em>
@@ -61,6 +66,35 @@ import static java.math.BigDecimal.ZERO;
  * @author Tim Anderson
  */
 public abstract class OrderInvoicer extends AbstractInvoicer {
+
+    public static class Status {
+
+        private final String reason;
+
+        private Status(String reason) {
+            this.reason = reason;
+        }
+
+        public boolean canCharge() {
+            return reason == null;
+        }
+
+        public String getReason() {
+            return reason;
+        }
+
+        public static Status valid() {
+            return new Status(null);
+        }
+
+        public static Status invalid(String reason) {
+            if (reason == null) {
+                throw new IllegalArgumentException("Argument 'reason' is null");
+            }
+            return new Status(reason);
+        }
+
+    }
 
     /**
      * The order/return.
@@ -104,18 +138,39 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
         ActBean bean = new ActBean(act);
         customer = bean.getNodeParticipantRef("customer");
         items = new ArrayList<>();
+        IArchetypeRuleService service = ServiceHelper.getArchetypeService();
 
         for (FinancialAct item : bean.getNodeActs("items", FinancialAct.class)) {
-            FinancialAct invoiceItem = rules.getInvoiceItem(item);
+            Reference invoiceItemRef = rules.getInvoiceItemRef(item);
+            FinancialAct invoiceItem = (invoiceItemRef != null) ? (FinancialAct) service.get(invoiceItemRef) : null;
             FinancialAct invoice = null;
             if (invoiceItem != null) {
                 invoice = getInvoice(invoiceItem, invoices);
             }
-            items.add(createItem(item, invoiceItem, invoice));
+            boolean ordered = invoiceItemRef != null;
+            items.add(createItem(item, ordered, invoiceItem, invoice));
         }
 
         invoice = (invoices.size() == 1) ? invoices.values().iterator().next() : null;
         properties = new PropertySet(act);
+    }
+
+    /**
+     * Determines if the act is an order.
+     *
+     * @return {@code true} if it is an order, {@code false} if it is an order return
+     */
+    public boolean isOrder() {
+        return !act.isCredit();
+    }
+
+    /**
+     * Determines if the act is an order return.
+     *
+     * @return {@code true} if it is an order return, {@code false} if it is an order
+     */
+    public boolean isOrderReturn() {
+        return !isOrder();
     }
 
     /**
@@ -200,28 +255,52 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
      * @return {@code true}  if the order or return can update the editor
      */
     public boolean canCharge(CustomerChargeActEditor editor) {
-        boolean result = false;
+        return getChargeStatus(editor).canCharge();
+    }
+
+    public Status getChargeStatus(CustomerChargeActEditor editor) {
+        Status result;
         FinancialAct charge = editor.getObject();
         if (!ActStatus.POSTED.equals(editor.getStatus())) {
             if (invoice != null && invoice.getId() == charge.getId()) {
-                result = true;
-            } else if (invoice == null && charge.isCredit() == act.isCredit()) {
-                result = true;
+                result = Status.valid();
+            } else if (invoice == null) {
+                if (charge.isCredit() == act.isCredit()) {
+                    // orders can always be applied to invoices, and order returns can always be applied to
+                    // credits
+                    result = Status.valid();
+                } else if (charge.isA(INVOICE) && isOrderReturn() && notFromInvoice()) {
+                    // can only apply an order return not related to an invoice if there are line items it can update
+                    Map<Item, CustomerChargeActItemEditor> matches = new HashMap<>();
+                    result = getEditorsForReturn(editor, matches);
+                } else {
+                    result = Status.invalid(Messages.format("customer.order.cannotcharge", act.getId(),
+                                                            DescriptorHelper.getDisplayName(act),
+                                                            editor.getDisplayName()));
+
+                }
+            } else if (invoice.getId() != editor.getObject().getId()) {
+                result = Status.invalid(Messages.format("customer.order.differentInvoice", act.getId(),
+                                                        DescriptorHelper.getDisplayName(act), invoice.getId()));
+            } else {
+                result = Status.valid();
             }
+        } else {
+            result = Status.invalid(Messages.format("customer.order.chargefinalised", editor.getDisplayName()));
         }
         return result;
     }
 
     /**
      * Creates charge for the pharmacy order.
-     * <p/>
+     * <p>
      * The editor is displayed in a visible dialog, in order for medication and reminder popups to be displayed
      * correctly.
      *
      * @param charge  the charge to add to, or {@code null} to create a new charge
      * @param charger the order charger, used to manage charging multiple orders. May be {@code null}
      * @param context the layout context
-     * @return an editor for the charge, or {@code null} if the editor cannot be created
+     * @return an editor for the charge
      * @throws IllegalStateException if the order cannot be invoiced
      * @throws OpenVPMSException     for any error
      */
@@ -233,7 +312,8 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
             throw new IllegalStateException("The order is incomplete and cannot be invoiced");
         }
         if (charge == null) {
-            if (canInvoice()) {
+            if (canInvoice() && isOrder()) {
+                // can only apply returns to existing invoices
                 charge = createInvoice(customer);
             } else if (canCredit()) {
                 charge = createCharge(CustomerAccountArchetypes.CREDIT, customer);
@@ -268,7 +348,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
 
     /**
      * Charges an order/return.
-     * <p/>
+     * <p>
      * This should only be invoked if {@link #requiresEdit()} has returned {@code false}
      */
     public void charge() {
@@ -286,18 +366,18 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
 
     /**
      * Charges an order or return.
-     * <p/>
+     * <p>
      * Note that the caller is responsible for saving the order/return.
      *
      * @param editor the editor to add invoice items to
      * @throws IllegalStateException if the editor cannot be used, or the order/return is invalid
      */
     public void charge(CustomerChargeActEditor editor) {
-        if (!canCharge(editor)) {
-            throw new IllegalStateException("Cannot charge " + act.getArchetypeId() + " to editor");
-        }
         if (!isValid()) {
             throw new IllegalStateException("The order is incomplete and cannot be invoiced");
+        }
+        if (!canCharge(editor)) {
+            throw new IllegalStateException("Cannot charge " + act.getArchetypeId() + " to editor");
         }
         doCharge(editor);
     }
@@ -320,7 +400,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
 
     /**
      * Determines if the order/return can be credited.
-     * <p/>
+     * <p>
      * Orders can only be credited if they apply to an existing invoice that has been posted,
      * and the quantity is less than that invoiced.
      *
@@ -337,8 +417,49 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
         return result;
     }
 
-    protected Item createItem(FinancialAct item, FinancialAct invoiceItem, FinancialAct invoice) {
-        return new Item(item, invoiceItem, invoice);
+    /**
+     * Determines if all items in the order are unrelated to invoice items.
+     * <p>
+     * This could be because the original items have been deleted, or because the order/return originated
+     * in an external system.
+     *
+     * @return {@code true}
+     */
+    public boolean notFromInvoice() {
+        boolean result = true;
+        for (Item item : items) {
+            if (item.isOrdered()) {
+                result = false;
+                break;
+            }
+        }
+        return result;
+    }
+
+    public CustomerChargeActEditDialog returnItems(FinancialAct invoice, OrderCharger charger, LayoutContext context) {
+        CustomerChargeActEditDialog result = null;
+        CustomerChargeActEditor editor = createChargeEditor(invoice, context);
+        CustomerChargeActEditDialog dialog = new DefaultCustomerChargeActEditDialog(editor, charger,
+                                                                                    context.getContext(), false);
+        if (applyOrderReturnToInvoice(editor)) {
+            dialog.show();
+            result = dialog;
+        }
+        return result;
+    }
+
+    /**
+     * Creates a new {@link Item}.
+     *
+     * @param item        the order/return item
+     * @param ordered     determines if the order/return originated in an invoice
+     * @param invoiceItem the invoice item that triggered the original order. May be {@code null} if the
+     *                    order/return doesn't originate from an invoice, or it has been deleted
+     * @param invoice     the invoice associated with {@code invoiceItem}. May be {@code null}
+     * @return a new item
+     */
+    protected Item createItem(FinancialAct item, boolean ordered, FinancialAct invoiceItem, FinancialAct invoice) {
+        return new Item(item, ordered, invoiceItem, invoice);
     }
 
     /**
@@ -364,26 +485,127 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
 
     /**
      * Charges an order/return.
-     * <p/>
+     * <p>
      * Note that the caller is responsible for saving the act.
      *
      * @param editor the editor to add invoice items to
+     * @return {@code true} if the charge was successful
      */
-    private void doCharge(CustomerChargeActEditor editor) {
+    private boolean doCharge(CustomerChargeActEditor editor) {
+        boolean result;
         ActRelationshipCollectionEditor items = editor.getItems();
 
-        for (Item item : this.items) {
-            FinancialAct current = item.getCurrentInvoiceItem(editor);
-            CustomerChargeActItemEditor itemEditor;
-            if (current != null) {
-                itemEditor = getItemEditor(current, editor);
-            } else {
-                itemEditor = getItemEditor(editor);
+        if (isOrderReturn() && notFromInvoice() && editor.getObject().isA(INVOICE)) {
+            result = applyOrderReturnToInvoice(editor);
+        } else {
+            for (Item item : this.items) {
+                FinancialAct current = item.getCurrentInvoiceItem(editor);
+                CustomerChargeActItemEditor itemEditor;
+                if (current != null) {
+                    itemEditor = getItemEditor(current, editor);
+                } else {
+                    itemEditor = getItemEditor(editor);
+                }
+                item.charge(editor, itemEditor);
             }
-            item.charge(editor, itemEditor);
+            act.setStatus(ActStatus.POSTED);
+            items.refresh();
+            result = true;
         }
-        act.setStatus(ActStatus.POSTED);
-        items.refresh();
+        return result;
+    }
+
+    private Status getEditorsForReturn(CustomerChargeActEditor editor, Map<Item, CustomerChargeActItemEditor> editors) {
+        Status result;
+        StringBuilder reason = new StringBuilder();
+        Map<Item, CustomerChargeActItemEditor> matches = new HashMap<>();
+        ActRelationshipCollectionEditor invoiceItems = editor.getItems();
+        List<Act> exclusions = new ArrayList<>();
+        for (Item item : items) {
+            FinancialAct invoiceItem = null;
+            List<Act> acts = editor.getItems().getCurrentActs();
+            boolean patientAndProductMatch = false;
+            for (Act act : acts) {
+                if (!exclusions.contains(act)) {
+                    IMObjectBean bean = new IMObjectBean(act);
+                    if (!bean.getBoolean("ordered") && item.samePatientAndProduct(bean)) {
+                        patientAndProductMatch = true;
+                        if (item.getQuantity().compareTo(bean.getBigDecimal("quantity")) <= 0) {
+                            invoiceItem = (FinancialAct) act;
+                            break;
+                        }
+                    }
+                }
+            }
+            CustomerChargeActItemEditor itemEditor = null;
+            if (invoiceItem != null) {
+                IMObjectEditor currentEditor = invoiceItems.getCurrentEditor();
+                // TODO shouldn't need to check the current editor. getEditor() should handle this.
+                if (currentEditor != null && currentEditor.getObject().equals(invoiceItem)) {
+                    itemEditor = (CustomerChargeActItemEditor) currentEditor;
+                } else {
+                    itemEditor = (CustomerChargeActItemEditor) invoiceItems.getEditor(invoiceItem);
+                }
+            }
+            if (itemEditor != null) {
+                matches.put(item, itemEditor);
+                exclusions.add(invoiceItem);
+            } else {
+                if (reason.length() != 0) {
+                    reason.append("\n");
+                }
+                String returnDisplayname = DescriptorHelper.getDisplayName(act);
+                String invoiceDisplayName = editor.getDisplayName();
+                String productName = IMObjectHelper.getName(item.getProduct());
+                if (patientAndProductMatch) {
+                    reason.append(Messages.format("customer.order.return.qtyexceeded", act.getId(),
+                                                  returnDisplayname, invoiceDisplayName, productName));
+                } else {
+                    reason.append(Messages.format("customer.order.return.notinvoiced", act.getId(),
+                                                  returnDisplayname, invoiceDisplayName, productName));
+                }
+                break;
+            }
+        }
+        if (reason.length() == 0) {
+            editors.putAll(matches);
+            result = Status.valid();
+        } else {
+            result = Status.invalid(reason.toString());
+        }
+        return result;
+    }
+
+    /**
+     * Tries to adjust the quantities of products that have been returned.
+     * <p>
+     * Note that the caller is responsible for saving the act.
+     *
+     * @param editor the editor
+     * @return {@code true} if each line item could be updated in the invoice, otherwise {@code false}
+     */
+    private boolean applyOrderReturnToInvoice(CustomerChargeActEditor editor) {
+        boolean result = false;
+        Map<Item, CustomerChargeActItemEditor> matches = new HashMap<>();
+        Status status = getEditorsForReturn(editor, matches);
+        if (status.canCharge()) {
+            for (Map.Entry<Item, CustomerChargeActItemEditor> entry : matches.entrySet()) {
+                Item item = entry.getKey();
+                CustomerChargeActItemEditor itemEditor = entry.getValue();
+                BigDecimal newInvoiceQty = itemEditor.getQuantity().subtract(item.getQuantity());
+                if (MathRules.isZero(newInvoiceQty) && MathRules.isZero(itemEditor.getMinimumQuantity())) {
+                    // only remove the item if the quantity is zero, and there is no minimum quantity
+                    editor.removeItem(itemEditor.getObject());
+                } else {
+                    itemEditor.setStartTime(item.getStartTime());
+                    itemEditor.setQuantity(newInvoiceQty);
+                }
+            }
+            act.setStatus(ActStatus.POSTED);
+            editor.getItems().refresh();
+            result = true;
+        }
+        return result;
     }
 
     /**
@@ -412,21 +634,44 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
 
     protected class Item {
 
+        private final boolean ordered;
+
         private final Date startTime;
+
         private final IMObjectReference patient;
+
         private final BigDecimal quantity;
+
         private final IMObjectReference product;
+
         private final IMObjectReference clinician;
+
         private final FinancialAct invoiceItem;
+
         private final BigDecimal invoiceQty;
+
         private final BigDecimal receivedQty;
+
         private final BigDecimal returnedQty;
+
         private final boolean isOrder;
+
         private final boolean posted;
+
         private final PropertySet properties;
 
-        public Item(FinancialAct orderItem, FinancialAct invoiceItem, FinancialAct invoice) {
+        /**
+         * Creates a new {@link Item}.
+         *
+         * @param orderItem   the order/return item
+         * @param ordered     determines if the order/return originated in an invoice
+         * @param invoiceItem the invoice item that triggered the original order. May be {@code null} if the
+         *                    order/return doesn't originate from an invoice, or it has been deleted
+         * @param invoice     the invoice associated with {@code invoiceItem}. May be {@code null}
+         */
+        public Item(FinancialAct orderItem, boolean ordered, FinancialAct invoiceItem, FinancialAct invoice) {
             ActBean bean = new ActBean(orderItem);
+            this.ordered = ordered;
             this.startTime = orderItem.getActivityStartTime();
             this.patient = bean.getNodeParticipantRef("patient");
             this.product = bean.getNodeParticipantRef("product");
@@ -448,6 +693,15 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
             properties = new PropertySet(orderItem);
         }
 
+        /**
+         * Determines if the order/return originated in an invoice.
+         *
+         * @return {@code true} if the order/return originated in an invoice, otherwise {@code false}
+         */
+        public boolean isOrdered() {
+            return ordered;
+        }
+
         public boolean isOrder() {
             return isOrder;
         }
@@ -462,6 +716,15 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
 
         public IMObjectReference getProduct() {
             return product;
+        }
+
+        /**
+         * Returns the quantity.
+         *
+         * @return the quantity
+         */
+        public BigDecimal getQuantity() {
+            return quantity;
         }
 
         public boolean isValid() {
@@ -481,8 +744,10 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
             if (isOrder) {
                 result = !(invoiceItem != null && posted) || quantity.compareTo(invoiceQty) >= 0;
             } else if (invoiceItem == null) {
-                // no existing invoice to add the return to
-                result = false;
+                // its a return, with no existing invoice to add the return to.
+                // If it wasn't ordered from an invoice in the first place, it may be able to be invoiced if the
+                // current invoice has a matching product
+                result = !ordered;
             } else if (!posted) {
                 // can only add the return if the associated invoice isn't posted
                 BigDecimal newQuantity = receivedQty.subtract(returnedQty).subtract(quantity);
@@ -501,7 +766,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
         public boolean requiresEdit() {
             boolean result = true;
             if (canInvoice()) {
-                if (receivedQty.subtract(returnedQty).add(quantity).compareTo(invoiceQty) <= 0) {
+                if (ordered && receivedQty.subtract(returnedQty).add(quantity).compareTo(invoiceQty) <= 0) {
                     result = !sameDetails();
                 }
             }
@@ -519,7 +784,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
 
         /**
          * Updates the received quantity on a POSTED invoice, iff it doesn't exceed the ordered quantity.
-         * <p/>
+         * <p>
          * NOTE: the caller is responsible for saving the item, ensuring that business rules aren't invoked
          *
          * @return {@code true} if the received quantity was updated
@@ -537,12 +802,18 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
             return result;
         }
 
+        /**
+         * Charges the order/return.
+         *
+         * @param editor     the charge editor
+         * @param itemEditor the charge item editor to update
+         */
         public void charge(CustomerChargeActEditor editor, CustomerChargeActItemEditor itemEditor) {
             FinancialAct object = (FinancialAct) itemEditor.getObject();
             itemEditor.setStartTime(startTime);
             itemEditor.setPatientRef(patient);
             itemEditor.setProductRef(product); // TODO - protect against product change
-            if (TypeHelper.isA(object, CustomerAccountArchetypes.INVOICE_ITEM)) {
+            if (object.isA(CustomerAccountArchetypes.INVOICE_ITEM)) {
                 BigDecimal received = itemEditor.getReceivedQuantity();
                 BigDecimal returned = itemEditor.getReturnedQuantity();
                 BigDecimal newInvoiceQty;
@@ -586,6 +857,12 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
             return result;
         }
 
+        /**
+         * Returns the current instance of the invoice item held by the editor, corresponding that of this item.
+         *
+         * @param editor the editor
+         * @return the current instance of the invoice item, or {@code null} if one is not found
+         */
         public FinancialAct getCurrentInvoiceItem(CustomerChargeActEditor editor) {
             FinancialAct result = null;
             if (invoiceItem != null) {
@@ -605,11 +882,14 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
          */
         public boolean sameDetails() {
             if (invoiceItem != null) {
-                ActBean bean = new ActBean(invoiceItem);
-                return ObjectUtils.equals(bean.getNodeParticipantRef("patient"), patient)
-                       && ObjectUtils.equals(bean.getNodeParticipantRef("product"), product);
+                IMObjectBean bean = new IMObjectBean(invoiceItem);
+                return samePatientAndProduct(bean);
             }
             return false;
+        }
+
+        public Date getStartTime() {
+            return startTime;
         }
 
         protected boolean validateRequired(Validator validator, String name, Object value) {
@@ -624,7 +904,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
          */
         protected boolean validateProduct(Validator validator) {
             boolean valid = false;
-            if (TypeHelper.isA(product, getProductArchetypes())) {
+            if (product.isA(getProductArchetypes())) {
                 valid = true;
             } else {
                 Property property = properties.get("product");
@@ -636,6 +916,17 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
 
         protected String[] getProductArchetypes() {
             return new String[]{ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE, ProductArchetypes.SERVICE};
+        }
+
+        /**
+         * Determines if a charge has the same patient and product as the item.
+         *
+         * @param bean the charge bean
+         * @return {@code true} if they have the same patient and product
+         */
+        private boolean samePatientAndProduct(IMObjectBean bean) {
+            return ObjectUtils.equals(bean.getTargetRef("patient"), patient)
+                   && ObjectUtils.equals(bean.getTargetRef("product"), product);
         }
 
     }

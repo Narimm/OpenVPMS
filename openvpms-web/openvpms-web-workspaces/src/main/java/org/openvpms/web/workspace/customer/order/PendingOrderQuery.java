@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.customer.order;
 
+import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -24,9 +25,11 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.im.query.AbstractQuery;
 import org.openvpms.web.component.im.query.ListResultSet;
-import org.openvpms.web.component.im.query.NonRenderingQuery;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
@@ -36,7 +39,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class PendingOrderQuery extends NonRenderingQuery<Act> {
+public class PendingOrderQuery extends AbstractQuery<Act> {
 
     /**
      * The orders and returns to query.
@@ -62,6 +65,8 @@ public class PendingOrderQuery extends NonRenderingQuery<Act> {
      * The order rules.
      */
     private final OrderRules rules;
+
+    private final FocusGroup group = new FocusGroup("PendingOrderQuery");
 
     /**
      * Constructs an {@link PendingOrderQuery}.
@@ -115,6 +120,26 @@ public class PendingOrderQuery extends NonRenderingQuery<Act> {
     @Override
     public BaseArchetypeConstraint.State getActive() {
         return BaseArchetypeConstraint.State.ACTIVE;
+    }
+
+    /**
+     * Returns the query component.
+     *
+     * @return the query component
+     */
+    @Override
+    public Component getComponent() {
+        return LabelFactory.create("customer.order.invoice.message");
+    }
+
+    /**
+     * Returns the focus group for the component.
+     *
+     * @return the focus group
+     */
+    @Override
+    public FocusGroup getFocusGroup() {
+        return group;
     }
 
     /**

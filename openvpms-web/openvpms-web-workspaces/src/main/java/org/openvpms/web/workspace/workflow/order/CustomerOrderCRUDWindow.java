@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.workflow.order;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.ArrayUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -140,13 +141,12 @@ public class CustomerOrderCRUDWindow extends ResultSetCRUDWindow<FinancialAct> {
         ActBean bean = new ActBean(act);
         Party customer = (Party) bean.getNodeParticipant("customer");
         if (customer != null) {
-            OrderCharger charger = new OrderCharger(customer, ServiceHelper.getBean(OrderRules.class),
-                                                    getContext(), getHelpContext().subtopic("order"));
-            charger.charge(act, new OrderCharger.CompletionListener() {
-                @Override
-                public void completed() {
-                    onRefresh(act);
-                }
+            OrderRules orderRules = ServiceHelper.getBean(OrderRules.class);
+            CustomerAccountRules accountRules = ServiceHelper.getBean(CustomerAccountRules.class);
+            OrderCharger charger = new OrderCharger(customer, orderRules, accountRules, getContext(),
+                                                    getHelpContext().subtopic("order"));
+            charger.charge(act, () -> {
+                onRefresh(act);
             });
         } else {
             String title = Messages.format("customer.order.invalid", DescriptorHelper.getDisplayName(act));

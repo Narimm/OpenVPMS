@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.customer.charge;
 
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.order.OrderRules;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.exception.OpenVPMSException;
@@ -92,10 +93,11 @@ public abstract class CustomerChargeActEditDialog extends ActEditDialog {
         addButton(IN_PROGRESS_ID);
         addButton(INVOICE_ORDERS_ID);
         setDefaultCloseAction(CANCEL_ID);
-        OrderRules rules = ServiceHelper.getBean(OrderRules.class);
         if (charger == null) {
+            OrderRules rules = ServiceHelper.getBean(OrderRules.class);
+            CustomerAccountRules accountRules = ServiceHelper.getBean(CustomerAccountRules.class);
             HelpContext help = editor.getHelpContext().subtopic("order");
-            charger = new OrderCharger(getContext().getCustomer(), rules, context, help);
+            charger = new OrderCharger(getContext().getCustomer(), rules, accountRules, context, help);
         }
         this.autoChargeOrders = autoChargeOrders;
         manager = new OrderChargeManager(charger, getAlertListener());
@@ -184,12 +186,7 @@ public abstract class CustomerChargeActEditDialog extends ActEditDialog {
         if (editor != null) {
             // register a listener to auto-save charges
             CustomerChargeActEditor chargeActEditor = (CustomerChargeActEditor) editor;
-            chargeActEditor.setAddItemListener(new Runnable() {
-                @Override
-                public void run() {
-                    autoSave();
-                }
-            });
+            chargeActEditor.setAddItemListener(this::autoSave);
         }
     }
 
@@ -253,12 +250,7 @@ public abstract class CustomerChargeActEditDialog extends ActEditDialog {
      */
     private void prepare(final boolean close) {
         UndispensedOrderChecker checker = new UndispensedOrderChecker(getEditor());
-        checker.confirm(getHelpContext(), new Runnable() {
-            @Override
-            public void run() {
-                saveCharge(close);
-            }
-        });
+        checker.confirm(getHelpContext(), () -> saveCharge(close));
     }
 
     /**
