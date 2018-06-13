@@ -34,7 +34,33 @@
         </dependency>
     </dependencies>
 
+    <properties>
+        <buildNumber.properties>${basedir}/src/main/resources/version/org/openvpms/version.properties
+        </buildNumber.properties>
+        <buildNumber>${git.commit.time}.${git.commit.id.abbrev}</buildNumber>
+    </properties>
+
     <build>
+        <plugins>
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <dateFormat>yyyyMMdd-HHmmss</dateFormat>
+                    <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+                    <generateGitPropertiesFile>false</generateGitPropertiesFile>
+                </configuration>
+            </plugin>
+        </plugins>
         <sourceDirectory>src/main/java</sourceDirectory>
         <resources>
             <resource>
@@ -46,12 +72,6 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>buildnumber-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
     </build>
 
 </project>

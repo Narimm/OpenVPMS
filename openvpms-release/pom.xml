@@ -106,10 +106,6 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>buildnumber-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
                 <!-- use the dependency plugin to get the .adl files from archetypes and sms-->
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
