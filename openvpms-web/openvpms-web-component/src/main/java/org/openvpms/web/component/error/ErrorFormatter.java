@@ -33,6 +33,13 @@ import java.util.List;
 public class ErrorFormatter {
 
     /**
+     * The message category.
+     */
+    public enum Category {
+        DEFAULT, DELETE
+    }
+
+    /**
      * Formats a validation error.
      *
      * @param error the validation error
@@ -71,10 +78,21 @@ public class ErrorFormatter {
      * @return the exception message
      */
     public static String format(Throwable exception, String displayName) {
+        return format(exception, Category.DEFAULT, displayName);
+    }
+
+    /**
+     * Returns the preferred exception message from an exception hierarchy.
+     *
+     * @param exception   the exception
+     * @param displayName the display name to include in the message. May be {@code null}
+     * @return the exception message
+     */
+    public static String format(Throwable exception, Category category, String displayName) {
         Throwable cause = ExceptionHelper.getRootCause(exception);
-        String result = getFormattedMessage(cause, displayName);
+        String result = getFormattedMessage(cause, category, displayName);
         if (result == null && exception != cause) {
-            result = getFormattedMessage(exception, displayName);
+            result = getFormattedMessage(exception, category, displayName);
         }
         if (result == null) {
             result = exception.getLocalizedMessage();
@@ -86,13 +104,15 @@ public class ErrorFormatter {
      * Returns a formatted message for an exception, if one is configured.
      *
      * @param exception   the exception
+     * @param category    the message category
      * @param displayName the display name
      * @return the formatted message, or {@code null} if none is available
      */
-    private static String getFormattedMessage(Throwable exception, String displayName) {
+    private static String getFormattedMessage(Throwable exception, Category category, String displayName) {
         String result = null;
         if (displayName != null) {
-            String key = exception.getClass().getName() + ".formatted";
+            String prefix = (category == Category.DEFAULT) ? "" : "." + category.toString().toLowerCase();
+            String key = exception.getClass().getName() + prefix + ".formatted";
             result = Messages.formatNull(key, displayName);
         }
         if (result == null) {
@@ -111,7 +131,7 @@ public class ErrorFormatter {
      *
      * @param exception the exception
      * @return the first error from the exception, or the localised message
-     *         if there is no error
+     * if there is no error
      */
     private static String getError(ValidationException exception) {
         List<ValidationError> errors = exception.getErrors();

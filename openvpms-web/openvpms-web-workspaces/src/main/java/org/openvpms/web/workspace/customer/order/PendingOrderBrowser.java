@@ -71,16 +71,6 @@ public class PendingOrderBrowser extends AbstractQueryBrowser<Act> {
     }
 
     /**
-     * Lays out this component.
-     *
-     * @param container the container
-     */
-    @Override
-    protected void doLayout(Component container) {
-        container.add(LabelFactory.create("customer.order.invoice.message"));
-    }
-
-    /**
      * Returns the selected orders.
      *
      * @return the selected orders
@@ -92,6 +82,16 @@ public class PendingOrderBrowser extends AbstractQueryBrowser<Act> {
     }
 
     /**
+     * Lays out the query component.
+     *
+     * @return the query component
+     */
+    @Override
+    protected Component doQueryLayout() {
+        return getQuery().getComponent();
+    }
+
+    /**
      * Creates a table model.
      *
      * @param context the layout context
@@ -99,10 +99,15 @@ public class PendingOrderBrowser extends AbstractQueryBrowser<Act> {
      */
     @Override
     protected IMTableModel<Act> createTableModel(LayoutContext context) {
-        return new PagedActHierarchyTableModel<Act>(new OrderTableModel(context), ITEM_SHORT_NAMES);
+        return new PagedActHierarchyTableModel<>(new OrderTableModel(context), ITEM_SHORT_NAMES);
     }
 
     private static class OrderTableModel extends DescriptorTableModel<Act> {
+
+        /**
+         * The order rules.
+         */
+        private final OrderRules rules;
 
         /**
          * The patient column model index.
@@ -137,12 +142,7 @@ public class PendingOrderBrowser extends AbstractQueryBrowser<Act> {
         /**
          * Tracks selected orders.
          */
-        private Map<IMObjectReference, Boolean> selected = new HashMap<IMObjectReference, Boolean>();
-
-        /**
-         * The order rules.
-         */
-        private final OrderRules rules;
+        private Map<IMObjectReference, Boolean> selected = new HashMap<>();
 
         /**
          * Constructs an {@link OrderTableModel}.
@@ -160,7 +160,7 @@ public class PendingOrderBrowser extends AbstractQueryBrowser<Act> {
          * @return the selected orders
          */
         public List<Act> getOrders() {
-            List<Act> result = new ArrayList<Act>();
+            List<Act> result = new ArrayList<>();
             for (Map.Entry<IMObjectReference, Boolean> entry : selected.entrySet()) {
                 if (entry.getValue() == null || entry.getValue()) { // default to selected
                     IMObject object = IMObjectHelper.getObject(entry.getKey());

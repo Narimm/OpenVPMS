@@ -11,29 +11,29 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.prefs;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -61,11 +61,6 @@ class PreferencesImpl implements Preferences {
     private final IMObjectReference source;
 
     /**
-     * The preferences.
-     */
-    private EntityBean bean;
-
-    /**
      * The preference groups.
      */
     private final List<PreferenceGroup> groups = new ArrayList<>();
@@ -79,6 +74,16 @@ class PreferencesImpl implements Preferences {
      * The transaction manager, or {@code null} if changes aren't persistent.
      */
     private final PlatformTransactionManager transactionManager;
+
+    /**
+     * The preferences.
+     */
+    private IMObjectBean bean;
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(PreferencesImpl.class);
 
     /**
      * Constructs a  {@link PreferencesImpl}. Changes aren't persistent.
@@ -106,7 +111,7 @@ class PreferencesImpl implements Preferences {
                            IArchetypeService service, PlatformTransactionManager transactionManager) {
         this.party = party;
         this.source = source;
-        bean = new EntityBean(preferences, service);
+        bean = service.getBean(preferences);
         this.service = service;
         this.transactionManager = transactionManager;
     }
@@ -229,9 +234,9 @@ class PreferencesImpl implements Preferences {
 
     /**
      * Returns preferences for a party.
-     * <p/>
+     * <p>
      * If the party has no preferences, and a {@code source} party is specified, the
-     * <p/>
+     * <p>
      * Changes will not be made persistent.
      *
      * @param party   the party
@@ -263,33 +268,30 @@ class PreferencesImpl implements Preferences {
     public static Entity getPreferences(final IMObjectReference party, final IMObjectReference source,
                                         final IArchetypeService service,
                                         PlatformTransactionManager transactionManager) {
-        Entity prefs;
+        Entity result;
         TransactionTemplate template = new TransactionTemplate(transactionManager);
-        prefs = template.execute(new TransactionCallback<Entity>() {
-            @Override
-            public Entity doInTransaction(TransactionStatus status) {
-                Entity prefs = getEntity(party, service);
-                if (prefs == null && source != null) {
-                    Entity sourcePrefs = getEntity(source, service);
-                    if (sourcePrefs != null) {
-                        prefs = copy(party, sourcePrefs, service);
-                    }
+        result = template.execute(status -> {
+            Entity prefs = getEntity(party, service);
+            if (prefs == null && source != null) {
+                Entity sourcePrefs = getEntity(source, service);
+                if (sourcePrefs != null) {
+                    prefs = copy(party, sourcePrefs, service);
                 }
-                if (prefs == null) {
-                    prefs = (Entity) service.create(PreferenceArchetypes.PREFERENCES);
-                    IMObjectBean bean = new IMObjectBean(prefs, service);
-                    bean.addNodeTarget("user", party);
-                    bean.save();
-                }
-                return prefs;
             }
+            if (prefs == null) {
+                prefs = (Entity) service.create(PreferenceArchetypes.PREFERENCES);
+                IMObjectBean bean = service.getBean(prefs);
+                bean.addTarget("user", party);
+                bean.save();
+            }
+            return prefs;
         });
-        return prefs;
+        return result;
     }
 
     /**
      * Resets the preferences for a party.
-     * <p/>
+     * <p>
      * If a source party is specified, it's preferences will be copied to the party if they exist.
      *
      * @param party              the party
@@ -305,8 +307,8 @@ class PreferencesImpl implements Preferences {
             public void doInTransactionWithoutResult(TransactionStatus status) {
                 Entity prefs = getEntity(party, service);
                 if (prefs != null) {
-                    EntityBean bean = new EntityBean(prefs, service);
-                    List<IMObject> groups = bean.getNodeTargetObjects("groups");
+                    IMObjectBean bean = service.getBean(prefs);
+                    List<IMObject> groups = bean.getTargets("groups", IMObject.class);
                     List<EntityLink> relationships = bean.getValues("groups", EntityLink.class);
                     for (EntityLink relationship : relationships) {
                         prefs.removeEntityLink(relationship);
@@ -325,6 +327,26 @@ class PreferencesImpl implements Preferences {
                 }
             }
         });
+    }
+
+    /**
+     * Returns the available group names. These correspond to the archetype short names of the target node of
+     * the relationships.
+     *
+     * @param relationshipTypes the relationship types
+     * @return the available group names
+     */
+    protected Set<String> getGroupNames(String[] relationshipTypes) {
+        return new LinkedHashSet<>(Arrays.asList(DescriptorHelper.getNodeShortNames(relationshipTypes, "target")));
+    }
+
+    /**
+     * Returns the available preference relationship types.
+     *
+     * @return the relationship types
+     */
+    protected String[] getRelationshipTypes() {
+        return DescriptorHelper.getShortNames("entityLink.preferenceGroup*");
     }
 
     /**
@@ -362,28 +384,8 @@ class PreferencesImpl implements Preferences {
     }
 
     /**
-     * Returns the available group names. These correspond to the archetype short names of the target node of
-     * the relationships.
-     *
-     * @param relationshipTypes the relationship types
-     * @return the available group names
-     */
-    protected Set<String> getGroupNames(String[] relationshipTypes) {
-        return new LinkedHashSet<>(Arrays.asList(DescriptorHelper.getNodeShortNames(relationshipTypes, "target")));
-    }
-
-    /**
-     * Returns the available preference relationship types.
-     *
-     * @return the relationship types
-     */
-    protected String[] getRelationshipTypes() {
-        return DescriptorHelper.getShortNames("entityLink.preferenceGroup*");
-    }
-
-    /**
      * Returns a group, given its name.
-     * <p/>
+     * <p>
      * If the group doesn't exist, it will be created.
      *
      * @param name the group name
@@ -439,11 +441,14 @@ class PreferencesImpl implements Preferences {
     private PreferenceGroup addGroup(String name, String relationshipType, boolean save) {
         PreferenceGroup result;
         Entity entity = (Entity) service.create(name);
-        bean.addNodeTarget("groups", relationshipType, entity);
+        bean.addTarget("groups", relationshipType, entity);
         if (save) {
             try {
-                service.save(Arrays.asList(bean.getEntity(), entity));
+                bean.save(entity);
             } catch (Throwable exception) {
+                // This can occur if the root preference has been updated in a different browser session.
+                // NOTE that this will cause any outer transaction to roll back. See OVPMS-2046
+                log.error("Failed to add group=" + name + " to preference=" + bean.getReference(), exception);
                 reload();
                 addGroup(name, relationshipType, false);
             }
@@ -453,7 +458,14 @@ class PreferencesImpl implements Preferences {
         return result;
     }
 
-
+    /**
+     * Sets a preference.
+     *
+     * @param groupName the group name
+     * @param name      the preference name
+     * @param value     the value
+     * @param save      if {@code true}, make it persistent
+     */
     private void setPreference(String groupName, String name, Object value, boolean save) {
         PreferenceGroup group = getGroup(groupName);
         Object current = group.get(name);
@@ -463,6 +475,10 @@ class PreferencesImpl implements Preferences {
                 try {
                     group.save();
                 } catch (Throwable exception) {
+                    // This can occur if the group has been updated in a different browser session.
+                    // NOTE that this will cause any outer transaction to roll back. See OVPMS-2046
+                    log.error("Failed to save preference=" + group.getEntity().getObjectReference()
+                              + ", name=" + name + ", value=" + value, exception);
                     reload();
                     setPreference(groupName, name, value, false);
                 }
@@ -470,9 +486,12 @@ class PreferencesImpl implements Preferences {
         }
     }
 
+    /**
+     * Reloads preferences.
+     */
     private void reload() {
         Entity prefs = getPreferences(party, source, service, transactionManager);
-        bean = new EntityBean(prefs, service);
+        bean = service.getBean(prefs);
         groups.clear();
     }
 

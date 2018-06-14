@@ -29,7 +29,7 @@ import org.openvpms.web.workspace.patient.mr.PatientInvestigationActEditor;
 /**
  * This class is responsible for cancelling investigations associated with from
  * <em>act.customerReturnInvestigation</em> acts.
- * <p/>
+ * <p>
  * Unlike other {@link OrderInvoicer} implementations, this does not support the charging of new investigations,
  * or crediting returns. This is due to the fact that there is not a 1:1 relationship between a charge item and
  * investigations.
@@ -58,16 +58,26 @@ public class InvestigationOrderInvoicer extends OrderInvoicer {
         return true;
     }
 
+    /**
+     * Creates a new {@link Item}.
+     *
+     * @param item        the order/return item
+     * @param ordered     determines if the order/return originated in an invoice
+     * @param invoiceItem the invoice item that triggered the original order. May be {@code null} if the
+     *                    order/return doesn't originate from an invoice, or it has been deleted
+     * @param invoice     the invoice associated with {@code invoiceItem}. May be {@code null}
+     * @return a new item
+     */
     @Override
-    protected Item createItem(FinancialAct item, FinancialAct invoiceItem, FinancialAct invoice) {
-        return new InvestigationItem(item, invoiceItem, invoice);
+    protected Item createItem(FinancialAct item, boolean ordered, FinancialAct invoiceItem, FinancialAct invoice) {
+        return new InvestigationItem(item, ordered, invoiceItem, invoice);
     }
 
     private class InvestigationItem extends Item {
         private final IMObjectReference investigation;
 
-        public InvestigationItem(FinancialAct orderItem, FinancialAct invoiceItem, FinancialAct invoice) {
-            super(orderItem, invoiceItem, invoice);
+        public InvestigationItem(FinancialAct orderItem, boolean ordered, FinancialAct invoiceItem, FinancialAct invoice) {
+            super(orderItem, ordered, invoiceItem, invoice);
             ActBean bean = new ActBean(orderItem);
             this.investigation = bean.getReference("sourceInvestigation");
         }

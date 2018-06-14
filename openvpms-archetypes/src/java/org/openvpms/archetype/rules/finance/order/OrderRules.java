@@ -19,11 +19,12 @@ package org.openvpms.archetype.rules.finance.order;
 import org.apache.commons.collections4.CollectionUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -112,16 +113,9 @@ public class OrderRules {
      * @param orderItem the order item
      * @return the invoice item or {@code null} if none is found
      */
-    public FinancialAct getInvoiceItem(Act orderItem) {
-        FinancialAct result = null;
-        ActBean bean = new ActBean(orderItem, service);
-        if (bean.hasNode("sourceInvoiceItem")) {
-            IMObjectReference ref = bean.getReference("sourceInvoiceItem");
-            if (ref != null) {
-                result = (FinancialAct) service.get(ref);
-            }
-        }
-        return result;
+    public Reference getInvoiceItemRef(Act orderItem) {
+        IMObjectBean bean = service.getBean(orderItem);
+        return bean.hasNode("sourceInvoiceItem") ? bean.getReference("sourceInvoiceItem") : null;
     }
 
     /**

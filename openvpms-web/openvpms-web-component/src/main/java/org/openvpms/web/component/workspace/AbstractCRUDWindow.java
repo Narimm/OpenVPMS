@@ -31,6 +31,7 @@ import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.report.DocFormats;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.DelegatingContext;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.delete.AbstractIMObjectDeletionListener;
 import org.openvpms.web.component.im.delete.ConfirmingDeleter;
@@ -306,6 +307,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
         T object = IMObjectHelper.reload(getObject());
         if (object == null) {
             ErrorDialog.show(Messages.format("imobject.noexist", archetypes.getDisplayName()));
+            onRefresh(getObject());
         } else if (getActions().canDelete(object)) {
             delete(object);
         } else {
@@ -612,7 +614,9 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     protected void delete(T object) {
         IMObjectDeleter<T> deleter = getDeleter();
         HelpContext delete = getHelpContext().subtopic("delete");
-        deleter.delete(object, context, delete, new AbstractIMObjectDeletionListener<T>() {
+        Context local = new LocalContext(context);
+        // nest the context so the global context isn't updated. See OVPMS-2046
+        deleter.delete(object, local, delete, new AbstractIMObjectDeletionListener<T>() {
             public void deleted(T object) {
                 onDeleted(object);
             }

@@ -11,21 +11,25 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.delete;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.ObjectNotFoundException;
+import org.hibernate.pretty.MessageHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.error.ErrorFormatter;
 import org.openvpms.web.component.error.ExceptionHelper;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.io.Serializable;
 
 
 /**
@@ -74,10 +78,24 @@ public class AbstractIMObjectDeletionListener<T extends IMObject> implements IMO
         String displayName = DescriptorHelper.getDisplayName(object);
         Throwable rootCause = ExceptionHelper.getRootCause(cause);
         String title = Messages.get("imobject.delete.failed.title");
-        if (rootCause instanceof ObjectNotFoundException) {
-            // delete failed as the object (or a related object) has already been deleted
-            String message = Messages.format("imobject.notfound", displayName);
-            log.error(message, cause);
+        if (ExceptionHelper.isModifiedExternally(rootCause)) {
+            // Delete failed as the object (or a related object) has already been deleted
+            // Don't propagate the exception
+            String message;
+            if (rootCause instanceof ObjectNotFoundException) {
+                ObjectNotFoundException notFoundException = (ObjectNotFoundException) rootCause;
+                Serializable identifier = notFoundException.getIdentifier();
+                if (identifier != null && Long.toString(object.getId()).equals(identifier.toString())) {
+                    // really need to look at the entity name, to ensure they are of the correct type. TODO
+                    message = Messages.format("imobject.notfound", displayName);
+                } else {
+                    // TODO - really want an IMObjectReference to get the display name.
+                    message = Messages.format("imobject.notfound",
+                                              MessageHelper.infoString(notFoundException.getEntityName(), identifier));
+                }
+            } else {
+                message = ErrorFormatter.format(cause, ErrorFormatter.Category.DELETE, displayName);
+            }
             ErrorHelper.show(title, message);
         } else {
             String context = Messages.format("imobject.delete.failed", object.getObjectReference());
