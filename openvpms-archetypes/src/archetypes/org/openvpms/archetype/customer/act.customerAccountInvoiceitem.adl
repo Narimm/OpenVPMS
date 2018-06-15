@@ -144,8 +144,8 @@
         <node name="invoice" path="/targetActRelationships"
               type="java.util.HashSet" baseName="TargetActRelationship" minCardinality="0" maxCardinality="1"
               filter="actRelationship.customerAccountInvoiceItem" hidden="true"/>
-        <node name="claims" path="/sourceActRelationships"
-              type="java.util.HashSet" baseName="SourceActRelationship" minCardinality="0" maxCardinality="*"
+        <node name="claims" path="/targetActRelationships"
+              type="java.util.HashSet" baseName="TargetActRelationship" minCardinality="0" maxCardinality="*"
               filter="actRelationship.insuranceClaimInvoiceItem" readOnly="true" hidden="true"/>
     </archetype>
 </archetypes>
