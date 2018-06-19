@@ -162,7 +162,7 @@ public class ReminderProcessor {
         Date dueDate = reminder.getActivityStartTime();
         Set<Contact> contacts = Collections.singleton(contact);
         if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
-            if (!generateEmail(bean, dueDate, contacts, reminderCount, toSave)) {
+            if (!generateEmail(bean, dueDate, contacts, reminderCount, toSave, reminderType)) {
                 throw new IllegalStateException("Failed to generate email");
             }
         } else if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
@@ -173,11 +173,11 @@ public class ReminderProcessor {
             if (!contactBean.getBoolean("sms")) {
                 throw new IllegalArgumentException("Cannot use contact to SMS");
             }
-            if (!generateSMS(bean, dueDate, contacts, reminderCount, toSave)) {
+            if (!generateSMS(bean, dueDate, contacts, reminderCount, toSave, reminderType)) {
                 throw new IllegalStateException("Failed to generate SMS");
             }
         } else if (TypeHelper.isA(contact, ContactArchetypes.LOCATION)) {
-            if (!generatePrint(bean, dueDate, contacts, reminderCount, toSave)) {
+            if (!generatePrint(bean, dueDate, contacts, reminderCount, toSave, reminderType)) {
                 throw new IllegalStateException("Failed to generate print");
             }
         } else {
@@ -245,7 +245,7 @@ public class ReminderProcessor {
         ReminderRule matchingRule = null;
         for (ReminderRule rule : count.getRules()) {
             Set<Contact> matches = new HashSet<>();
-            if (getContacts(rule, list, matches, template, count, reminderType)) {
+            if (getContacts(rule, list, matches, template, count, reminderType, customer)) {
                 found = matches;
                 matchingRule = rule;
                 break;
@@ -263,30 +263,30 @@ public class ReminderProcessor {
             ReminderRule.SendTo sendTo = matchingRule.getSendTo();
             if (sendTo == ReminderRule.SendTo.ALL || sendTo == ReminderRule.SendTo.ANY) {
                 if (matchingRule.canEmail()) {
-                    generateEmail(bean, dueDate, found, count.getCount(), toSave);
+                    generateEmail(bean, dueDate, found, count.getCount(), toSave, reminderType);
                 }
                 if (!disableSMS && matchingRule.canSMS()) {
-                    generateSMS(bean, dueDate, found, count.getCount(), toSave);
+                    generateSMS(bean, dueDate, found, count.getCount(), toSave, reminderType);
                 }
                 if (matchingRule.canPrint()) {
-                    generatePrint(bean, dueDate, found, count.getCount(), toSave);
+                    generatePrint(bean, dueDate, found, count.getCount(), toSave, reminderType);
                 }
             } else {
                 boolean generated = matchingRule.canEmail() && generateEmail(bean, dueDate, found, count.getCount(),
-                                                                             toSave);
+                                                                             toSave, reminderType);
                 if (!generated) {
-                    generated = !disableSMS && matchingRule.canSMS() && generateSMS(bean, dueDate, found,
-                                                                                    count.getCount(), toSave);
+                    generated = !disableSMS && matchingRule.canSMS()
+                                && generateSMS(bean, dueDate, found, count.getCount(), toSave, reminderType);
                     if (!generated && matchingRule.canPrint()) {
-                        generatePrint(bean, dueDate, found, count.getCount(), toSave);
+                        generatePrint(bean, dueDate, found, count.getCount(), toSave, reminderType);
                     }
                 }
             }
             if (matchingRule.isExport()) {
-                generateExport(bean, dueDate, found, count.getCount(), toSave);
+                generateExport(bean, dueDate, found, count.getCount(), toSave, reminderType);
             }
             if (matchingRule.isList()) {
-                generateList(bean, dueDate, count.getCount(), null, toSave);
+                generateList(bean, dueDate, count.getCount(), null, toSave, reminderType);
             }
         } else {
             if (log.isDebugEnabled()) {
@@ -295,7 +295,7 @@ public class ReminderProcessor {
                           + ". Reminder will be Listed");
             }
             String message = new ReminderProcessorException(NoContactsForRules).getMessage();
-            generateList(bean, dueDate, count.getCount(), message, toSave);
+            generateList(bean, dueDate, count.getCount(), message, toSave, reminderType);
         }
         toSave.add(reminder);
         return toSave;
@@ -349,7 +349,7 @@ public class ReminderProcessor {
                     result = new ArrayList<>();
                     String error = new ReminderProcessorException(NoReminderCount, reminderType.getName(),
                                                                   reminderCount).getMessage();
-                    generateList(new ActBean(reminder, service), dueDate, reminderCount, error, result);
+                    generateList(new ActBean(reminder, service), dueDate, reminderCount, error, result, reminderType);
                 } else {
                     // a reminderCount > 0 with no ReminderCount is valid - just skip the reminder
                     result = Collections.emptyList();
@@ -381,22 +381,25 @@ public class ReminderProcessor {
     /**
      * Generates an email reminder item, if there is an email contact.
      *
-     * @param reminder the reminder
-     * @param dueDate  the reminder due date
-     * @param contacts the contacts
-     * @param count    the reminder count
-     * @param toSave   the list of acts to save
+     * @param reminder     the reminder
+     * @param dueDate      the reminder due date
+     * @param contacts     the contacts
+     * @param count        the reminder count
+     * @param toSave       the list of acts to save
+     * @param reminderType the reminder type
      * @return {@code true}, if an item was generated
      */
-    private boolean generateEmail(ActBean reminder, Date dueDate, Set<Contact> contacts, int count, List<Act> toSave) {
+    private boolean generateEmail(ActBean reminder, Date dueDate, Set<Contact> contacts, int count, List<Act> toSave,
+                                  ReminderType reminderType) {
         boolean result = false;
         if (hasContact(ContactArchetypes.EMAIL, contacts)) {
             createItem(ReminderArchetypes.EMAIL_REMINDER, config.getEmailSendDate(dueDate), reminder, count,
-                       null, toSave);
+                       null, toSave, reminderType);
             result = true;
         } else if (log.isDebugEnabled()) {
             log.debug("NOT generating email reminder for reminder=" + reminder.getAct().getId()
-                      + ", patient=" + getPatientId(reminder) + ": customer has no email contact");
+                      + ", patient=" + getPatientId(reminder) + ", reminderType=" + toString(reminderType)
+                      + ": customer has no email contact");
         }
         return result;
     }
@@ -404,22 +407,25 @@ public class ReminderProcessor {
     /**
      * Generates an SNS reminder item, if there is an SMS contact.
      *
-     * @param reminder the reminder
-     * @param dueDate  the reminder due date
-     * @param contacts the contacts
-     * @param count    the reminder count
-     * @param toSave   the list of acts to save
+     * @param reminder     the reminder
+     * @param dueDate      the reminder due date
+     * @param contacts     the contacts
+     * @param count        the reminder count
+     * @param toSave       the list of acts to save
+     * @param reminderType the reminder type
      * @return {@code true}, if an item was generated
      */
-    private boolean generateSMS(ActBean reminder, Date dueDate, Set<Contact> contacts, int count, List<Act> toSave) {
+    private boolean generateSMS(ActBean reminder, Date dueDate, Set<Contact> contacts, int count, List<Act> toSave,
+                                ReminderType reminderType) {
         boolean result = false;
         if (hasContact(ContactArchetypes.PHONE, contacts)) {
             createItem(ReminderArchetypes.SMS_REMINDER, config.getSMSSendDate(dueDate), reminder, count, null,
-                       toSave);
+                       toSave, reminderType);
             result = true;
         } else if (log.isDebugEnabled()) {
             log.debug("NOT generating SMS reminder for reminder=" + reminder.getAct().getId()
-                      + ", patient=" + getPatientId(reminder) + ": customer has no SMS contact");
+                      + ", patient=" + getPatientId(reminder) + ", reminderType=" + toString(reminderType)
+                      + ": customer has no SMS contact");
         }
         return result;
     }
@@ -427,22 +433,25 @@ public class ReminderProcessor {
     /**
      * Generates a print reminder item, if there is an location contact.
      *
-     * @param reminder the reminder
-     * @param dueDate  the reminder due date
-     * @param contacts the contacts
-     * @param count    the reminder count
-     * @param toSave   the list of acts to save
+     * @param reminder     the reminder
+     * @param dueDate      the reminder due date
+     * @param contacts     the contacts
+     * @param count        the reminder count
+     * @param toSave       the list of acts to save
+     * @param reminderType the reminder type
      * @return {@code true}, if an item was generated
      */
-    private boolean generatePrint(ActBean reminder, Date dueDate, Set<Contact> contacts, int count, List<Act> toSave) {
+    private boolean generatePrint(ActBean reminder, Date dueDate, Set<Contact> contacts, int count, List<Act> toSave,
+                                  ReminderType reminderType) {
         boolean result = false;
         if (hasContact(ContactArchetypes.LOCATION, contacts)) {
             createItem(ReminderArchetypes.PRINT_REMINDER, config.getPrintSendDate(dueDate), reminder, count,
-                       null, toSave);
+                       null, toSave, reminderType);
             result = true;
         } else if (log.isDebugEnabled()) {
             log.debug("NOT generating print reminder for reminder=" + reminder.getAct().getId()
-                      + ", patient=" + getPatientId(reminder) + ": customer has no location contact");
+                      + ", patient=" + getPatientId(reminder) + ", reminderType=" + toString(reminderType)
+                      + ": customer has no location contact");
         }
         return result;
     }
@@ -450,22 +459,25 @@ public class ReminderProcessor {
     /**
      * Generates an export reminder item, if there is an location contact.
      *
-     * @param reminder the reminder
-     * @param dueDate  the reminder due date
-     * @param contacts the contacts
-     * @param count    the reminder count
-     * @param toSave   the list of acts to save
+     * @param reminder     the reminder
+     * @param dueDate      the reminder due date
+     * @param contacts     the contacts
+     * @param count        the reminder count
+     * @param toSave       the list of acts to save
+     * @param reminderType the reminder type
      * @return {@code true}, if an item was generated
      */
-    private boolean generateExport(ActBean reminder, Date dueDate, Set<Contact> contacts, int count, List<Act> toSave) {
+    private boolean generateExport(ActBean reminder, Date dueDate, Set<Contact> contacts, int count, List<Act> toSave,
+                                   ReminderType reminderType) {
         boolean result = false;
         if (hasContact(ContactArchetypes.LOCATION, contacts)) {
             createItem(ReminderArchetypes.EXPORT_REMINDER, config.getExportSendDate(dueDate), reminder, count,
-                       null, toSave);
+                       null, toSave, reminderType);
             result = true;
         } else if (log.isDebugEnabled()) {
             log.debug("NOT generating export reminder for reminder=" + reminder.getAct().getId()
-                      + ", patient=" + getPatientId(reminder) + ": customer has no location contact");
+                      + ", patient=" + getPatientId(reminder) + ", reminderType=" + toString(reminderType)
+                      + ": customer has no location contact");
         }
         return result;
     }
@@ -473,14 +485,16 @@ public class ReminderProcessor {
     /**
      * Generates a list reminder item.
      *
-     * @param reminder the reminder
-     * @param dueDate  the reminder due date
-     * @param count    the reminder count
-     * @param toSave   the list of acts to save
+     * @param reminder     the reminder
+     * @param dueDate      the reminder due date
+     * @param count        the reminder count
+     * @param toSave       the list of acts to save
+     * @param reminderType the reminder type
      */
-    private Act generateList(ActBean reminder, Date dueDate, int count, String error, List<Act> toSave) {
+    private Act generateList(ActBean reminder, Date dueDate, int count, String error, List<Act> toSave,
+                             ReminderType reminderType) {
         return createItem(ReminderArchetypes.LIST_REMINDER, config.getListSendDate(dueDate), reminder, count, error,
-                          toSave);
+                          toSave, reminderType);
     }
 
     /**
@@ -502,16 +516,17 @@ public class ReminderProcessor {
     /**
      * Creates a reminder item.
      *
-     * @param shortName the reminder item archetype
-     * @param startTime the start time (aka send from date)
-     * @param reminder  the parent reminder
-     * @param count     the reminder count
-     * @param error     the error message. May be {@code null}
-     * @param toSave    the list to add the changed acts to
+     * @param shortName    the reminder item archetype
+     * @param startTime    the start time (aka send from date)
+     * @param reminder     the parent reminder
+     * @param count        the reminder count
+     * @param error        the error message. May be {@code null}
+     * @param toSave       the list to add the changed acts to
+     * @param reminderType the reminder type
      * @return the new reminder item
      */
     private Act createItem(String shortName, Date startTime, ActBean reminder, int count, String error,
-                           List<Act> toSave) {
+                           List<Act> toSave, ReminderType reminderType) {
         Act act = (Act) service.create(shortName);
         act.setActivityStartTime(DateRules.getDate(startTime));  // set the send date
         act.setActivityEndTime(reminder.getDate("endTime"));     // set the due date to that of the reminder
@@ -522,6 +537,13 @@ public class ReminderProcessor {
             act.setStatus(ReminderItemStatus.ERROR);
         } else {
             act.setStatus(ReminderItemStatus.PENDING);
+        }
+
+        if (log.isDebugEnabled()) {
+            log.debug("Generating " + shortName + ", reminder=" + reminder.getAct().getId() + ", patient="
+                      + getPatientId(reminder) + ", reminderType=" + toString(reminderType) +
+                      ", send=" + toString(act.getActivityStartTime()) + ", due=" + toString(act.getActivityEndTime())
+                      + ", count=" + count + ", error=" + error);
         }
 
         reminder.addNodeRelationship("items", act);
@@ -538,18 +560,20 @@ public class ReminderProcessor {
      * @param template     the document template
      * @param count        the reminder count
      * @param reminderType the reminder type
+     * @param customer     the customer
      * @return {@code true} if the rule matched, otherwise {@code false}
      */
     private boolean getContacts(ReminderRule rule, List<Contact> contacts, Set<Contact> matches,
-                                DocumentTemplate template, ReminderCount count, ReminderType reminderType) {
+                                DocumentTemplate template, ReminderCount count, ReminderType reminderType,
+                                Party customer) {
         ReminderRule.SendTo sendTo = rule.getSendTo();
         boolean isAll = sendTo == ReminderRule.SendTo.ALL;
         if (!contacts.isEmpty()) {
             if (rule.isContact()) {
                 if (!addReminderContacts(contacts, matches, template, count, reminderType) && isAll) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Rule not matched. There are no REMINDER contacts for reminderType="
-                                  + toString(reminderType) + ", count=" + count.getCount()
+                        log.debug("Rule not matched. There are no REMINDER contacts for customer=" + toString(customer)
+                                  + ", reminderType=" + toString(reminderType) + ", count=" + count.getCount()
                                   + ", rule=" + rule);
                     }
                     return false;
@@ -558,9 +582,9 @@ public class ReminderProcessor {
             if (rule.isEmail()) {
                 if (!addEmailContact(contacts, matches, template, count, reminderType) && isAll) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Rule not matched. There are no email contacts for reminderType="
-                                  + toString(reminderType) + ", count=" + count.getCount() + ", rule="
-                                  + rule);
+                        log.debug("Rule not matched. There are no email contacts for customer=" + toString(customer)
+                                  + ", reminderType=" + toString(reminderType) + ", count=" + count.getCount()
+                                  + ", rule=" + rule);
                     }
                     return false;
                 }
@@ -568,16 +592,16 @@ public class ReminderProcessor {
             if (rule.isSMS()) {
                 if (isAll && disableSMS) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Rule not matched. SMS has been disabled for reminderType="
-                                  + toString(reminderType) + ", count=" + count.getCount()
+                        log.debug("Rule not matched. SMS has been disabled for customer=" + toString(customer)
+                                  + ", reminderType=" + toString(reminderType) + ", count=" + count.getCount()
                                   + ", rule=" + rule);
                     }
                     return false;
                 }
                 if (!addSMSContact(contacts, matches, template, count, reminderType) && isAll) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Rule not matched. There are no SMS contacts for reminderType="
-                                  + toString(reminderType) + ", count=" + count.getCount()
+                        log.debug("Rule not matched. There are no SMS contacts for customer=" + toString(customer)
+                                  + ", reminderType=" + toString(reminderType) + ", count=" + count.getCount()
                                   + ", rule=" + rule);
                     }
                     return false;
@@ -586,8 +610,8 @@ public class ReminderProcessor {
             if (rule.isPrint()) {
                 if (!addLocationContact(contacts, matches, template, count, reminderType) && isAll) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Rule not matched. There are no location contacts for reminderType="
-                                  + toString(reminderType) + ", count=" + count.getCount()
+                        log.debug("Rule not matched. There are no location contacts for customer=" + toString(customer)
+                                  + ", reminderType=" + toString(reminderType) + ", count=" + count.getCount()
                                   + ", rule=" + rule);
                     }
                     return false;
