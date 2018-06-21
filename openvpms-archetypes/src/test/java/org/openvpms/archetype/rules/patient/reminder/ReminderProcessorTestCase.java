@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -138,18 +138,70 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         checkProcess(false, false, false, false, true, reminder);
 
         // add contacts with no reminder purpose. This should also be listed
-        addContacts(createEmail(false), createPhone(true, false), createLocation(false));
+        addContacts(createEmail(false, true), createPhone(true, false, true), createLocation(false, true));
         checkProcess(false, false, false, false, true, reminder);
 
         // now add contacts with reminder purpose
-        addContacts(createEmail(true));
+        addContacts(createEmail(true, true));
         checkProcess(true, false, false, false, false, reminder);
 
-        addContacts(createPhone(true, true));
+        addContacts(createPhone(true, true, true));
         checkProcess(true, true, false, false, false, reminder);
 
-        addContacts(createLocation(true));
+        addContacts(createLocation(true, true));
         checkProcess(true, true, true, false, false, reminder);
+    }
+
+    /**
+     * Verifies that an reminder item is created for each type of contact with REMINDER classification when
+     * a rule has contact set to {@code true}, with contacts that have the preferred flag set or not.
+     */
+    @Test
+    public void testContactWithPreferred() {
+        Entity emailTemplate = createEmailTemplate("subject", "text");
+        Entity smsTemplate = createSMSTemplate("TEXT", "text");
+        Entity template = createDocumentTemplate(emailTemplate, smsTemplate);
+
+        addReminderCount(reminderType, 0, 0, DateUnits.DAYS, template, createContactRule());
+        Act reminder = createReminderDueTomorrow();
+
+        // set up some preferred contacts, without REMINDER classification
+        addContacts(createEmail(false, true));
+        addContacts(createPhone(true, false, true));
+        addContacts(createPhone(false, false, true));
+        addContacts(createLocation(false, true));
+
+        // no REMINDER contacts, so listed
+        checkProcess(false, false, false, false, true, reminder);
+
+        // non-preferred email contact with REMINDER classification
+        addContacts(createEmail(true, false));
+        checkProcess(true, false, false, false, false, reminder);
+
+        // preferred email contact with REMINDER classification
+        clearContacts();
+        addContacts(createEmail(true, true));
+        checkProcess(true, false, false, false, false, reminder);
+
+        // non-preferred phone contact with REMINDER classification
+        clearContacts();
+        addContacts(createPhone(true, true, false));
+        checkProcess(false, true, false, false, false, reminder);
+
+        // preferred phone contact with REMINDER classification
+        clearContacts();
+        addContacts(createPhone(true, true, true));
+        checkProcess(false, true, false, false, false, reminder);
+
+        // non-preferred location contact with REMINDER classification
+        clearContacts();
+        addContacts(createLocation(true, false));
+        checkProcess(false, false, true, false, false, reminder);
+
+        // preferred location contact with REMINDER classification
+        clearContacts();
+        addContacts(createLocation(true, true));
+        checkProcess(false, false, true, false, false, reminder);
     }
 
     /**
@@ -165,7 +217,7 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         addReminderCount(reminderType, 0, 0, DateUnits.DAYS, template, createEmailRule());
         Act reminder = createReminderDueTomorrow();
 
-        addContacts(createEmail(false));
+        addContacts(createEmail(false, true));
         checkProcess(true, false, false, false, false, reminder);
 
         // with no email contact, email=true is ignored
@@ -182,7 +234,7 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         addReminderCount(reminderType, 0, 0, DateUnits.DAYS, template, createEmailRule());
         Act reminder = createReminderDueTomorrow();
 
-        addContacts(createEmail(false));
+        addContacts(createEmail(false, true));
         checkProcess(false, false, false, false, true, reminder);
 
         // now add an email template and verify an act.patientReminderItemEmail is created.
@@ -203,7 +255,7 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         addReminderCount(reminderType, 0, 0, DateUnits.DAYS, template, createSMSRule());
         Act reminder = createReminderDueTomorrow();
 
-        addContacts(createPhone(true, false));
+        addContacts(createPhone(true, false, true));
         checkProcess(false, true, false, false, false, reminder);
 
         // with no SMS contact, sms=true is ignored
@@ -211,7 +263,7 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         checkProcess(false, false, false, false, true, reminder);
 
         // with a phone contact , sms=true is ignored
-        addContacts(createPhone(false, false));
+        addContacts(createPhone(false, false, true));
         checkProcess(false, false, false, false, true, reminder);
     }
 
@@ -224,7 +276,7 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         addReminderCount(reminderType, 0, 0, DateUnits.DAYS, template, createSMSRule());
         Act reminder = createReminderDueTomorrow();
 
-        addContacts(createPhone(true, false));
+        addContacts(createPhone(true, false, true));
         checkProcess(false, false, false, false, true, reminder);
 
         // now add an SMS template and verify an act.patientReminderItemSMS is created.
@@ -243,7 +295,7 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         addReminderCount(reminderType, 0, 0, DateUnits.DAYS, template, createPrintRule());
         Act reminder = createReminderDueTomorrow();
 
-        addContacts(createLocation(false));
+        addContacts(createLocation(false, true));
         checkProcess(false, false, true, false, false, reminder);
 
         // with no location contact, print=true is ignored
@@ -259,7 +311,7 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         Entity count = addReminderCount(reminderType, 0, 0, DateUnits.DAYS, null, createPrintRule());
         Act reminder = createReminderDueTomorrow();
 
-        addContacts(createLocation(false));
+        addContacts(createLocation(false, true));
         checkProcess(false, false, false, false, true, reminder);
 
         // now add a template and verify an act.patientReminderItemPrint is created.
@@ -280,7 +332,7 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         addReminderCount(reminderType, 0, 0, DateUnits.DAYS, template, createExportRule());
         Act reminder = createReminderDueTomorrow();
 
-        addContacts(createLocation(false));
+        addContacts(createLocation(false, true));
         checkProcess(false, false, false, true, false, reminder);
 
         // with no location contact, export=true is ignored
@@ -346,7 +398,7 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         rules.setDeceased(patient);
         save(patient);
 
-        addContacts(createLocation(false));
+        addContacts(createLocation(false, true));
         List<Act> acts = process(reminder);
         assertEquals(1, acts.size());
         assertTrue(TypeHelper.isA(acts.get(0), ReminderArchetypes.REMINDER));
@@ -369,7 +421,7 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
         addReminderCount(reminderType, 3, 3, DateUnits.YEARS, template, allRule);
         Act reminder = createReminderDueTomorrow();
 
-        addContacts(createEmail(false), createPhone(true, false), createLocation(false));
+        addContacts(createEmail(false, true), createPhone(true, false, true), createLocation(false, true));
         checkProcess(true, true, true, true, true, reminder);
         completeItems(reminder, 0);
         checkProcess(true, true, true, true, true, reminder);
@@ -387,7 +439,7 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
      * Completes reminder items associated with a reminder, and verifies the reminder count is incremented.
      *
      * @param reminder the reminder
-     * @param count the reminder count
+     * @param count    the reminder count
      */
     private void completeItems(Act reminder, int count) {
         ActBean bean = new ActBean(reminder);
@@ -471,7 +523,7 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
 
     /**
      * Verifies that the specified item exists/doesn't exist.
-     * <p/>
+     * <p>
      * If an item exists, its send date and count will be checked.
      *
      * @param reminder  the reminder
@@ -521,10 +573,13 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
      * Creates a location contact.
      *
      * @param addReminderPurpose if {@code true}, add a REMINDER purpose
+     * @param preferred          if {@code true}, the reminder is preferred
      * @return a new contact
      */
-    private Contact createLocation(boolean addReminderPurpose) {
+    private Contact createLocation(boolean addReminderPurpose, boolean preferred) {
         Contact contact = TestHelper.createLocationContact("Foo", "ELTHAM", "VIC", "3095");
+        IMObjectBean bean = new IMObjectBean(contact);
+        bean.setValue("preferred", preferred);
         if (addReminderPurpose) {
             addReminderPurpose(contact);
         }
@@ -535,10 +590,11 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
      * Creates an email contact.
      *
      * @param addReminderPurpose if {@code true}, add a REMINDER purpose
+     * @param preferred          if {@code true}, the reminder is preferred
      * @return a new contact
      */
-    private Contact createEmail(boolean addReminderPurpose) {
-        Contact contact = TestHelper.createEmailContact("foo@bar.com");
+    private Contact createEmail(boolean addReminderPurpose, boolean preferred) {
+        Contact contact = TestHelper.createEmailContact("foo@bar.com", preferred, null);
         if (addReminderPurpose) {
             addReminderPurpose(contact);
         }
@@ -550,10 +606,11 @@ public class ReminderProcessorTestCase extends ArchetypeServiceTest {
      *
      * @param sms                if {@code true}, enables SMS messages
      * @param addReminderPurpose if {@code true}, add a REMINDER purpose
+     * @param preferred          if {@code true}, the reminder is preferred
      * @return a new contact
      */
-    private Contact createPhone(boolean sms, boolean addReminderPurpose) {
-        Contact contact = TestHelper.createPhoneContact("03", "1234566789", sms);
+    private Contact createPhone(boolean sms, boolean addReminderPurpose, boolean preferred) {
+        Contact contact = TestHelper.createPhoneContact("03", "1234566789", sms, preferred, null);
         if (addReminderPurpose) {
             addReminderPurpose(contact);
         }

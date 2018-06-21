@@ -683,7 +683,7 @@ public class ReminderProcessor {
         int size = matches.size();
         if (template != null) {
             if (!disableSMS && template.getSMSTemplate() != null) {
-                matches.addAll(Contacts.findAll(contacts, new SMSMatcher(REMINDER_PURPOSE, true, service)));
+                addContact(contacts, matches, new SMSMatcher(REMINDER_PURPOSE, true, service));
             } else {
                 if (log.isDebugEnabled()) {
                     if (disableSMS) {
@@ -696,9 +696,9 @@ public class ReminderProcessor {
                     }
                 }
             }
-            matches.addAll(Contacts.findAll(contacts, new PurposeMatcher(LOCATION, REMINDER_PURPOSE, true, service)));
+            addContact(contacts, matches, new PurposeMatcher(LOCATION, REMINDER_PURPOSE, true, service));
             if (template.getEmailTemplate() != null) {
-                matches.addAll(Contacts.findAll(contacts, new PurposeMatcher(EMAIL, REMINDER_PURPOSE, true, service)));
+                addContact(contacts, matches, new PurposeMatcher(EMAIL, REMINDER_PURPOSE, true, service));
             } else {
                 log.debug("NOT adding email contacts for reminderType=" + toString(reminderType)
                           + ", reminderCount=" + count.getCount() + ". Template=" + template.getName()
