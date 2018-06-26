@@ -35,7 +35,7 @@
     <!-- Debugging notes:                                                           -->
     <!-- . p6spy can be enabled using:                                              -->
     <!--   -Djdbc.driverClassName=com.p6spy.engine.spy.P6SpyDriver                  -->
-    <!--   -Djdbc.url=jdbc:p6spy:mysql://localhost:3306/openvpms-1_8                -->
+    <!--   -Djdbc.url=jdbc:p6spy:mysql://localhost:3306/openvpms_dev                -->
     <!-- ========================================================================== -->
 
     <build>

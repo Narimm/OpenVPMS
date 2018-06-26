@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 5.1.73, for Win64 (unknown)
 --
--- Host: localhost    Database: openvpms-1_8
+-- Host: localhost    Database: openvpms_dev
 -- ------------------------------------------------------
 -- Server version	5.1.73-community-log
 
