@@ -26,7 +26,9 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.claim.Claim.Status;
+import org.openvpms.insurance.internal.InsuranceFactory;
 import org.openvpms.insurance.service.InsuranceService;
+import org.openvpms.insurance.service.InsuranceServices;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.ActActions;
@@ -165,7 +167,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
     @Override
     protected void print(Act object) {
         if (TypeHelper.isA(object, CLAIM)) {
-            ClaimSubmitter submitter = new ClaimSubmitter(getContext(), getHelpContext());
+            ClaimSubmitter submitter = createSubmitter(getHelpContext());
             submitter.print(object, createRefreshAction(object, "printdialog.title"));
         } else {
             super.print(object);
@@ -212,7 +214,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
             dialog.show();
             dialog.submit();
         } else if (Status.POSTED.isA(object.getStatus())) {
-            ClaimSubmitter submitter = new ClaimSubmitter(getContext(), getHelpContext());
+            ClaimSubmitter submitter = createSubmitter(getHelpContext());
             submitter.submit(object, createRefreshAction(object, "patient.insurance.submit.title"));
         }
     }
@@ -234,7 +236,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
      */
     protected void cancelClaim(Act object) {
         if (getActions().canCancelClaim(object)) {
-            ClaimSubmitter submitter = new ClaimSubmitter(getContext(), getHelpContext().subtopic("cancel"));
+            ClaimSubmitter submitter = createSubmitter(getHelpContext().subtopic("cancel"));
             submitter.cancel(object, createRefreshAction(object, "patient.insurance.cancel.title"));
         }
     }
@@ -246,7 +248,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
      */
     protected void settleClaim(Act object) {
         if (getActions().canSettleClaim(object)) {
-            ClaimSubmitter submitter = new ClaimSubmitter(getContext(), getHelpContext().subtopic("settle"));
+            ClaimSubmitter submitter = createSubmitter(getHelpContext().subtopic("settle"));
             submitter.settle(object, createRefreshAction(object, "patient.insurance.settle.title"));
         }
     }
@@ -256,7 +258,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
      */
     protected void declineClaim(Act object) {
         if (getActions().canDeclineClaim(object)) {
-            ClaimSubmitter submitter = new ClaimSubmitter(getContext(), getHelpContext().subtopic("decline"));
+            ClaimSubmitter submitter = createSubmitter(getHelpContext().subtopic("decline"));
             submitter.decline(object, createRefreshAction(object, "patient.insurance.decline.title"));
         }
     }
@@ -288,6 +290,17 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
         InsuranceRules rules = ServiceHelper.getBean(InsuranceRules.class);
         Act claim = rules.createClaim(policy);
         edit(claim, null);
+    }
+
+    /**
+     * Creates a new claim submitter.
+     *
+     * @param help the help context
+     * @return a new claim submitter
+     */
+    private ClaimSubmitter createSubmitter(HelpContext help) {
+        return new ClaimSubmitter(ServiceHelper.getArchetypeService(), ServiceHelper.getBean(InsuranceFactory.class),
+                                  ServiceHelper.getBean(InsuranceServices.class), getContext(), help);
     }
 
     /**

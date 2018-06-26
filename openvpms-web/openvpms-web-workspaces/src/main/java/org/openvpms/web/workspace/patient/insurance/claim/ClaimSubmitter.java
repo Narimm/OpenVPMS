@@ -25,8 +25,9 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.exception.InsuranceException;
 import org.openvpms.insurance.internal.InsuranceFactory;
@@ -57,6 +58,7 @@ import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.insurance.CancelClaimDialog;
 
@@ -83,6 +85,11 @@ public class ClaimSubmitter {
      * The help context.
      */
     private final HelpContext help;
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
 
     /**
      * The insurance services.
@@ -113,14 +120,18 @@ public class ClaimSubmitter {
     /**
      * Constructs a {@link ClaimSubmitter}.
      *
-     * @param context the context
-     * @param help    the help context
+     * @param service           the archetype service
+     * @param factory           the insurance factory
+     * @param insuranceServices the insurance services
+     * @param context           the context
+     * @param help              the help context
      */
-    public ClaimSubmitter(Context context, HelpContext help) {
+    public ClaimSubmitter(IArchetypeService service, InsuranceFactory factory, InsuranceServices insuranceServices, Context context, HelpContext help) {
         this.context = context;
         this.help = help;
-        factory = ServiceHelper.getBean(InsuranceFactory.class);
-        insuranceServices = ServiceHelper.getBean(InsuranceServices.class);
+        this.service = service;
+        this.factory = factory;
+        this.insuranceServices = insuranceServices;
     }
 
     /**
@@ -200,37 +211,41 @@ public class ClaimSubmitter {
         if (!Claim.Status.POSTED.isA(act.getStatus())) {
             throw new IllegalStateException("Claim must have POSTED status");
         }
-        final Claim claim = factory.createClaim(act);
-        Party insurer = (Party) claim.getPolicy().getInsurer();
-        String title = Messages.get("patient.insurance.submit.title");
-        if (insuranceServices.canSubmit(insurer)) {
-            final InsuranceService service = insuranceServices.getService(insurer);
-            String message = Messages.format("patient.insurance.submit.online", insurer.getName(),
-                                             service.getName());
-            ConfirmationDialog.show(title, message, ConfirmationDialog.YES_NO, new PopupDialogListener() {
-                @Override
-                public void onYes() {
-                    submitWithDeclaration(claim, service, listener);
-                }
+        if (verifyNoDuplicates(act)) {
+            Claim claim = factory.createClaim(act);
+            Party insurer = (Party) claim.getPolicy().getInsurer();
+            String title = Messages.get("patient.insurance.submit.title");
+            if (insuranceServices.canSubmit(insurer)) {
+                final InsuranceService service = insuranceServices.getService(insurer);
+                String message = Messages.format("patient.insurance.submit.online", insurer.getName(),
+                                                 service.getName());
+                ConfirmationDialog.show(title, message, ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                    @Override
+                    public void onYes() {
+                        submitWithDeclaration(claim, service, listener);
+                    }
 
-                @Override
-                public void onNo() {
-                    listener.accept(null);
-                }
-            });
+                    @Override
+                    public void onNo() {
+                        listener.accept(null);
+                    }
+                });
+            } else {
+                String message = Messages.format("patient.insurance.submit.offline", insurer.getName());
+                ConfirmationDialog.show(title, message, ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                    @Override
+                    public void onYes() {
+                        runProtected(listener, () -> claim.setStatus(Claim.Status.SUBMITTED));
+                    }
+
+                    @Override
+                    public void onNo() {
+                        listener.accept(null);
+                    }
+                });
+            }
         } else {
-            String message = Messages.format("patient.insurance.submit.offline", insurer.getName());
-            ConfirmationDialog.show(title, message, ConfirmationDialog.YES_NO, new PopupDialogListener() {
-                @Override
-                public void onYes() {
-                    runProtected(listener, () -> claim.setStatus(Claim.Status.SUBMITTED));
-                }
-
-                @Override
-                public void onNo() {
-                    listener.accept(null);
-                }
-            });
+            listener.accept(null);
         }
     }
 
@@ -370,7 +385,7 @@ public class ClaimSubmitter {
      *                 be {@code null}
      */
     protected void print(Act act, Claim claim, Consumer<Throwable> listener) {
-        IMObjectBean bean = new IMObjectBean(act);
+        IMObjectBean bean = service.getBean(act);
         final List<IMObject> objects = new ArrayList<>();
         objects.add(act);
         int missingAttachment = 0;
@@ -413,7 +428,7 @@ public class ClaimSubmitter {
     protected ClaimState prepare(ClaimEditor editor) {
         ClaimState result = null;
         if (editor.getAmount().compareTo(BigDecimal.ZERO) > 0) {
-            if (editor.generateAttachments()) {
+            if (verifyNoDuplicates(editor.getObject()) && editor.generateAttachments()) {
                 Claim claim = factory.createClaim(editor.getObject());
                 Party insurer = (Party) claim.getPolicy().getInsurer();
                 InsuranceService service = null;
@@ -428,6 +443,33 @@ public class ClaimSubmitter {
         } else {
             ErrorHelper.show(Messages.get("patient.insurance.submit.title"),
                              Messages.get("patient.insurance.noinvoice"));
+        }
+        return result;
+    }
+
+    /**
+     * Checks a claim for duplicate invoices.
+     * <p>
+     * NOTE that it should not be possible to create claims with duplicates.
+     *
+     * @param claim the claim
+     * @return {@code true} if the claim has no duplicates, {@code false} if it does
+     */
+    private boolean verifyNoDuplicates(Act claim) {
+        boolean result = true;
+        Charges charges = new Charges();
+        IMObjectBean claimBean = service.getBean(claim);
+        for (Act item : claimBean.getTargets("items", Act.class)) {
+            IMObjectBean bean = service.getBean(item);
+            for (Act charge : bean.getTargets("items", Act.class)) {
+                Act otherClaim = charges.getClaim(charge, claim);
+                if (otherClaim != null) {
+                    result = false;
+                    String error = Messages.format("patient.insurance.duplicatecharge", otherClaim.getId(),
+                                                   DateFormatter.formatDate(otherClaim.getActivityStartTime(), false));
+                    ErrorHelper.show(Messages.get("patient.insurance.submit.title"), error);
+                }
+            }
         }
         return result;
     }
@@ -474,11 +516,10 @@ public class ClaimSubmitter {
     private DocumentTemplateLocator getDocumentTemplateLocator(Claim claim, IMObject object) {
         if (TypeHelper.isA(object, InsuranceArchetypes.CLAIM)) {
             Party supplier = (Party) claim.getPolicy().getInsurer();
-            IMObjectBean bean = new IMObjectBean(supplier);
+            IMObjectBean bean = service.getBean(supplier);
             Entity template = bean.getTarget("template", Entity.class, active());
             if (template != null) {
-                return new StaticDocumentTemplateLocator(new DocumentTemplate(template,
-                                                                              ServiceHelper.getArchetypeService()));
+                return new StaticDocumentTemplateLocator(new DocumentTemplate(template, service));
             }
         }
         return new ContextDocumentTemplateLocator(object, context);

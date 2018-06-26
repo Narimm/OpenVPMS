@@ -161,24 +161,6 @@ public class Contacts {
     }
 
     /**
-     * Finds all contacts that match the criteria.
-     *
-     * @param contacts the contacts
-     * @param matcher  the contact matcher
-     * @return the matching contacts
-     */
-    public static List<Contact> findAll(Collection<org.openvpms.component.model.party.Contact> contacts,
-                                        ContactMatcher matcher) {
-        List<Contact> result = new ArrayList<>();
-        for (org.openvpms.component.model.party.Contact contact : contacts) {
-            if (matcher.matches(contact)) {
-                result.add((Contact) contact);
-            }
-        }
-        return result;
-    }
-
-    /**
      * Returns the phone number from a string, extracting any formatting.
      *
      * @param phone the formatted phone number

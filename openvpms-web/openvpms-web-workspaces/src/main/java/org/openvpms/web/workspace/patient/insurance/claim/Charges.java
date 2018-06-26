@@ -217,15 +217,26 @@ class Charges {
      * @return {@code true} if the charge item has a relationship to an insurance claim that isn't CANCELLED or DECLINED
      */
     public boolean isClaimed(Act item) {
-        boolean result = false;
+        return getClaim(item, null) != null;
+    }
+
+    /**
+     * Determines if an invoice item has already been claimed by another insurance claim.
+     *
+     * @param item    the charge item
+     * @param exclude the claim to exclude. May be {@code null}
+     * @return the claim that charge item has a relationship to, if it isn't CANCELLED or DECLINED
+     */
+    public Act getClaim(Act item, Act exclude) {
+        Act result = null;
         IMObjectBean chargeBean = new IMObjectBean(item, cachingService);
         for (Act claimItem : chargeBean.getSources("claims", Act.class)) {
             IMObjectBean bean = new IMObjectBean(claimItem, cachingService);
             Act claim = bean.getSource("claim", Act.class);
-            if (claim != null) {
+            if (claim != null && (exclude == null || !claim.equals(exclude))) {
                 String status = claim.getStatus();
                 if (!Claim.Status.CANCELLED.isA(status) && !Claim.Status.DECLINED.isA(status)) {
-                    result = true;
+                    result = claim;
                     break;
                 }
             }
@@ -233,6 +244,12 @@ class Charges {
         return result;
     }
 
+    /**
+     * Returns the invoice associated withh an invoice item.
+     *
+     * @param item the item
+     * @return the corresponding invoice. May be {@code null}
+     */
     private FinancialAct getInvoice(Act item) {
         return new IMObjectBean(item, cachingService).getSource("invoice", FinancialAct.class);
     }

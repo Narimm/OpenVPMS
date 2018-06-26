@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.insurance.claim;
@@ -21,6 +21,8 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.insurance.claim.Claim;
+import org.openvpms.insurance.internal.InsuranceFactory;
+import org.openvpms.insurance.service.InsuranceServices;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -29,6 +31,7 @@ import org.openvpms.web.component.im.view.IMObjectViewer;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.function.Consumer;
 
@@ -150,7 +153,7 @@ public class ClaimEditDialog extends EditDialog {
         if (Claim.Status.PENDING.isA(claim.getStatus())) {
             if (save()) {
                 try {
-                    ClaimSubmitter submitter = new ClaimSubmitter(getContext(), getHelpContext());
+                    ClaimSubmitter submitter = createSubmitter();
                     submitter.submit(getEditor(), listener);
                 } catch (Throwable exception) {
                     reloadOnSubmitFailure(exception);
@@ -158,13 +161,22 @@ public class ClaimEditDialog extends EditDialog {
             }
         } else if (Claim.Status.POSTED.isA(claim.getStatus())) {
             // claim was partially submitted before, but failed
-            ClaimSubmitter submitter = new ClaimSubmitter(getContext(), getHelpContext());
+            ClaimSubmitter submitter = createSubmitter();
             submitter.submit(claim, listener);
         } else {
             // claim has already been submitted
             setAction(SUBMIT_ID);
             close();
         }
+    }
+
+    /**
+     * Creates a claim submitter.
+     *
+     * @return a new claim submitter
+     */
+    private ClaimSubmitter createSubmitter() {
+        return new ClaimSubmitter(ServiceHelper.getArchetypeService(), ServiceHelper.getBean(InsuranceFactory.class), ServiceHelper.getBean(InsuranceServices.class), getContext(), getHelpContext());
     }
 
     /**
