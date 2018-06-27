@@ -468,6 +468,7 @@ public class ClaimSubmitter {
                     String error = Messages.format("patient.insurance.duplicatecharge", otherClaim.getId(),
                                                    DateFormatter.formatDate(otherClaim.getActivityStartTime(), false));
                     ErrorHelper.show(Messages.get("patient.insurance.submit.title"), error);
+                    break;
                 }
             }
         }
