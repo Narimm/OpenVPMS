@@ -21,12 +21,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.doc.TemplateHelper;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
@@ -36,6 +39,7 @@ import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.internal.InsuranceFactory;
 import org.openvpms.insurance.service.InsuranceServices;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.im.doc.DocumentTestHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
@@ -147,6 +151,9 @@ public class ClaimSubmitterTestCase extends AbstractAppTest {
      */
     @Test
     public void testDuplicate() {
+        initDocumentTemplate("INSURANCE_CLAIM_MEDICAL_RECORDS");
+        initDocumentTemplate("INSURANCE_CLAIM_INVOICE");
+
         FinancialAct invoiceItem1 = createInvoiceItem();
         FinancialAct invoiceItem2 = createInvoiceItem();
         createInvoice(POSTED, invoiceItem1, invoiceItem2);
@@ -235,6 +242,20 @@ public class ClaimSubmitterTestCase extends AbstractAppTest {
         claim2.setStatus(Claim.Status.CANCELLED.toString());
         save(claim2);
         checkDuplicate(claim1, claim2, true);
+    }
+
+    /**
+     * Creates a dummy document template, if one doesn't exist.
+     *
+     * @param type the template type
+     */
+    private void initDocumentTemplate(String type) {
+        Entity template = new TemplateHelper(getArchetypeService()).getTemplateForArchetype(type);
+        if (template == null) {
+            template = DocumentTestHelper.createDocumentTemplate(type, "zblank");
+            Document document = DocumentTestHelper.createDocument("/blank.jrxml");
+            DocumentTestHelper.createDocumentTemplate(template, document);
+        }
     }
 
     /**
