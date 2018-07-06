@@ -13,6 +13,7 @@
  *
  * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.esci.adapter.i18n;
 
 import org.openvpms.component.business.domain.im.party.Party;
@@ -111,6 +112,16 @@ public class ESCIAdapterMessages {
      */
     public static Message connectionTimedOut(Party supplier, String serviceURL) {
         return messages.create(7, supplier.getId(), supplier.getName(), serviceURL);
+    }
+
+    /**
+     * Creates a new message when a supplier web service fails with an unexpected error.
+     *
+     * @param cause the cause
+     * @return a new message
+     */
+    public static Message remoteServiceError(String cause) {
+        return messages.create(8, cause);
     }
 
     /**
