@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -44,6 +44,7 @@ import org.openvpms.web.component.mail.MailerFactory;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 import org.openvpms.web.workspace.reporting.ReportingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
 
 import java.util.Date;
 
@@ -102,7 +103,8 @@ public class ReminderEmailProcessorTestCase extends AbstractPatientReminderProce
 
         MailerFactory mailerFactory = Mockito.mock(MailerFactory.class);
         mailer = Mockito.mock(Mailer.class);
-        Mockito.when(mailerFactory.create(Mockito.<MailContext>any())).thenReturn(mailer);
+        Mockito.when(mailerFactory.create(Mockito.<MailContext>any(), Mockito.<JavaMailSender>any()))
+                .thenReturn(mailer);
 
         IArchetypeService service = getArchetypeService();
         EmailTemplateEvaluator evaluator = new EmailTemplateEvaluator(getArchetypeService(), getLookupService(),

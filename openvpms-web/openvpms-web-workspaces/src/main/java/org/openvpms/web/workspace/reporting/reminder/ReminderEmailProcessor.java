@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -36,15 +36,12 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.report.ReporterFactory;
-import org.openvpms.web.component.mail.EmailAddress;
 import org.openvpms.web.component.mail.EmailTemplateEvaluator;
 import org.openvpms.web.component.mail.Mailer;
 import org.openvpms.web.component.mail.MailerFactory;
-import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.customer.communication.CommunicationHelper;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 import org.openvpms.web.workspace.reporting.ReportingException;
-import org.openvpms.web.workspace.reporting.email.PracticeEmailAddresses;
 
 import java.util.List;
 
@@ -60,14 +57,9 @@ import static org.openvpms.web.workspace.reporting.ReportingException.ErrorCode.
 public class ReminderEmailProcessor extends GroupedReminderProcessor {
 
     /**
-     * The mailer factory.
+     * The mail services.
      */
-    private final MailerFactory factory;
-
-    /**
-     * The practice email addresses.
-     */
-    private final PracticeEmailAddresses addresses;
+    private final ReminderMailerFactory mailServices;
 
     /**
      * The email template evaluator.
@@ -100,10 +92,9 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
                                   PracticeRules practiceRules, IArchetypeService service, ReminderConfiguration config,
                                   CommunicationLogger logger) {
         super(reminderTypes, reminderRules, patientRules, practice, service, config, logger);
-        this.factory = factory;
         this.evaluator = evaluator;
         this.reporterFactory = reporterFactory;
-        addresses = new PracticeEmailAddresses(practice, "REMINDER", practiceRules, service);
+        mailServices = new ReminderMailerFactory(practice, practiceRules, service, factory);
     }
 
     /**
@@ -237,13 +228,16 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
      */
     protected Mailer send(EmailReminders reminders) {
         ReminderEvent event = reminders.getReminders().get(0);
-        Context context = createContext(event, reminders.getLocation());
-        Mailer mailer = factory.create(new CustomerMailContext(context));
+        Party location = reminders.getLocation();
+        if (location == null) {
+            throw new IllegalStateException("Practice location cannot be null, reminder="
+                                            + event.getReminder().getId());
+        }
+        Context context = createContext(event, location);
+        Mailer mailer = mailServices.create(location, context);
+
         String body = reminders.getMessage(context);
         String to = reminders.getEmailAddress();
-
-        EmailAddress from = addresses.getAddress(reminders.getCustomer());
-        mailer.setFrom(from.toString(true));
         mailer.setTo(new String[]{to});
 
         String subject = reminders.getSubject(context);

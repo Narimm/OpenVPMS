@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
 
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.web.component.service.MailService;
+import org.springframework.mail.javamail.JavaMailSender;
 
 /**
  * Factory for {@link Mailer} instances.
@@ -55,7 +56,18 @@ public class DefaultMailerFactory implements MailerFactory {
      */
     @Override
     public Mailer create(MailContext context) {
-        return new DefaultMailer(context, service, handlers);
+        return create(context, service);
     }
 
+    /**
+     * Creates a new {@link Mailer}.
+     *
+     * @param context the mail context
+     * @param sender  the mail service to use
+     * @return a new {@link Mailer}
+     */
+    @Override
+    public Mailer create(MailContext context, JavaMailSender sender) {
+        return new DefaultMailer(context, sender, handlers);
+    }
 }

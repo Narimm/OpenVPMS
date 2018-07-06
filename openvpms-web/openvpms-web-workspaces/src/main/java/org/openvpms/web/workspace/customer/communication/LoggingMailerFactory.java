@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.communication;
@@ -26,6 +26,7 @@ import org.openvpms.web.component.mail.MailerFactory;
 import org.openvpms.web.component.service.CurrentLocationMailService;
 import org.openvpms.web.component.service.MailService;
 import org.openvpms.web.system.ServiceHelper;
+import org.springframework.mail.javamail.JavaMailSender;
 
 /**
  * A {@link MailerFactory} that creates {@link LoggingMailer} instances to log communication with customers.
@@ -79,10 +80,28 @@ public class LoggingMailerFactory implements MailerFactory {
     @Override
     public Mailer create(MailContext context) {
         Mailer result;
-        if (CommunicationHelper.isLoggingEnabled(practiceService, service)) {
+        if (isLoggingEnabled()) {
             result = createLoggingMailer(context, logger);
         } else {
             result = createMailer(context);
+        }
+        return result;
+    }
+
+    /**
+     * Creates a new {@link Mailer} that uses the specified mail server settings.
+     *
+     * @param context the mail context
+     * @param sender  the mail sender to use
+     * @return a new {@link Mailer}
+     */
+    @Override
+    public Mailer create(MailContext context, JavaMailSender sender) {
+        Mailer result;
+        if (isLoggingEnabled()) {
+            result = createLoggingMailer(context, sender, logger);
+        } else {
+            result = createMailer(context, sender);
         }
         return result;
     }
@@ -100,6 +119,19 @@ public class LoggingMailerFactory implements MailerFactory {
     }
 
     /**
+     * Creates a logging mailer.
+     *
+     * @param context the mail context
+     * @param sender  the mail sender to use
+     * @param logger  the logger
+     * @return a new {@link LoggingMailer}
+     */
+    protected LoggingMailer createLoggingMailer(MailContext context, JavaMailSender sender,
+                                                CommunicationLogger logger) {
+        return new LoggingMailer(context, sender, getDocumentHandlers(), logger);
+    }
+
+    /**
      * Creates a mailer.
      *
      * @param context the mail context
@@ -107,6 +139,17 @@ public class LoggingMailerFactory implements MailerFactory {
      */
     protected Mailer createMailer(MailContext context) {
         return new DefaultMailer(context, getMailService(), getDocumentHandlers());
+    }
+
+    /**
+     * Creates a mailer.
+     *
+     * @param context the mail context
+     * @param sender  the mail sender to use
+     * @return a new {@link Mailer}
+     */
+    protected Mailer createMailer(MailContext context, JavaMailSender sender) {
+        return new DefaultMailer(context, sender, getDocumentHandlers());
     }
 
     /**
@@ -125,6 +168,15 @@ public class LoggingMailerFactory implements MailerFactory {
      */
     protected DocumentHandlers getDocumentHandlers() {
         return handlers;
+    }
+
+    /**
+     * Determines if communication logging is enabled.
+     *
+     * @return {@code true} if communication logging is enabled, otherwise {@code false}
+     */
+    private boolean isLoggingEnabled() {
+        return CommunicationHelper.isLoggingEnabled(practiceService, service);
     }
 
 }

@@ -38,7 +38,7 @@ import static org.junit.Assert.assertEquals;
 public class PracticeEmailAddressesTestCase extends ArchetypeServiceTest {
 
     /**
-     * Tests the {@link PracticeEmailAddresses#getAddress(Party)} method.
+     * Tests the {@link PracticeEmailAddresses#getPracticeAddress(Party)} method.
      */
     @Test
     public void testGetAddress() {
@@ -87,10 +87,10 @@ public class PracticeEmailAddressesTestCase extends ArchetypeServiceTest {
         PracticeEmailAddresses addresses = new PracticeEmailAddresses(practice, "REMINDER", rules,
                                                                       getArchetypeService());
 
-        checkAddress(addresses.getAddress(customer1), "branch1reminder@practice.com", "X Location 1");
-        checkAddress(addresses.getAddress(customer2), "mainreminder@practice.com", "OpenVPMS Practice");
-        checkAddress(addresses.getAddress(customer3), "branch3billing@practice.com", "Name Override");
-        checkAddress(addresses.getAddress(customer4), "mainreminder@practice.com", "OpenVPMS Practice");
+        checkAddress(addresses.getPracticeAddress(customer1), "branch1reminder@practice.com", "X Location 1");
+        checkAddress(addresses.getPracticeAddress(customer2), "mainreminder@practice.com", "OpenVPMS Practice");
+        checkAddress(addresses.getPracticeAddress(customer3), "branch3billing@practice.com", "Name Override");
+        checkAddress(addresses.getPracticeAddress(customer4), "mainreminder@practice.com", "OpenVPMS Practice");
     }
 
     /**

@@ -156,7 +156,7 @@ public class StatementEmailProcessor extends AbstractStatementProcessorListener 
                 throw new StatementProcessorException(NoContact, statement.getCustomer());
             }
             String to = bean.getString("emailAddress");
-            EmailAddress email = addresses.getAddress(statement.getCustomer());
+            EmailAddress email = addresses.getPracticeAddress(statement.getCustomer());
             helper.setFrom(email.getAddress(), email.getName());
             helper.setTo(to);
             Context local = new LocalContext();

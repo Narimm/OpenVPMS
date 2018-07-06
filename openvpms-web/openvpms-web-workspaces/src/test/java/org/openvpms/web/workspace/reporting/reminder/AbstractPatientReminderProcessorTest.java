@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -114,6 +114,15 @@ public abstract class AbstractPatientReminderProcessorTest extends ArchetypeServ
         practice = (Party) create(PracticeArchetypes.PRACTICE);
         practice.setName("Test Practice");
         practice.addContact(TestHelper.createEmailContact("foo@bar.com"));
+
+        Entity settings = (Entity) create("entity.mailServer");
+        IMObjectBean bean = new IMObjectBean(settings);
+        bean.setValue("name", "Default Mail Server");
+        bean.setValue("host", "localhost");
+        bean.save();
+
+        IMObjectBean practiceBean = new IMObjectBean(practice);
+        practiceBean.setTarget("mailServer", settings);
 
         reminderType = ReminderTestHelper.createReminderType(1, DateUnits.MONTHS, 1, DateUnits.DAYS);
     }
@@ -249,6 +258,7 @@ public abstract class AbstractPatientReminderProcessorTest extends ArchetypeServ
         IMObject config = create(ReminderArchetypes.CONFIGURATION);
         IMObjectBean bean = new IMObjectBean(config);
         bean.setValue("emailAttachments", false);
+        bean.setTarget("location", TestHelper.createLocation());
         return new ReminderConfiguration(config, service);
     }
 
