@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 /**
@@ -56,7 +56,9 @@ public class ClinicianParticipationEditor extends ParticipationEditor<User> {
         }
         if (participation.getEntity() == null && parent.isNew()) {
             User clinician = getLayoutContext().getContext().getClinician();
-            setEntity(clinician);
+            if (clinician != null && clinician.isActive()) {
+                setEntity(clinician);
+            }
         }
     }
 

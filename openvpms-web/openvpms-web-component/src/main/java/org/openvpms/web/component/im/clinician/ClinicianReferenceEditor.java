@@ -20,6 +20,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
+import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -58,7 +59,10 @@ public class ClinicianReferenceEditor extends AbstractIMObjectReferenceEditor<Us
     public boolean setObject(User object) {
         Context context = getLayoutContext().getContext();
         if (!UserHelper.useLoggedInClinician(context)) {
-            context.setClinician(object);
+            if (object == null || object.isActive()) {
+                // don't propagate inactive clinicians to the context
+                context.setClinician(object);
+            }
         }
         return super.setObject(object);
     }
@@ -86,7 +90,9 @@ public class ClinicianReferenceEditor extends AbstractIMObjectReferenceEditor<Us
     @Override
     protected boolean isValidReference(IMObjectReference reference) {
         ClinicianQuery query = new ClinicianQuery(getContext());
+        query.getComponent();
         query.setAllLocations(true); // don't restrict the clinician to a particular location after is has been entered
+        query.setActive(BaseArchetypeConstraint.State.BOTH); // allow active & inactive clinicians
         return query.selects(reference);
     }
 }
