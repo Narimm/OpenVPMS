@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2017-01-14T06:07:41 -->
+<!-- 2017-08-07T10:42:39 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Customer Acquisition Report" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="20" bottomMargin="20" uuid="781095a0-f625-434a-b923-f45e5757b522">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -44,6 +44,10 @@
 		<parameterDescription><![CDATA[Show only counts]]></parameterDescription>
 		<defaultValueExpression><![CDATA[new Boolean("true")]]></defaultValueExpression>
 	</parameter>
+	<parameter name="showEmail" class="java.lang.Boolean">
+		<parameterDescription><![CDATA[Show Email Addresses]]></parameterDescription>
+		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
+	</parameter>
 	<parameter name="Explain" class="java.lang.Boolean">
 		<parameterDescription><![CDATA[Display explanation]]></parameterDescription>
 		<defaultValueExpression><![CDATA[Boolean.FALSE]]></defaultValueExpression>
@@ -51,7 +55,9 @@
 	<queryString language="SQL">
 		<![CDATA[select  distinct  e.entity_id as cid,e.name as customerName, e.description as contact, e.active as active,
   cast(d.value as date) as createdDate,
-   ifnull(loc.name,'--NONE--') as location, ifnull(l.name,'--NONE--') as accountType, ifnull(l2.name,'--NONE--') as customerType
+   ifnull(loc.name,'--NONE--') as location, ifnull(l.name,'--NONE--') as accountType,
+    ifnull(l2.name,'--NONE--') as customerType,
+    group_concat(cda.value) as email
 from entities e
 join entity_details d on d.entity_id = e.entity_id and d.name ="createdDate"
 left join (entity_classifications ec, lookups l) on (ec.entity_id = e.entity_id
@@ -62,6 +68,11 @@ left join (entity_classifications ec2, lookups l2) on (ec2.entity_id = e.entity_
 left join entities loc on loc.entity_id = el.target_id
 left join entity_relationships r on r.source_id = e.entity_id and r.arch_short_name = "entityRelationship.patientOwner"
 left join entities p on p.entity_id = r.target_id
+left join contacts ce on ce.party_id = e.entity_id
+ and ce.arch_short_name = 'contact.email'
+ join contact_details cda on cda.contact_id = ce.contact_id
+ and cda.name = 'emailAddress'
+
 where
   e.arch_short_name = 'party.customerperson'
   and ((substring($P{acType},1,1)="!" and ifnull(l.name,"--NONE--")  not like concat(substring($P{acType},2),"%") ) or
@@ -88,6 +99,7 @@ where
 	<field name="location" class="java.lang.String"/>
 	<field name="accountType" class="java.lang.String"/>
 	<field name="customerType" class="java.lang.String"/>
+	<field name="email" class="java.lang.String"/>
 	<variable name="location1" class="java.lang.Integer" resetType="Group" resetGroup="Location" calculation="Count">
 		<variableExpression><![CDATA[$F{location}]]></variableExpression>
 	</variable>
@@ -509,7 +521,7 @@ where
 				<textElement>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{contact}.replaceAll("\n"," ")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{showEmail}?$F{email}:$F{contact}.replaceAll("\n"," ")]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
 				<reportElement key="textField" x="0" y="0" width="11" height="14" uuid="5a85e1d1-366c-47cb-ba7d-613d429e1570">
@@ -550,7 +562,7 @@ where
 		<band splitType="Stretch"/>
 	</columnFooter>
 	<summary>
-		<band height="270" splitType="Stretch">
+		<band height="280" splitType="Stretch">
 			<line>
 				<reportElement key="line-3" x="0" y="5" width="535" height="1" uuid="2a11f93e-5d69-476d-ab99-b112f518f5f0">
 					<property name="local_mesure_unitx" value="pixel"/>
@@ -598,7 +610,7 @@ where
 				<text><![CDATA[No Data Found - Check Parameters]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="0" y="57" width="535" height="213" isRemoveLineWhenBlank="true" uuid="df172902-9061-461d-bc37-d247d8dc3be1">
+				<reportElement x="0" y="57" width="535" height="223" isRemoveLineWhenBlank="true" uuid="df172902-9061-461d-bc37-d247d8dc3be1">
 					<printWhenExpression><![CDATA[$P{Explain}]]></printWhenExpression>
 				</reportElement>
 				<textElement>
@@ -607,12 +619,12 @@ where
 				<text><![CDATA[This report shows acquisition data for customers grouped by Practice Location/Account Type.
 The selection fields entered have % added so that leaving them blank will find all, and entering say account type 'n' will include all customers with account types starting 'n', and entering practice location '%branch' will find all customers with locations containing 'branch'. The selection is case-insensitive.
 Null practice locations and account types will be shown as '--NONE--' and using the selection '-' will find these; ie setting the account type selection to '-' will find customers with no account type. 
-You can also use a selection string starting ! to use a 'not like' selection - so account type '!c' will find customers with account types not starting with c, and  setting the customer type to '!-' will find all customers with a non-null customer type.
+You can also use a selection string starting ! to use a 'not like' selection - so account type '!c' will find customers with account types not starting with c, and  setting the customer type to '!-' will find all customers with a non-null customer type. 
 The counts shown in the Location/Account Type header lines are number of customers with the location and account type respectively.
 Inactive customers will only be counted if 'Include Inactive' is checked.
 Customers will only be counted if they have a Created date in the specified range and, if 'Has Patients' is checked, if they own a patient as at the To Date, and will be omitted if  none of their patients is active - unless 'Include Inactive' is checked.
 Unchecking the 'Show only counts' option displays the customer information (with a hash (#) in column1 indicating that this customer is inactive) and leaving this checked shows just the totals.
-]]></text>
+By default the customer's address and phone are displayed. Checking the 'Show Email Addresses' option causes the customer's email address(es) to be displayed.]]></text>
 			</staticText>
 		</band>
 	</summary>
