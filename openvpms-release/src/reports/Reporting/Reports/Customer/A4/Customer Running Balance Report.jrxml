@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2017-08-01T14:30:20 -->
+<!-- 2017-05-26T03:13:22 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Customer Running Balance" pageWidth="595" pageHeight="842" whenNoDataType="AllSectionsNoDetail" columnWidth="535" leftMargin="30" rightMargin="30" topMargin="30" bottomMargin="30" isSummaryWithPageHeaderAndFooter="true" uuid="af2fba84-9169-45c8-a7de-fcdc063c03c2">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -138,7 +138,7 @@ ORDER BY
 		<band splitType="Stretch"/>
 	</title>
 	<pageHeader>
-		<band height="78" splitType="Stretch">
+		<band height="82" splitType="Stretch">
 			<staticText>
 				<reportElement key="staticText-1" x="74" y="0" width="386" height="28" uuid="2f43fcac-ea49-4a86-a56b-7dd53215a600"/>
 				<box>
@@ -154,7 +154,7 @@ ORDER BY
 				<text><![CDATA[Customer Running Balance Report ]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField-1" x="89" y="38" width="202" height="19" uuid="96e8d14a-8414-41fa-9945-76d7bbfd7378"/>
+				<reportElement key="textField-1" x="78" y="38" width="202" height="19" uuid="96e8d14a-8414-41fa-9945-76d7bbfd7378"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -168,7 +168,9 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{customer}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-4" x="249" y="61" width="82" height="16" uuid="698f0c72-0e1f-49b7-9784-30f1df935ee0"/>
+				<reportElement key="textField-4" x="238" y="61" width="80" height="16" uuid="698f0c72-0e1f-49b7-9784-30f1df935ee0">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -182,7 +184,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{endDate})]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-10" x="224" y="61" width="25" height="16" uuid="ae032ee5-2825-472b-9507-b3ff12ad07e0"/>
+				<reportElement key="staticText-10" x="213" y="61" width="25" height="16" uuid="ae032ee5-2825-472b-9507-b3ff12ad07e0"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -196,7 +198,7 @@ ORDER BY
 				<text><![CDATA[To:]]></text>
 			</staticText>
 			<textField isBlankWhenNull="false">
-				<reportElement key="textField" x="20" y="39" width="64" height="18" uuid="53cd9c9d-fd54-47af-81cf-6a5188167e34"/>
+				<reportElement key="textField" x="9" y="39" width="64" height="18" uuid="53cd9c9d-fd54-47af-81cf-6a5188167e34"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -210,7 +212,9 @@ ORDER BY
 				<textFieldExpression><![CDATA[($P{customerId}==null)||($P{customerId}.compareTo("")==0)?"--NONE--":$P{customerId}]]></textFieldExpression>
 			</textField>
 			<textField pattern="" isBlankWhenNull="false">
-				<reportElement key="textField-4" x="156" y="61" width="66" height="16" uuid="32f00d71-dac8-4cff-a362-518b7fafc38c"/>
+				<reportElement key="textField-4" x="131" y="61" width="80" height="16" uuid="32f00d71-dac8-4cff-a362-518b7fafc38c">
+					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -224,7 +228,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($P{startDate})]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement key="staticText-10" x="22" y="61" width="134" height="16" uuid="80e27383-58e3-47cf-8645-3174d453b8fb"/>
+				<reportElement key="staticText-10" x="9" y="61" width="122" height="16" uuid="80e27383-58e3-47cf-8645-3174d453b8fb"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -270,6 +274,34 @@ ORDER BY
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.SHORT, $P{REPORT_LOCALE}).format(new Date())]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement key="staticText-10" x="330" y="61" width="134" height="16" uuid="058a18f8-83fe-4f49-a5f4-a34f3ae4eb07"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="12"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Includes unfinalised: ]]></text>
+			</staticText>
+			<textField pattern="" isBlankWhenNull="false">
+				<reportElement key="textField-4" x="460" y="61" width="73" height="16" uuid="638efdc7-26fb-4245-845f-f276c1533a19"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font size="12"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{IncUnFinalised}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -357,7 +389,7 @@ ORDER BY
 				<text><![CDATA[Reference/Notes/Reversal]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="131" y="3" width="52" height="14" uuid="6fc2f815-8b91-4605-8a14-a123dc405c9b"/>
+				<reportElement x="141" y="3" width="42" height="14" uuid="6fc2f815-8b91-4605-8a14-a123dc405c9b"/>
 				<textElement textAlignment="Right">
 					<font isBold="true"/>
 					<paragraph lineSpacing="Single"/>
@@ -445,7 +477,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$V{refNotes2}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="131" y="1" width="52" height="13" uuid="d26a33be-fa1e-489f-bfb9-61685cb9e925"/>
+				<reportElement x="141" y="1" width="42" height="13" uuid="d26a33be-fa1e-489f-bfb9-61685cb9e925"/>
 				<textElement textAlignment="Right" verticalAlignment="Middle">
 					<paragraph lineSpacing="Single"/>
 				</textElement>
