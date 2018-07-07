@@ -648,7 +648,7 @@ public interface IMObjectBean {
      * to the target.
      *
      * @param name      the node name
-     * @param archetype the relationship archetype short name
+     * @param archetype the relationship archetype
      * @param target    the target
      * @return the new relationship
      */
@@ -663,6 +663,17 @@ public interface IMObjectBean {
      * @return a new relationship
      */
     Relationship addTarget(String sourceName, IMObject target, String targetName);
+
+    /**
+     * Adds a bidirectional relationship between the current object (the source) and the supplied target.
+     *
+     * @param sourceName the source node name
+     * @param archetype  the relationship archetype
+     * @param target     the target
+     * @param targetName the target node name
+     * @return a new relationship
+     */
+    Relationship addTarget(String sourceName, String archetype, IMObject target, String targetName);
 
     /**
      * Removes all bidirectional relationships between the current object (the source), and the supplied target.
