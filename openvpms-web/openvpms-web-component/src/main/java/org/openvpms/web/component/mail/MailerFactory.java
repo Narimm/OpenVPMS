@@ -11,10 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
+
+import org.springframework.mail.javamail.JavaMailSender;
 
 /**
  * Factory for {@link Mailer} instances.
@@ -30,4 +32,13 @@ public interface MailerFactory {
      * @return a new {@link Mailer}
      */
     Mailer create(MailContext context);
+
+    /**
+     * Creates a new {@link Mailer} that uses the specified mail server settings.
+     *
+     * @param context the mail context
+     * @param sender  the mail sender to use
+     * @return a new {@link Mailer}
+     */
+    Mailer create(MailContext context, JavaMailSender sender);
 }

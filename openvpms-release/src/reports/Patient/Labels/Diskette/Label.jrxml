@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-12-14T05:42:34 -->
+<!-- 2017-05-30T03:35:25 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Label Diskette" pageWidth="209" pageHeight="153" orientation="Landscape" columnWidth="175" leftMargin="17" rightMargin="17" topMargin="8" bottomMargin="8" uuid="5360069e-917e-408e-8ff8-819414fc712a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -43,7 +43,7 @@
 	<field name="clinician.entity.id" class="java.lang.Long">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
-	<field name="[normalize-space(party:getBillingAddress(party:getLetterheadContacts($OpenVPMS.location)))]" class="java.lang.String">
+	<field name="[party:getBillingAddress(party:getLetterheadContacts($OpenVPMS.location),true())]" class="java.lang.String">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<field name="[party:getTelephone(party:getLetterheadContacts($OpenVPMS.location))]" class="java.lang.String"/>
@@ -90,8 +90,8 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 					<bottomPen lineWidth="1.0"/>
 					<rightPen lineWidth="1.0"/>
 				</box>
-				<textElement textAlignment="Center">
-					<font  size="8"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font size="8"/>
 				</textElement>
 				<text><![CDATA[FOR ANIMAL USE ONLY]]></text>
 			</staticText>
@@ -106,7 +106,7 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 					<rightPen lineWidth="1.0"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font  size="5"/>
+					<font size="5"/>
 				</textElement>
 				<text><![CDATA[Keep out of reach of children]]></text>
 			</staticText>
@@ -115,7 +115,7 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 	<detail>
 		<band height="70" splitType="Stretch">
 			<textField pattern="dd/MM/yy" isBlankWhenNull="true">
-				<reportElement key="textField" isPrintRepeatedValues="false" x="0" y="14" width="40" height="11" uuid="28538503-7eb0-4259-9f87-df94e1239212">
+				<reportElement key="textField" isPrintRepeatedValues="false" x="0" y="12" width="40" height="11" uuid="28538503-7eb0-4259-9f87-df94e1239212">
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
@@ -125,45 +125,45 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
-					<font  size="8"/>
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{startTime})]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement isPrintRepeatedValues="false" x="40" y="14" width="135" height="11" uuid="2cbd6714-e183-4c3c-a48d-78e28dcc024e">
+				<reportElement isPrintRepeatedValues="false" x="40" y="12" width="135" height="11" uuid="2cbd6714-e183-4c3c-a48d-78e28dcc024e">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Left" verticalAlignment="Top">
-					<font  size="8"/>
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{clinician}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement style="base" isPrintRepeatedValues="false" x="0" y="25" width="175" height="12" uuid="f70bcd24-cf30-4543-9269-4a770de4b4b4"/>
+				<reportElement style="base" isPrintRepeatedValues="false" x="0" y="23" width="175" height="12" uuid="f70bcd24-cf30-4543-9269-4a770de4b4b4"/>
 				<textElement verticalAlignment="Top">
-					<font  size="9" isBold="true"/>
+					<font size="9" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Patient: "+$V{patientFullName}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
-				<reportElement isPrintRepeatedValues="false" x="0" y="0" width="175" height="14" uuid="a68f4eeb-7d5a-43be-8108-863cb3255611">
+				<reportElement isPrintRepeatedValues="false" x="0" y="0" width="175" height="12" uuid="a68f4eeb-7d5a-43be-8108-863cb3255611">
 					<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 					<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 				</reportElement>
 				<textElement verticalAlignment="Top">
-					<font  size="10" isBold="true"/>
+					<font size="9" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{prodLine}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField" positionType="Float" x="0" y="37" width="175" height="33" uuid="9243633c-2a04-41ee-9469-d11e222b6ad7">
+				<reportElement key="textField" positionType="Float" x="0" y="35" width="175" height="35" uuid="9243633c-2a04-41ee-9469-d11e222b6ad7">
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
+					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -172,7 +172,7 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement verticalAlignment="Top">
-					<font  size="8"/>
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{label}]]></textFieldExpression>
@@ -201,10 +201,10 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font  size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{[normalize-space(party:getBillingAddress(party:getLetterheadContacts($OpenVPMS.location)))]}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{[party:getBillingAddress(party:getLetterheadContacts($OpenVPMS.location),true())]}]]></textFieldExpression>
 			</textField>
 			<line>
 				<reportElement x="0" y="0" width="175" height="1" uuid="4db4de6c-975f-4f8c-9699-5f9d82d38c37"/>
@@ -215,7 +215,7 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font  size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{[party:getTelephone(party:getLetterheadContacts($OpenVPMS.location))]}]]></textFieldExpression>

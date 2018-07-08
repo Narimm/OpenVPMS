@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.practice;
@@ -20,7 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
 
 /**
  * Mail server settings from an <em>entity.mailServer</em>.
@@ -38,15 +38,35 @@ public class MailServer {
         SSL_TLS
     }
 
+    /**
+     * The host.
+     */
     private final String host;
 
+    /**
+     * The port.
+     */
     private final int port;
 
+    /**
+     * The username.
+     */
     private final String username;
 
+    /**
+     * The password.
+     */
     private final String password;
 
+    /**
+     * The connection security.
+     */
     private final Security security;
+
+    /**
+     * The settings identifier.
+     */
+    private long id;
 
     /**
      * Constructs a {@link MailServer}.
@@ -55,12 +75,22 @@ public class MailServer {
      * @param service       the archetype service
      */
     public MailServer(Entity configuration, IArchetypeService service) {
-        IMObjectBean bean = new IMObjectBean(configuration, service);
+        IMObjectBean bean = service.getBean(configuration);
+        id = configuration.getId();
         host = bean.getString("host");
         port = bean.getInt("port");
         username = StringUtils.trimToNull(bean.getString("username"));
         password = StringUtils.trimToNull(bean.getString("password"));
         security = getSecurity(bean.getString("security"));
+    }
+
+    /**
+     * Returns the configuration identifier.
+     *
+     * @return the configuration identifier
+     */
+    public long getId() {
+        return id;
     }
 
     /**
@@ -99,12 +129,21 @@ public class MailServer {
         return password;
     }
 
+    /**
+     * Returns the connection security.
+     *
+     * @return the connection security
+     */
     public Security getSecurity() {
         return security;
     }
 
     /**
      * Indicates whether some other object is "equal to" this one.
+     * <p>
+     * Equality is determined by the {@code host}, {@code port}, {@code username}, {@code password},
+     * and {@code security}.<br/>
+     * The {@code id} is not considered.
      *
      * @param obj the reference object with which to compare.
      * @return {@code true} if this object is the same as the obj argument; {@code false} otherwise.

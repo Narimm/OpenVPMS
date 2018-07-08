@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.object.Relationship;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -342,6 +343,76 @@ public abstract class AbstractLookupServiceTest extends AbstractArchetypeService
     }
 
     /**
+     * Verifies that when one side of a lookup relationship is updated, the service correctly updates the other side.
+     */
+    @Test
+    public void testUpdateOneSide() {
+        Lookup species = createLookup("lookup.species", "CANINE");
+        Lookup breed1 = createLookup("lookup.breed", "BLOODHOUND");
+        Lookup breed2 = createLookup("lookup.breed", "BORDER_COLLIE");
+        save(species, breed1, breed2);
+
+        checkTargets(species);  // no targets initially
+
+        // add a relationship to breed1
+        IMObjectBean bean = new IMObjectBean(species);
+        Relationship relationship1 = bean.addTarget("source", "lookupRelationship.speciesBreed", breed1);
+        bean.save();
+
+        // species should have a relationship to breed1, and vice-versa
+        checkTargets(species, breed1);
+        checkSources(breed1, species);
+
+        // add a relationship to breed2
+        bean.addTarget("source", "lookupRelationship.speciesBreed", breed2, "target");
+        save(breed2);
+
+        // species should have a relationship to breed1 and breed2, and vice-versa
+        checkTargets(species, breed1, breed2);
+        checkSources(breed1, species);
+        checkSources(breed2, species);
+
+        // now remove the relationship between breed1 and the species, but only save the breed
+        breed1 = get(breed1);
+        breed1.removeLookupRelationship((LookupRelationship) relationship1);
+        save(breed1);
+
+        // species should have a relationship to breed2, and vice versa.
+        checkTargets(species, breed2);
+        checkSources(breed2, species);
+
+        // breed1 should have no relationships, but will be returned in breed lists
+        checkSources(breed1);
+        checkLookups(lookupService.getLookups("lookup.breed"), true, breed1);
+        assertEquals(breed1, lookupService.getLookup("lookup.breed", breed1.getCode()));
+
+        // now remove breed2
+        breed2 = get(breed2);
+        remove(breed2);
+
+        // there should be no relationships, and breed2 should no longer be returned
+        assertNull(lookupService.getLookup("lookup.breed", breed2.getCode()));
+        checkLookups(lookupService.getLookups("lookup.breed"), false, breed2);
+        checkTargets(species);
+        checkSources(breed1);
+
+        // re-add the relationship to breed1
+        species = get(species);
+        bean = new IMObjectBean(species);
+        bean.addTarget("source", "lookupRelationship.speciesBreed", breed1, "target");
+        bean.save();
+
+        checkTargets(species, breed1);
+        checkSources(breed1, species);
+
+        // now remove the species
+        remove(species);
+        checkLookups(lookupService.getLookups("lookup.species"), false, species);
+        assertNull(lookupService.getLookup("lookup.species", species.getCode()));
+        checkSources(breed1);
+    }
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
@@ -350,7 +421,7 @@ public abstract class AbstractLookupServiceTest extends AbstractArchetypeService
     public abstract void setUp() throws Exception;
 
     /**
-     * Helper to create and save a lookup.
+     * Helper to create a lookup.
      *
      * @param shortName the lookup archetype short name
      * @param code      the lookup code
@@ -390,7 +461,36 @@ public abstract class AbstractLookupServiceTest extends AbstractArchetypeService
             lookup = (Lookup) get(lookup.getObjectReference());
             remove(lookup);
         }
+    }
 
+    /**
+     * Verify the targets of a source lookup match that expected.
+     *
+     * @param source  the source lookup
+     * @param targets the expected targets
+     */
+    private void checkTargets(Lookup source, Lookup... targets) {
+        Lookup current = lookupService.getLookup(source.getArchetype(), source.getCode());
+        assertNotNull(current);
+        assertEquals(targets.length, current.getSourceLookupRelationships().size());
+        Collection<Lookup> list = lookupService.getTargetLookups(current);
+        assertEquals(targets.length, current.getSourceLookupRelationships().size());
+        checkLookups(list, true, targets);
+    }
+
+    /**
+     * Verifies that the sources of a target lookup match that expected.
+     *
+     * @param target  the target lookup
+     * @param sources the expected sources
+     */
+    private void checkSources(Lookup target, Lookup... sources) {
+        Lookup current = lookupService.getLookup(target.getArchetype(), target.getCode());
+        assertNotNull(current);
+        assertEquals(sources.length, current.getTargetLookupRelationships().size());
+        Collection<Lookup> list = lookupService.getSourceLookups(current);
+        assertEquals(sources.length, list.size());
+        checkLookups(list, true, sources);
     }
 
     private void checkLookups(Collection<Lookup> lookups, boolean exists, Lookup... expected) {

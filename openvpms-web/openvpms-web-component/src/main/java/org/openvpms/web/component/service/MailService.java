@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.service;
@@ -19,7 +19,6 @@ package org.openvpms.web.component.service;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.practice.MailServer;
-import org.openvpms.web.component.app.Context;
 import org.springframework.mail.MailAuthenticationException;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailParseException;
@@ -36,9 +35,8 @@ import java.util.Properties;
 
 
 /**
- * Mail service that configures the SMTP details from <em>party.organisationLocation</em> from
- * {@link Context#getLocation()}, if available.
- * <p/>
+ * Mail service that configures the SMTP details from an {@link MailServer}.
+ * <p>
  *
  * @author Tim Anderson
  */
@@ -221,7 +219,7 @@ public abstract class MailService implements JavaMailSender {
 
     /**
      * Sets the timeout for establishing an SMTP connection.
-     * <p/>
+     * <p>
      * This corresponds to the <em>mail.smtp.connectiontimeout</em> property.
      *
      * @param timeout the timeout, in seconds. Use {@code <= 0} for the default timeout
@@ -232,7 +230,7 @@ public abstract class MailService implements JavaMailSender {
 
     /**
      * Sets the timeout for sending a message.
-     * <p/>
+     * <p>
      * This corresponds to the <em>mail.smtp.timeout</em> property.
      *
      * @param timeout the timeout, in seconds. Use {@code <= 0} for the default timeout
@@ -243,7 +241,7 @@ public abstract class MailService implements JavaMailSender {
 
     /**
      * Determines if JavaMail debugging output is enabled.
-     * <p/>
+     * <p>
      * Corresponds to the JavaMail mail.debug property.
      *
      * @param debug if {@code true} turn on debugging output
@@ -255,7 +253,7 @@ public abstract class MailService implements JavaMailSender {
     /**
      * Determines if JavaMail protocol authentication commands (including usernames and passwords) are
      * included in the debug output.
-     * <p/>
+     * <p>
      * Corresponds to the JavaMail mail.debug.auth property.
      *
      * @param debug if {@code true} turn on debugging output
@@ -323,7 +321,7 @@ public abstract class MailService implements JavaMailSender {
 
     /**
      * Creates a new mail sender.
-     * <p/>
+     * <p>
      * This implementation sets the default encoding to UTF-8.
      *
      * @return a new mail sender

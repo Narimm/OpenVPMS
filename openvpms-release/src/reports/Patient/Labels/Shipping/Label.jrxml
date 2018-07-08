@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Created with Jaspersoft Studio version 6.3.0.final using JasperReports Library version 6.2.0  -->
-<!-- 2016-12-14T05:43:20 -->
+<!-- 2017-05-27T04:23:13 -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="Label Shipping" pageWidth="286" pageHeight="153" orientation="Landscape" columnWidth="252" leftMargin="17" rightMargin="17" topMargin="8" bottomMargin="8" uuid="5360069e-917e-408e-8ff8-819414fc712a">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
@@ -43,7 +43,7 @@
 	<field name="clinician.entity.id" class="java.lang.Long">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
-	<field name="[normalize-space(party:getBillingAddress(party:getLetterheadContacts($OpenVPMS.location)))]" class="java.lang.String">
+	<field name="[party:getBillingAddress(party:getLetterheadContacts($OpenVPMS.location),true())]" class="java.lang.String">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<field name="[party:getTelephone(party:getLetterheadContacts($OpenVPMS.location))]" class="java.lang.String"/>
@@ -94,7 +94,7 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Left" verticalAlignment="Top">
-					<font  size="8"/>
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[DateFormat.getDateInstance(DateFormat.SHORT, $P{REPORT_LOCALE}).format($F{startTime})]]></textFieldExpression>
@@ -104,7 +104,7 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Left" verticalAlignment="Top">
-					<font  size="8"/>
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{clinician}]]></textFieldExpression>
@@ -112,7 +112,7 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 			<textField>
 				<reportElement isPrintRepeatedValues="false" x="0" y="25" width="210" height="12" uuid="f70bcd24-cf30-4543-9269-4a770de4b4b4"/>
 				<textElement verticalAlignment="Top">
-					<font  size="9" isBold="true"/>
+					<font size="9" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA["Patient: "+$V{patientFullName}]]></textFieldExpression>
@@ -124,7 +124,7 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement verticalAlignment="Top">
-					<font  size="10" isBold="true"/>
+					<font size="10" isBold="true"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$V{prodLine}]]></textFieldExpression>
@@ -140,7 +140,7 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement verticalAlignment="Top">
-					<font  size="8"/>
+					<font size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{label}]]></textFieldExpression>
@@ -159,7 +159,7 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 					<rightPen lineWidth="1.0"/>
 				</box>
 				<textElement textAlignment="Center">
-					<font  size="8"/>
+					<font size="8"/>
 				</textElement>
 				<text><![CDATA[FOR ANIMAL USE ONLY]]></text>
 			</staticText>
@@ -177,7 +177,7 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 					<rightPen lineWidth="1.0"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font  size="6"/>
+					<font size="6"/>
 				</textElement>
 				<text><![CDATA[Keep out of reach of children]]></text>
 			</staticText>
@@ -204,10 +204,10 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 					<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Left">
-					<font  size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{[normalize-space(party:getBillingAddress(party:getLetterheadContacts($OpenVPMS.location)))]}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{[party:getBillingAddress(party:getLetterheadContacts($OpenVPMS.location),true())]}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true">
 				<reportElement x="190" y="1" width="61" height="11" uuid="3bd78093-9aee-46ed-8c85-03083bc42181">
@@ -215,7 +215,7 @@ $V{productName}+" x"+(new DecimalFormat("###0.#").format($F{quantity}))]]></vari
 					<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 				</reportElement>
 				<textElement textAlignment="Right">
-					<font  size="8" isBold="false"/>
+					<font size="8" isBold="false"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{[party:getTelephone(party:getLetterheadContacts($OpenVPMS.location))]}]]></textFieldExpression>

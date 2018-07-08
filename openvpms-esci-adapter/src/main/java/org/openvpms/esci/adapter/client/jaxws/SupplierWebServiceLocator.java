@@ -13,6 +13,7 @@
  *
  * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.esci.adapter.client.jaxws;
 
 import org.apache.commons.lang.StringUtils;
@@ -33,29 +34,37 @@ import org.openvpms.esci.service.RegistryService;
 import org.openvpms.esci.service.client.ServiceLocator;
 import org.openvpms.esci.service.client.ServiceLocatorFactory;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.remoting.jaxws.JaxWsSoapFaultException;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 import javax.annotation.Resource;
 import javax.xml.ws.WebServiceException;
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.util.Collections;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 
 /**
  * Returns proxies for supplier web services.
- * <p/>
- * This supports timing out calls that take to long.
+ * <p>
+ * This supports timing out calls that take too long.
  *
  * @author Tim Anderson
  */
 public class SupplierWebServiceLocator implements SupplierServiceLocator, DisposableBean {
+
+    /**
+     * The timeout for calls, in seconds or {@code 0} if calls shouldn't time out.
+     */
+    private final int timeout;
 
     /**
      * The service locator factory.
@@ -78,13 +87,8 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator, Dispos
     private ExecutorService executor;
 
     /**
-     * The timeout for calls, in seconds or {@code 0} if calls shouldn't time out.
-     */
-    private final int timeout;
-
-    /**
      * Constructs a {@link SupplierWebServiceLocator}.
-     * <p/>
+     * <p>
      * Calls will time out after 30 seconds.
      */
     public SupplierWebServiceLocator() {
@@ -133,7 +137,7 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator, Dispos
 
     /**
      * Returns a proxy for a supplier's {@link OrderService}.
-     * <p/>
+     * <p>
      * This uses the <em>entityRelationship.supplierStockLocationESCI</em> associated with the supplier and stock
      * location to lookup the web service.
      *
@@ -164,7 +168,7 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator, Dispos
 
     /**
      * Returns a proxy for the supplier's {@link InboxService}.
-     * <p/>
+     * <p>
      * This uses the <em>entityRelationship.supplierStockLocationESCI</em> associated with the supplier and stock
      * location to lookup the web service.
      *
@@ -335,6 +339,38 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator, Dispos
         }
 
         /**
+         * Proxies a web-service interface, forcing invocations to time out if they don't complete in time.
+         *
+         * @param service the service
+         * @param type    the interface to proxy
+         * @return the service proxy
+         */
+        @SuppressWarnings("unchecked")
+        protected <T> T proxy(final T service, Class<T> type) {
+            InvocationHandler handler = (proxy, method, args) -> {
+                Callable<Object> callable = () -> method.invoke(service, args);
+                Object result;
+                try {
+                    result = invokeWithTimeout(callable);
+                } catch (ExecutionException exception) {
+                    // unwrap the exception and rethrow as an ESCIAdapterException
+                    Throwable cause = exception.getCause();
+                    if (cause instanceof InvocationTargetException) {
+                        cause = cause.getCause();
+                    }
+                    if (cause instanceof JaxWsSoapFaultException) {
+                        cause = cause.getCause();
+                        throw new ESCIAdapterException(ESCIAdapterMessages.remoteServiceError(cause.getMessage()),
+                                                       cause);
+                    }
+                    throw cause;
+                }
+                return result;
+            };
+            return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[]{type}, handler);
+        }
+
+        /**
          * Returns a service proxy.
          *
          * @param clazz           the proxy class
@@ -344,28 +380,33 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator, Dispos
          * @throws ESCIAdapterException for any error
          */
         private <T> T getService(final Class<T> clazz, final String url, final String endpointAddress) {
-            Callable<T> callable = new Callable<T>() {
-                @Override
-                public T call() throws Exception {
-                    ServiceLocator<T> locator;
-                    try {
-                        locator = locatorFactory.getServiceLocator(clazz, url, endpointAddress, username, password);
-                    } catch (MalformedURLException exception) {
-                        Message message = (supplier != null) ?
-                                          ESCIAdapterMessages.invalidSupplierURL(supplier, serviceURL)
-                                                             : ESCIAdapterMessages.invalidServiceURL(serviceURL);
-                        throw new ESCIAdapterException(message, exception);
-                    }
-                    try {
-                        return locator.getService();
-                    } catch (WebServiceException exception) {
-                        throw new ESCIAdapterException(getConnectionFailed(), exception);
-                    }
+            Callable<T> callable = () -> {
+                ServiceLocator<T> locator;
+                try {
+                    locator = locatorFactory.getServiceLocator(clazz, url, endpointAddress, username, password);
+                } catch (MalformedURLException exception) {
+                    Message message = (supplier != null) ?
+                                      ESCIAdapterMessages.invalidSupplierURL(supplier, serviceURL)
+                                                         : ESCIAdapterMessages.invalidServiceURL(serviceURL);
+                    throw new ESCIAdapterException(message, exception);
+                }
+                try {
+                    return locator.getService();
+                } catch (WebServiceException exception) {
+                    throw new ESCIAdapterException(getConnectionFailed(), exception);
                 }
             };
             T service;
             if (timeout > 0) {
-                service = invokeWithTimeout(callable);
+                try {
+                    service = invokeWithTimeout(callable);
+                } catch (ExecutionException exception) {
+                    Throwable cause = exception.getCause();
+                    if (cause instanceof InvocationTargetException) {
+                        cause = cause.getCause();
+                    }
+                    throw new ESCIAdapterException(getConnectionFailed(), cause);
+                }
                 service = proxy(service, clazz);
             } else {
                 try {
@@ -380,44 +421,19 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator, Dispos
         }
 
         /**
-         * Proxies a web-service interface, forcing invocations to time out if they don't complete in time.
-         *
-         * @param service the service
-         * @param type    the interface to proxy
-         * @return the service proxy
-         */
-        @SuppressWarnings("unchecked")
-        protected <T> T proxy(final T service, Class<T> type) {
-            InvocationHandler handler = new InvocationHandler() {
-                @Override
-                public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
-                    Callable<Object> callable = new Callable<Object>() {
-                        @Override
-                        public Object call() throws Exception {
-                            return method.invoke(service, args);
-                        }
-                    };
-                    return invokeWithTimeout(callable);
-                }
-            };
-            return (T) Proxy.newProxyInstance(type.getClassLoader(), new Class[]{type}, handler);
-        }
-
-        /**
          * Makes a web-service call, timing out if it doesn't complete in time.
          *
          * @param callable the call to make
          * @return the result of the call
          * @throws ESCIAdapterException for any error, including connection timeout
+         * @throws ExecutionException if execution fails
          */
-        private <T> T invokeWithTimeout(Callable<T> callable) {
+        private <T> T invokeWithTimeout(Callable<T> callable) throws ExecutionException, ESCIAdapterException {
             T result;
 
             try {
                 result = executor.invokeAny(Collections.singletonList(callable), timeout, TimeUnit.SECONDS);
-            } catch (ESCIAdapterException exception) {
-                throw exception;
-            } catch (Exception exception) {
+            } catch (InterruptedException | TimeoutException exception) {
                 if (supplier != null) {
                     throw new ESCIAdapterException(ESCIAdapterMessages.connectionTimedOut(supplier, serviceURL),
                                                    exception);
@@ -430,6 +446,7 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator, Dispos
 
         /**
          * Helper to return a message for a connection failure.
+         *
          * @return a new message
          */
         private Message getConnectionFailed() {

@@ -45,8 +45,10 @@
 	<field name="hide" class="java.lang.Boolean"/>
 	<field name="[party:getBillingAddress(.)]" class="java.lang.String"/>
 	<field name="customer.entity.id" class="java.lang.Long"/>
-	<field name="[normalize-space(party:getBillingAddress(.))]" class="java.lang.String"/>
-	<field name="[normalize-space(party:getBillingAddress(party:getLetterheadContacts($OpenVPMS.location)))]" class="java.lang.String">
+	<field name="[party:getBillingAddress(party:getLetterheadContacts($OpenVPMS.location),true())]" class="java.lang.String">
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="[party:getLetterheadContacts($OpenVPMS.location)/name]" class="java.lang.String">
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<field name="[party:getEmailAddress(party:getLetterheadContacts($OpenVPMS.location))]" class="java.lang.String">
@@ -166,6 +168,9 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 	</variable>
 	<variable name="isOTC" class="java.lang.Boolean">
 		<variableExpression><![CDATA[$F{shortName}.equals("act.customerAccountChargesCounter")]]></variableExpression>
+	</variable>
+	<variable name="taxName" class="java.lang.String">
+		<variableExpression><![CDATA[$R{text.taxName}]]></variableExpression>
 	</variable>
 	<group name="Dummy Group" footerPosition="ForceAtBottom">
 		<groupFooter>
@@ -493,7 +498,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 						<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 					</box>
 					<textField isStretchWithOverflow="true">
-						<reportElement positionType="Float" x="31" y="11" width="330" height="11" uuid="834d48dc-f17a-4145-b45b-7f8cb1dec55b">
+						<reportElement positionType="Float" x="31" y="11" width="352" height="11" uuid="834d48dc-f17a-4145-b45b-7f8cb1dec55b">
 							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 							<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 						</reportElement>
@@ -506,7 +511,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
   +"      Email to: "+$F{[party:getEmailAddress(party:getLetterheadContacts($OpenVPMS.location))]}]]></textFieldExpression>
 					</textField>
 					<textField isStretchWithOverflow="true">
-						<reportElement x="31" y="0" width="330" height="11" uuid="9a776be3-c692-48b4-bc1d-d608838e5247">
+						<reportElement x="31" y="0" width="352" height="11" uuid="9a776be3-c692-48b4-bc1d-d608838e5247">
 							<property name="com.jaspersoft.studio.unit.height" value="pixel"/>
 							<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
 							<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
@@ -515,10 +520,11 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 							<font size="8" isBold="false"/>
 							<paragraph lineSpacing="Single"/>
 						</textElement>
-						<textFieldExpression><![CDATA["Mail to: "+$F{[normalize-space(party:getBillingAddress(party:getLetterheadContacts($OpenVPMS.location)))]}]]></textFieldExpression>
+						<textFieldExpression><![CDATA["Mail to: "+$F{[party:getLetterheadContacts($OpenVPMS.location)/name]}+", "
++$F{[party:getBillingAddress(party:getLetterheadContacts($OpenVPMS.location),true())]}]]></textFieldExpression>
 					</textField>
 					<textField isBlankWhenNull="false">
-						<reportElement key="textField-8" positionType="Float" x="389" y="11" width="103" height="11" uuid="e03cf1b2-a51b-47c2-96dc-eb35de3bfacb">
+						<reportElement key="textField-8" positionType="Float" x="392" y="11" width="103" height="11" uuid="e03cf1b2-a51b-47c2-96dc-eb35de3bfacb">
 							<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
 							<property name="com.jaspersoft.studio.unit.x" value="pixel"/>
 						</reportElement>
@@ -535,7 +541,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 						<textFieldExpression><![CDATA[$F{customer.entity.name}]]></textFieldExpression>
 					</textField>
 					<textField>
-						<reportElement x="389" y="0" width="103" height="11" uuid="4e2a7a76-2367-4d48-8eae-5f03613a6657"/>
+						<reportElement x="392" y="0" width="103" height="11" uuid="4e2a7a76-2367-4d48-8eae-5f03613a6657"/>
 						<textElement>
 							<font size="7"/>
 						</textElement>
@@ -626,7 +632,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 						<property name="local_mesure_unitx" value="pixel"/>
 						<property name="com.jaspersoft.studio.unit.x" value="px"/>
 						<property name="com.jaspersoft.studio.unit.y" value="pixel"/>
-						<printWhenExpression><![CDATA[$V{incTax}]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$V{incTax}&&(!$V{taxName}.equals("NONE"))]]></printWhenExpression>
 					</reportElement>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -642,7 +648,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 				<textField pattern="¤ #,##0.00" isBlankWhenNull="false">
 					<reportElement key="textField-7" positionType="Float" x="479" y="48" width="66" height="15" isRemoveLineWhenBlank="true" uuid="44524899-e556-4eb5-b1ed-8bb584c68a3d">
 						<property name="com.jaspersoft.studio.unit.width" value="px"/>
-						<printWhenExpression><![CDATA[$V{incTax}]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$V{incTax}&&(!$V{taxName}.equals("NONE"))]]></printWhenExpression>
 					</reportElement>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -732,7 +738,7 @@ $F{shortName}.contentEquals("act.customerAccountDebitAdjust")]]></variableExpres
 				</textField>
 				<textField>
 					<reportElement key="staticText-15" positionType="Float" x="284" y="48" width="126" height="15" isRemoveLineWhenBlank="true" uuid="bd4e4989-8cd2-44c5-90b8-f89f9036fc1a">
-						<printWhenExpression><![CDATA[$V{incTax}]]></printWhenExpression>
+						<printWhenExpression><![CDATA[$V{incTax}&&(!$V{taxName}.equals("NONE"))]]></printWhenExpression>
 					</reportElement>
 					<box>
 						<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>

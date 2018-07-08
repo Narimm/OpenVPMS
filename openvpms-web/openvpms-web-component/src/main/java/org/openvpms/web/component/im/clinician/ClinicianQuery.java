@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.clinician;
@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
+import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -79,6 +80,16 @@ public class ClinicianQuery extends EntityQuery<User> {
         if (query.allLocations != null) {
             query.allLocations.setSelected(allLocations);
         }
+    }
+
+    /**
+     * Determines if active and/or inactive instances should be returned.
+     *
+     * @param state the active state
+     */
+    public void setActive(BaseArchetypeConstraint.State state) {
+        ClinicianObjectSetQuery query = (ClinicianObjectSetQuery) getQuery();
+        query.setActive(state);
     }
 
     private static class ClinicianObjectSetQuery extends EntityObjectSetQuery {

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.client.jaxws;
 
@@ -199,14 +199,11 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
      */
     @Test
     public void testConnectionTimeout() throws Exception {
-        delegatingOrderService.setOrderService(new OrderService() {
-            @Override
-            public void submitOrder(Order order) throws DuplicateOrderException {
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException ignore) {
-                    // do nothing
-                }
+        delegatingOrderService.setOrderService(order -> {
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException ignore) {
+                // do nothing
             }
         });
         Party supplier = getSupplier();
@@ -222,6 +219,55 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
         } catch (ESCIAdapterException expected) {
             assertEquals("ESCIA-0007: Web service did not respond in time " + wsdl + " for supplier "
                          + supplier.getName() + " (" + supplier.getId() + ")", expected.getMessage());
+        }
+    }
+
+    /**
+     * Verifies that {@link DuplicateOrderException} are propagated back to the client.
+     */
+    @Test
+    public void testDuplicateOrderException() {
+        delegatingOrderService.setOrderService(order -> {
+            throw new DuplicateOrderException("Duplicate order");
+        });
+        Party supplier = getSupplier();
+        Party location = getStockLocation();
+        String wsdl = getWSDL("wsdl/RegistryService.wsdl");
+        addESCIConfiguration(supplier, location, wsdl);
+
+        SupplierServiceLocator locator = createLocator(1);
+        OrderService service = locator.getOrderService(supplier, location);
+        try {
+            service.submitOrder(new Order());
+            fail("Expected submitOrder() to fail");
+        } catch (DuplicateOrderException expected) {
+            assertEquals("Duplicate order", expected.getMessage());
+        }
+    }
+
+    /**
+     * Verifies that server failures that trigger {@code SOAPFaultException} are rethrown on the client as
+     * {@link ESCIAdapterException}.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testSoapException() throws Exception {
+        delegatingOrderService.setOrderService(order -> {
+            throw new RuntimeException("Server failure");
+        });
+        Party supplier = getSupplier();
+        Party location = getStockLocation();
+        String wsdl = getWSDL("wsdl/RegistryService.wsdl");
+        addESCIConfiguration(supplier, location, wsdl);
+
+        SupplierServiceLocator locator = createLocator(1);
+        OrderService service = locator.getOrderService(supplier, location);
+        try {
+            service.submitOrder(new Order());
+            fail("Expected submitOrder() to fail");
+        } catch (ESCIAdapterException expected) {
+            assertEquals("ESCIA-0008: Web service error: Server failure", expected.getMessage());
         }
     }
 
@@ -264,11 +310,7 @@ public class SupplierWebServiceLocatorTestCase extends AbstractESCITest {
      * @param future the value that will be updated when an order is received
      */
     private void registerOrderService(final FutureValue<OrderType> future) {
-        delegatingOrderService.setOrderService(new OrderService() {
-            public void submitOrder(Order order) {
-                future.set(order);
-            }
-        });
+        delegatingOrderService.setOrderService(future::set);
     }
 
 }

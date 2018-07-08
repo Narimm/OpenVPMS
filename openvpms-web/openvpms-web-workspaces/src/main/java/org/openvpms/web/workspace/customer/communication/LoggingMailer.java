@@ -23,8 +23,8 @@ import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.mail.DefaultMailer;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.mail.Mailer;
-import org.openvpms.web.component.service.MailService;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
+import org.springframework.mail.javamail.JavaMailSender;
 
 import java.util.List;
 
@@ -50,13 +50,13 @@ public class LoggingMailer implements Mailer {
      * Constructs a {@link LoggingMailer}.
      *
      * @param context  the mail context
-     * @param service  the mail service
+     * @param sender  the mail service
      * @param handlers the document handlers
      * @param logger   the communication logger
      */
-    public LoggingMailer(MailContext context, MailService service, DocumentHandlers handlers,
+    public LoggingMailer(MailContext context, JavaMailSender sender, DocumentHandlers handlers,
                          CommunicationLogger logger) {
-        mailer = new DefaultMailer(context, service, handlers);
+        mailer = new DefaultMailer(context, sender, handlers);
         this.logger = logger;
     }
 

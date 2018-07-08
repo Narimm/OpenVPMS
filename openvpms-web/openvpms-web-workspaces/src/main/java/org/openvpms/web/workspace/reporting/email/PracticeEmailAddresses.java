@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.email;
@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.Contacts;
 import org.openvpms.archetype.rules.party.PurposeMatcher;
+import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
@@ -32,6 +33,7 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.reporting.ReportingException;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -52,11 +54,6 @@ public class PracticeEmailAddresses {
     private final EmailAddress defaultAddress;
 
     /**
-     * The archetype service
-     */
-    private final IArchetypeService service;
-
-    /**
      * Constructs a {@link PracticeEmailAddresses}.
      *
      * @param practice the practice
@@ -75,26 +72,35 @@ public class PracticeEmailAddresses {
      * @param service  the archetype service
      */
     public PracticeEmailAddresses(Party practice, String purpose, PracticeRules rules, IArchetypeService service) {
-        this.service = service;
         String defaultEmailName = ContactHelper.getDefaultEmailName();
-        this.defaultAddress = getPracticeEmail(practice, purpose, defaultEmailName);
-        for (Party location : rules.getLocations(practice)) {
-            EmailAddress address = getLocationEmail(location, purpose, defaultEmailName);
-            if (address != null) {
-                addresses.put(location.getObjectReference(), address);
-            }
-        }
+        defaultAddress = getPracticeEmail(practice, purpose, defaultEmailName, service);
+        List<Party> locations = rules.getLocations(practice);
+        addLocations(purpose, defaultEmailName, locations, service);
     }
 
     /**
-     * Returns the address to use when sending emails to a customer.
-     * <p/>
+     * Constructs a {@link PracticeEmailAddresses}.
+     *
+     * @param practice  the practice
+     * @param locations the practice locations
+     * @param purpose   the contact purpose to locate email contacts
+     * @param service   the archetype service
+     */
+    public PracticeEmailAddresses(Party practice, List<Party> locations, String purpose, IArchetypeService service) {
+        String defaultEmailName = ContactHelper.getDefaultEmailName();
+        defaultAddress = getPracticeEmail(practice, purpose, defaultEmailName, service);
+        addLocations(purpose, defaultEmailName, locations, service);
+    }
+
+    /**
+     * Returns the practice address to use when sending emails to a customer.
+     * <p>
      * If the customer has a practice location, this will determine the address used.
      *
      * @param customer the customer
      * @return the from address
      */
-    public EmailAddress getAddress(Party customer) {
+    public EmailAddress getPracticeAddress(Party customer) {
         IMObjectBean bean = new IMObjectBean(customer);
         IMObjectReference locationRef = bean.getNodeTargetObjectRef("practice");
         EmailAddress result = addresses.get(locationRef);
@@ -105,14 +111,54 @@ public class PracticeEmailAddresses {
     }
 
     /**
+     * Returns the email address for the given practice or location.
+     *
+     * @param location the practice or practice location
+     * @return the email address. May be {@code null}
+     */
+    public EmailAddress getAddress(Party location) {
+        return location.isA(PracticeArchetypes.LOCATION) ? addresses.get(location.getObjectReference())
+                                                         : defaultAddress;
+    }
+
+    /**
+     * Returns the practice email address.
+     *
+     * @return the practice email address. Never {@code null}
+     */
+    public EmailAddress getPracticeAddress() {
+        return defaultAddress;
+    }
+
+    /**
+     * Adds email addresses with the specified purpose for each of the locations, if they have one.
+     *
+     * @param purpose          the contact purpose
+     * @param defaultEmailName the default email name
+     * @param locations        the practice locations
+     * @param service          the archetype service
+     */
+    private void addLocations(String purpose, String defaultEmailName, List<Party> locations,
+                              IArchetypeService service) {
+        for (Party location : locations) {
+            EmailAddress address = getLocationEmail(location, purpose, defaultEmailName, service);
+            if (address != null) {
+                addresses.put(location.getObjectReference(), address);
+            }
+        }
+    }
+
+    /**
      * Returns the practice email address, preferably with the specified purpose.
      *
      * @param practice         the practice
      * @param purpose          the email contact purpose
      * @param defaultEmailName the default email name
+     * @param service          the archetype service
      * @return the practice email address
      */
-    private EmailAddress getPracticeEmail(Party practice, String purpose, String defaultEmailName) {
+    private EmailAddress getPracticeEmail(Party practice, String purpose, String defaultEmailName,
+                                          IArchetypeService service) {
         PurposeMatcher matcher = new PurposeMatcher(ContactArchetypes.EMAIL, purpose, false, service);
         Contact contact = Contacts.find(practice.getContacts(), matcher);
         if (contact == null) {
@@ -131,9 +177,11 @@ public class PracticeEmailAddresses {
      * @param practice         the practice/practice location
      * @param purpose          the email contact purpose
      * @param defaultEmailName the default email name
+     * @param service          the archetype service
      * @return the address, or {@code null} if a valid address is not found and {@code fail} is {@code false}
      */
-    private EmailAddress getLocationEmail(Party practice, String purpose, String defaultEmailName) {
+    private EmailAddress getLocationEmail(Party practice, String purpose, String defaultEmailName,
+                                          IArchetypeService service) {
         EmailAddress result = null;
         PurposeMatcher matcher = new PurposeMatcher(ContactArchetypes.EMAIL, purpose, true, service);
         Contact contact = Contacts.find(practice.getContacts(), matcher);

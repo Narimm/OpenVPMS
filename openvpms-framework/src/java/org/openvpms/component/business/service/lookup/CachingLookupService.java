@@ -21,12 +21,12 @@ import net.sf.ehcache.Element;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.lookup.LookupRelationship;
 import org.openvpms.component.model.object.Reference;
 
 import java.io.Serializable;
@@ -38,7 +38,7 @@ import java.util.Set;
 
 /**
  * Implementation of {@link ILookupService} that caches objects.
- * <p/>
+ * <p>
  * Note that race conditions can occur if a lookup is updated while a collection of the same lookups are
  * being loaded - TODO.
  *
@@ -50,7 +50,6 @@ public class CachingLookupService extends AbstractLookupService {
      * The cache.
      */
     private final Cache cache;
-
 
     /**
      * Creates a new {@code CachingLookupService}.
@@ -64,13 +63,16 @@ public class CachingLookupService extends AbstractLookupService {
         this.cache = cache;
         service.addListener(
                 "lookup.*", new AbstractArchetypeServiceListener() {
-            public void saved(IMObject object) {
-                addLookup((Lookup) object);
-            }
 
-            public void removed(IMObject object) {
-                removeLookup((Lookup) object);
-            }
+                    @Override
+                    public void saved(IMObject object) {
+                        addLookup((Lookup) object, true);
+                    }
+
+                    @Override
+                    public void removed(IMObject object) {
+                        removeLookup((Lookup) object, true);
+                    }
         });
     }
 
@@ -81,8 +83,7 @@ public class CachingLookupService extends AbstractLookupService {
      */
     public void setCached(String... shortNames) {
         for (String wildcard : shortNames) {
-            String[] expanded = DescriptorHelper.getShortNames(wildcard, false,
-                                                               getService());
+            String[] expanded = DescriptorHelper.getShortNames(wildcard, false, getService());
             for (String shortName : expanded) {
                 getLookups(shortName);
             }
@@ -109,7 +110,7 @@ public class CachingLookupService extends AbstractLookupService {
         } else {
             result = super.getLookup(shortName, code, activeOnly);
             if (result != null) {
-                addLookup(result);
+                addLookup(result, false);
             }
         }
         return result;
@@ -128,8 +129,8 @@ public class CachingLookupService extends AbstractLookupService {
         Element element = cache.get(key);
         if (element != null) {
             result = new ArrayList<>();
-            Set<IMObjectReference> references = (Set<IMObjectReference>) element.getObjectValue();
-            for (IMObjectReference reference : references) {
+            Set<Reference> references = (Set<Reference>) element.getObjectValue();
+            for (Reference reference : references) {
                 Lookup lookup = getLookup(reference);
                 if (lookup != null && lookup.isActive()) {
                     result.add(lookup);
@@ -137,10 +138,10 @@ public class CachingLookupService extends AbstractLookupService {
             }
         } else {
             result = query(shortName);
-            Set<IMObjectReference> references = new HashSet<>();
+            Set<Reference> references = new HashSet<>();
             for (Lookup lookup : result) {
                 references.add(lookup.getObjectReference());
-                addLookup(lookup);
+                addLookup(lookup, false);
             }
             cache.put(new Element(key, references));
         }
@@ -172,13 +173,11 @@ public class CachingLookupService extends AbstractLookupService {
     protected Lookup getLookup(Reference reference) {
         Lookup result = null;
         if (reference != null) {
-            Element element = cache.get(new Key(reference));
-            if (element != null) {
-                result = (Lookup) element.getObjectValue();
-            } else {
+            result = getCached(new Key(reference));
+            if (result == null) {
                 result = super.getLookup(reference);
                 if (result != null) {
-                    addLookup(result);
+                    addLookup(result, false);
                 }
             }
         }
@@ -186,16 +185,36 @@ public class CachingLookupService extends AbstractLookupService {
     }
 
     /**
+     * Returns a cached lookup,  given its key.
+     *
+     * @param key the lookup key
+     * @return the cached lookup, or {@code null} if none is found
+     */
+    private Lookup getCached(Key key) {
+        Element element = cache.get(key);
+        return (element != null) ? (Lookup) element.getObjectValue() : null;
+    }
+
+    /**
      * Adds a lookup to the cache.
      *
-     * @param lookup the lookup to add
+     * @param lookup       the lookup to add
+     * @param evictRelated if {@code true}, evict related objects to force them to be reloaded on next access
      */
-    private void addLookup(Lookup lookup) {
-        String shortName = lookup.getArchetypeId().getShortName();
+    private void addLookup(Lookup lookup, boolean evictRelated) {
+        String archetype = lookup.getArchetype();
+        Reference reference = lookup.getObjectReference();
+        Lookup original = null;
 
-        IMObjectReference reference = lookup.getObjectReference();
         Key refKey = new Key(reference);
-        Key codeKey = new Key(shortName, lookup.getCode());
+        Key codeKey = new Key(archetype, lookup.getCode());
+        if (evictRelated) {
+            original = getCached(refKey);
+            if (original == null) {
+                // may have expired. Try and get it via the code key.
+                original = getCached(codeKey);
+            }
+        }
         cache.put(new Element(refKey, lookup));
         cache.put(new Element(codeKey, lookup));
 
@@ -203,6 +222,40 @@ public class CachingLookupService extends AbstractLookupService {
             addToCollection(reference);
         } else {
             removeFromCollection(reference);
+        }
+
+        if (original != null) {
+            // if relationships have been removed, this evicts any of those related lookups that have the relationships
+            evictRelated(original, reference);
+        }
+        if (evictRelated) {
+            // if relationships have been added, this evicts any of those cached lookups that don't have the
+            // relationships
+            evictRelated(lookup, reference);
+        }
+    }
+
+    /**
+     * Evicts related lookups.
+     *
+     * @param lookup    the lookup
+     * @param reference the lookup reference
+     */
+    private void evictRelated(Lookup lookup, Reference reference) {
+        for (LookupRelationship relationship : lookup.getLookupRelationships()) {
+            Reference source = relationship.getSource();
+            Lookup cached = null;
+            if (source != null && !reference.equals(source)) {
+                cached = getCached(new Key(source));
+            } else {
+                Reference target = relationship.getTarget();
+                if (target != null && !reference.equals(target)) {
+                    cached = getCached(new Key(target));
+                }
+            }
+            if (cached != null) {
+                removeLookup(cached, false);
+            }
         }
     }
 
@@ -212,14 +265,14 @@ public class CachingLookupService extends AbstractLookupService {
      * @param reference the lookup reference
      */
     @SuppressWarnings("unchecked")
-    private void addToCollection(IMObjectReference reference) {
-        String shortName = reference.getArchetypeId().getShortName();
+    private void addToCollection(Reference reference) {
+        String archetype = reference.getArchetype();
         for (Object key : cache.getKeys()) {
-            if (key instanceof Key && ((Key) key).matches(shortName)) {
+            if (key instanceof Key && ((Key) key).matches(archetype)) {
                 Element element = cache.get(key);
                 if (element != null) {
                     synchronized (element) {
-                        Set<IMObjectReference> lookups = (Set<IMObjectReference>) element.getObjectValue();
+                        Set<Reference> lookups = (Set<Reference>) element.getObjectValue();
                         lookups.add(reference);
                     }
                 }
@@ -230,16 +283,21 @@ public class CachingLookupService extends AbstractLookupService {
     /**
      * Remove a lookup from the cache.
      *
-     * @param lookup the lookup to remove
+     * @param lookup               the lookup to remove
+     * @param removeFromCollection if {@code true}, remove it from the collection cache as well
      */
-    private void removeLookup(Lookup lookup) {
-        IMObjectReference reference = lookup.getObjectReference();
+    private void removeLookup(Lookup lookup, boolean removeFromCollection) {
+        Reference reference = lookup.getObjectReference();
         Key refKey = new Key(reference);
-        Key codeKey = new Key(lookup.getArchetypeId().getShortName(), lookup.getCode());
+        Key codeKey = new Key(lookup.getArchetype(), lookup.getCode());
         cache.remove(refKey);
         cache.remove(codeKey);
 
-        removeFromCollection(reference);
+        evictRelated(lookup, reference);
+
+        if (removeFromCollection) {
+            removeFromCollection(reference);
+        }
     }
 
     /**
@@ -248,14 +306,14 @@ public class CachingLookupService extends AbstractLookupService {
      * @param reference the lookup reference
      */
     @SuppressWarnings("unchecked")
-    private void removeFromCollection(IMObjectReference reference) {
-        String shortName = reference.getArchetypeId().getShortName();
+    private void removeFromCollection(Reference reference) {
+        String archetype = reference.getArchetype();
         for (Object key : cache.getKeys()) {
-            if (key instanceof Key && ((Key) key).matches(shortName)) {
+            if (key instanceof Key && ((Key) key).matches(archetype)) {
                 Element element = cache.get(key);
                 if (element != null) {
                     synchronized (element) {
-                        Set<IMObjectReference> lookups = (Set<IMObjectReference>) element.getObjectValue();
+                        Set<Reference> lookups = (Set<Reference>) element.getObjectValue();
                         lookups.remove(reference);
                     }
                 }
