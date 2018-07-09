@@ -1043,6 +1043,23 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     }
 
     /**
+     * Adds a bidirectional relationship between the current object (the source) and the supplied target.
+     *
+     * @param sourceName the source node name
+     * @param archetype  the relationship archetype
+     * @param target     the target
+     * @param targetName the target node name
+     * @return a new relationship
+     */
+    @Override
+    public IMObjectRelationship addTarget(String sourceName, String archetype,
+                                          org.openvpms.component.model.object.IMObject target, String targetName) {
+        Relationship relationship = addTarget(sourceName, archetype, target);
+        getBean(target).addValue(targetName, relationship);
+        return (IMObjectRelationship) relationship;
+    }
+
+    /**
      * Removes a relationship between the current object (the source), and the supplied target.
      * <p/>
      * If there are multiple relationships, the first one found will be removed.
@@ -1078,23 +1095,6 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     @Override
     public Relationship removeTarget(String name, org.openvpms.component.model.object.IMObject target) {
         return removeTarget(name, target.getObjectReference());
-    }
-
-    /**
-     * Adds a bidirectional relationship between the current object (the source) and the supplied target.
-     *
-     * @param sourceName the source node name
-     * @param archetype  the relationship archetype
-     * @param target     the target
-     * @param targetName the target node name
-     * @return a new relationship
-     */
-    @Override
-    public IMObjectRelationship addTarget(String sourceName, String archetype,
-                                          org.openvpms.component.model.object.IMObject target, String targetName) {
-        Relationship relationship = addTarget(sourceName, archetype, target);
-        getBean(target).addValue(targetName, relationship);
-        return (IMObjectRelationship) relationship;
     }
 
     /**

@@ -668,11 +668,9 @@ public class ArchetypeService implements IArchetypeService {
 
     /**
      * Returns a bean for an object.
-     * <p/>
-     * NOTE: this method throws an {@link UnsupportedOperationException} if invoked as any bean returned would
-     * bypass proxies of the service, thus skipping any authority checks.
-     * <p/>
-     * There are ways around this, but this service should not be used directly. TODO see OBF-251
+     * <p>
+     * NOTE: this method throws an {@link UnsupportedOperationException} for any save() method on the returned bean
+     * as these bypass proxies of the service, thus skipping any authority checks.
      *
      * @param object the object
      * @return the bean
@@ -680,7 +678,17 @@ public class ArchetypeService implements IArchetypeService {
      */
     @Override
     public IMObjectBean getBean(org.openvpms.component.model.object.IMObject object) {
-        throw new UnsupportedOperationException("getBean() is not supported by this implementation");
+        return new org.openvpms.component.business.service.archetype.helper.IMObjectBean(object, this) {
+            @Override
+            public void save() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public void save(org.openvpms.component.model.object.IMObject... objects) {
+                throw new UnsupportedOperationException();
+            }
+        };
     }
 
     /**
