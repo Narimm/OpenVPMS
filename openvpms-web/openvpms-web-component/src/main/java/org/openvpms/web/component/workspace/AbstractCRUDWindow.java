@@ -55,7 +55,6 @@ import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.button.ButtonSet;
-import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
@@ -279,22 +278,21 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     public void edit(List<Selection> path) {
         T object = getObject();
         if (object != null) {
-            if (canEdit(object)) {
-                if (object.isNew()) {
+            T previous = object;
+            if (!object.isNew()) {
+                // use the latest instance
+                object = IMObjectHelper.reload(object);
+            }
+            if (object != null) {
+                if (canEdit(object)) {
                     edit(object, path);
                 } else {
-                    // make sure the latest instance is being used.
-                    IMObject previous = object;
-                    object = IMObjectHelper.reload(object);
-                    if (object == null) {
-                        ErrorDialog.show(Messages.format("imobject.noexist",
-                                                         DescriptorHelper.getDisplayName(previous)));
-                    } else {
-                        edit(object, path);
-                    }
+                    ErrorHelper.show(Messages.format("imobject.noedit", DescriptorHelper.getDisplayName(object)));
+                    onRefresh(object);
                 }
             } else {
-                ErrorDialog.show(Messages.format("imobject.noedit", DescriptorHelper.getDisplayName(object)));
+                ErrorHelper.show(Messages.format("imobject.noexist", DescriptorHelper.getDisplayName(previous)));
+                onRefresh(previous);
             }
         }
     }
@@ -306,7 +304,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     public void delete() {
         T object = IMObjectHelper.reload(getObject());
         if (object == null) {
-            ErrorDialog.show(Messages.format("imobject.noexist", archetypes.getDisplayName()));
+            ErrorHelper.show(Messages.format("imobject.noexist", archetypes.getDisplayName()));
             onRefresh(getObject());
         } else if (getActions().canDelete(object)) {
             delete(object);
@@ -699,7 +697,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     protected void onPrint() {
         T object = IMObjectHelper.reload(getObject());
         if (object == null) {
-            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
+            ErrorHelper.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
         } else {
             print(object);
         }
@@ -807,7 +805,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
         T previous = getObject();
         final T object = IMObjectHelper.reload(previous);
         if (object == null && previous != null) {
-            ErrorDialog.show(Messages.format("imobject.noexist", DescriptorHelper.getDisplayName(previous)));
+            ErrorHelper.show(Messages.format("imobject.noexist", DescriptorHelper.getDisplayName(previous)));
         } else {
             try {
                 ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
@@ -905,7 +903,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
                             action.accept(latest);
                         } else {
                             String displayName = DescriptorHelper.getDisplayName(object);
-                            ErrorDialog.show(Messages.get(title), Messages.format("imobject.noexist", displayName));
+                            ErrorHelper.show(Messages.get(title), Messages.format("imobject.noexist", displayName));
                             onRefresh(object);
                         }
                     } catch (Throwable exception) {
