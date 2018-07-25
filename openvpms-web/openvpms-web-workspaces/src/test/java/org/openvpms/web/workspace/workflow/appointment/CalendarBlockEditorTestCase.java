@@ -86,7 +86,9 @@ public class CalendarBlockEditorTestCase extends AbstractAppTest {
         editor.setExpression(Repeats.weekdays(initialStart));
         editor.setCondition(Repeats.times(10));
         Date newStart = DateRules.getDate(initialStart, 2, DateUnits.HOURS);
+        Date newEnd = DateRules.getDate(newStart, 1, DateUnits.HOURS);
         editor.setStartTime(newStart);
+        editor.setEndTime(newEnd);
         assertTrue(editor.isValid()); // forces generation on the series TODO
         editor.save();
 
@@ -99,7 +101,7 @@ public class CalendarBlockEditorTestCase extends AbstractAppTest {
         assertEquals(11, items.size());
 
         Date start = newStart;
-        Date end = DateRules.getDate(start, 1, DateUnits.HOURS);
+        Date end = newEnd;
         for (Act item : items) {
             assertEquals(start, item.getActivityStartTime());
             assertEquals(end, item.getActivityEndTime());
@@ -109,7 +111,7 @@ public class CalendarBlockEditorTestCase extends AbstractAppTest {
             } else {
                 start = DateRules.getDate(start, 1, DateUnits.DAYS);
             }
-            end = DateRules.getDate(end, 1, DateUnits.DAYS);
+            end = DateRules.getDate(start, 1, DateUnits.HOURS);
         }
     }
 
