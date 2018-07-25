@@ -212,6 +212,8 @@ class ClaimItemCollectionEditor extends ActRelationshipCollectionEditor {
             object.setActivityEndTime(visit.getActivityEndTime());
             IMObjectBean bean = new IMObjectBean(visit);
             addAttachments(bean);
+            add(object);
+
             String description = visit.getTitle();
             if (StringUtils.isEmpty(description)) {
                 description = ServiceHelper.getLookupService().getName(visit, "reason");
@@ -224,11 +226,15 @@ class ClaimItemCollectionEditor extends ActRelationshipCollectionEditor {
                     claimItemEditor.addCharge(charge);
                 }
             }
+
+            // Ensure the modified flag is set. If there are no charges, the item will treated as unmodified and
+            // might then be discarded on save
+            setModified(object, true);
+
+            refresh();
+            setSelected(object);
+            edit(object);
         }
-        add(object);
-        refresh();
-        setSelected(object);
-        edit(object);
     }
 
     /**
@@ -274,6 +280,10 @@ class ClaimItemCollectionEditor extends ActRelationshipCollectionEditor {
                     }
                 }
             }
+            // Ensure the modified flag is set. If there are no charges, the item will treated as unmodified and
+            // might then be discarded on save
+            setModified(object, true);
+
             refresh();
             setSelected(object);
             edit(object);
