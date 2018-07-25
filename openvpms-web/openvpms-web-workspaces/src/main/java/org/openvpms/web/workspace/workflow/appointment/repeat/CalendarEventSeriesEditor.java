@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
@@ -208,9 +208,10 @@ public class CalendarEventSeriesEditor extends AbstractModifiable {
     /**
      * Refreshes the editor.
      * <p/>
-     * This should be invoked if the appointment start time changes.
+     * This should be invoked if the event start time changes.
      */
     public void refresh() {
+        updateSeries();
         refreshRepeat();
     }
 
@@ -694,7 +695,7 @@ public class CalendarEventSeriesEditor extends AbstractModifiable {
                 });
             }
             model.add(new SimpleRepeatEditor(Repeats.daily()));
-            model.add(new SimpleRepeatEditor(Repeats.weekdays(series.getStartTime())));
+            model.add(new RepeatOnWeekdaysEditor());
             model.add(new RepeatEveryEditor(DateUnits.DAYS));
             model.add(new RepeatOnDaysEditor(series.getStartTime()));
             return model;

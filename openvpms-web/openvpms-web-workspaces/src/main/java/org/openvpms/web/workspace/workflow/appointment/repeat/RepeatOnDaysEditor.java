@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
@@ -84,7 +84,7 @@ class RepeatOnDaysEditor extends AbstractRepeatExpressionEditor {
         DayOfWeek dayOfWeek = expression.getDayOfWeek();
         for (int i = 0; i < days.length; ++i) {
             int day = Calendar.SUNDAY + i;
-            if (dayOfWeek.isSelected(day)) {
+            if (dayOfWeek.isSelected(day) || dayOfWeek.equals(DayOfWeek.ALL)) {
                 days[i].setSelected(true);
             }
         }
