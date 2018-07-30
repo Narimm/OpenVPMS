@@ -35,7 +35,6 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
-import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
@@ -97,7 +96,7 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
                 };
             }
         };
-        getEditors().add(productEditor);
+        addEditor(productEditor);
     }
 
     /**
@@ -185,17 +184,6 @@ public class PatientInvestigationActEditor extends PatientDocumentActEditor {
      */
     public IMObjectReference getInvestigationTypeRef() {
         return getParticipantRef("investigationType");
-    }
-
-    /**
-     * Determines if an editor should be disposed on layout change.
-     *
-     * @param editor the editor
-     * @return {@code true} if the editor should be disposed
-     */
-    @Override
-    protected boolean disposeOnChangeLayout(Editor editor) {
-        return editor != getDocumentEditor() && editor != getVersionsEditor() && editor != productEditor;
     }
 
     /**

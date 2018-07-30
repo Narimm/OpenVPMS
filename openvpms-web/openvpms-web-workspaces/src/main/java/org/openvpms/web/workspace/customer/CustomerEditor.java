@@ -79,7 +79,7 @@ public class CustomerEditor extends AbstractIMObjectEditor {
         CollectionProperty contacts = getCollectionProperty("contacts");
         if (contacts != null) {
             ContactCollectionEditor editor = createContactCollectionEditor(customer, context, contacts);
-            getEditors().add(editor);
+            addEditor(editor);
 
             if (contacts.getMinCardinality() == 0) {
                 editor.setExcludeUnmodifiedContacts(true);

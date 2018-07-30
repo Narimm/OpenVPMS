@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -25,7 +25,7 @@ import java.util.List;
 
 /**
  * Determines the price for a product.
- * <p/>
+ * <p>
  * This takes into account:
  * <li>
  * <li>service ratios</li>
@@ -38,19 +38,25 @@ import java.util.List;
 public interface PricingContext {
 
     /**
-     * Returns the tax-inclusive price given a tax-exclusive price.
-     * <p/>
-     * This takes into account:
-     * <ul>
-     * <li>customer tax exclusions</li>
-     * <li>service ratios</li>
-     * </ul>
+     * Returns the service ratio for a product and date.
      *
      * @param product the product
-     * @param price   the tax-exclusive price
+     * @param date    the date
+     * @return the service ratio, or {@code null} if none is defined
+     */
+    BigDecimal getServiceRatio(Product product, Date date);
+
+    /**
+     * Returns the tax-inclusive price given a tax-exclusive price and service ratio.
+     * <p>
+     * This takes into account customer tax exclusions.
+     *
+     * @param product      the product
+     * @param price        the tax-exclusive price
+     * @param serviceRatio the service ratio. May be {@code null}
      * @return the tax-inclusive price, rounded according to the currency conventions
      */
-    BigDecimal getPrice(Product product, ProductPrice price);
+    BigDecimal getPrice(Product product, ProductPrice price, BigDecimal serviceRatio);
 
     /**
      * Returns the fixed prices for a product.
@@ -82,11 +88,13 @@ public interface PricingContext {
     /**
      * Returns the first product price with the specified short name and price, active as of the date.
      *
-     * @param shortName the price short name
-     * @param price     the tax-inclusive price
-     * @param product   the product
-     * @param date      the date
+     * @param shortName    the price short name
+     * @param price        the tax-inclusive price
+     * @param serviceRatio the service ratio, or {@link BigDecimal#ONE} if no ratio applies
+     * @param product      the product
+     * @param date         the date
      * @return the product price, or {@code null} if none is found
      */
-    ProductPrice getProductPrice(String shortName, BigDecimal price, Product product, Date date);
+    ProductPrice getProductPrice(String shortName, BigDecimal price, BigDecimal serviceRatio, Product product,
+                                 Date date);
 }

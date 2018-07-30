@@ -11,13 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
@@ -58,7 +58,7 @@ public abstract class AbstractMultiDayTableModel extends ScheduleTableModel {
      * @return the slot, or {@code -1} if the event is not found
      */
     @Override
-    public int getSlot(Schedule schedule, IMObjectReference eventRef) {
+    public int getSlot(Schedule schedule, Reference eventRef) {
         PropertySet event = schedule.getEvent(eventRef);
         if (event != null) {
             return getGrid().getSlot(event.getDate(ScheduleEvent.ACT_START_TIME));

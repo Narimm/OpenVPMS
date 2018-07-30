@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.boarding;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 
@@ -41,7 +41,7 @@ class CageRow {
 
     /**
      * Constructs a {@link CageRow}.
-     * <p/>
+     * <p>
      * This indicates that the row is a totals row.
      */
     public CageRow() {
@@ -114,7 +114,7 @@ class CageRow {
      * @param scheduleRef the schedule reference
      * @return {@code true} if the row is for the schedule
      */
-    public boolean isSchedule(IMObjectReference scheduleRef) {
+    public boolean isSchedule(Reference scheduleRef) {
         return (schedule != null && schedule.getSchedule().getObjectReference().equals(scheduleRef));
     }
 

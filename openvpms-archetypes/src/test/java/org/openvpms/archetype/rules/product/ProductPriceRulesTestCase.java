@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -37,6 +37,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.product.PricingGroup.ALL;
@@ -78,7 +79,7 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
 
     /**
      * Sets up the test case.
-     * <p/>
+     * <p>
      * This sets up the practice to have a 10% tax on all products.
      */
     @Before
@@ -272,7 +273,7 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
     /**
      * Tests the {@link ProductPriceRules#getTaxIncPrice(BigDecimal, Product, Party, Currency)} and
      * {@link ProductPriceRules#getTaxIncPrice(BigDecimal, BigDecimal, Currency)} methods.
-     * <p/>
+     * <p>
      * This verifies that tax rates can be expressed to 2 decimal places.
      */
     @Test
@@ -412,16 +413,33 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
      */
     @Test
     public void testGetServiceRatio() {
-        Product product = TestHelper.createProduct();
+        Product product1 = TestHelper.createProduct();
+        Product product2 = TestHelper.createProduct();
         Party location = TestHelper.createLocation();
-        Entity productType = ProductTestHelper.createProductType();
-        checkEquals(BigDecimal.ONE, rules.getServiceRatio(product, location));
 
-        ProductTestHelper.addProductType(product, productType);
-        checkEquals(BigDecimal.ONE, rules.getServiceRatio(product, location));
+        Entity productType1 = ProductTestHelper.createProductType();
+        Entity productType2 = ProductTestHelper.createProductType();
+        assertNull(rules.getServiceRatio(product1, location));
+        assertNull(rules.getServiceRatio(product2, location));
 
-        ProductTestHelper.addServiceRatio(location, productType, BigDecimal.TEN);
-        checkEquals(BigDecimal.TEN, rules.getServiceRatio(product, location));
+        ProductTestHelper.addProductType(product1, productType1);
+        ProductTestHelper.addProductType(product2, productType2);
+        assertNull(rules.getServiceRatio(product1, location));
+        assertNull(rules.getServiceRatio(product2, location));
+
+        Entity calendar = ProductTestHelper.createServiceRatioCalendar();
+        ProductTestHelper.addServiceRatio(location, productType1, BigDecimal.TEN, calendar);
+        ProductTestHelper.addServiceRatio(location, productType2, BigDecimal.TEN);
+
+        ServiceRatio ratio1 = rules.getServiceRatio(product1, location);
+        assertNotNull(ratio1);
+        checkEquals(BigDecimal.TEN, ratio1.getRatio());
+        assertEquals(calendar.getObjectReference(), ratio1.getCalendar());
+
+        ServiceRatio ratio2 = rules.getServiceRatio(product2, location);
+        assertNotNull(ratio2);
+        checkEquals(BigDecimal.TEN, ratio2.getRatio());
+        assertNull(ratio2.getCalendar());
     }
 
     /**

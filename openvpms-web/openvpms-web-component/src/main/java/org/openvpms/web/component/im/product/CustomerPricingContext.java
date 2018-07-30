@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -20,6 +20,7 @@ import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.archetype.rules.product.ServiceRatioService;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 
@@ -51,10 +52,12 @@ public class CustomerPricingContext extends AbstractPricingContext {
      * @param priceRules    the price rules
      * @param locationRules the location rules
      * @param taxRules      the tax rules
+     * @param serviceRatios the service ratios
      */
     public CustomerPricingContext(Party customer, Party location, Currency currency, ProductPriceRules priceRules,
-                                  LocationRules locationRules, CustomerTaxRules taxRules) {
-        super(currency, location, priceRules, locationRules);
+                                  LocationRules locationRules, CustomerTaxRules taxRules,
+                                  ServiceRatioService serviceRatios) {
+        super(currency, location, priceRules, locationRules, serviceRatios);
         this.customer = customer;
         this.taxRules = taxRules;
     }

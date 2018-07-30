@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.math.MathRules;
@@ -25,6 +26,7 @@ import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.product.ProductPriceTestHelper;
+import org.openvpms.archetype.rules.product.ServiceRatioService;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -109,8 +111,9 @@ public class CustomerPricingContextTestCase extends ArchetypeServiceTest {
         ProductPriceRules productPriceRules = new ProductPriceRules(getArchetypeService());
         Currency currency = getCurrency(new BigDecimal(minPrice));
         CustomerTaxRules taxRules = new CustomerTaxRules(practice, getArchetypeService());
+        ServiceRatioService serviceRatios = Mockito.mock(ServiceRatioService.class);
         CustomerPricingContext context = new CustomerPricingContext(customer, location, currency, productPriceRules,
-                                                                    locationRules, taxRules);
+                                                                    locationRules, taxRules, serviceRatios);
 
         Product product = (Product) TestHelper.create(ProductArchetypes.MEDICATION);
         BigDecimal rate = new BigDecimal(taxRate);
@@ -121,7 +124,7 @@ public class CustomerPricingContextTestCase extends ArchetypeServiceTest {
                 customer.addClassification(taxType);
             }
         }
-        BigDecimal price = context.getPrice(product, getPrice(taxExPrice));
+        BigDecimal price = context.getPrice(product, getPrice(taxExPrice), BigDecimal.ONE);
         checkEquals(new BigDecimal(expected), price);
     }
 

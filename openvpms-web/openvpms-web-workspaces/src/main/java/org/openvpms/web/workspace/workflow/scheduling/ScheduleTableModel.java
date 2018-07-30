@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
 
 import echopointng.table.TableColumnEx;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.apache.commons.jxpath.FunctionLibrary;
@@ -26,13 +25,15 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.CachingReadOnlyArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
+import org.openvpms.web.echo.table.AbstractCellTableModel;
+import org.openvpms.web.echo.table.Cell;
 import org.openvpms.web.echo.table.RenderTableModel;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -49,7 +50,7 @@ import java.util.Set;
  *
  * @author Tim Anderson
  */
-public abstract class ScheduleTableModel extends AbstractTableModel implements RenderTableModel {
+public abstract class ScheduleTableModel extends AbstractCellTableModel implements RenderTableModel {
 
     public enum Highlight {
 
@@ -64,7 +65,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
         /**
          * The table schedules.
          */
-        private final Set<IMObjectReference> schedules;
+        private final Set<Reference> schedules;
 
         /**
          * The selected cell. May be {@code null}
@@ -74,12 +75,12 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
         /**
          * The selected event. May be {@code null}
          */
-        private final IMObjectReference selectedEvent;
+        private final Reference selectedEvent;
 
         /**
          * The marked event. May be {@code null}
          */
-        private final IMObjectReference markedEvent;
+        private final Reference markedEvent;
 
         /**
          * Determines if the marked event is being cut.
@@ -89,7 +90,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
         /**
          * The marked schedule. May be {@code null}
          */
-        private IMObjectReference markedSchedule;
+        private Reference markedSchedule;
 
         public State(ScheduleTableModel model) {
             schedules = State.getSchedules(model.getSchedules());
@@ -107,7 +108,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
             isCut = model.isCut();
         }
 
-        public Set<IMObjectReference> getSchedules() {
+        public Set<Reference> getSchedules() {
             return schedules;
         }
 
@@ -115,15 +116,15 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
             return selected;
         }
 
-        public IMObjectReference getSelectedEvent() {
+        public Reference getSelectedEvent() {
             return selectedEvent;
         }
 
-        public IMObjectReference getMarkedEvent() {
+        public Reference getMarkedEvent() {
             return markedEvent;
         }
 
-        public IMObjectReference getMarkedSchedule() {
+        public Reference getMarkedSchedule() {
             return markedSchedule;
         }
 
@@ -131,8 +132,8 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
             return isCut;
         }
 
-        public static Set<IMObjectReference> getSchedules(List<Schedule> schedules) {
-            Set<IMObjectReference> result = new HashSet<>();
+        public static Set<Reference> getSchedules(List<Schedule> schedules) {
+            Set<Reference> result = new HashSet<>();
             for (Schedule schedule : schedules) {
                 result.add(schedule.getSchedule().getObjectReference());
             }
@@ -145,8 +146,8 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
          * @param cell the cell. May be {@code null}
          * @return the event reference. May be {@code null}
          */
-        private IMObjectReference getEvent(ScheduleTableModel model, Cell cell) {
-            IMObjectReference reference = null;
+        private Reference getEvent(ScheduleTableModel model, Cell cell) {
+            Reference reference = null;
             if (cell != null) {
                 PropertySet event = model.getEvent(cell);
                 reference = getEvent(event);
@@ -154,7 +155,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
             return reference;
         }
 
-        private IMObjectReference getEvent(PropertySet event) {
+        private Reference getEvent(PropertySet event) {
             return (event != null) ? event.getReference(ScheduleEvent.ACT_REFERENCE) : null;
         }
 
@@ -164,7 +165,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
          * @param event the event. May be {@code null}
          * @return the schedule reference. May be {@code null}
          */
-        private IMObjectReference getSchedule(PropertySet event) {
+        private Reference getSchedule(PropertySet event) {
             return (event != null) ? event.getReference(ScheduleEvent.SCHEDULE_REFERENCE) : null;
         }
     }
@@ -213,22 +214,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
      * The clinician to display events for.
      * If {@code null} indicates to display events for all clinicians.
      */
-    private IMObjectReference clinician;
-
-    /**
-     * The selected cell.
-     */
-    private Cell selected;
-
-    /**
-     * The marked cell.
-     */
-    private Cell marked;
-
-    /**
-     * If {@code true} the marked cell is being cut, else it is being copied.
-     */
-    private boolean isCut;
+    private Reference clinician;
 
     /**
      * Determines cell colour.
@@ -265,10 +251,17 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
         this.grid = grid;
         this.context = context;
         this.scheduleColumns = scheduleColumns;
-        IMObjectBean bean = new IMObjectBean(grid.getScheduleView());
-        expression = bean.getString("displayExpression");
-        displayNotes = bean.getBoolean("displayNotes");
-        useStrikethrough = bean.hasNode(USE_STRIKETHROUGH) && bean.getBoolean(USE_STRIKETHROUGH);
+        Entity view = grid.getScheduleView();
+        if (view != null) {
+            IMObjectBean bean = new IMObjectBean(view);
+            expression = bean.getString("displayExpression");
+            displayNotes = bean.getBoolean("displayNotes");
+            useStrikethrough = bean.hasNode(USE_STRIKETHROUGH) && bean.getBoolean(USE_STRIKETHROUGH);
+        } else {
+            expression = null;
+            displayNotes = true;
+            useStrikethrough = false;
+        }
         this.colours = colours;
         model = createColumnModel(grid);
     }
@@ -289,7 +282,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
      * @param event    the event reference
      * @return the cell, or {@code null} if none is found
      */
-    public Cell getCell(IMObjectReference schedule, IMObjectReference event) {
+    public Cell getCell(Reference schedule, Reference event) {
         Cell result = null;
         if (scheduleColumns) {
             for (ScheduleColumn column : getColumns(schedule)) {
@@ -322,7 +315,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
      * @param date     the date
      * @return the cell or {@code null} if there is none
      */
-    public Cell getCell(IMObjectReference schedule, Date date) {
+    public Cell getCell(Reference schedule, Date date) {
         Cell result = null;
         int slot = grid.getSlot(date);
         if (slot != -1) {
@@ -350,15 +343,14 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
      * @param eventRef the event reference
      * @return the slot, or {@code -1} if the event is not found
      */
-    public abstract int getSlot(Schedule schedule, IMObjectReference eventRef);
+    public abstract int getSlot(Schedule schedule, Reference eventRef);
 
     /**
      * Sets the clinician to display appointments for.
      *
-     * @param clinician the clinician, or {@code null} to display appointments
-     *                  for all clinicians
+     * @param clinician the clinician, or {@code null} to display appointments for all clinicians
      */
-    public void setClinician(IMObjectReference clinician) {
+    public void setClinician(Reference clinician) {
         this.clinician = clinician;
         fireTableDataChanged();
     }
@@ -369,92 +361,8 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
      * @return the clinician, or {@code null} to display appointments
      * for all clinicians
      */
-    public IMObjectReference getClinician() {
+    public Reference getClinician() {
         return clinician;
-    }
-
-    /**
-     * Sets the selected cell.
-     *
-     * @param cell the selected cell. May be {@code null}
-     */
-    public void setSelected(Cell cell) {
-        Cell old = selected;
-        selected = cell;
-        if (old != null) {
-            fireTableCellUpdated(old.getColumn(), old.getRow());
-        }
-        if (selected != null) {
-            fireTableCellUpdated(selected.getColumn(), selected.getRow());
-        }
-    }
-
-    /**
-     * Returns the selected cell.
-     *
-     * @return the selected cell, or {@code null} if none is selected
-     */
-    public Cell getSelected() {
-        return selected;
-    }
-
-    /**
-     * Determines if a cell is selected.
-     *
-     * @param column the column
-     * @param row    the row
-     * @return {@code true} if the cell is selected
-     */
-    public boolean isSelected(int column, int row) {
-        return selected != null && selected.equals(column, row);
-    }
-
-    /**
-     * Sets the marked cell. This flags a cell as being marked for cutting/copying and pasting purposes.
-     *
-     * @param cell  the cell, or {@code null} to unmark the cell
-     * @param isCut if {@code true} indicates the cell is being cut; if {@code false} indicates its being copied.
-     *              Ignored if the cell is being unmarked.
-     */
-    public void setMarked(Cell cell, boolean isCut) {
-        Cell old = marked;
-        this.isCut = isCut;
-        marked = cell;
-        if (old != null) {
-            fireTableCellUpdated(old.getColumn(), old.getRow());
-        }
-        if (marked != null) {
-            fireTableCellUpdated(marked.getColumn(), marked.getRow());
-        }
-    }
-
-    /**
-     * Returns the marked cell.
-     *
-     * @return the marked cell, or {@code null} if no cell is marked
-     */
-    public Cell getMarked() {
-        return marked;
-    }
-
-    /**
-     * Determines if a cell is marked for cut/copy.
-     *
-     * @param column the column
-     * @param row    the row
-     * @return {@code true} if the cell is cut
-     */
-    public boolean isMarked(int column, int row) {
-        return marked != null && marked.equals(column, row);
-    }
-
-    /**
-     * Determines if the marked cell is being cut or copied.
-     *
-     * @return {@code true} if the cell is being cut; {@code false} if it is being copied
-     */
-    public boolean isCut() {
-        return isCut;
     }
 
     /**
@@ -721,10 +629,10 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
      * @param state the state
      */
     public void setState(State state) {
-        Set<IMObjectReference> schedules = State.getSchedules(getSchedules());
-        Set<IMObjectReference> newSchedules = state.getSchedules();
+        Set<Reference> schedules = State.getSchedules(getSchedules());
+        Set<Reference> newSchedules = state.getSchedules();
         Cell newSelected = state.getSelected();
-        IMObjectReference newEvent = state.getSelectedEvent();
+        Reference newEvent = state.getSelectedEvent();
         if (newSelected != null && schedules.equals(newSchedules)) {
             if (newSelected.getColumn() < getColumnCount() && newSelected.getRow() < getRowCount()) {
                 if (newEvent != null) {
@@ -742,8 +650,8 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
         }
         setSelected(newSelected);
 
-        IMObjectReference newMarkedEvent = state.getMarkedEvent();
-        IMObjectReference newMarkedSchedule = state.getMarkedSchedule();
+        Reference newMarkedEvent = state.getMarkedEvent();
+        Reference newMarkedSchedule = state.getMarkedSchedule();
         Cell newMarked = null;
         if (newMarkedEvent != null && newMarkedSchedule != null) {
             newMarked = getCell(newMarkedSchedule, newMarkedEvent);
@@ -833,7 +741,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
      * @return a new component to view the object reference
      */
     protected Component getViewer(PropertySet set, String refKey, String nameKey, boolean link) {
-        IMObjectReference ref = set.getReference(refKey);
+        Reference ref = set.getReference(refKey);
         String name = set.getString(nameKey);
         IMObjectReferenceViewer viewer = new IMObjectReferenceViewer(ref, name, link, context);
         return viewer.getComponent();
@@ -902,7 +810,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
      * @param scheduleRef the schedule reference
      * @return the rows
      */
-    protected List<ScheduleRow> getRows(IMObjectReference scheduleRef) {
+    protected List<ScheduleRow> getRows(Reference scheduleRef) {
         List<ScheduleRow> result = new ArrayList<>();
         int index = 0;
         for (Schedule schedule : grid.getSchedules()) {
@@ -920,7 +828,7 @@ public abstract class ScheduleTableModel extends AbstractTableModel implements R
      * @param scheduleRef the schedule reference
      * @return the columns
      */
-    private List<ScheduleColumn> getColumns(IMObjectReference scheduleRef) {
+    private List<ScheduleColumn> getColumns(Reference scheduleRef) {
         List<ScheduleColumn> result = new ArrayList<>();
         for (ScheduleColumn column : getColumns()) {
             if (column.getSchedule() != null) {

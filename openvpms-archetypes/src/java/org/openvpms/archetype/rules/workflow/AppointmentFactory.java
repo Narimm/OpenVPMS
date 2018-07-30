@@ -11,13 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
 
 import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -25,6 +24,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.Collections;
@@ -42,7 +42,7 @@ class AppointmentFactory extends ScheduleEventFactory {
     /**
      * Cache of visit reason lookup names, keyed on code.
      */
-    private final Map<String, String> reasonNames = Collections.synchronizedMap(new HashMap<String, String>());
+    private final Map<String, String> reasonNames = Collections.synchronizedMap(new HashMap<>());
 
     /**
      * Constructs an {@link AppointmentFactory}.
@@ -126,6 +126,8 @@ class AppointmentFactory extends ScheduleEventFactory {
      */
     @Override
     protected ScheduleEventQuery createQuery(Entity schedule, Date day) {
-        return new AppointmentQuery(schedule, DateRules.getDate(day), getEnd(day), getService(), getLookups());
+        return new AppointmentQuery(schedule, DateRules.getDate(day), getEnd(day), getStatusNames(), reasonNames,
+                                    getService()
+        );
     }
 }

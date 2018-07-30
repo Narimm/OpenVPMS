@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -23,12 +23,11 @@ import org.joda.time.DateTime;
 import org.openvpms.archetype.i18n.time.DateDurationFormatter;
 import org.openvpms.archetype.i18n.time.DurationFormatter;
 import org.openvpms.archetype.rules.workflow.Slot;
-import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.AbstractTableBrowser;
 import org.openvpms.web.component.im.query.IterableBackedResultSet;
-import org.openvpms.web.component.im.query.QueryListener;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
@@ -40,7 +39,6 @@ import java.text.DateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -69,11 +67,7 @@ class FreeAppointmentSlotBrowser extends AbstractTableBrowser<Slot> {
     public FreeAppointmentSlotBrowser(FreeAppointmentSlotQuery query, LayoutContext layoutContext) {
         super(new SlotTableModel(), layoutContext);
         this.query = query;
-        query.setListener(new QueryListener() {
-            public void query() {
-                onQuery();
-            }
-        });
+        query.setListener(this::onQuery);
     }
 
     /**
@@ -105,12 +99,7 @@ class FreeAppointmentSlotBrowser extends AbstractTableBrowser<Slot> {
      */
     @Override
     public void query() {
-        Iterable<Slot> iterable = new Iterable<Slot>() {
-            @Override
-            public Iterator<Slot> iterator() {
-                return query.query();
-            }
-        };
+        Iterable<Slot> iterable = query::query;
         ((SlotTableModel) getTableModel()).setSchedules(query.getSelectedSchedules());
         ResultSet<Slot> set = new IterableBackedResultSet<>(iterable, 20);
 

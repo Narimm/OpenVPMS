@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -29,13 +29,14 @@ import nextapp.echo2.app.layout.TableLayoutData;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.echo.colour.ColourHelper;
 import org.openvpms.web.echo.factory.BalloonHelpFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.table.Cell;
 import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid.Availability;
 
@@ -476,7 +477,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @param reference the reference
      * @return the colour, or {@code null} if no colour exists
      */
-    protected Color getColour(IMObjectReference reference) {
+    protected Color getColour(Reference reference) {
         return colours.getColour(reference);
     }
 
@@ -498,7 +499,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @return {@code true} if they have the same clinician, or the model indicates to display all clinicians
      */
     private boolean isSelectedClinician(PropertySet event, ScheduleTableModel model) {
-        IMObjectReference clinician = model.getClinician();
+        Reference clinician = model.getClinician();
         return clinician == null
                || ObjectUtils.equals(clinician, event.getReference(ScheduleEvent.CLINICIAN_REFERENCE));
     }
@@ -562,7 +563,7 @@ public abstract class ScheduleTableCellRenderer implements TableCellRendererEx {
      * @return the colour, or {@code null} if none is found
      */
     private Color getColour(PropertySet set, String key) {
-        IMObjectReference reference = set.getReference(key);
+        Reference reference = set.getReference(key);
         return getColour(reference);
     }
 

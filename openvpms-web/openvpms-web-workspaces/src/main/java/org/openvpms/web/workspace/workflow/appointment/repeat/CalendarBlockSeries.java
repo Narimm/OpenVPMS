@@ -11,28 +11,29 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 
 /**
  * Calendar block series.
  *
  * @author Tim Anderson
  */
-public class CalendarBlockSeries extends CalendarEventSeries {
+public class CalendarBlockSeries extends ScheduleEventSeries {
 
     /**
      * Constructs an {@link CalendarBlockSeries}.
      *
-     * @param event   the event. An appointment or calendar block
+     * @param event   the event. A calendar block
      * @param service the archetype service
      */
     public CalendarBlockSeries(Act event, IArchetypeService service) {
@@ -79,10 +80,10 @@ public class CalendarBlockSeries extends CalendarEventSeries {
      * @param state the state
      */
     @Override
-    protected void populate(ActBean bean, State state) {
+    protected void populate(IMObjectBean bean, State state) {
         super.populate(bean, state);
         BlockState block = (BlockState) state;
-        bean.setNodeParticipant("type", block.getBlockType());
+        bean.setTarget("type", block.getBlockType());
         bean.setValue("name", block.getName());
         bean.setValue("description", block.getDescription());
     }
@@ -92,7 +93,7 @@ public class CalendarBlockSeries extends CalendarEventSeries {
         /**
          * The block type reference.
          */
-        private IMObjectReference blockType;
+        private Reference blockType;
 
         /**
          * The name.
@@ -131,9 +132,9 @@ public class CalendarBlockSeries extends CalendarEventSeries {
          * @param event the event
          */
         @Override
-        public void update(ActBean event) {
+        public void update(IMObjectBean event) {
             super.update(event);
-            blockType = event.getNodeParticipantRef("type");
+            blockType = event.getTargetRef("type");
             name = event.getString("name");
             description = event.getString("description");
         }
@@ -143,7 +144,7 @@ public class CalendarBlockSeries extends CalendarEventSeries {
          *
          * @return the block type
          */
-        public IMObjectReference getBlockType() {
+        public Reference getBlockType() {
             return blockType;
         }
 

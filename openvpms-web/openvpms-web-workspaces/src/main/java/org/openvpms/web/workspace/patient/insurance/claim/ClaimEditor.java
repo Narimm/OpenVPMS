@@ -25,7 +25,6 @@ import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.insurance.claim.Attachment;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.edit.Editors;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -91,13 +90,12 @@ public class ClaimEditor extends AbstractClaimEditor {
             throw new IllegalStateException("Claim has no patient");
         }
 
-        Editors editors = getEditors();
         attachments = new AttachmentCollectionEditor(getCollectionProperty("attachments"), act, layoutContext);
         Charges charges = new Charges();
         items = new ClaimItemCollectionEditor(getCollectionProperty("items"), act, customer, patient,
                                               charges, attachments, layoutContext);
-        editors.add(attachments);
-        editors.add(items);
+        addEditor(attachments);
+        addEditor(items);
 
         generator = new AttachmentGenerator(customer, patient, charges, context);
         items.addModifiableListener(modifiable -> onItemsChanged());

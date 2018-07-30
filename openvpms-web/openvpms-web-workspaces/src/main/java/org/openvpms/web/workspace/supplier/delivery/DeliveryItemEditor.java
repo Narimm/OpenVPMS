@@ -66,7 +66,7 @@ public class DeliveryItemEditor extends SupplierStockItemEditor {
         super(act, parent, context);
         CollectionProperty order = (CollectionProperty) getProperty("order");
         orderEditor = new ActRelationshipCollectionEditor(order, act, getLayoutContext());
-        getEditors().add(orderEditor);
+        addEditor(orderEditor);
         parentStatus = (parent != null) ? parent.getStatus() : null;
         Property invoiceLineId = getProperty("supplierInvoiceLineId");
         updateProductPrices = !(invoiceLineId != null && !StringUtils.isEmpty(invoiceLineId.getString()));

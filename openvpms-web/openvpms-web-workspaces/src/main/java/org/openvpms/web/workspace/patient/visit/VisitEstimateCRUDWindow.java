@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -24,6 +24,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.SaveHelper;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.customer.estimate.EstimateCRUDWindow;
@@ -136,7 +137,7 @@ public class VisitEstimateCRUDWindow extends EstimateCRUDWindow {
         // invoice the estimate
         VisitChargeEditor editor = visitEditor.getChargeEditor();
         EstimateInvoicer invoicer = createEstimateInvoicer();
-        invoicer.invoice(estimate, editor);
+        invoicer.invoice(estimate, editor, new DefaultLayoutContext(getContext(), getHelpContext()));
         estimate.setStatus(EstimateActStatus.INVOICED);
         SaveHelper.save(estimate);
         onRefresh(estimate);

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -20,10 +20,10 @@ import nextapp.echo2.app.Color;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.AbstractMonitoringIMObjectCache;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.echo.colour.ColourHelper;
 
 import java.util.Collections;
@@ -32,7 +32,7 @@ import java.util.Map;
 
 /**
  * Cache for schedule colours.
- * <p/>
+ * <p>
  * This caches colours for users, appointment types, calendar block types, and task types.
  *
  * @author Tim Anderson
@@ -42,8 +42,7 @@ public class ScheduleColours extends AbstractMonitoringIMObjectCache<Entity> {
     /**
      * The colours, keyed on reference.
      */
-    private final Map<IMObjectReference, String> colours
-            = Collections.synchronizedMap(new HashMap<IMObjectReference, String>());
+    private final Map<Reference, String> colours = Collections.synchronizedMap(new HashMap<>());
 
     /**
      * The archetypes to cache colours for. Must have a 'colour' node.
@@ -67,7 +66,7 @@ public class ScheduleColours extends AbstractMonitoringIMObjectCache<Entity> {
      * @param reference the reference
      * @return the colour, or {@code null} if none is found
      */
-    public Color getColour(IMObjectReference reference) {
+    public Color getColour(Reference reference) {
         return ColourHelper.getColor(colours.get(reference));
     }
 
@@ -78,7 +77,7 @@ public class ScheduleColours extends AbstractMonitoringIMObjectCache<Entity> {
      */
     @Override
     protected void addObject(Entity object) {
-        IMObjectBean bean = new IMObjectBean(object, getService());
+        IMObjectBean bean = getService().getBean(object);
         colours.put(object.getObjectReference(), bean.getString("colour"));
     }
 

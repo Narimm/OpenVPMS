@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -21,6 +21,7 @@ import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.archetype.rules.product.ServiceRatioService;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -48,14 +49,19 @@ public abstract class AbstractPricingContext implements PricingContext {
     private final Party location;
 
     /**
-     * The pricing group.
-     */
-    private PricingGroup pricingGroup;
-
-    /**
      * The price rules.
      */
     private final ProductPriceRules rules;
+
+    /**
+     * The service ratio service.
+     */
+    private final ServiceRatioService serviceRatios;
+
+    /**
+     * The pricing group.
+     */
+    private PricingGroup pricingGroup;
 
     /**
      * Constructs a {@link AbstractPricingContext}.
@@ -64,51 +70,53 @@ public abstract class AbstractPricingContext implements PricingContext {
      * @param location      the practice location. May be {@code null}
      * @param priceRules    the price rules
      * @param locationRules the location rules
+     * @param serviceRatios the service ratio service
      */
     public AbstractPricingContext(Currency currency, Party location, ProductPriceRules priceRules,
-                                  LocationRules locationRules) {
+                                  LocationRules locationRules, ServiceRatioService serviceRatios) {
         this.currency = currency;
         this.pricingGroup = getPricingGroup(location, locationRules);
         this.location = location;
         this.rules = priceRules;
+        this.serviceRatios = serviceRatios;
     }
 
     /**
      * Constructs a {@link AbstractPricingContext}.
      *
-     * @param currency     the currency
-     * @param pricingGroup the pricing group
-     * @param location     the practice location. May be {@code null}
-     * @param priceRules   the price rules
+     * @param currency      the currency
+     * @param pricingGroup  the pricing group
+     * @param location      the practice location. May be {@code null}
+     * @param priceRules    the price rules
+     * @param serviceRatios the service ratio service
      */
     public AbstractPricingContext(Currency currency, PricingGroup pricingGroup, Party location,
-                                  ProductPriceRules priceRules) {
+                                  ProductPriceRules priceRules, ServiceRatioService serviceRatios) {
         this.currency = currency;
         this.pricingGroup = pricingGroup;
         this.location = location;
         this.rules = priceRules;
+        this.serviceRatios = serviceRatios;
     }
 
     /**
-     * Returns the tax-inclusive price given a tax-exclusive price.
-     * <p/>
-     * This takes into account:
-     * <ul>
-     * <li>customer tax exclusions</li>
-     * <li>service ratios</li>
-     * </ul>
+     * Returns the tax-inclusive price given a tax-exclusive price and service ratio.
+     * <p>
+     * This takes into account customer tax exclusions.
      *
-     * @param product the product
-     * @param price   the tax-exclusive price
-     * @return the tax-inclusive price, rounded according to the practice currency conventions
+     * @param product      the product
+     * @param price        the tax-exclusive price
+     * @param serviceRatio the service ratio. May be {@code null}
+     * @return the tax-inclusive price, rounded according to the pract\ice currency conventions
      */
     @Override
-    public BigDecimal getPrice(Product product, ProductPrice price) {
+    public BigDecimal getPrice(Product product, ProductPrice price, BigDecimal serviceRatio) {
         BigDecimal result = BigDecimal.ZERO;
         BigDecimal taxExPrice = price.getPrice();
         if (taxExPrice != null) {
-            BigDecimal serviceRatio = getServiceRatio(product);
-            taxExPrice = taxExPrice.multiply(serviceRatio);
+            if (serviceRatio != null) {
+                taxExPrice = taxExPrice.multiply(serviceRatio);
+            }
             result = rules.getTaxIncPrice(taxExPrice, getTaxRate(product), currency);
         }
         return result;
@@ -153,18 +161,20 @@ public abstract class AbstractPricingContext implements PricingContext {
     /**
      * Returns the first product price with the specified short name and price, active as of the date.
      *
-     * @param shortName the price short name
-     * @param price     the tax-inclusive price
-     * @param product   the product
-     * @param date      the date
+     * @param shortName    the price short name
+     * @param price        the tax-inclusive price
+     * @param serviceRatio the service ratio, or {@link BigDecimal#ONE} if no ratio applies
+     * @param product      the product
+     * @param date         the date
      * @return the product price, or {@code null} if none is found
      */
     @Override
-    public ProductPrice getProductPrice(String shortName, BigDecimal price, Product product, Date date) {
+    public ProductPrice getProductPrice(String shortName, BigDecimal price, BigDecimal serviceRatio, Product product,
+                                        Date date) {
         ProductPrice result = null;
         List<ProductPrice> prices = rules.getProductPrices(product, shortName, date, pricingGroup);
         for (ProductPrice p : prices) {
-            if (getPrice(product, p).compareTo(price) == 0) {
+            if (getPrice(product, p, BigDecimal.ONE).compareTo(price) == 0) {
                 result = p;
                 break;
             }
@@ -173,15 +183,16 @@ public abstract class AbstractPricingContext implements PricingContext {
     }
 
     /**
-     * Determines the service ratio for a product at a practice location.
+     * Returns the service ratio for a product and date.
      *
-     * @param product the product. May be {@code null}
-     * @return the service ratio
+     * @param product the product
+     * @param date    the date
+     * @return the service ratio, or {@code null} if none is defined
      */
-    public BigDecimal getServiceRatio(Product product) {
-        BigDecimal result = BigDecimal.ONE;
+    public BigDecimal getServiceRatio(Product product, Date date) {
+        BigDecimal result = null;
         if (product != null && location != null) {
-            result = rules.getServiceRatio(product, location);
+            result = serviceRatios.getServiceRatio(product, location, date);
         }
         return result;
     }

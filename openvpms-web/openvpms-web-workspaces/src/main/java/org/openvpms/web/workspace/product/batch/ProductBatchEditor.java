@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.batch;
@@ -66,7 +66,7 @@ public class ProductBatchEditor extends AbstractIMObjectEditor {
         if (collection.size() == 0) {
             productCollectionEditor.add(productCollectionEditor.create());
         }
-        getEditors().add(productCollectionEditor);
+        addEditor(productCollectionEditor);
         IMObjectEditor linkEditor = productCollectionEditor.getEditor((IMObject) collection.getValues().get(0));
         product = linkEditor.getProperty("target");
         expiryDate = linkEditor.getProperty("activeEndTime");

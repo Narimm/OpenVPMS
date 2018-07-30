@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
@@ -58,7 +59,7 @@ public abstract class ParticipationEditor<T extends Entity> extends AbstractIMOb
         }
         Property entity = getEntityProperty();
         editor = createEntityEditor(entity);
-        getEditors().add(editor, entity);
+        addEditor(editor);
         Property act = getProperty("act");
         if (act.getValue() == null) {
             act.setValue(new IMObjectReference(parent));
@@ -89,7 +90,7 @@ public abstract class ParticipationEditor<T extends Entity> extends AbstractIMOb
      * @return the participation entity reference. May be {@code null}
      */
     public IMObjectReference getEntityRef() {
-        return (IMObjectReference) editor.getProperty().getValue();
+        return editor.getProperty().getReference();
     }
 
     /**
@@ -99,7 +100,7 @@ public abstract class ParticipationEditor<T extends Entity> extends AbstractIMOb
      * @return {@code true} if the value was set, {@code false} if it cannot be set due to error, or is the same as
      * the existing value
      */
-    public boolean setEntityRef(IMObjectReference reference) {
+    public boolean setEntityRef(Reference reference) {
         return editor.getProperty().setValue(reference);
     }
 

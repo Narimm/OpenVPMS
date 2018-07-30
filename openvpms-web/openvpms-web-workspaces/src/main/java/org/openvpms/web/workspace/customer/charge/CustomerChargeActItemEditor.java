@@ -45,7 +45,6 @@ import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.bound.BoundProperty;
-import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.clinician.ClinicianParticipationEditor;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
@@ -120,7 +119,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * The product participation editor.
-     * <p/>
+     * <p>
      * This needs to be created outside of the automatic layout, in order to ensure events
      * aren't lost when the layout changes.
      */
@@ -277,6 +276,11 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     private static final String PRINT_AGGREGATE = "printAggregate";
 
     /**
+     * The stock location node name.
+     */
+    private static final String STOCK_LOCATION = "stockLocation";
+
+    /**
      * Nodes to use when a product template is selected.
      */
     private static final ArchetypeNodes TEMPLATE_NODES = new ArchetypeNodes().exclude(
@@ -284,8 +288,14 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             REMINDERS, ALERTS, "batch");
 
     /**
+     * Patient identity node name.
+     */
+    private static final String PATIENT_IDENTITY = "patientIdentity";
+
+
+    /**
      * Constructs a {@link CustomerChargeActItemEditor}.
-     * <p/>
+     * <p>
      * This recalculates the tax amount.
      *
      * @param act           the act to edit
@@ -296,10 +306,9 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     public CustomerChargeActItemEditor(FinancialAct act, Act parent, CustomerChargeEditContext context,
                                        LayoutContext layoutContext) {
         super(act, parent, context, layoutContext);
-        if (!TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM,
-                            CustomerAccountArchetypes.CREDIT_ITEM,
-                            CustomerAccountArchetypes.COUNTER_ITEM)) {
-            throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
+        if (!act.isA(CustomerAccountArchetypes.INVOICE_ITEM, CustomerAccountArchetypes.CREDIT_ITEM,
+                     CustomerAccountArchetypes.COUNTER_ITEM)) {
+            throw new IllegalArgumentException("Invalid act type:" + act.getArchetype());
         }
 
         Property quantityProperty = getProperty(QUANTITY);
@@ -307,7 +316,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         quantity = new Quantity(quantityProperty, act, layout);
         stockQuantity = new StockQuantity(act, context.getStock(), layout);
         productCollectionEditor = new ParticipationCollectionEditor(getCollectionProperty(PRODUCT), act, layout);
-        getEditors().add(productCollectionEditor);
+        addEditor(productCollectionEditor);
 
         dispensing = createDispensingCollectionEditor();
         investigations = createCollectionEditor(INVESTIGATIONS, act);
@@ -590,12 +599,12 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @return the stock location reference, or {@code null} if there is none
      */
     public IMObjectReference getStockLocationRef() {
-        return getParticipantRef("stockLocation");
+        return getParticipantRef(STOCK_LOCATION);
     }
 
     /**
      * Notifies the editor that the product has been ordered via a pharmacy.
-     * <p/>
+     * <p>
      * This refreshes the display to make the patient and product read-only, and display the received and returned
      * nodes if required.
      */
@@ -636,7 +645,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Updates the discount and checks that it isn't less than the total cost.
-     * <p/>
+     * <p>
      * If so, gives the user the opportunity to remove the discount.
      *
      * @return {@code true} if the discount was updated
@@ -680,10 +689,10 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Save any edits.
-     * <p/>
+     * <p>
      * This implementation saves the current object before children, to ensure deletion of child acts
      * don't result in StaleObjectStateException exceptions.
-     * <p/>
+     * <p>
      * This implementation will throw an exception if the product is an <em>product.template</em>.
      * Ideally, the act would be flagged invalid if this is the case, but template expansion only works for valid
      * acts. TODO
@@ -696,7 +705,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         if (log.isDebugEnabled()) {
             log.debug("doSave: state=" + debugString());
         }
-        if (TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE_ITEM)) {
+        if (getObject().isA(CustomerAccountArchetypes.INVOICE_ITEM)) {
             ChargeSaveContext saveContext = getSaveContext();
             if (saveContext.getHistoryChanges() == null) {
                 throw new IllegalStateException("PatientHistoryChanges haven't been registered");
@@ -718,12 +727,14 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Creates the layout strategy.
      *
-     * @param fixedPrice the fixed price editor
+     * @param fixedPrice         the fixed price editor
+     * @param serviceRatioEditor the service ratio editor
      * @return a new layout strategy
      */
     @Override
-    protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice) {
-        return new CustomerChargeItemLayoutStrategy(fixedPrice);
+    protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice,
+                                                          ServiceRatioEditor serviceRatioEditor) {
+        return new CustomerChargeItemLayoutStrategy(fixedPrice, serviceRatioEditor);
     }
 
     /**
@@ -732,11 +743,12 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @param editor the editor
      * @return {@code true} if the editor isn't for dispensing, investigations, or reminders
      */
-    @Override
-    protected boolean disposeOnChangeLayout(Editor editor) {
-        return editor != productCollectionEditor && editor != dispensing && editor != investigations
-               && editor != reminders && editor != alerts && editor != documents;
-    }
+//    @Override
+//    protected boolean disposeOnChangeLayout(Editor editor) {
+//        return editor != productCollectionEditor && editor != dispensing && editor != investigations
+//               && editor != reminders && editor != alerts && editor != documents
+//               && super.disposeOnChangeLayout(editor);
+//    }
 
     /**
      * Invoked when layout has completed.
@@ -794,52 +806,18 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         }
         Property discount = getProperty(DISCOUNT);
         discount.setValue(ZERO);
+        updatePrices(product);
 
-        Property fixedPrice = getProperty(FIXED_PRICE);
-        Property unitPrice = getProperty(UNIT_PRICE);
-        Property fixedCost = getProperty(FIXED_COST);
-        Property unitCost = getProperty(UNIT_COST);
-        ProductPrice fixedProductPrice = null;
-        ProductPrice unitProductPrice = null;
-        BigDecimal fixedPriceValue = BigDecimal.ZERO;
-        BigDecimal fixedCostValue = BigDecimal.ZERO;
-        BigDecimal unitPriceValue = BigDecimal.ZERO;
-        BigDecimal unitCostValue = BigDecimal.ZERO;
-        if (TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
-            fixedPrice.setValue(fixedPriceValue);
-            unitPrice.setValue(unitPriceValue);
-            fixedCost.setValue(fixedCostValue);
-            unitCost.setValue(unitCostValue);
+        if (product != null && product.isA(ProductArchetypes.TEMPLATE)) {
             updateSellingUnits(null);
         } else {
-            if (product != null) {
-                fixedProductPrice = getDefaultFixedProductPrice(product);
-                unitProductPrice = getDefaultUnitProductPrice(product);
-            }
-
-            if (fixedProductPrice != null) {
-                fixedPriceValue = getPrice(product, fixedProductPrice);
-                fixedCostValue = getCost(fixedProductPrice);
-            }
-            fixedPrice.setValue(fixedPriceValue);
-            fixedCost.setValue(fixedCostValue);
-
-            if (unitProductPrice != null) {
-                unitPriceValue = getPrice(product, unitProductPrice);
-                unitCostValue = getCost(unitProductPrice);
-            }
-            unitPrice.setValue(unitPriceValue);
-            unitCost.setValue(unitCostValue);
-
             IMObjectReference stockLocation = updateStockLocation(product);
             updateSellingUnits(product);
             updateBatch(product, stockLocation);
-            updateDiscount();
         }
-        updateTaxAmount();
 
         if (log.isDebugEnabled()) {
-            log.debug("productModified: " + debugString(true, fixedProductPrice, unitProductPrice));
+            log.debug("productModified: " + debugString());
         }
 
         getProperty(FIXED_PRICE).addModifiableListener(discountListener);
@@ -871,6 +849,70 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         updateLayout(product, showPrint, false);
 
         notifyProductListener(product);
+    }
+
+    /**
+     * Invoked when the service ratio is modified.
+     */
+    @Override
+    protected void serviceRatioModified() {
+        super.serviceRatioModified();
+        updatePrices(getProduct());
+    }
+
+    /**
+     * Updates prices.
+     *
+     * @param product the product. May be {@code null}
+     */
+    protected void updatePrices(Product product) {
+        Property fixedPrice = getProperty(FIXED_PRICE);
+        Property unitPrice = getProperty(UNIT_PRICE);
+        Property fixedCost = getProperty(FIXED_COST);
+        Property unitCost = getProperty(UNIT_COST);
+        ProductPrice fixedProductPrice = null;
+        ProductPrice unitProductPrice = null;
+        BigDecimal fixedPriceValue = BigDecimal.ZERO;
+        BigDecimal fixedCostValue = BigDecimal.ZERO;
+        BigDecimal unitPriceValue = BigDecimal.ZERO;
+        BigDecimal unitCostValue = BigDecimal.ZERO;
+        if (TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
+            fixedPrice.setValue(fixedPriceValue);
+            unitPrice.setValue(unitPriceValue);
+            fixedCost.setValue(fixedCostValue);
+            unitCost.setValue(unitCostValue);
+        } else {
+            if (product != null) {
+                fixedProductPrice = getDefaultFixedProductPrice(product);
+                unitProductPrice = getDefaultUnitProductPrice(product);
+            }
+
+            BigDecimal serviceRatio = getServiceRatio();
+            if (fixedProductPrice != null) {
+                fixedPriceValue = getPrice(product, fixedProductPrice, serviceRatio);
+                fixedCostValue = getCost(fixedProductPrice);
+            }
+            fixedPrice.setValue(fixedPriceValue);
+            fixedCost.setValue(fixedCostValue);
+
+            if (unitProductPrice != null) {
+                unitPriceValue = getPrice(product, unitProductPrice, serviceRatio);
+                unitCostValue = getCost(unitProductPrice);
+            }
+            unitPrice.setValue(unitPriceValue);
+            unitCost.setValue(unitCostValue);
+            updateDiscount();
+        }
+        updateTaxAmount();
+
+        if (log.isDebugEnabled()) {
+            String fixedStr = fixedProductPrice != null ? "id=" + fixedProductPrice.getId()
+                                                          + ", price=" + fixedProductPrice.getPrice() : null;
+            String unitStr = unitProductPrice != null ? "id=" + unitProductPrice.getId()
+                                                        + ", price=" + unitProductPrice.getPrice() : null;
+            log.debug("fixedProductPrice=[" + fixedStr + "]" + ", unitProductPrice=[" + unitStr + "]");
+        }
+
     }
 
     /**
@@ -992,13 +1034,13 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Invoked when the product changes to update patient medications.
-     * <p/>
+     * <p>
      * If the new product is a medication and there is:
      * <ul>
      * <li>an existing act, the existing act will be updated.
      * <li>no existing act, a new medication will be created
      * </ul>
-     * <p/>
+     * <p>
      * If the product is null, any existing act will be removed
      *
      * @param product the product. May be {@code null}
@@ -1113,7 +1155,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Invoked when the product changes to update investigation acts.
-     * <p/>
+     * <p>
      * This removes any existing investigations, and creates new ones, if required.
      *
      * @param product the product. May be {@code null}
@@ -1146,7 +1188,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Invoked when the product changes, to update reminders acts.
-     * <p/>
+     * <p>
      * This removes any existing reminders, and creates new ones, if required.
      *
      * @param product the product. May be {@code null}
@@ -1195,7 +1237,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Invoked when the product changes, to update alert acts.
-     * <p/>
+     * <p>
      * This removes any existing alerts, and creates new ones, if required.
      *
      * @param product the product. May be {@code null}
@@ -1350,7 +1392,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Helper to return the investigation types for a product.
-     * <p/>
+     * <p>
      * If there are multiple investigation types, these will be sorted on name.
      *
      * @param product the product
@@ -1370,7 +1412,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
     /**
      * Queues an editor for display in a popup dialog.
      * Use this when there may be multiple editors requiring display.
-     * <p/>
+     * <p>
      * NOTE: all objects should be added to the collection prior to them being edited. If they are skipped,
      * they will subsequently be removed. This is necessary as the layout excludes nodes based on elements being
      * present.
@@ -1634,7 +1676,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Initialises the stock location if one isn't present and there is a medication or merchandise product.
-     * <p/>
+     * <p>
      * This is required due to a bug where charge quantities of zero would remove the stock location relationship,
      * and prevent subsequent quantity changes would not be reflected in the stock.
      *
@@ -1663,26 +1705,26 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         }
         IMObjectBean bean = getBean(getObject());
         if (stockLocation != null) {
-            bean.setTarget("stockLocation", stockLocation);
+            bean.setTarget(STOCK_LOCATION, stockLocation);
         } else {
-            bean.removeValues("stockLocation");
+            bean.removeValues(STOCK_LOCATION);
         }
         return stockLocation != null ? stockLocation.getObjectReference() : null;
     }
 
     /**
      * Adds a patient identity for a product, if one is configured.
-     * <p/>
+     * <p>
      * Only one identity will be added, i.e. the quantity is ignored.
      *
      * @param product the product
      */
     private void addPatientIdentity(Product product) {
         Party patient = getPatient();
-        if (patient != null && TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE_ITEM)) {
+        if (patient != null && getObject().isA(CustomerAccountArchetypes.INVOICE_ITEM)) {
             IMObjectBean bean = getBean(product);
-            if (bean.hasNode("patientIdentity")) {
-                String shortName = bean.getString("patientIdentity");
+            if (bean.hasNode(PATIENT_IDENTITY)) {
+                String shortName = bean.getString(PATIENT_IDENTITY);
                 if (shortName != null) {
                     Context context = getLayoutContext().getContext();
                     HelpContext help = getHelpContext();
@@ -1710,7 +1752,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Returns a node filter for the specified product reference.
-     * <p/>
+     * <p>
      * This excludes:
      * <ul>
      * <li>the dispensing node if the product isn't a <em>product.medication</em>
@@ -1766,6 +1808,12 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 }
                 result.simple(ORDER_NODES);
             }
+            if (showServiceRatio()) {
+                if (result == null) {
+                    result = new ArchetypeNodes();
+                }
+                result.hidden(true).simple(SERVICE_RATIO);
+            }
         }
         return result;
     }
@@ -1808,7 +1856,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Helper to create a collection editor for an act relationship node, if the node exists.
-     * <p/>
+     * <p>
      * The returned editor is configured to not exclude default value objects.
      *
      * @param name the collection node name
@@ -1822,7 +1870,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             editor = (ActRelationshipCollectionEditor) IMObjectCollectionEditorFactory.create(
                     collection, act, new DefaultLayoutContext(getLayoutContext())); // wrap to increase depth
             editor.setExcludeDefaultValueObject(false);
-            getEditors().add(editor);
+            addEditor(editor);
         }
         return editor;
     }
@@ -1838,7 +1886,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         if (collection != null && !collection.isHidden()) {
             editor = new DispensingActRelationshipCollectionEditor(collection, getObject(),
                                                                    new DefaultLayoutContext(getLayoutContext()));
-            getEditors().add(editor);
+            addEditor(editor);
         }
         return editor;
     }
@@ -1855,17 +1903,23 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
             editor = new AlertActRelationshipCollectionEditor(collection, getObject(),
                                                               new DefaultLayoutContext(getLayoutContext()));
             editor.setAlerts(getEditContext().getAlerts());
-            getEditors().add(editor);
+            addEditor(editor);
         }
         return editor;
     }
 
+    /**
+     * Creates a documents manager.
+     *
+     * @param saveContext the save context
+     * @return a new documents manager
+     */
     private ChargeItemDocumentManager createDocumentsManager(ChargeSaveContext saveContext) {
         ChargeItemDocumentManager result = null;
         CollectionProperty property = getCollectionProperty(DOCUMENTS);
         if (property != null) {
             result = new ChargeItemDocumentManager(this, property, saveContext, getLayoutContext());
-            getEditors().add(result);
+            addEditor(result);
         }
         return result;
     }
@@ -1876,28 +1930,6 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
      * @return a debug string
      */
     private String debugString() {
-        return debugString(false, null, null);
-    }
-
-    /**
-     * Returns a string containing the current state, for debugging purposes.
-     *
-     * @param includePrices     if {@code true}, include the fixed and unit product price details
-     * @param fixedProductPrice the fixed product price. May be {@code null}
-     * @param unitProductPrice  the unit product price. May be {@code null}
-     * @return a debug string
-     */
-    private String debugString(boolean includePrices, ProductPrice fixedProductPrice, ProductPrice unitProductPrice) {
-        String priceStr = null;
-        if (includePrices) {
-            String fixedStr = fixedProductPrice != null ? "id=" + fixedProductPrice.getId()
-                                                          + ", price=" + fixedProductPrice.getPrice() : null;
-            String unitStr = unitProductPrice != null ? "id=" + unitProductPrice.getId()
-                                                        + ", price=" + unitProductPrice.getPrice() : null;
-            priceStr = ", fixedProductPrice=[" + fixedStr + "]"
-                       + ", unitProductPrice=[" + unitStr + "]";
-        }
-
         Product product = getProduct();
         Party patient = getPatient();
         String productStr = product != null ? "id=" + product.getId() + ", name=" + product.getName() : null;
@@ -1905,10 +1937,10 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
         String patientStr = (patient != null) ? "id=" + patient.getId() + ", name=" + patient.getName() : null;
         User clinician = getClinician();
         return "product=[" + productStr + "]"
-               + ((includePrices) ? priceStr : "")
                + ", fixedCost=" + getFixedCost() + ", fixedPrice=" + getFixedPrice()
                + ", unitCost=" + getUnitCost() + ", unitPrice=" + getUnitPrice()
-               + ", quantity=" + getQuantity() + ", discount=" + getProperty(DISCOUNT).getBigDecimal()
+               + ", serviceRatio=" + getServiceRatio() + ", quantity=" + getQuantity()
+               + ", discount=" + getProperty(DISCOUNT).getBigDecimal()
                + ", tax=" + getProperty(TAX).getBigDecimal() + ", total=" + getTotal()
                + ", clinician=" + (clinician != null ? clinician.getUsername() : null)
                + ", patient=[" + patientStr + "]"
@@ -1919,13 +1951,13 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     protected class CustomerChargeItemLayoutStrategy extends PriceItemLayoutStrategy {
 
-        public CustomerChargeItemLayoutStrategy(FixedPriceEditor fixedPrice) {
-            super(fixedPrice);
+        public CustomerChargeItemLayoutStrategy(FixedPriceEditor fixedPrice, ServiceRatioEditor serviceRatio) {
+            super(fixedPrice, serviceRatio);
         }
 
         /**
          * Apply the layout strategy.
-         * <p/>
+         * <p>
          * This renders an object in a {@code Component}, using a factory to create the child components.
          *
          * @param object     the object to apply

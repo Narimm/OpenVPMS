@@ -11,15 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.boarding;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.workspace.workflow.appointment.AbstractMultiDayScheduleGrid;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
@@ -110,7 +110,7 @@ public class CageScheduleGrid extends AbstractMultiDayScheduleGrid {
      * @param cageType the cage type reference
      * @return the corresponding group, or {@code null} if none was found
      */
-    public CageScheduleGroup getGroup(IMObjectReference cageType) {
+    public CageScheduleGroup getGroup(Reference cageType) {
         for (CageScheduleGroup group : groups) {
             if (group.getCageType() != null && ObjectUtils.equals(group.getCageType().getObjectReference(), cageType)) {
                 return group;

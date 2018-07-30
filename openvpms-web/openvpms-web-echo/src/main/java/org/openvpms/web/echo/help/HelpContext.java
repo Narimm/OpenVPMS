@@ -11,13 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.help;
 
 import echopointng.KeyStrokeListener;
-import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.model.object.IMObject;
 
 
 /**
@@ -119,7 +119,7 @@ public class HelpContext {
      * @return a new topic
      */
     public HelpContext topic(IMObject object, String subtopic) {
-        return topic(object.getArchetypeId().getShortName() + "/" + subtopic);
+        return topic(object.getArchetype() + "/" + subtopic);
     }
 
     /**

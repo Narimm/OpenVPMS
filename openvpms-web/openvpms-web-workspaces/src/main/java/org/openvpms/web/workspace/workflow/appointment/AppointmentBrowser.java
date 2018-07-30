@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -29,8 +29,8 @@ import nextapp.echo2.app.layout.ColumnLayoutData;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.Slot;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.AbstractBrowserListener;
@@ -41,6 +41,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.table.Cell;
 import org.openvpms.web.echo.tabpane.TabPaneModel;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -53,15 +54,12 @@ import org.openvpms.web.workspace.workflow.appointment.boarding.CheckInTableMode
 import org.openvpms.web.workspace.workflow.appointment.boarding.CheckOutScheduleGrid;
 import org.openvpms.web.workspace.workflow.appointment.boarding.CheckOutTableModel;
 import org.openvpms.web.workspace.workflow.appointment.boarding.DefaultCageTableModel;
-import org.openvpms.web.workspace.workflow.scheduling.Cell;
 import org.openvpms.web.workspace.workflow.scheduling.IntersectComparator;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleBrowser;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleColours;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -113,7 +111,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
     /**
      * The last time range.
      */
-    private AppointmentQuery.TimeRange lastTimeRange;
+    private TimeRange lastTimeRange;
 
     /**
      * The appointment rules.
@@ -197,7 +195,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * Query using the specified criteria, and populate the table with matches.
      */
     public void query() {
-        AppointmentQuery.TimeRange timeRange = getQuery().getTimeRange();
+        TimeRange timeRange = getQuery().getTimeRange();
         boolean reselect = true;
         if (lastTimeRange == null || !timeRange.equals(lastTimeRange)) {
             reselect = false;
@@ -277,7 +275,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
             } else {
                 grid = new MultiScheduleGrid(getScheduleView(), date, events, rules);
             }
-            AppointmentQuery.TimeRange range = query.getTimeRange();
+            TimeRange range = query.getTimeRange();
             grid = createGridView((AppointmentGrid) grid, range);
         }
         return grid;
@@ -340,11 +338,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
         if (getScheduleView() != null && table != null) {
             addTable(table, component);
         }
-        tab.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                onBrowserChanged();
-            }
-        });
+        tab.addPropertyChangeListener(evt -> onBrowserChanged());
 
         return component;
     }
@@ -433,7 +427,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * @param timeRange the time range to view
      * @return view a new grid view, based on the time range
      */
-    private AppointmentGrid createGridView(AppointmentGrid grid, AppointmentQuery.TimeRange timeRange) {
+    private AppointmentGrid createGridView(AppointmentGrid grid, TimeRange timeRange) {
         int startMins = timeRange.getStartMins();
         int endMins = timeRange.getEndMins();
         if (startMins < grid.getStartMins()) {
@@ -546,7 +540,7 @@ public class AppointmentBrowser extends ScheduleBrowser {
             setScheduleView(scheduleView);
             Date startTime = slot.getStartTime();
             setDate(startTime);
-            getQuery().setTimeRange(AppointmentQuery.TimeRange.getRange(startTime));
+            getQuery().setTimeRange(TimeRange.getRange(startTime));
             query();
             setSelected(schedule, startTime);
             tab.setSelectedIndex(appointmentsTab);

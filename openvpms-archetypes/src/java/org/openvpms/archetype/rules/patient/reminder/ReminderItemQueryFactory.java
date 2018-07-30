@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -289,7 +289,7 @@ public class ReminderItemQueryFactory {
             query.add(Constraints.lt("startTime", to));
         }
         if (statuses != null && statuses.length != 0) {
-            query.add(Constraints.in("status", statuses));
+            query.add(Constraints.in("status", (Object[]) statuses));
         }
         JoinConstraint reminder = join("source", "reminder");
         JoinConstraint patient = join("entity", "patient");

@@ -91,12 +91,12 @@ public class DocumentActEditor extends AbstractActEditor {
                 }
             };
             docEditor.addModifiableListener(listener);
-            getEditors().add(docEditor);
+            addEditor(docEditor);
         }
         Property versions = getProperty(VERSIONS);
         if (versions != null) {
             versionsEditor = new ActRelationshipCollectionEditor((CollectionProperty) versions, act, context);
-            getEditors().add(versionsEditor);
+            addEditor(versionsEditor);
         }
         lastTemplate = getTemplateRef();
     }

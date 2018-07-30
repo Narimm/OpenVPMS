@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.organisation;
@@ -59,7 +59,7 @@ public class PracticeEditor extends AbstractIMObjectEditor {
         participationEditor = new SubscriptionParticipationEditor(participation, practice, context);
         participationEditor.setDeleteAct(true);
 
-        getEditors().add(participationEditor);
+        addEditor(participationEditor);
     }
 
     /**

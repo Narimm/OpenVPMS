@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -21,10 +21,10 @@ import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.workflow.ScheduleService;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.im.clinician.ClinicianSelectField;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
@@ -240,7 +240,7 @@ public abstract class ScheduleServiceQuery extends ScheduleQuery {
 
     /**
      * Invoked when the date changes.
-     * <p/>
+     * <p>
      * This implementation invokes {@link #onQuery()}.
      */
     protected void onDateChanged() {
@@ -249,7 +249,7 @@ public abstract class ScheduleServiceQuery extends ScheduleQuery {
 
     /**
      * Invoked when the schedule view changes.
-     * <p/>
+     * <p>
      * Notifies any listener to perform a query.
      */
     @Override
@@ -309,7 +309,7 @@ public abstract class ScheduleServiceQuery extends ScheduleQuery {
         } else {
             Entity view = getScheduleView();
             if (view != null) {
-                EntityBean bean = new EntityBean(view);
+                IMObjectBean bean = new IMObjectBean(view);
                 code = bean.getString("highlight", Highlight.EVENT_TYPE.toString());
             }
         }

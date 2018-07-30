@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -21,6 +21,7 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -56,9 +57,19 @@ import java.util.List;
 public class FixedPriceEditor extends AbstractPropertyEditor {
 
     /**
+     * The pricing context.
+     */
+    private final PricingContext pricingContext;
+
+    /**
      * The product, used to select the fixed price.
      */
     private Product product;
+
+    /**
+     * The service ratio.
+     */
+    private BigDecimal serviceRatio;
 
     /**
      * The date, used to filter active prices.
@@ -91,11 +102,6 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     private ProductPrice price;
 
     /**
-     * The pricing context.
-     */
-    private final PricingContext pricingContext;
-
-    /**
      * Constructs a {@link FixedPriceEditor}.
      *
      * @param property       the fixed price property
@@ -123,10 +129,12 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     /**
      * Sets the product, used to select the fixed price.
      *
-     * @param product the product. May be {@code null}
+     * @param product      the product. May be {@code null}
+     * @param serviceRatio the service ratio. May be {@code null}
      */
-    public void setProduct(Product product) {
+    public void setProduct(Product product, BigDecimal serviceRatio) {
         this.product = product;
+        this.serviceRatio = serviceRatio;
         updatePrices();
     }
 
@@ -186,6 +194,18 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
     }
 
     /**
+     * Updates the service ratio.
+     *
+     * @param serviceRatio the service ratio. May be {@code null}
+     */
+    public void setServiceRatio(BigDecimal serviceRatio) {
+        if (ObjectUtils.equals(serviceRatio, this.serviceRatio)) {
+            this.serviceRatio = serviceRatio;
+            updatePrices();
+        }
+    }
+
+    /**
      * Invoked when a price is selected.
      *
      * @param price the selected price. May be {@code null}
@@ -200,7 +220,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
 
     /**
      * Updates the product prices.
-     * <p/>
+     * <p>
      * If there are fixed prices associated with the product, renders a drop
      * down containing the prices, beside the text field.
      */
@@ -252,7 +272,7 @@ public class FixedPriceEditor extends AbstractPropertyEditor {
      * @return the
      */
     private BigDecimal getPrice(ProductPrice price) {
-        return pricingContext.getPrice(product, price);
+        return pricingContext.getPrice(product, price, serviceRatio);
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -20,13 +20,14 @@ import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
@@ -44,7 +45,7 @@ import java.util.Map;
 
 /**
  * A factory for events used by the {@link ScheduleService}.
- * <p/>
+ * <p>
  * Events are converted from acts to {@link PropertySet} instances to:
  * <ul>
  * <li>lower memory requirements</li>
@@ -62,11 +63,6 @@ abstract class ScheduleEventFactory {
     private final IArchetypeService service;
 
     /**
-     * The lookup service.
-     */
-    private final ILookupService lookups;
-
-    /**
      * Cache of status lookup names, keyed on code.
      */
     private final Map<String, String> statusNames;
@@ -80,9 +76,17 @@ abstract class ScheduleEventFactory {
      * @param lookups        the lookup service
      */
     public ScheduleEventFactory(String eventShortName, IArchetypeService service, ILookupService lookups) {
+        this(LookupHelper.getNames(service, lookups, eventShortName, "status"), service);
+    }
+
+    /**
+     * Constructs a {@link ScheduleEventFactory}.
+     *
+     * @param service the archetype service
+     */
+    public ScheduleEventFactory(Map<String, String> statusNames, IArchetypeService service) {
         this.service = service;
-        this.lookups = lookups;
-        statusNames = LookupHelper.getNames(service, lookups, eventShortName, "status");
+        this.statusNames = statusNames;
     }
 
     /**
@@ -95,7 +99,7 @@ abstract class ScheduleEventFactory {
     public List<PropertySet> getEvents(Entity schedule, Date day) {
         ScheduleEventQuery query = createQuery(schedule, day);
         IPage<ObjectSet> page = query.query();
-        return new ArrayList<PropertySet>(page.getResults());
+        return new ArrayList<>(page.getResults());
     }
 
     /**
@@ -170,21 +174,12 @@ abstract class ScheduleEventFactory {
     }
 
     /**
-     * Returns the lookup service.
-     *
-     * @return the lookup service
-     */
-    protected ILookupService getLookups() {
-        return lookups;
-    }
-
-    /**
      * Returns the name of an object, given its reference.
      *
      * @param reference the object reference. May be {@code null}
      * @return the name or {@code null} if none exists
      */
-    protected String getName(IMObjectReference reference) {
+    protected String getName(Reference reference) {
         if (reference != null) {
             ObjectRefConstraint constraint = new ObjectRefConstraint("o", reference);
             ArchetypeQuery query = new ArchetypeQuery(constraint);
@@ -199,6 +194,14 @@ abstract class ScheduleEventFactory {
         return null;
     }
 
+    /**
+     * Returns the status names.
+     *
+     * @return the status names, keyed on status code
+     */
+    protected Map<String, String> getStatusNames() {
+        return statusNames;
+    }
 
     /**
      * Returns the end of the day for the specified date-time.
@@ -215,6 +218,5 @@ abstract class ScheduleEventFactory {
         calendar.set(Calendar.MILLISECOND, 999);
         return calendar.getTime();
     }
-
 
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.boarding;
@@ -19,7 +19,7 @@ package org.openvpms.web.workspace.workflow.appointment.boarding;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Table;
-import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.workspace.workflow.appointment.AbstractMultiDayTableCellRenderer;

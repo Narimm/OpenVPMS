@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
@@ -36,35 +36,30 @@ import org.openvpms.web.resource.i18n.Messages;
 public class RepeatNTimesEditor extends AbstractRepeatUntilEditor {
 
     /**
-     * The maximum no. of repeats. This limits appointment series to 365 appointments, corresponding to a years
-     * worth of daily appointments.
+     * The maximum number of repeats.
      */
-    private static final int MAX_REPEATS = 364;
-
-    /**
-     * Constructs an {@link RepeatNTimesEditor}.
-     */
-    public RepeatNTimesEditor() {
-        this(null);
-    }
+    private final int maxRepeats;
 
     /**
      * Constructs a {@link RepeatNTimesEditor}.
      *
-     * @param times the no. of times to repeat
+     * @param times      the no. of times to repeat
+     * @param maxRepeats the maximum number of repeats
      */
-    public RepeatNTimesEditor(int times) {
-        this(null);
+    public RepeatNTimesEditor(int times, int maxRepeats) {
+        this(null, maxRepeats);
         getProperty().setValue(times);
     }
 
     /**
      * Constructs an {@link RepeatNTimesEditor}.
      *
-     * @param condition the condition. May be {@code null}
+     * @param condition  the condition. May be {@code null}
+     * @param maxRepeats the maximum number of repeats
      */
-    public RepeatNTimesEditor(RepeatNTimesCondition condition) {
+    public RepeatNTimesEditor(RepeatNTimesCondition condition, int maxRepeats) {
         super(new SimpleProperty("times", Integer.class));
+        this.maxRepeats = maxRepeats;
         SimpleProperty times = (SimpleProperty) getProperty();
         times.setRequired(true);
         times.setTransformer(new NumericPropertyTransformer(times, true));
@@ -91,7 +86,7 @@ public class RepeatNTimesEditor extends AbstractRepeatUntilEditor {
      */
     @Override
     public Component getComponent() {
-        SpinBox field = new SpinBox(getProperty(), 1, MAX_REPEATS);
+        SpinBox field = new SpinBox(getProperty(), 1, maxRepeats);
         getFocusGroup().add(field);
         return RowFactory.create(Styles.CELL_SPACING, field,
                                  LabelFactory.create("workflow.scheduling.appointment.times"));
@@ -106,9 +101,9 @@ public class RepeatNTimesEditor extends AbstractRepeatUntilEditor {
     @Override
     protected boolean doValidation(Validator validator) {
         boolean result = super.doValidation(validator);
-        if (result && getProperty().getInt() > MAX_REPEATS) {
+        if (result && getProperty().getInt() > maxRepeats) {
             validator.add(this, new ValidatorError(Messages.format("workflow.scheduling.appointment.maxrepeats",
-                                                                   MAX_REPEATS)));
+                                                                   maxRepeats)));
             result = false;
         }
         return result;

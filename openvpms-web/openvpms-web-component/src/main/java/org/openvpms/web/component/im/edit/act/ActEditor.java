@@ -96,7 +96,7 @@ public abstract class ActEditor extends AbstractActEditor {
                         onItemsChanged();
                     }
                 });
-                getEditors().add(editor);
+                addEditor(editor);
             }
         }
         return editor;

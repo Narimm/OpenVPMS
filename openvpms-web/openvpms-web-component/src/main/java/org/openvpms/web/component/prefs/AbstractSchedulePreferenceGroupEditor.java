@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.prefs;
@@ -88,8 +88,8 @@ public abstract class AbstractSchedulePreferenceGroupEditor extends AbstractIMOb
         viewEditor = new SelectFieldIMObjectReferenceEditor<>(view, getViews(), false);
         List<Entity> schedules = getSchedules();
         scheduleEditor = new SelectFieldIMObjectReferenceEditor<>(getProperty("schedule"), schedules, true);
-        getEditors().add(viewEditor);
-        getEditors().add(scheduleEditor);
+        addEditor(viewEditor);
+        addEditor(scheduleEditor);
 
         clinicianEditor = new ClinicianSelectField(true);
         clinicianEditor.addActionListener(new ActionListener() {

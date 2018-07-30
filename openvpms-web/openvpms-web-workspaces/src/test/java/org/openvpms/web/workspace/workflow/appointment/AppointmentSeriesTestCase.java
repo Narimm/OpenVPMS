@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -31,9 +31,9 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeries;
-import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSeries;
 import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSeriesTest;
 import org.openvpms.web.workspace.workflow.appointment.repeat.Repeats;
+import org.openvpms.web.workspace.workflow.appointment.repeat.ScheduleEventSeries;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -91,7 +91,7 @@ public class AppointmentSeriesTestCase extends CalendarEventSeriesTest {
 
         Act appointment = createEvent();
 
-        CalendarEventSeries series = createSeries(appointment, Repeats.weekly(), times(2));
+        ScheduleEventSeries series = createSeries(appointment, Repeats.weekly(), times(2));
         checkSeries(series, appointment, 1, DateUnits.WEEKS, 3);
 
         ActBean bean = new ActBean(appointment);
@@ -109,7 +109,7 @@ public class AppointmentSeriesTestCase extends CalendarEventSeriesTest {
     public void testChangeCustomer() {
         Act appointment = createEvent();
 
-        CalendarEventSeries series = createSeries(appointment, monthly(), times(2));
+        ScheduleEventSeries series = createSeries(appointment, monthly(), times(2));
         checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
 
         Party customer2 = TestHelper.createCustomer();
@@ -128,7 +128,7 @@ public class AppointmentSeriesTestCase extends CalendarEventSeriesTest {
     public void testChangePatient() {
         Act appointment = createEvent();
 
-        CalendarEventSeries series = createSeries(appointment, monthly(), times(2));
+        ScheduleEventSeries series = createSeries(appointment, monthly(), times(2));
         checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
 
         ActBean bean = new ActBean(appointment);
@@ -146,7 +146,7 @@ public class AppointmentSeriesTestCase extends CalendarEventSeriesTest {
     public void testChangeClinician() {
         Act appointment = createEvent();
 
-        CalendarEventSeries series = createSeries(appointment, monthly(), times(2));
+        ScheduleEventSeries series = createSeries(appointment, monthly(), times(2));
         checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
 
         User clinician2 = TestHelper.createClinician();
@@ -165,7 +165,7 @@ public class AppointmentSeriesTestCase extends CalendarEventSeriesTest {
     public void testChangeStatus() {
         Act appointment = createEvent();
 
-        CalendarEventSeries series = createSeries(appointment, monthly(), times(2));
+        ScheduleEventSeries series = createSeries(appointment, monthly(), times(2));
         checkSeries(series, appointment, 1, DateUnits.MONTHS, 3);
 
         appointment.setStatus(ActStatus.COMPLETED);
@@ -189,7 +189,7 @@ public class AppointmentSeriesTestCase extends CalendarEventSeriesTest {
         setSendReminder(appointment1, true);
 
         // verify sendReminder is propagated to the series
-        CalendarEventSeries series1 = createSeries(appointment1, weekly(), times(2));
+        ScheduleEventSeries series1 = createSeries(appointment1, weekly(), times(2));
         List<Act> acts1 = checkSeries(series1, appointment1, 1, DateUnits.WEEKS, 3);
         checkSendReminder(acts1.get(0), true);
         checkSendReminder(acts1.get(1), true);
@@ -198,7 +198,7 @@ public class AppointmentSeriesTestCase extends CalendarEventSeriesTest {
         // now change the second appointment in the series and turn off sendReminder. This should be propagated
         // to the last appointment, but not the first
         Act appointment2 = acts1.get(1);
-        CalendarEventSeries series2 = createSeries(appointment2);
+        ScheduleEventSeries series2 = createSeries(appointment2);
         setSendReminder(appointment2, false);
         assertTrue(series2.isModified());
         save(appointment2);
@@ -224,7 +224,7 @@ public class AppointmentSeriesTestCase extends CalendarEventSeriesTest {
         setSendReminder(appointment, true);
 
         // verify sendReminder is propagated to the series
-        CalendarEventSeries series = createSeries(appointment, daily(), times(2));
+        ScheduleEventSeries series = createSeries(appointment, daily(), times(2));
         List<Act> acts1 = checkSeries(series, appointment, 1, DateUnits.DAYS, 3);
         checkSendReminder(acts1.get(0), true);  // the original appointment
         checkSendReminder(acts1.get(1), false); // 1 day after, and within the no reminder period
@@ -253,7 +253,7 @@ public class AppointmentSeriesTestCase extends CalendarEventSeriesTest {
      * @return the events
      */
     @Override
-    protected List<Act> checkSeries(CalendarEventSeries series, Act event, int interval, DateUnits units, int count,
+    protected List<Act> checkSeries(ScheduleEventSeries series, Act event, int interval, DateUnits units, int count,
                                     User author) {
         List<Act> acts = series.getEvents();
         assertEquals(count, acts.size());
@@ -306,7 +306,7 @@ public class AppointmentSeriesTestCase extends CalendarEventSeriesTest {
      * @return a new series
      */
     @Override
-    protected CalendarEventSeries createSeries(Act event) {
+    protected ScheduleEventSeries createSeries(Act event) {
         AppointmentSeries series = new AppointmentSeries(event, getArchetypeService());
         series.setNoReminderPeriod(Period.days(1));
         return series;

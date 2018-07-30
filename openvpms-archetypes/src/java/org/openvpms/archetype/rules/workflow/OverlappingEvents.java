@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -46,14 +46,14 @@ public class OverlappingEvents {
     private final Entity schedule;
 
     /**
-     * The events.
-     */
-    private List<Times> events;
-
-    /**
      * The archetype service.
      */
     private final IArchetypeService service;
+
+    /**
+     * The events.
+     */
+    private List<Times> events;
 
     /**
      * Constructs an {@link OverlappingEvents}.
@@ -75,6 +75,15 @@ public class OverlappingEvents {
      */
     public List<Times> getEvents() {
         return events;
+    }
+
+    /**
+     * Returns the first overlapping event.
+     *
+     * @return the first overlapping event, or {@code null} if there is none
+     */
+    public Times getFirstOverlap() {
+        return !events.isEmpty() ? events.get(0) : null;
     }
 
     /**
@@ -108,7 +117,7 @@ public class OverlappingEvents {
 
     /**
      * Returns the calendar blocks, if any.
-     * <p/>
+     * <p>
      * This evaluates the blocks against a customer. It returns on the first reserved block with classifications that
      * the customer doesn't have.
      *

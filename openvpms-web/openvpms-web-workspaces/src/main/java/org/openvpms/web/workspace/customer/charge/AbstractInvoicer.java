@@ -14,14 +14,15 @@
  * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
+
 package org.openvpms.web.workspace.customer.charge;
 
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
@@ -57,7 +58,7 @@ public abstract class AbstractInvoicer {
      * @param customer the customer. May be {@code null}
      * @return a new invoice
      */
-    protected FinancialAct createInvoice(IMObjectReference customer) {
+    protected FinancialAct createInvoice(Reference customer) {
         return createCharge(CustomerAccountArchetypes.INVOICE, customer);
     }
 
@@ -68,14 +69,14 @@ public abstract class AbstractInvoicer {
      * @param customer  the customer. May be {@code null}
      * @return a new charge
      */
-    protected FinancialAct createCharge(String shortName, IMObjectReference customer) {
+    protected FinancialAct createCharge(String shortName, Reference customer) {
         FinancialAct result = (FinancialAct) IMObjectCreator.create(shortName);
         if (result == null) {
             throw new IllegalStateException("Failed to create " + shortName);
         }
-        ActBean invoiceBean = new ActBean(result);
+        IMObjectBean invoiceBean = new IMObjectBean(result);
         if (customer != null) {
-            invoiceBean.addNodeParticipation("customer", customer);
+            invoiceBean.setTarget("customer", customer);
         }
         return result;
     }

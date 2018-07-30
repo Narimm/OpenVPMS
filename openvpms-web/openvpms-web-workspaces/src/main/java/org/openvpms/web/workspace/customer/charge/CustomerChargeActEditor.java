@@ -217,7 +217,7 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
             CollectionProperty notes = (CollectionProperty) getProperty("customerNotes");
             if (notes != null && !notes.isHidden()) {
                 customerNotes = createCustomerNotesEditor(getObject(), notes);
-                getEditors().add(customerNotes);
+                addEditor(customerNotes);
             }
         }
         return customerNotes;
@@ -233,7 +233,7 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
             CollectionProperty notes = (CollectionProperty) getProperty("documents");
             if (notes != null && !notes.isHidden()) {
                 documents = createDocumentsEditor(getObject(), notes);
-                getEditors().add(documents);
+                addEditor(documents);
             }
         }
         return documents;

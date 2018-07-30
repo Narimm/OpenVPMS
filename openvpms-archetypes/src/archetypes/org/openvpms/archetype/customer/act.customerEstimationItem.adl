@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -97,6 +97,8 @@
         <node name="discount" path="/details/highDiscount"
               type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" defaultValue="0.0"
               minCardinality="0" hidden="true"/>
+        <node name="serviceRatio" path="/details/serviceRatio" type="java.math.BigDecimal" minCardinality="0"
+              readOnly="true" hidden="true"/>
         <!-- retained for backward compatibility -->
         <node name="print" path="/details/print" type="java.lang.Boolean" minCardinality="0" defaultValue="true()"
               hidden="true"/>

@@ -11,18 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
 
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ObjectSet;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.Map;
 
 
 /**
@@ -35,14 +36,14 @@ class TaskQuery extends ScheduleEventQuery {
     /**
      * Constructs a {@link TaskQuery}.
      *
-     * @param workList the schedule
-     * @param from     the 'from' start time
-     * @param to       the 'to' start time
-     * @param service  the archetype service
-     * @param lookups  the lookup service
+     * @param workList    the schedule
+     * @param from        the 'from' start time
+     * @param to          the 'to' start time
+     * @param statusNames the status names, keyed on status code
+     * @param service     the archetype service
      */
-    public TaskQuery(Entity workList, Date from, Date to, IArchetypeService service, ILookupService lookups) {
-        super(workList, from, to, ScheduleArchetypes.TASK, service, lookups);
+    public TaskQuery(Entity workList, Date from, Date to, Map<String, String> statusNames, IArchetypeService service) {
+        super(workList, from, to, statusNames, Collections.emptyMap(), service);
     }
 
     /**
@@ -55,12 +56,12 @@ class TaskQuery extends ScheduleEventQuery {
     }
 
     /**
-     * Returns the archetype short name of the schedule type.
+     * Returns the archetype of the schedule type.
      *
-     * @param eventShortName the event archetype short name
-     * @return the short name of the schedule type
+     * @param eventArchetype the event archetype
+     * @return the archetype of the schedule type
      */
-    protected String getScheduleType(String eventShortName) {
+    protected String getScheduleType(String eventArchetype) {
         return ScheduleArchetypes.TASK_TYPE;
     }
 
@@ -72,7 +73,7 @@ class TaskQuery extends ScheduleEventQuery {
      * @return a new event
      */
     @Override
-    protected ObjectSet createEvent(IMObjectReference actRef, ObjectSet set) {
+    protected ObjectSet createEvent(Reference actRef, ObjectSet set) {
         ObjectSet event = super.createEvent(actRef, set);
         event.set(ScheduleEvent.CONSULT_START_TIME, null);
         return event;

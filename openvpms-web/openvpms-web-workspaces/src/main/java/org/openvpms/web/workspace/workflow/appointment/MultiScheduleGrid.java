@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -19,8 +19,8 @@ package org.openvpms.web.workspace.workflow.appointment;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 
@@ -31,8 +31,8 @@ import java.util.Map;
 
 
 /**
- * An {@link AppointmentGrid} for a multiple schedule.
- * <p/>
+ * An {@link AppointmentGrid} for multiple schedules.
+ * <p>
  * This handles overlapping and double booked appointments by creating new {@link Schedule} instances to contain them.
  *
  * @author Tim Anderson
@@ -97,6 +97,34 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
     }
 
     /**
+     * Adds an event.
+     * <p>
+     * If event is an appointment, and the corresponding Schedule already has an appointment that intersects it,
+     * new Schedule will be created with the same start and end times, and the appointment added to that.
+     *
+     * @param schedule the schedule to add the appointment to
+     * @param event    the event
+     */
+    @Override
+    protected void addEvent(Entity schedule, PropertySet event) {
+        super.addEvent(schedule, event);
+        Date startTime = event.getDate(ScheduleEvent.ACT_START_TIME);
+        Date endTime = event.getDate(ScheduleEvent.ACT_END_TIME);
+
+        // adjust the grid start and end times, if required
+        Date startDate = DateRules.getDate(startTime);
+        Date endDate = DateRules.getDate(endTime);
+        int slotStart = startDate.compareTo(getStartDate()) < 0 ? getStartMins() : getSlotMinutes(startTime, false);
+        int slotEnd = endDate.compareTo(getStartDate()) > 0 ? getEndMins() : getSlotMinutes(endTime, true);
+        if (getStartMins() > slotStart) {
+            setStartMins(slotStart);
+        }
+        if (getEndMins() < slotEnd) {
+            setEndMins(slotEnd);
+        }
+    }
+
+    /**
      * Sets the events.
      *
      * @param events the events, keyed on schedule
@@ -150,34 +178,6 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
             for (PropertySet set : sets) {
                 addEvent(schedule, set);
             }
-        }
-    }
-
-    /**
-     * Adds an event.
-     * <p/>
-     * If event is an appointment, and the corresponding Schedule already has an appointment that intersects it,
-     * new Schedule will be created with the same start and end times, and the appointment added to that.
-     *
-     * @param schedule the schedule to add the appointment to
-     * @param event    the event
-     */
-    @Override
-    protected void addEvent(Entity schedule, PropertySet event) {
-        super.addEvent(schedule, event);
-        Date startTime = event.getDate(ScheduleEvent.ACT_START_TIME);
-        Date endTime = event.getDate(ScheduleEvent.ACT_END_TIME);
-
-        // adjust the grid start and end times, if required
-        Date startDate = DateRules.getDate(startTime);
-        Date endDate = DateRules.getDate(endTime);
-        int slotStart = startDate.compareTo(getStartDate()) < 0 ? getStartMins() : getSlotMinutes(startTime, false);
-        int slotEnd = endDate.compareTo(getStartDate()) > 0 ? getEndMins() : getSlotMinutes(endTime, true);
-        if (getStartMins() > slotStart) {
-            setStartMins(slotStart);
-        }
-        if (getEndMins() < slotEnd) {
-            setEndMins(slotEnd);
         }
     }
 

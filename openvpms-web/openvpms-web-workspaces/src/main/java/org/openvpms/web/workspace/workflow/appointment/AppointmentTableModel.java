@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -23,7 +23,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.Table;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -86,7 +86,7 @@ public abstract class AppointmentTableModel extends ScheduleTableModel {
      * @param eventRef the event reference
      * @return the row, or {@code -1} if the event is not found
      */
-    public int getSlot(Schedule schedule, IMObjectReference eventRef) {
+    public int getSlot(Schedule schedule, Reference eventRef) {
         PropertySet event = schedule.getEvent(eventRef);
         if (event != null) {
             return getGrid().getSlot(event.getDate(ScheduleEvent.ACT_START_TIME));

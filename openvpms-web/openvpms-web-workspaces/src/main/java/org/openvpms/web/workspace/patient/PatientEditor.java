@@ -183,8 +183,8 @@ public class PatientEditor extends AbstractIMObjectEditor {
 
         CollectionProperty customField = (CollectionProperty) getProperty("customFields");
         customFieldEditor = new EntityRelationshipCollectionTargetEditor(customField, patient, getLayoutContext());
-        getEditors().add(breedEditor);
-        getEditors().add(customFieldEditor);
+        addEditor(breedEditor);
+        addEditor(customFieldEditor);
         createLayoutStrategy();
         updateCustomFields();
     }

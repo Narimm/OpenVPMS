@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
 
 import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.Date;
 
@@ -32,7 +32,7 @@ public class Times implements Comparable<Times> {
     /**
      * The event reference, or {@code null} if it hasn't been saved.
      */
-    private final IMObjectReference reference;
+    private final Reference reference;
 
     /**
      * The start time.
@@ -61,7 +61,7 @@ public class Times implements Comparable<Times> {
      * @param startTime the start time
      * @param endTime   the end time
      */
-    public Times(IMObjectReference reference, Date startTime, Date endTime) {
+    public Times(Reference reference, Date startTime, Date endTime) {
         this.reference = reference;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -81,7 +81,7 @@ public class Times implements Comparable<Times> {
      *
      * @return the event reference, or {@code null} if the event hasn't been saved
      */
-    public IMObjectReference getReference() {
+    public Reference getReference() {
         return reference;
     }
 
@@ -104,15 +104,13 @@ public class Times implements Comparable<Times> {
     }
 
     /**
-     * Creates a new instance from an appointment act.
+     * Determines if the times are an instant.
      *
-     * @param act the appointment act
-     * @return a new {@link Times}, or {@code null} if the act has no start or end time
+     * @return {@code true} if the times are an instant (i.e. non-null and both the same, or {@code false} if they
+     * are a range.
      */
-    public static Times create(Act act) {
-        Date startTime = act.getActivityStartTime();
-        Date endTime = act.getActivityEndTime();
-        return startTime != null && endTime != null ? new Times(act.getObjectReference(), startTime, endTime) : null;
+    public boolean isInstant() {
+        return startTime != null && endTime != null && DateRules.compareTo(startTime, endTime) == 0;
     }
 
     /**
@@ -159,6 +157,19 @@ public class Times implements Comparable<Times> {
      * @return {@code true} if the ranges intersect
      */
     public boolean intersects(Date from, Date to) {
-        return DateRules.intersects(startTime, endTime, from, to);
+        return isInstant() ? DateRules.between(startTime, from, to)
+                           : DateRules.intersects(startTime, endTime, from, to);
+    }
+
+    /**
+     * Creates a new instance from an event act.
+     *
+     * @param act the appointment act
+     * @return a new {@link Times}, or {@code null} if the act has no start or end time
+     */
+    public static Times create(Act act) {
+        Date startTime = act.getActivityStartTime();
+        Date endTime = act.getActivityEndTime();
+        return startTime != null && endTime != null ? new Times(act.getObjectReference(), startTime, endTime) : null;
     }
 }

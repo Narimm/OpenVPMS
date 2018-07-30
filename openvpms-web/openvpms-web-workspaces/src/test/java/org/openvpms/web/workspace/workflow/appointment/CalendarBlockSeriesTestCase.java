@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -26,9 +26,9 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarBlockSeries;
-import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSeries;
 import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSeriesTest;
 import org.openvpms.web.workspace.workflow.appointment.repeat.Repeats;
+import org.openvpms.web.workspace.workflow.appointment.repeat.ScheduleEventSeries;
 
 import java.util.Date;
 import java.util.List;
@@ -66,7 +66,7 @@ public class CalendarBlockSeriesTestCase extends CalendarEventSeriesTest {
         Entity blockType2 = ScheduleTestHelper.createCalendarBlockType();
         Act block = createEvent();
 
-        CalendarEventSeries series = createSeries(block, Repeats.weekly(), times(2));
+        ScheduleEventSeries series = createSeries(block, Repeats.weekly(), times(2));
         checkSeries(series, block, 1, DateUnits.WEEKS, 3);
 
         ActBean bean = new ActBean(block);
@@ -107,7 +107,7 @@ public class CalendarBlockSeriesTestCase extends CalendarEventSeriesTest {
      * @return the events
      */
     @Override
-    protected List<Act> checkSeries(CalendarEventSeries series, Act event, int interval, DateUnits units, int count,
+    protected List<Act> checkSeries(ScheduleEventSeries series, Act event, int interval, DateUnits units, int count,
                                     User author) {
         List<Act> acts = series.getEvents();
         assertEquals(count, acts.size());
@@ -133,13 +133,13 @@ public class CalendarBlockSeriesTestCase extends CalendarEventSeriesTest {
     }
 
     /**
-     * Creates a new {@link CalendarEventSeries}.
+     * Creates a new {@link ScheduleEventSeries}.
      *
      * @param event the event
      * @return a new series
      */
     @Override
-    protected CalendarEventSeries createSeries(Act event) {
+    protected ScheduleEventSeries createSeries(Act event) {
         return new CalendarBlockSeries(event, getArchetypeService());
     }
 

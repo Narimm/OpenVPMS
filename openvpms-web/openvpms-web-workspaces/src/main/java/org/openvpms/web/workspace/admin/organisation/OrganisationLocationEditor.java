@@ -104,8 +104,8 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
         logoEditor = new LogoEditor(logo, object, layoutContext);
         printerNames = Arrays.asList(PrintHelper.getPrinters());
         printers = new PrinterCollectionEditor(getCollectionProperty("printers"), object, layoutContext);
-        getEditors().add(printers);
-        getEditors().add(logoEditor);
+        addEditor(printers);
+        addEditor(logoEditor);
     }
 
     /**

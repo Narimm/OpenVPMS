@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -25,12 +25,15 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.LookupHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -84,7 +87,11 @@ public class TaskQueryTestCase extends ArchetypeServiceTest {
         }
         Date to = new Date();
 
-        TaskQuery query = new TaskQuery(workList, from, to, getArchetypeService(), getLookupService());
+        ILookupService lookups = getLookupService();
+        Map<String, String> statusNames = LookupHelper.getNames(getArchetypeService(), lookups,
+                                                                ScheduleArchetypes.TASK, "status");
+
+        TaskQuery query = new TaskQuery(workList, from, to, statusNames, getArchetypeService());
         IPage<ObjectSet> page = query.query();
         assertNotNull(page);
         List<ObjectSet> results = page.getResults();

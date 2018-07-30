@@ -11,13 +11,11 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.stock;
 
-import org.apache.commons.collections.Predicate;
-import org.apache.commons.collections.functors.AndPredicate;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -26,9 +24,10 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.bean.Predicates;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -36,8 +35,7 @@ import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActiveNow;
+import java.util.function.Predicate;
 
 
 /**
@@ -63,11 +61,11 @@ public class StockRules {
 
     /**
      * Returns the stock location for a product at a practice location.
-     * <p/>
+     * <p>
      * Looks for an <em>party.organisationStockLocation</em> associated with the supplied
      * <em>party.organisationLocation</em>. If a stock location exists that has a relationship to the supplied product,
      * this will be returned.
-     * <p/>
+     * <p>
      * If there are stock locations, but none have a relationship to the
      * product, then an arbitrary one will be selected.
      *
@@ -98,14 +96,14 @@ public class StockRules {
 
     /**
      * Returns the stock for a product and stock location.
-     * <p/>
+     * <p>
      * NOTE: this implementation queries persistent values.
      *
      * @param product       the product reference
      * @param stockLocation the stock location
      * @return the stock
      */
-    public BigDecimal getStock(IMObjectReference product, IMObjectReference stockLocation) {
+    public BigDecimal getStock(Reference product, Reference stockLocation) {
         BigDecimal result = BigDecimal.ZERO;
         ArchetypeQuery q = new ArchetypeQuery("entityLink.productStockLocation", false, false);
         q.add(Constraints.eq("source", product));
@@ -114,7 +112,7 @@ public class StockRules {
         q.setMaxResults(1);
         IMObjectQueryIterator<IMObject> iterator = new IMObjectQueryIterator<>(service, q);
         if (iterator.hasNext()) {
-            IMObjectBean bean = new IMObjectBean(iterator.next());
+            IMObjectBean bean = service.getBean(iterator.next());
             result = bean.getBigDecimal("quantity", BigDecimal.ZERO);
         }
         return result;
@@ -122,7 +120,7 @@ public class StockRules {
 
     /**
      * Returns the quantity of a product at the specified stock location.
-     * <p/>
+     * <p>
      * NOTE: this implementation returns cached values.
      *
      * @param product       the product
@@ -134,7 +132,7 @@ public class StockRules {
         BigDecimal result = BigDecimal.ZERO;
         IMObjectRelationship relationship = getStockRelationship(product, stockLocation.getObjectReference());
         if (relationship != null) {
-            IMObjectBean bean = new IMObjectBean(relationship, service);
+            IMObjectBean bean = service.getBean(relationship);
             result = bean.getBigDecimal("quantity", BigDecimal.ZERO);
         }
         return result;
@@ -179,18 +177,18 @@ public class StockRules {
     }
 
     /**
-     * Returns the <em>entityLink.productStockLocation</em> for the
-     * specified product and stock location.
+     * Returns the <em>entityLink.productStockLocation</em> for the specified product and stock location.
      *
      * @param product       the product
      * @param stockLocation the stock location
      * @return the corresponding relationship, or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    protected IMObjectRelationship getStockRelationship(Product product, IMObjectReference stockLocation) {
-        EntityBean prodBean = new EntityBean(product, service);
-        Predicate predicate = AndPredicate.getInstance(isActiveNow(), RefEquals.getTargetEquals(stockLocation));
-        return (IMObjectRelationship) prodBean.getValue("stockLocations", predicate);
+    protected IMObjectRelationship getStockRelationship(Product product, Reference stockLocation) {
+        IMObjectBean bean = service.getBean(product);
+        Predicate<IMObjectRelationship> predicate
+                = Predicates.<IMObjectRelationship>activeNow().and(Predicates.targetEquals(stockLocation));
+        return bean.getValue("stockLocations", IMObjectRelationship.class, predicate);
     }
 
     /**
@@ -238,10 +236,10 @@ public class StockRules {
      * @param quantity     the quantity to add/remove
      */
     protected void calcStock(IMObjectRelationship relationship, BigDecimal quantity) {
-        IMObjectBean relBean = new IMObjectBean(relationship, service);
-        BigDecimal old = relBean.getBigDecimal("quantity");
+        IMObjectBean bean = service.getBean(relationship);
+        BigDecimal old = bean.getBigDecimal("quantity");
         BigDecimal now = old.add(quantity);
-        relBean.setValue("quantity", now);
+        bean.setValue("quantity", now);
     }
 
 }

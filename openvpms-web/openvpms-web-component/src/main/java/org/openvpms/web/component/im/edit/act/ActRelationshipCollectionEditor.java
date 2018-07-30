@@ -36,6 +36,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.CollectionPropertyEditor;
 import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
@@ -578,7 +579,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
      */
     private boolean needsTemplateExpansion(IMObjectEditor editor) {
         if (editor instanceof ActItemEditor) {
-            IMObjectReference product = ((ActItemEditor) editor).getProductRef();
+            Reference product = ((ActItemEditor) editor).getProductRef();
             return TypeHelper.isA(product, TEMPLATE);
         }
         return false;

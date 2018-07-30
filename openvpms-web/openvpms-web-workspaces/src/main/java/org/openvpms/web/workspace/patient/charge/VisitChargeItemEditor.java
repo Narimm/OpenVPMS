@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.charge;
@@ -39,7 +39,7 @@ public class VisitChargeItemEditor extends CustomerChargeActItemEditor {
 
     /**
      * Constructs a {@link VisitChargeItemEditor}.
-     * <p/>
+     * <p>
      * This recalculates the tax amount.
      *
      * @param act           the act to edit
@@ -56,12 +56,14 @@ public class VisitChargeItemEditor extends CustomerChargeActItemEditor {
     /**
      * Creates the layout strategy.
      *
-     * @param fixedPrice the fixed price editor
+     * @param fixedPrice         the fixed price editor
+     * @param serviceRatioEditor the service ratio editor
      * @return a new layout strategy
      */
     @Override
-    protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice) {
-        return new VisitChargeItemLayoutStrategy(fixedPrice);
+    protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice,
+                                                          ServiceRatioEditor serviceRatioEditor) {
+        return new VisitChargeItemLayoutStrategy(fixedPrice, serviceRatioEditor);
     }
 
     /**
@@ -86,10 +88,11 @@ public class VisitChargeItemEditor extends CustomerChargeActItemEditor {
         /**
          * Constructs a {@link VisitChargeItemLayoutStrategy}.
          *
-         * @param fixedPrice the fixed price editor
+         * @param fixedPrice         the fixed price editor
+         * @param serviceRatioEditor the service ratio editor
          */
-        public VisitChargeItemLayoutStrategy(FixedPriceEditor fixedPrice) {
-            super(fixedPrice);
+        public VisitChargeItemLayoutStrategy(FixedPriceEditor fixedPrice, ServiceRatioEditor serviceRatioEditor) {
+            super(fixedPrice, serviceRatioEditor);
         }
 
         /**

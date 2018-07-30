@@ -17,8 +17,6 @@
 package org.openvpms.archetype.rules.product;
 
 import org.apache.commons.collections.ComparatorUtils;
-import org.apache.commons.collections.Predicate;
-import org.apache.commons.collections.functors.AndPredicate;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.archetype.rules.math.Currency;
@@ -26,17 +24,17 @@ import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityLink;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.bean.Policies;
+import org.openvpms.component.model.bean.Predicates;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.object.Relationship;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -45,14 +43,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.openvpms.archetype.rules.math.MathRules.ONE_HUNDRED;
 import static org.openvpms.archetype.rules.product.ProductArchetypes.FIXED_PRICE;
-import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActive;
-import static org.openvpms.component.business.service.archetype.functor.IsActiveRelationship.isActiveNow;
-import static org.openvpms.component.business.service.archetype.functor.RefEquals.getTargetEquals;
+import static org.openvpms.component.model.bean.Predicates.targetEquals;
 
 
 /**
@@ -87,7 +84,7 @@ public class ProductPriceRules {
 
     /**
      * Returns the first price with the specified short name and pricing group, active at the specified date.
-     * <p/>
+     * <p>
      * If {@code group} is:
      * <ul>
      * <li>non-null - it matches prices that have that pricing group, or no pricing group</li>
@@ -107,7 +104,7 @@ public class ProductPriceRules {
 
     /**
      * Returns the first product price with the specified price, short name, and group, active at the specified date.
-     * <p/>
+     * <p>
      * If {@code group} is:
      * <ul>
      * <li>non-null - it matches prices that have that pricing group, or no pricing group</li>
@@ -129,7 +126,7 @@ public class ProductPriceRules {
 
     /**
      * Returns all prices matching the specified short name.
-     * <p/>
+     * <p>
      * This will examine linked products if {@code shortName} is <em>productPrice.fixedPrice</em>.
      *
      * @param product   the product
@@ -159,16 +156,16 @@ public class ProductPriceRules {
         result.addAll(prices);
         if (includeLinked && FIXED_PRICE.equals(shortName)) {
             // see if there is a fixed price in linked products
-            result.addAll(findLinkedPrices(product, predicate, IsActiveRelationship.isActiveNow()));
+            result.addAll(findLinkedPrices(product, predicate, Predicates.activeNow()));
         }
         return sort(result);
     }
 
     /**
      * Returns all prices matching the specified short name, active at the specified date.
-     * <p/>
+     * <p>
      * This will examine linked products if {@code shortName} is <em>productPrice.fixedPrice</em>.
-     * <p/>
+     * <p>
      * If {@code group} is:
      * <ul>
      * <li>non-null - it matches prices that have that pricing group, or no pricing group</li>
@@ -187,7 +184,7 @@ public class ProductPriceRules {
 
     /**
      * Returns all prices matching the specified short name, active at the specified date.
-     * <p/>
+     * <p>
      * If {@code group} is:
      * <ul>
      * <li>non-null - it matches prices that have that pricing group, or no pricing group</li>
@@ -210,16 +207,16 @@ public class ProductPriceRules {
         result.addAll(prices);
         if (includeLinked && FIXED_PRICE.equals(shortName)) {
             // see if there is a fixed price in linked products
-            result.addAll(findLinkedPrices(product, predicate, isActive(date)));
+            result.addAll(findLinkedPrices(product, predicate, Predicates.activeAt(date)));
         }
         return sort(result);
     }
 
     /**
      * Returns all prices matching the specified short name, active between a date range.
-     * <p/>
+     * <p>
      * This will examine linked products if {@code shortName} is <em>productPrice.fixedPrice</em>.
-     * <p/>
+     * <p>
      * If {@code group} is:
      * <ul>
      * <li>non-null - it matches prices that have that pricing group, or no pricing group</li>
@@ -240,7 +237,7 @@ public class ProductPriceRules {
 
     /**
      * Returns all prices matching the specified short name and pricing group active between a date range.
-     * <p/>
+     * <p>
      * If {@code group} is:
      * <ul>
      * <li>non-null - it matches prices that have that pricing group, or no pricing group</li>
@@ -264,14 +261,14 @@ public class ProductPriceRules {
         result.addAll(prices);
         if (includeLinked && FIXED_PRICE.equals(shortName)) {
             // see if there is a fixed price in linked products
-            result.addAll(findLinkedPrices(product, predicate, isActive(from, to)));
+            result.addAll(findLinkedPrices(product, predicate, Predicates.active(from, to)));
         }
         return sort(result);
     }
 
     /**
      * Calculates a tax-exclusive price, given the cost and markup.
-     * <p/>
+     * <p>
      * The formula is:
      * {@code taxExPrice = cost * (1 + markup/100)}
      *
@@ -308,9 +305,9 @@ public class ProductPriceRules {
 
     /**
      * Calculates a tax-inclusive product price using the following formula:
-     * <p/>
+     * <p>
      * {@code price = taxExPrice * (1 + taxRate/100)}
-     * <p/>
+     * <p>
      * The price is rounded according to currency conventions.
      *
      * @param taxExPrice the tax-exclusive price
@@ -326,9 +323,9 @@ public class ProductPriceRules {
 
     /**
      * Calculates a tax-inclusive product price using the following formula:
-     * <p/>
+     * <p>
      * {@code price = taxExPrice * (1 + taxRate/100)}
-     * <p/>
+     * <p>
      * The price is rounded according to currency conventions.
      *
      * @param taxExPrice the tax-exclusive price
@@ -346,7 +343,7 @@ public class ProductPriceRules {
 
     /**
      * Calculates a tax-exclusive price markup, given the cost and tax-exclusive price.
-     * <p/>
+     * <p>
      * The formula is:
      * {@code markup = (price/cost - 1) * 100}
      *
@@ -367,7 +364,7 @@ public class ProductPriceRules {
 
     /**
      * Calculates the maximum discount that can be applied for a given markup.
-     * <p/>
+     * <p>
      * Uses the equation:
      * {@code (markup / (100 + markup)) * 100}
      *
@@ -385,7 +382,7 @@ public class ProductPriceRules {
     /**
      * Updates the cost node of any <em>productPrice.unitPrice</em> associated with a product active at the current
      * time, and recalculates its price.
-     * <p/>
+     * <p>
      * Returns a list of unit prices whose cost and price have changed.
      *
      * @param product  the product
@@ -400,7 +397,7 @@ public class ProductPriceRules {
     /**
      * Updates the cost node of any <em>productPrice.unitPrice</em> associated with a product active at the current
      * time, and recalculates its price.
-     * <p/>
+     * <p>
      * Returns a list of unit prices whose cost and price have changed.
      *
      * @param product            the product
@@ -413,21 +410,19 @@ public class ProductPriceRules {
     public List<ProductPrice> updateUnitPrices(Product product, BigDecimal cost, final boolean ignoreCostDecrease,
                                                Currency currency) {
         List<ProductPrice> result = null;
-        IMObjectBean bean = new IMObjectBean(product, service);
-        final Date now = new Date();
-        final BigDecimal roundedCost = currency.round(cost);
-        Predicate predicate = object -> {
-            ProductPrice price = (ProductPrice) object;
-            boolean result1 = price.isActive() && TypeHelper.isA(price, ProductArchetypes.UNIT_PRICE)
-                              && DateRules.between(now, price.getFromDate(), price.getToDate());
-            if (result1 && ignoreCostDecrease) {
-                IMObjectBean bean1 = new IMObjectBean(price, service);
-                BigDecimal currentCost = bean1.getBigDecimal("cost", BigDecimal.ZERO);
-                result1 = currentCost.compareTo(roundedCost) < 0;
+        IMObjectBean bean = service.getBean(product);
+        Date now = new Date();
+        BigDecimal roundedCost = currency.round(cost);
+        Predicate<ProductPrice> predicate = price -> {
+            boolean match = price.isActive() && price.isA(ProductArchetypes.UNIT_PRICE)
+                            && DateRules.between(now, price.getFromDate(), price.getToDate());
+            if (match && ignoreCostDecrease) {
+                BigDecimal currentCost = getCostPrice(price);
+                match = currentCost.compareTo(roundedCost) < 0;
             }
-            return result1;
+            return match;
         };
-        List<ProductPrice> prices = bean.getValues("prices", predicate, ProductPrice.class);
+        List<ProductPrice> prices = bean.getValues("prices", ProductPrice.class, predicate);
         if (!prices.isEmpty()) {
             for (ProductPrice price : prices) {
                 if (updateUnitPrice(price, roundedCost)) {
@@ -452,7 +447,7 @@ public class ProductPriceRules {
      * with the price.
      */
     public BigDecimal getMaxDiscount(ProductPrice price) {
-        IMObjectBean bean = new IMObjectBean(price, service);
+        IMObjectBean bean = service.getBean(price);
         BigDecimal result = bean.getBigDecimal("maxDiscount");
         return (result == null) ? DEFAULT_MAX_DISCOUNT : result;
     }
@@ -464,7 +459,7 @@ public class ProductPriceRules {
      * @return the pricing groups
      */
     public List<Lookup> getPricingGroups(ProductPrice price) {
-        IMObjectBean bean = new IMObjectBean(price, service);
+        IMObjectBean bean = service.getBean(price);
         return bean.getValues("pricingGroups", Lookup.class);
     }
 
@@ -476,40 +471,44 @@ public class ProductPriceRules {
      */
 
     public BigDecimal getCostPrice(ProductPrice price) {
-        IMObjectBean bean = new IMObjectBean(price, service);
+        IMObjectBean bean = service.getBean(price);
         return bean.getBigDecimal("cost", BigDecimal.ZERO);
     }
 
     /**
      * Returns the service ratio for a product.
-     * <p/>
+     * <p>
      * This is a factor that is applied to a product's prices when the product is charged at a particular practice
      * location. It is determined by the <em>entityLink.locationProductType</em> relationship between the location and
      * the product's type.
      *
      * @param product  the product
      * @param location the practice location
-     * @return the service ratio. If there is no relationship, returns {@code 1.0}
+     * @return the service ratio, or {@code null} if none is defined
      */
-    public BigDecimal getServiceRatio(Product product, Party location) {
-        BigDecimal ratio = BigDecimal.ONE;
-        IMObjectBean bean = new IMObjectBean(product, service);
-        IMObjectReference productType = bean.getNodeTargetObjectRef("type");
+    public ServiceRatio getServiceRatio(Product product, Party location) {
+        ServiceRatio result = null;
+        IMObjectBean bean = service.getBean(product);
+        Reference productType = bean.getTargetRef("type");
         if (productType != null) {
-            IMObjectBean locationBean = new IMObjectBean(location, service);
-            Predicate predicate = AndPredicate.getInstance(isActiveNow(), getTargetEquals(productType));
-            EntityLink link = (EntityLink) locationBean.getValue("serviceRatios", predicate);
+            IMObjectBean locationBean = service.getBean(location);
+            Predicate<EntityLink> predicate = Predicates.<EntityLink>activeNow().and(targetEquals(productType));
+            EntityLink link = locationBean.getValue("serviceRatios", EntityLink.class, predicate);
             if (link != null) {
-                IMObjectBean linkBean = new IMObjectBean(link, service);
-                ratio = linkBean.getBigDecimal("ratio", BigDecimal.ONE);
+                IMObjectBean linkBean = service.getBean(link);
+                BigDecimal ratio = linkBean.getBigDecimal("ratio");
+                Reference calendar = linkBean.getReference("calendar");
+                if (ratio != null && ratio.compareTo(BigDecimal.ONE) != 0) {
+                    result = new ServiceRatio(ratio, calendar);
+                }
             }
         }
-        return ratio;
+        return result;
     }
 
     /**
      * Sorts prices on descending time.
-     * <p/>
+     * <p>
      * NOTE: this modifies the input list.
      *
      * @param prices the prices to sort
@@ -542,7 +541,7 @@ public class ProductPriceRules {
      * @return {@code true} if the price was updated
      */
     private boolean updateUnitPrice(ProductPrice price, BigDecimal cost) {
-        IMObjectBean priceBean = new IMObjectBean(price, service);
+        IMObjectBean priceBean = service.getBean(price);
         BigDecimal old = priceBean.getBigDecimal("cost", ZERO);
         if (!MathRules.equals(old, cost)) {
             priceBean.setValue("cost", cost);
@@ -556,7 +555,7 @@ public class ProductPriceRules {
 
     /**
      * Returns a percentage / 100.
-     * <p/>
+     * <p>
      * This is expressed to 4 decimal places to support tax rates like "8.25%".
      *
      * @param percent the percent
@@ -584,9 +583,9 @@ public class ProductPriceRules {
         ProductPrice result = findPrice(product, predicate, useDefault);
         if (useDefault && (result == null || !isDefault(result))) {
             // see if there is a fixed price in linked products
-            EntityBean bean = new EntityBean(product, service);
+            IMObjectBean bean = service.getBean(product);
             if (bean.hasNode("linked")) {
-                List<Entity> products = bean.getNodeTargetEntities("linked", date);
+                List<Entity> products = bean.getTargets("linked", Entity.class, Policies.active(date));
                 for (Entity linked : products) {
                     ProductPrice price = findPrice((Product) linked, predicate, true);
                     if (price != null) {
@@ -648,7 +647,7 @@ public class ProductPriceRules {
         List<ProductPrice> result = null;
         for (org.openvpms.component.model.product.ProductPrice p : product.getProductPrices()) {
             ProductPrice price = (ProductPrice) p;
-            if (predicate.evaluate(price)) {
+            if (predicate.test(price)) {
                 if (result == null) {
                     result = new ArrayList<>();
                 }
@@ -668,13 +667,14 @@ public class ProductPriceRules {
      * @param price   the predicate to select prices
      * @param active  the predicate to select active linked products
      */
-    private List<ProductPrice> findLinkedPrices(Product product, ProductPricePredicate price, Predicate active) {
+    private List<ProductPrice> findLinkedPrices(Product product, ProductPricePredicate price,
+                                                Predicate<Relationship> active) {
         List<ProductPrice> result = null;
         List<ProductPrice> prices;
-        EntityBean bean = new EntityBean(product, service);
+        IMObjectBean bean = service.getBean(product);
         if (bean.hasNode("linked")) {
-            for (Entity linked : bean.getNodeTargetEntities("linked", active)) {
-                prices = findPrices((Product) linked, price);
+            for (Product linked : bean.getTargets("linked", Product.class, Policies.all(active))) {
+                prices = findPrices(linked, price);
                 if (result == null) {
                     result = new ArrayList<>();
                 }
@@ -691,11 +691,45 @@ public class ProductPriceRules {
      * @return {@code true} if it is the default, otherwise {@code false}
      */
     private boolean isDefault(ProductPrice price) {
-        IMObjectBean bean = new IMObjectBean(price, service);
+        IMObjectBean bean = service.getBean(price);
         return bean.getBoolean("default");
     }
 
-    private class ProductPricePredicate implements Predicate {
+    private static class ProductPriceComparator implements Comparator<ProductPrice> {
+
+        /**
+         * The singleton instance.
+         */
+        public static Comparator<ProductPrice> INSTANCE = new ProductPriceComparator();
+
+        @Override
+        public int compare(ProductPrice o1, ProductPrice o2) {
+            int result;
+            if (ObjectUtils.equals(o1.getToDate(), o2.getToDate())) {
+                result = 0;
+            } else if (o1.getToDate() == null) {
+                result = 1;
+            } else if (o2.getToDate() == null) {
+                result = -1;
+            } else {
+                result = DateRules.compareTo(o1.getToDate(), o2.getToDate());
+            }
+            if (result == 0) {
+                if (!ObjectUtils.equals(o1.getFromDate(), o2.getFromDate())) {
+                    if (o1.getFromDate() == null) {
+                        result = 1;
+                    } else if (o2.getFromDate() == null) {
+                        result = -1;
+                    } else {
+                        result = DateRules.compareDates(o1.getFromDate(), o2.getFromDate());
+                    }
+                }
+            }
+            return result;
+        }
+    }
+
+    private class ProductPricePredicate implements java.util.function.Predicate<ProductPrice> {
 
         /**
          * The price short name.
@@ -713,8 +747,15 @@ public class ProductPriceRules {
             this.group = group;
         }
 
-        public boolean evaluate(Object object) {
-            ProductPrice price = (ProductPrice) object;
+        /**
+         * Evaluates this predicate on the given argument.
+         *
+         * @param price the input argument
+         * @return {@code true} if the input argument matches the predicate,
+         * otherwise {@code false}
+         */
+        @Override
+        public boolean test(ProductPrice price) {
             return matches(price) > 0;
         }
 
@@ -727,11 +768,11 @@ public class ProductPriceRules {
          */
         public int matches(ProductPrice price) {
             int result = 0;
-            if (TypeHelper.isA(price, shortName) && price.isActive()) {
+            if (price.isA(shortName) && price.isActive()) {
                 if (group.isAll()) {
                     result = EXACT_MATCH;
                 } else {
-                    IMObjectBean bean = new IMObjectBean(price, service);
+                    IMObjectBean bean = service.getBean(price);
                     List<Lookup> groups = bean.getValues("pricingGroups", Lookup.class);
                     Lookup lookup = group.getGroup();
                     if ((lookup == null && groups.isEmpty()) || (lookup != null && groups.contains(lookup))) {
@@ -829,40 +870,6 @@ public class ProductPriceRules {
                 return super.matches(other);
             }
             return 0;
-        }
-    }
-
-    private static class ProductPriceComparator implements Comparator<ProductPrice> {
-
-        /**
-         * The singleton instance.
-         */
-        public static Comparator<ProductPrice> INSTANCE = new ProductPriceComparator();
-
-        @Override
-        public int compare(ProductPrice o1, ProductPrice o2) {
-            int result;
-            if (ObjectUtils.equals(o1.getToDate(), o2.getToDate())) {
-                result = 0;
-            } else if (o1.getToDate() == null) {
-                result = 1;
-            } else if (o2.getToDate() == null) {
-                result = -1;
-            } else {
-                result = DateRules.compareTo(o1.getToDate(), o2.getToDate());
-            }
-            if (result == 0) {
-                if (!ObjectUtils.equals(o1.getFromDate(), o2.getFromDate())) {
-                    if (o1.getFromDate() == null) {
-                        result = 1;
-                    } else if (o2.getFromDate() == null) {
-                        result = -1;
-                    } else {
-                        result = DateRules.compareDates(o1.getFromDate(), o2.getFromDate());
-                    }
-                }
-            }
-            return result;
         }
     }
 }

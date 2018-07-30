@@ -11,14 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
+import org.openvpms.archetype.rules.workflow.AppointmentService;
 import org.openvpms.archetype.rules.workflow.Times;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 
@@ -27,7 +29,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class CalendarBlockEditDialog extends CalendarEventEditDialog {
+public class CalendarBlockEditDialog extends AbstractCalendarEventEditDialog {
 
     /**
      * Constructs a {@link CalendarBlockEditDialog}.
@@ -35,7 +37,7 @@ public class CalendarBlockEditDialog extends CalendarEventEditDialog {
      * @param editor  the editor
      * @param context the context
      */
-    public CalendarBlockEditDialog(CalendarEventEditor editor, Context context) {
+    public CalendarBlockEditDialog(AbstractCalendarEventEditor editor, Context context) {
         super(editor, context);
     }
 
@@ -53,9 +55,10 @@ public class CalendarBlockEditDialog extends CalendarEventEditDialog {
      */
     protected boolean checkEventTimes(List<Times> times, final boolean close) {
         boolean result = true;
-        CalendarEventEditor editor = getEditor();
-        Entity schedule = editor.getSchedule();
-        Times overlap = getService().getOverlappingEvent(times, schedule);
+        AbstractCalendarEventEditor editor = getEditor();
+        Entity schedule = (Entity) editor.getSchedule();
+        AppointmentService service = ServiceHelper.getBean(AppointmentService.class);
+        Times overlap = service.getOverlappingEvent(times, schedule);
         if (overlap != null) {
             displayOverlapError(overlap);
             result = false;

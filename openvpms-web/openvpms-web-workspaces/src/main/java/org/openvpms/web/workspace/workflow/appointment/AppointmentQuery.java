@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -26,10 +26,10 @@ import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.ScheduleService;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.im.query.DateNavigator;
 import org.openvpms.web.echo.event.ActionListener;
@@ -51,76 +51,6 @@ import java.util.List;
  * @author Tim Anderson
  */
 class AppointmentQuery extends ScheduleServiceQuery {
-
-    public enum TimeRange {
-
-        ALL(0, 24), MORNING(8, 12), AFTERNOON(12, 17), EVENING(17, 24),
-        AM(0, 12), PM(12, 24);
-
-        private final int startMins;
-
-        private final int endMins;
-
-        TimeRange(int startHour, int endHour) {
-            this.startMins = startHour * 60;
-            this.endMins = endHour * 60;
-        }
-
-        /**
-         * Returns the time range that the specified time falls into.
-         *
-         * @param time the time
-         * @return the corresponding time range
-         */
-        public static TimeRange getRange(Date time) {
-            DateTime dateTime = new DateTime(time);
-            int hour = dateTime.getHourOfDay();
-            if (hour < 8) {
-                return AM;
-            } else if (hour >= 8 && hour < 12) {
-                return MORNING;
-            } else if (hour >= 12 && hour < 17) {
-                return AFTERNOON;
-            } else if (hour >= 17) {
-                return EVENING;
-            }
-            return ALL;
-        }
-
-        /**
-         * Returns one of {@link #AM}, or {@link #PM} based on the supplied time.
-         *
-         * @param time the time
-         * @return the corresponding time range
-         */
-        public static TimeRange getAMorPM(DateTime time) {
-            return time.getHourOfDay() < 12 ? AM : PM;
-        }
-
-        /**
-         * Returns one of {@link #MORNING}, {@link #AFTERNOON} or {@link #EVENING} based on the supplied time.
-         *
-         * @param time the time
-         * @return the corresponding time range
-         */
-        public static TimeRange getMorningOrAfternoonOrEvening(DateTime time) {
-            int hour = time.getHourOfDay();
-            if (hour < 12) {
-                return MORNING;
-            } else if (hour < 15) {
-                return AFTERNOON;
-            }
-            return EVENING;
-        }
-
-        public int getStartMins() {
-            return startMins;
-        }
-
-        public int getEndMins() {
-            return endMins;
-        }
-    }
 
     public enum DateRange {
         DAY, WEEK, FORTNIGHT, MONTH
@@ -153,7 +83,7 @@ class AppointmentQuery extends ScheduleServiceQuery {
     /**
      * Time range selector.
      */
-    private SelectField timeSelector;
+    private TimeRangeSelector timeSelector;
 
     /**
      * Date range selector.
@@ -213,8 +143,7 @@ class AppointmentQuery extends ScheduleServiceQuery {
      * @return the selected time range
      */
     public TimeRange getTimeRange() {
-        int index = timeSelector.getSelectedIndex();
-        return index >= 0 && index < TimeRange.values().length ? TimeRange.values()[index] : TimeRange.ALL;
+        return timeSelector.getSelected();
     }
 
     /**
@@ -223,7 +152,7 @@ class AppointmentQuery extends ScheduleServiceQuery {
      * @param range the time range
      */
     public void setTimeRange(TimeRange range) {
-        timeSelector.setSelectedIndex(range.ordinal());
+        timeSelector.setSelected(range);
     }
 
     /**
@@ -405,21 +334,12 @@ class AppointmentQuery extends ScheduleServiceQuery {
     }
 
     /**
-     * Creates a seletor for the time range.
+     * Creates a selector for the time range.
      *
      * @return a new selector
      */
-    private SelectField createTimeSelector() {
-        // the order of the items must correspond to the order of TimeRange values.
-        String[] timeSelectorItems = {
-                Messages.get("workflow.scheduling.time.all"),
-                Messages.get("workflow.scheduling.time.morning"),
-                Messages.get("workflow.scheduling.time.afternoon"),
-                Messages.get("workflow.scheduling.time.evening"),
-                Messages.get("workflow.scheduling.time.AM"),
-                Messages.get("workflow.scheduling.time.PM")};
-
-        SelectField field = SelectFieldFactory.create(timeSelectorItems);
+    private TimeRangeSelector createTimeSelector() {
+        TimeRangeSelector field = new TimeRangeSelector();
         String select = getPreferences().getString(PreferenceArchetypes.SCHEDULING, "time", "ALL");
         DateTime now = new DateTime();
         TimeRange range;
@@ -433,11 +353,7 @@ class AppointmentQuery extends ScheduleServiceQuery {
             default:
                 range = TimeRange.ALL;
         }
-        int index = range.ordinal();
-        if (index > timeSelectorItems.length) {
-            index = 0;
-        }
-        field.setSelectedItem(timeSelectorItems[index]);
+        field.setSelected(range);
         field.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 onQuery();

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -27,15 +27,14 @@ import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.query.AbstractBrowser;
 import org.openvpms.web.component.im.query.BrowserListener;
-import org.openvpms.web.component.im.query.QueryListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.event.ActionListener;
@@ -44,6 +43,7 @@ import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.table.Cell;
 import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.echo.util.DoubleClickMonitor;
 
@@ -126,11 +126,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     public ScheduleBrowser(ScheduleServiceQuery query, Context context) {
         this.query = query;
         this.context = context;
-        query.setListener(new QueryListener() {
-            public void query() {
-                onQuery();
-            }
-        });
+        query.setListener(this::onQuery);
     }
 
     /**

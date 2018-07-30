@@ -138,10 +138,10 @@ public class ProductEditor extends AbstractIMObjectEditor {
                     return editor;
                 }
             };
-            getEditors().add(stockLocations);
+            addEditor(stockLocations);
         }
         if (locations != null) {
-            getEditors().add(new ProductLocationCollectionEditor(locations, object, getLayoutContext()));
+            addEditor(new ProductLocationCollectionEditor(locations, object, getLayoutContext()));
         }
         updater = new ProductPriceUpdater(ServiceHelper.getBean(ProductPriceRules.class),
                                           ServiceHelper.getBean(PracticeRules.class),

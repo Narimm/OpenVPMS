@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.factory;
@@ -53,6 +53,20 @@ public final class TableFactory extends ComponentFactory {
         table.setModel(model);
         table.setStyleName(styleName);
         return table;
+    }
+
+    /**
+     * Helper to create a layout with the row and column span set.
+     *
+     * @param column the column span
+     * @param row    the row span
+     * @return a new layout data
+     */
+    public static LayoutData span(int column, int row) {
+        TableLayoutDataEx layout = new TableLayoutDataEx();
+        layout.setColSpan(column);
+        layout.setRowSpan(row);
+        return layout;
     }
 
     /**

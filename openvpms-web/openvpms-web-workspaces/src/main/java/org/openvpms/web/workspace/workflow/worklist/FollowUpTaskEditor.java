@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
@@ -35,8 +35,6 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.component.property.Modifiable;
-import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -74,16 +72,11 @@ public class FollowUpTaskEditor extends AbstractTaskActEditor {
         super(act, null, context);
         this.workLists = new ArrayList<>(workLists); // copy as these will be ordered alphabetically
         workListEditor = createWorkListEditor();
-        getEditors().add(workListEditor);
+        addEditor(workListEditor);
         initWorkList();
 
         setStartTime(new Date());
-        workListEditor.addModifiableListener(new ModifiableListener() {
-            @Override
-            public void modified(Modifiable modifiable) {
-                onWorkListChanged();
-            }
-        });
+        workListEditor.addModifiableListener(modifiable -> onWorkListChanged());
     }
 
     /**

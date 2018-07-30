@@ -11,16 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.sms;
 
 import org.apache.commons.jxpath.JXPathContext;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.macro.Macros;
 import org.openvpms.web.component.app.Context;
@@ -28,11 +28,11 @@ import org.openvpms.web.component.macro.MacroVariables;
 
 /**
  * Evaluates an SMS template.
- * <p/>
+ * <p>
  * This supports <em>entity.documentTemplateSMS*</em> templates, which may be macros, xpath expressions, or plain text.
  * <br/>
  * For macros and xpath expressions, a {@link Context} may be provided to make objects available as variables.
- * <p/>
+ * <p>
  * For xpath expressions, a {@code $nl} variable containing a new line is defined to make multi-line SMS generation
  * simpler.
  *

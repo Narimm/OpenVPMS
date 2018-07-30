@@ -16,6 +16,8 @@
 
 package org.openvpms.web.workspace.customer;
 
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
@@ -28,6 +30,9 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.web.component.bound.BoundTextComponentFactory;
+import org.openvpms.web.component.edit.AbstractPropertyEditor;
+import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
 import org.openvpms.web.component.im.edit.act.TemplateProduct;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -35,12 +40,19 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.product.FixedPriceEditor;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.view.ComponentState;
+import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.echo.button.CheckBox;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.CheckBoxFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.charge.PriceActEditContext;
 
@@ -59,6 +71,31 @@ import static org.openvpms.archetype.rules.product.ProductArchetypes.MERCHANDISE
 public abstract class PriceActItemEditor extends ActItemEditor {
 
     /**
+     * The service ratio node name.
+     */
+    protected static final String SERVICE_RATIO = "serviceRatio";
+
+    /**
+     * The edit context.
+     */
+    private final PriceActEditContext editContext;
+
+    /**
+     * The service ratio editor.
+     */
+    private final ServiceRatioEditor serviceRatioEditor;
+
+    /**
+     * Listener for service ratio updates.
+     */
+    private final ModifiableListener serviceRatioListener;
+
+    /**
+     * The available service ratio, or {@code null} if no service ratio is available.
+     */
+    private BigDecimal availableServiceRatio;
+
+    /**
      * Fixed price node editor.
      */
     private FixedPriceEditor fixedEditor;
@@ -67,11 +104,6 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * The unit price.
      */
     private ProductPrice unitProductPrice;
-
-    /**
-     * The edit context.
-     */
-    private final PriceActEditContext editContext;
 
     /**
      * Minimum quantity node name.
@@ -94,8 +126,16 @@ public abstract class PriceActItemEditor extends ActItemEditor {
         Product product = getProduct();
         Property fixedPrice = getProperty("fixedPrice");
 
+        availableServiceRatio = getServiceRatio(product);
         fixedEditor = new FixedPriceEditor(fixedPrice, context.getPricingContext());
-        fixedEditor.setProduct(product);
+        fixedEditor.setProduct(product, getServiceRatio());
+        Property serviceRatio = getProperty(SERVICE_RATIO);
+        serviceRatioEditor = new ServiceRatioEditor(serviceRatio);
+        serviceRatioListener = modifiable -> serviceRatioModified();
+        serviceRatio.addModifiableListener(serviceRatioListener);
+
+        addEditor(fixedEditor);
+        addEditor(serviceRatioEditor);
     }
 
     /**
@@ -126,8 +166,35 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     }
 
     /**
+     * Returns the service ratio.
+     *
+     * @return the service ratio, or {@code null} if none is applied.
+     */
+    public BigDecimal getServiceRatio() {
+        return getProperty(SERVICE_RATIO).getBigDecimal();
+    }
+
+    /**
+     * Sets the service ratio.
+     *
+     * @param serviceRatio the service ratio. May be {@code null}
+     */
+    public void setServiceRatio(BigDecimal serviceRatio) {
+        getProperty(SERVICE_RATIO).setValue(serviceRatio);
+    }
+
+    /**
+     * Returns the available service ratio.
+     *
+     * @return the available service ratio, or {@code null} if none is available.
+     */
+    public BigDecimal getAvailableServiceRatio() {
+        return availableServiceRatio;
+    }
+
+    /**
      * Sets a product included from a template.
-     * <p/>
+     * <p>
      * This updates the minimum quantity to that of the low quantity from the template.
      *
      * @param product  the product. May be {@code null}
@@ -178,10 +245,10 @@ public abstract class PriceActItemEditor extends ActItemEditor {
 
     /**
      * Save any edits.
-     * <p/>
+     * <p>
      * This implementation saves the current object before children, to ensure deletion of child acts
      * don't result in StaleObjectStateException exceptions.
-     * <p/>
+     * <p>
      * This implementation will throw an exception if the product is an <em>product.template</em>.
      * Ideally, the act would be flagged invalid if this is the case, but template expansion only works for valid
      * acts. TODO
@@ -208,11 +275,19 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     @Override
     protected void productModified(Product product) {
         super.productModified(product);
+        BigDecimal serviceRatio = updateServiceRatio(product);
         if (!TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
-            fixedEditor.setProduct(product);
+            fixedEditor.setProduct(product, serviceRatio);
         } else {
-            fixedEditor.setProduct(null);
+            fixedEditor.setProduct(null, serviceRatio);
         }
+    }
+
+    /**
+     * Invoked when the service ratio is modified.
+     */
+    protected void serviceRatioModified() {
+        fixedEditor.setServiceRatio(getServiceRatio());
     }
 
     /**
@@ -222,17 +297,19 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      */
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        return createLayoutStrategy(fixedEditor);
+        return createLayoutStrategy(fixedEditor, serviceRatioEditor);
     }
 
     /**
      * Creates the layout strategy.
      *
-     * @param fixedPrice the fixed price editor
+     * @param fixedPrice         the fixed price editor
+     * @param serviceRatioEditor the service ratio editor
      * @return a new layout strategy
      */
-    protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice) {
-        return new PriceItemLayoutStrategy(fixedPrice);
+    protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice,
+                                                          ServiceRatioEditor serviceRatioEditor) {
+        return new PriceItemLayoutStrategy(fixedPrice, serviceRatioEditor);
     }
 
     /**
@@ -347,7 +424,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
 
     /**
      * Calculates the discount amount, updating the 'discount' node.
-     * <p/>
+     * <p>
      * If discounts are disabled, any existing discount will be set to {@code 0}.
      *
      * @return {@code true} if the discount was updated
@@ -431,7 +508,7 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      */
     protected ProductPrice getFixedProductPrice(Product product) {
         ProductPrice result = fixedEditor.getProductPrice();
-        result = getProductPrice(product, ProductArchetypes.FIXED_PRICE, result, getFixedPrice());
+        result = getProductPrice(product, ProductArchetypes.FIXED_PRICE, result, getFixedPrice(), getServiceRatio());
         fixedEditor.setProductPrice(result);
         return result;
     }
@@ -453,24 +530,26 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * @return the product price, or {@code null} if none is found
      */
     protected ProductPrice getUnitProductPrice(Product product) {
-        unitProductPrice = getProductPrice(product, ProductArchetypes.UNIT_PRICE, unitProductPrice, getUnitPrice());
+        unitProductPrice = getProductPrice(product, ProductArchetypes.UNIT_PRICE, unitProductPrice, getUnitPrice(),
+                                           getServiceRatio());
         return unitProductPrice;
     }
 
     /**
      * Returns the price of a product.
-     * <p/>
+     * <p>
      * This:
      * <ul>
      * <li>applies any service ratio to the price</li>
      * <li>subtracts any tax exclusions the customer may have</li>
      * </ul>
      *
-     * @param price the price
+     * @param price        the price
+     * @param serviceRatio the service ratio. May be {@code null}
      * @return the price, minus any tax exclusions
      */
-    protected BigDecimal getPrice(Product product, ProductPrice price) {
-        return editContext.getPrice(product, price);
+    protected BigDecimal getPrice(Product product, ProductPrice price, BigDecimal serviceRatio) {
+        return editContext.getPrice(product, price, serviceRatio);
     }
 
     /**
@@ -487,6 +566,22 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     }
 
     /**
+     * Updates the service ratio.
+     *
+     * @param product the product. May be {@code null}
+     * @return the service ratio. May be {@code null}
+     */
+    protected BigDecimal updateServiceRatio(Product product) {
+        BigDecimal serviceRatio = getServiceRatio(product);
+        availableServiceRatio = serviceRatio;
+        Property property = getProperty(SERVICE_RATIO);
+        property.removeModifiableListener(serviceRatioListener);
+        property.setValue(serviceRatio);
+        property.addModifiableListener(serviceRatioListener);
+        return serviceRatio;
+    }
+
+    /**
      * Helper to move the focus to the product editor.
      */
     protected void moveFocusToProduct() {
@@ -500,44 +595,17 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     }
 
     /**
-     * Helper to return a product price for a product.
-     *
-     * @param product   the product
-     * @param shortName the product price archetype short name
-     * @param current   the current product price. May be {@code null}
-     * @param price     the current price
-     * @return {@code current} if it matches the specified product and price;
-     * or the first matching product price associated with the product,
-     * or {@code null} if none is found
-     */
-    private ProductPrice getProductPrice(Product product, String shortName, ProductPrice current, BigDecimal price) {
-        ProductPrice result = null;
-        if (current != null && current.getProduct().equals(product)) {
-            BigDecimal defaultValue = getPrice(product, current);
-            if (price.compareTo(defaultValue) == 0) {
-                result = current;
-            }
-        }
-        if (result == null) {
-            if (price.compareTo(BigDecimal.ZERO) == 0) {
-                result = getProductPrice(shortName, product);
-            } else {
-                result = getProductPrice(shortName, price, product);
-            }
-        }
-        return result;
-    }
-
-    /**
      * Returns the first product price with the specified short name and price, active as of the date.
      *
-     * @param shortName the price short name
-     * @param price     the tax-inclusive price
-     * @param product   the product
+     * @param shortName    the price short name
+     * @param price        the tax-inclusive price
+     * @param serviceRatio the service ratio, or {@link BigDecimal#ONE} if no ratio applies
+     * @param product      the product
      * @return the product price, or {@code null} if none is found
      */
-    protected ProductPrice getProductPrice(String shortName, BigDecimal price, Product product) {
-        return editContext.getPricingContext().getProductPrice(shortName, price, product, getStartTime());
+    protected ProductPrice getProductPrice(String shortName, BigDecimal price, BigDecimal serviceRatio,
+                                           Product product) {
+        return editContext.getPricingContext().getProductPrice(shortName, price, serviceRatio, product, getStartTime());
     }
 
     /**
@@ -607,20 +675,76 @@ public abstract class PriceActItemEditor extends ActItemEditor {
     }
 
     /**
+     * Returns the service ratio for a product.
+     *
+     * @param product the product. May be {@code null}
+     * @return the service ratio, or {@code null} if none exists
+     */
+    protected BigDecimal getServiceRatio(Product product) {
+        BigDecimal result = null;
+        if (product != null) {
+            result = editContext.getPricingContext().getServiceRatio(product, getStartTime());
+            if (result != null && result.compareTo(BigDecimal.ONE) == 0) {
+                // ignore serviceRatio == 1
+                result = null;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Determines if the service ratio should be displayed.
+     *
+     * @return {@code true} if the service ratio should be displayed
+     */
+    protected boolean showServiceRatio() {
+        return getServiceRatio() != null || getAvailableServiceRatio() != null;
+    }
+
+    /**
+     * Helper to return a product price for a product.
+     *
+     * @param product      the product
+     * @param shortName    the product price archetype short name
+     * @param current      the current product price. May be {@code null}
+     * @param price        the current price
+     * @param serviceRatio the service ratio, or {@link BigDecimal#ONE} if no ratio applies
+     * @return {@code current} if it matches the specified product and price;
+     * or the first matching product price associated with the product,
+     * or {@code null} if none is found
+     */
+    private ProductPrice getProductPrice(Product product, String shortName, ProductPrice current, BigDecimal price,
+                                         BigDecimal serviceRatio) {
+        ProductPrice result = null;
+        if (current != null && current.getProduct().equals(product)) {
+            BigDecimal defaultValue = getPrice(product, current, serviceRatio);
+            if (price.compareTo(defaultValue) == 0) {
+                result = current;
+            }
+        }
+        if (result == null) {
+            if (price.compareTo(BigDecimal.ZERO) == 0) {
+                result = getProductPrice(shortName, product);
+            } else {
+                result = getProductPrice(shortName, price, serviceRatio, product);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Layout strategy that includes the fixed price editor.
      */
     protected class PriceItemLayoutStrategy extends LayoutStrategy {
 
-        public PriceItemLayoutStrategy(FixedPriceEditor editor) {
-            addComponent(new ComponentState(fixedEditor.getComponent(), fixedEditor.getProperty(),
-                                            fixedEditor.getFocusGroup()));
-            // need to register the editor
-            getEditors().add(editor);
+        public PriceItemLayoutStrategy(FixedPriceEditor editor, PropertyEditor serviceRatio) {
+            addComponent(new ComponentState(editor));
+            addComponent(new ComponentState(serviceRatio));
         }
 
         /**
          * Apply the layout strategy.
-         * <p/>
+         * <p>
          * This renders an object in a {@code Component}, using a factory to create the child components.
          *
          * @param object     the object to apply
@@ -635,6 +759,75 @@ public abstract class PriceActItemEditor extends ActItemEditor {
                 addComponent(createComponent(createReadOnly(properties.get(PRODUCT)), parent, context));
             }
             return super.apply(object, properties, parent, context);
+        }
+    }
+
+    protected class ServiceRatioEditor extends AbstractPropertyEditor {
+
+        private final TextField field;
+
+        private final CheckBox apply;
+
+        private final Component component;
+
+        private final FocusGroup group = new FocusGroup(ServiceRatioEditor.class.getSimpleName());
+
+        private final ModifiableListener listener;
+
+        /**
+         * Constructs an {@link AbstractPropertyEditor}.
+         *
+         * @param property the property being edited
+         */
+        public ServiceRatioEditor(Property property) {
+            super(property);
+            field = BoundTextComponentFactory.createNumeric(property, 10);
+            field.setEnabled(false);
+            field.setStyleName(Styles.EDIT);
+            apply = CheckBoxFactory.create(hasRatio());
+            listener = modifiable -> onRatioChanged();
+            property.addModifiableListener(listener);
+            apply.addActionListener(new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    property.removeModifiableListener(listener);
+                    if (apply.isSelected()) {
+                        property.setValue(getAvailableServiceRatio());
+                    } else {
+                        property.setValue(null);
+                    }
+                    property.addModifiableListener(listener);
+                }
+            });
+            component = RowFactory.create(Styles.CELL_SPACING, field, apply);
+        }
+
+        /**
+         * Returns the edit component.
+         *
+         * @return the edit component
+         */
+        @Override
+        public Component getComponent() {
+            return component;
+        }
+
+        /**
+         * Returns the focus group.
+         *
+         * @return the focus group, or {@code null} if the editor hasn't been rendered
+         */
+        @Override
+        public FocusGroup getFocusGroup() {
+            return group;
+        }
+
+        private void onRatioChanged() {
+            apply.setSelected(hasRatio());
+        }
+
+        private boolean hasRatio() {
+            return getProperty().getBigDecimal(BigDecimal.ONE).compareTo(BigDecimal.ONE) != 0;
         }
     }
 

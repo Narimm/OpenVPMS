@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -52,6 +52,21 @@ import java.util.Date;
 public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> {
 
     /**
+     * The user preferences.
+     */
+    private final Preferences preferences;
+
+    /**
+     * The scheduling preference group.
+     */
+    private final String preferenceGroup;
+
+    /**
+     * Monitors changes to scheduling preferences.
+     */
+    private final PreferenceMonitor monitor;
+
+    /**
      * The workspace.
      */
     private Component workspace;
@@ -77,23 +92,8 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
     private ContextListener locationListener;
 
     /**
-     * The user preferences.
-     */
-    private final Preferences preferences;
-
-    /**
-     * The scheduling preference group.
-     */
-    private final String preferenceGroup;
-
-    /**
-     * Monitors changes to scheduling preferences.
-     */
-    private final PreferenceMonitor monitor;
-
-    /**
      * Constructs a {@code SchedulingWorkspace}.
-     * <p/>
+     * <p>
      * If no archetypes are supplied, the {@link #setArchetypes} method must before performing any operations.
      *
      * @param id              the workspace identifier
@@ -165,7 +165,7 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
 
     /**
      * Invoked when user preferences have changed.
-     * <p/>
+     * <p>
      * This updates the workspace if scheduling preferences have changed.
      */
     @Override
@@ -436,9 +436,9 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
 
     /**
      * Invoked when events are queried.
-     * <p/>
+     * <p>
      * Should be overridden to update the global context.
-     * <p/>
+     * <p>
      * This implementation refreshes the summary.
      */
     protected void onQuery() {
@@ -454,7 +454,7 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
         Entity latest = getLatest();
         if (browser == null || !ObjectUtils.equals(location, getContext().getLocation())) {
             layoutWorkspace();
-            latest = browser.getScheduleView();
+            latest = (Entity) browser.getScheduleView();
             setObject(latest);
         } else if (latest != getObject()) {
             setObject(latest);

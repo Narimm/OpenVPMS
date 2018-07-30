@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -21,6 +19,7 @@ package org.openvpms.component.system.common.query;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.object.Reference;
 
 
 /**
@@ -31,7 +30,6 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
  * {@link ArchetypeId#getShortName()} is used to constrain the node.
  *
  * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate$
  */
 public class ObjectRefNodeConstraint extends AbstractNodeConstraint {
 
@@ -48,8 +46,7 @@ public class ObjectRefNodeConstraint extends AbstractNodeConstraint {
      * @param nodeName  the name of the node descriptor
      * @param reference the object reference
      */
-    public ObjectRefNodeConstraint(String nodeName,
-                                   IMObjectReference reference) {
+    public ObjectRefNodeConstraint(String nodeName, Reference reference) {
         this(nodeName, RelationalOp.EQ, reference);
     }
 
@@ -61,8 +58,7 @@ public class ObjectRefNodeConstraint extends AbstractNodeConstraint {
      * @param operator  the operator
      * @param reference the object reference
      */
-    public ObjectRefNodeConstraint(String nodeName, RelationalOp operator,
-                                   IMObjectReference reference) {
+    public ObjectRefNodeConstraint(String nodeName, RelationalOp operator, Reference reference) {
         super(nodeName, operator, new Object[]{reference});
     }
 
@@ -96,9 +92,9 @@ public class ObjectRefNodeConstraint extends AbstractNodeConstraint {
      * @return the object reference, or <tt>null</tt> if this was constructed
      *         with an archetype id.
      */
-    public IMObjectReference getObjectReference() {
-        if (getParameters()[0] instanceof IMObjectReference) {
-            return (IMObjectReference) getParameters()[0];
+    public Reference getObjectReference() {
+        if (getParameters()[0] instanceof Reference) {
+            return (Reference) getParameters()[0];
         }
         return null;
     }

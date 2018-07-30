@@ -66,7 +66,7 @@ public class PreferencesEditor extends AbstractIMObjectEditor {
         this.source = source;
         groups = new PreferenceGroupCollectionEditor(getCollectionProperty("groups"), (Entity) getObject(),
                                                      getLayoutContext());
-        getEditors().add(groups);
+        addEditor(groups);
     }
 
     /**

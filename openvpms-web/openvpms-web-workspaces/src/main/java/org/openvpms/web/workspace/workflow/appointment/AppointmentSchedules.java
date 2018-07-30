@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -20,16 +20,20 @@ import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
 import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.business.domain.im.common.SequencedRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.bean.Policies;
+import org.openvpms.component.model.bean.Policy;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.scheduling.AbstractSchedules;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -63,7 +67,7 @@ public class AppointmentSchedules extends AbstractSchedules {
 
     /**
      * Returns the schedule views.
-     * <p/>
+     * <p>
      * This returns the <em>entity.organisationScheduleView</em> entities for the current location.
      *
      * @return the schedule views
@@ -71,7 +75,8 @@ public class AppointmentSchedules extends AbstractSchedules {
     @Override
     public List<Entity> getScheduleViews() {
         Party location = getLocation();
-        return (location != null) ? getLocationRules().getScheduleViews(location) : Collections.<Entity>emptyList();
+        return (location != null) ? new ArrayList<>(getLocationRules().getScheduleViews(location))
+                                  : Collections.<Entity>emptyList();
     }
 
     /**
@@ -97,7 +102,7 @@ public class AppointmentSchedules extends AbstractSchedules {
 
     /**
      * Returns the default schedule view.
-     * <p/>
+     * <p>
      * This uses the one from preferences if applicable, falling back to the default for the location if not.
      *
      * @param views the available schedule views
@@ -123,8 +128,12 @@ public class AppointmentSchedules extends AbstractSchedules {
      */
     @Override
     public List<Entity> getSchedules(Entity view) {
-        EntityBean bean = new EntityBean(view);
-        return bean.getNodeTargetEntities("schedules", SequenceComparator.INSTANCE);
+        IMObjectBean bean = ServiceHelper.getArchetypeService().getBean(view);
+
+        // return active schedules in sequence order
+        Policy<SequencedRelationship> policy = Policies.active(SequencedRelationship.class,
+                                                               SequenceComparator.INSTANCE);
+        return bean.getTargets("schedules", Entity.class, policy);
     }
 
     /**

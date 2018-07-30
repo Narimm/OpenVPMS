@@ -90,6 +90,8 @@
                 <errorMessage>Value must be >= 0.0</errorMessage>
             </assertion-->
         </node>
+        <node name="serviceRatio" path="/details/serviceRatio" type="java.math.BigDecimal" minCardinality="0"
+              readOnly="true" hidden="true"/>
         <node name="print" path="/details/print" type="java.lang.Boolean" minCardinality="0" defaultValue="true()"
               hidden="true"/>
         <node name="tax" path="/taxAmount"

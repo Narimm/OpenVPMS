@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -19,9 +19,9 @@ package org.openvpms.web.workspace.customer;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -62,16 +62,16 @@ public class StockOnHand {
 
     /**
      * Returns the stock available for an act.
-     * <p/>
+     * <p>
      * This uses the on-hand quantity, excluding any uncommitted changes.
      *
      * @param act the act
      * @return the available stock, or {@code null} if the act doesn't have a stock location and product
      */
     public BigDecimal getAvailableStock(FinancialAct act) {
-        ActBean bean = new ActBean(act);
-        IMObjectReference product = bean.getNodeParticipantRef("product");
-        IMObjectReference stockLocation = bean.getNodeParticipantRef("stockLocation");
+        IMObjectBean bean = ServiceHelper.getArchetypeService().getBean(act);
+        Reference product = bean.getTargetRef("product");
+        Reference stockLocation = bean.getTargetRef("stockLocation");
         State state = getState(act);
         Key key = null;
         if (product != null && stockLocation != null) {
@@ -96,14 +96,14 @@ public class StockOnHand {
 
     /**
      * Returns the stock for a product and stock location.
-     * <p/>
+     * <p>
      * This returns the on-hand quantity, ignoring any uncommitted changes.
      *
      * @param product       the product
      * @param stockLocation the stock location
      * @return the on-hand stock
      */
-    public BigDecimal getStock(IMObjectReference product, IMObjectReference stockLocation) {
+    public BigDecimal getStock(Reference product, Reference stockLocation) {
         Key key = new Key(product, stockLocation);
         Stock stock = getStock(key);
         return stock.getStock();
@@ -111,7 +111,7 @@ public class StockOnHand {
 
     /**
      * Removes an act.
-     * <p/>
+     * <p>
      * Any stock it used or returned will no longer be included in stock calculations.
      *
      * @param act the act to remove
@@ -169,14 +169,11 @@ public class StockOnHand {
      */
     private static class Key {
 
-        private IMObjectReference product;
-        private IMObjectReference stockLocation;
+        private Reference product;
 
-        public Key(Product product, IMObjectReference stockLocation) {
-            this(product.getObjectReference(), stockLocation);
-        }
+        private Reference stockLocation;
 
-        public Key(IMObjectReference product, IMObjectReference stockLocation) {
+        public Key(Reference product, Reference stockLocation) {
             this.product = product;
             this.stockLocation = stockLocation;
         }
@@ -200,6 +197,7 @@ public class StockOnHand {
 
     private static class State {
         private final FinancialAct act;
+
         private BigDecimal saved;
 
         private Key key;
@@ -290,7 +288,7 @@ public class StockOnHand {
 
         /**
          * Returns the available stock.
-         * <p/>
+         * <p>
          * This is the stock minus uncommitted changes
          *
          * @return the available stock

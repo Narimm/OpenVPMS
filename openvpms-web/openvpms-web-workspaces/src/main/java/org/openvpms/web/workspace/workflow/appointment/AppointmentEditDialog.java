@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -33,6 +33,7 @@ import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,13 +45,16 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class AppointmentEditDialog extends CalendarEventEditDialog {
+public class AppointmentEditDialog extends AbstractCalendarEventEditDialog {
 
     /**
      * The customer.
      */
     private Party customer;
 
+    /**
+     * The maximum number of overlaps to query.
+     */
     private static final int MAX_OVERLAPS = 25;
 
     /**
@@ -59,7 +63,7 @@ public class AppointmentEditDialog extends CalendarEventEditDialog {
      * @param editor  the editor
      * @param context the context
      */
-    public AppointmentEditDialog(CalendarEventEditor editor, Context context) {
+    public AppointmentEditDialog(AbstractCalendarEventEditor editor, Context context) {
         super(editor, context);
     }
 
@@ -101,11 +105,11 @@ public class AppointmentEditDialog extends CalendarEventEditDialog {
     @Override
     protected boolean checkEventTimes(List<Times> times, final boolean close) {
         boolean result = true;
-        CalendarEventEditor editor = getEditor();
-        Entity schedule = editor.getSchedule();
+        AbstractCalendarEventEditor editor = getEditor();
+        Entity schedule = (Entity) editor.getSchedule();
         Party customer = editor.getCustomer();
         if (schedule != null && customer != null) {
-            AppointmentService service = getService();
+            AppointmentService service = ServiceHelper.getBean(AppointmentService.class);
             OverlappingEvents overlaps = service.getOverlappingEvents(times, schedule, MAX_OVERLAPS + 1);
             if (overlaps != null) {
                 if (!overlaps.allowDoubleBooking() && overlaps.getFirstAppointment() != null) {

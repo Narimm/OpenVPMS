@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -21,9 +21,8 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.util.PropertySet;
 
@@ -36,7 +35,7 @@ import java.util.List;
 
 /**
  * Event schedule.
- * <p/>
+ * <p>
  * This supports non-blocking and block events, with the following restrictions:
  * <ul>
  * <li>events must be ordered on ascending start time</li>
@@ -56,26 +55,6 @@ public class Schedule {
      * The cage type.
      */
     private final Entity cageType;
-
-    /**
-     * The schedule start time, as minutes since midnight.
-     */
-    private int startMins;
-
-    /**
-     * The schedule end time, as minutes since midnight.
-     */
-    private int endMins;
-
-    /**
-     * The schedule slot size, in minutes.
-     */
-    private int slotSize;
-
-    /**
-     * Determines if the even or odd rendering style should be used.
-     */
-    private boolean renderEven = true;
 
     /**
      * All events.
@@ -101,6 +80,26 @@ public class Schedule {
      * The comparator to detect intersecting events.
      */
     private final Comparator<PropertySet> intersectComparator;
+
+    /**
+     * The schedule start time, as minutes since midnight.
+     */
+    private int startMins;
+
+    /**
+     * The schedule end time, as minutes since midnight.
+     */
+    private int endMins;
+
+    /**
+     * The schedule slot size, in minutes.
+     */
+    private int slotSize;
+
+    /**
+     * Determines if the even or odd rendering style should be used.
+     */
+    private boolean renderEven = true;
 
     /**
      * Constructs a {@link Schedule}.
@@ -160,7 +159,7 @@ public class Schedule {
 
     /**
      * Creates a schedule from an existing schedule.
-     * <p/>
+     * <p>
      * Only the blocking events are copied.
      *
      * @param source the source schedule
@@ -254,7 +253,7 @@ public class Schedule {
      * @param event the event reference
      * @return the event, or {@code null} if it is not found
      */
-    public PropertySet getEvent(IMObjectReference event) {
+    public PropertySet getEvent(Reference event) {
         int index = indexOf(event);
         return (index != -1) ? events.get(index) : null;
     }
@@ -265,13 +264,13 @@ public class Schedule {
      * @param event the event reference
      * @return the index, or {@code -1} if the event is not found
      */
-    public int indexOf(IMObjectReference event) {
+    public int indexOf(Reference event) {
         return indexOf(event, events);
     }
 
     /**
      * Returns the first event starting after that specified.
-     * <p/>
+     * <p>
      * This excludes blocking events.
      *
      * @param event     the event
@@ -298,7 +297,7 @@ public class Schedule {
 
     /**
      * Determines if the schedule has an event that intersects the specified event.
-     * <p/>
+     * <p>
      * This excludes blocking events.
      *
      * @param event the event
@@ -310,7 +309,7 @@ public class Schedule {
 
     /**
      * Returns the event starting at the specified time.
-     * <p/>
+     * <p>
      * This returns non-blocking events in preference to blocking ones.
      *
      * @param time     the time
@@ -380,7 +379,8 @@ public class Schedule {
      * @return {@code true} if the event is a blocking event
      */
     public static boolean isBlockingEvent(PropertySet event) {
-        return TypeHelper.isA(event.getReference(ScheduleEvent.ACT_REFERENCE), ScheduleArchetypes.CALENDAR_BLOCK);
+        Reference reference = event.getReference(ScheduleEvent.ACT_REFERENCE);
+        return reference.isA(ScheduleArchetypes.CALENDAR_BLOCK);
     }
 
     /**
@@ -390,7 +390,7 @@ public class Schedule {
      * @param list  the events to search
      * @return the index, or {@code -1} if the event is not found
      */
-    protected int indexOf(IMObjectReference event, List<PropertySet> list) {
+    protected int indexOf(Reference event, List<PropertySet> list) {
         for (int i = 0; i < list.size(); ++i) {
             PropertySet set = list.get(i);
             if (ObjectUtils.equals(event, set.getReference(ScheduleEvent.ACT_REFERENCE))) {
@@ -402,7 +402,7 @@ public class Schedule {
 
     /**
      * Returns an event.
-     * <p/>
+     * <p>
      * This returns non-blocking events in preference to blocking ones.
      *
      * @param time                  the time to search for

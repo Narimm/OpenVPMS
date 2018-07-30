@@ -17,16 +17,15 @@
 package org.openvpms.web.component.im.table;
 
 import nextapp.echo2.app.CheckBox;
-import nextapp.echo2.app.table.AbstractTableModel;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.echo.table.AbstractTableModel;
 import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.echo.text.TextHelper;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 
@@ -36,31 +35,6 @@ import java.util.List;
  * @author Tim Anderson
  */
 public abstract class AbstractIMTableModel<T> extends AbstractTableModel implements IMTableModel<T> {
-
-    /**
-     * The column model.
-     */
-    private TableColumnModel model;
-
-    /**
-     * The objects.
-     */
-    private List<T> objects = new ArrayList<>();
-
-    /**
-     * The default sort column, or {@code -1} if there is no default.
-     */
-    private int defaultSortColumn = -1;
-
-    /**
-     * Determines if the default sort column should sort ascending or descending.
-     */
-    private boolean defaultSortAscending = true;
-
-    /**
-     * Determines if selection should be enabled.
-     */
-    private boolean enableSelection = true;
 
     /**
      * ID column localisation key.
@@ -87,6 +61,26 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel impleme
      */
     protected static final String ACTIVE = "table.imobject.active";
 
+    /**
+     * The objects.
+     */
+    private List<T> objects = new ArrayList<>();
+
+    /**
+     * The default sort column, or {@code -1} if there is no default.
+     */
+    private int defaultSortColumn = -1;
+
+    /**
+     * Determines if the default sort column should sort ascending or descending.
+     */
+    private boolean defaultSortAscending = true;
+
+    /**
+     * Determines if selection should be enabled.
+     */
+    private boolean enableSelection = true;
+
 
     /**
      * Constructs an {@link AbstractIMTableModel}.
@@ -100,28 +94,7 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel impleme
      * @param model the column model
      */
     public AbstractIMTableModel(TableColumnModel model) {
-        this.model = model;
-    }
-
-    /**
-     * Returns the number of columns in the table.
-     *
-     * @return the column count
-     */
-    public int getColumnCount() {
-        return model.getColumnCount();
-    }
-
-    /**
-     * Returns the name of the specified column number.
-     *
-     * @param column the column index (0-based)
-     * @return the column name
-     */
-    public String getColumnName(int column) {
-        TableColumn col = getColumn(column);
-        Object value = col.getHeaderValue();
-        return (value != null) ? value.toString() : null;
+        super(model);
     }
 
     /**
@@ -163,15 +136,6 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel impleme
     }
 
     /**
-     * Returns the column model.
-     *
-     * @return the column model
-     */
-    public TableColumnModel getColumnModel() {
-        return model;
-    }
-
-    /**
      * Returns the value found at the given coordinate within the table. Column
      * and row values are 0-based. <strong>WARNING: Take note that the column is
      * the first parameter passed to this method, and the row is the second
@@ -181,12 +145,23 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel impleme
      * @param row    the row index (0-based)
      */
     public Object getValueAt(int column, int row) {
-        T object = getObject(row);
         TableColumn col = getColumn(column);
         if (col == null) {
             throw new IllegalArgumentException("Illegal column=" + column);
         }
-        Object result = getValue(object, col, row);
+        return getValueAt(col, row);
+    }
+
+    /**
+     * Returns the value at the specified column and row.
+     *
+     * @param column the column
+     * @param row    the row
+     * @return the value
+     */
+    public Object getValueAt(TableColumn column, int row) {
+        T object = getObject(row);
+        Object result = getValue(object, column, row);
         if (result instanceof String) {
             String str = (String) result;
             if (TextHelper.hasControlChars(str)) {
@@ -233,7 +208,7 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel impleme
 
     /**
      * Determines if selection should be enabled.
-     * <p/>
+     * <p>
      * This implementation defaults to {@code true}.
      *
      * @return {@code true} if selection should be enabled; otherwise {@code false}
@@ -254,7 +229,7 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel impleme
 
     /**
      * Notifies the table to refresh.
-     * <p/>
+     * <p>
      * This can be used to refresh the table if properties of objects held by the model have changed.
      */
     public void refresh() {
@@ -276,16 +251,6 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel impleme
     }
 
     /**
-     * Sets the column model.
-     *
-     * @param model the column model
-     */
-    protected void setTableColumnModel(TableColumnModel model) {
-        this.model = model;
-        fireTableStructureChanged();
-    }
-
-    /**
      * Returns the value found at the given coordinate within the table.
      *
      * @param object the object
@@ -296,48 +261,15 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel impleme
     protected abstract Object getValue(T object, TableColumn column, int row);
 
     /**
-     * Returns a column given its model index.
-     *
-     * @param column the column index
-     * @return the column
-     */
-    protected TableColumn getColumn(int column) {
-        TableColumn result = null;
-        Iterator iterator = model.getColumns();
-        while (iterator.hasNext()) {
-            TableColumn col = (TableColumn) iterator.next();
-            if (col.getModelIndex() == column) {
-                result = col;
-                break;
-            }
-        }
-        return result;
-    }
-
-    /**
      * Returns a column offset given its model index.
      *
      * @param model  the model
      * @param column the column index
      * @return the column offset, or {@code -1} if a column with the
-     *         specified index doesn't exist
+     * specified index doesn't exist
      */
     protected int getColumnOffset(TableColumnModel model, int column) {
         return TableHelper.getColumnOffset(model, column);
-    }
-
-    /**
-     * Helper to create a table column.
-     *
-     * @param index     the column index
-     * @param headerKey the header label resource key
-     * @return a new table column
-     */
-    protected static TableColumn createTableColumn(int index, String headerKey) {
-        TableColumn column = new TableColumn(index);
-        String label = Messages.get(headerKey);
-        column.setHeaderValue(label);
-        return column;
     }
 
     /**
@@ -397,6 +329,20 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel impleme
         result.setEnabled(false);
         result.setSelected(selected);
         return result;
+    }
+
+    /**
+     * Helper to create a table column.
+     *
+     * @param index     the column index
+     * @param headerKey the header label resource key
+     * @return a new table column
+     */
+    protected static TableColumn createTableColumn(int index, String headerKey) {
+        TableColumn column = new TableColumn(index);
+        String label = Messages.get(headerKey);
+        column.setHeaderValue(label);
+        return column;
     }
 
 }

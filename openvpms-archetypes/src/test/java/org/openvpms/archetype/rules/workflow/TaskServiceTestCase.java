@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -175,7 +175,7 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
     }
 
     /**
-     * Tests the {@link TaskService#getEvents(Entity, Date)} method.
+     * Tests the {@link TaskService#getEvents} method.
      */
     @Test
     public void testGetEvents() {

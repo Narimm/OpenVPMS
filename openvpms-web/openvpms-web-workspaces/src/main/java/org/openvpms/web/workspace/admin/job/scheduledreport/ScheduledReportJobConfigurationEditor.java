@@ -30,7 +30,6 @@ import org.openvpms.report.ParameterType;
 import org.openvpms.report.Report;
 import org.openvpms.report.ReportFactory;
 import org.openvpms.web.component.bound.BoundSelectFieldFactory;
-import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.edit.PropertyComponentEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -244,7 +243,7 @@ public class ScheduledReportJobConfigurationEditor extends AbstractJobConfigurat
         ListModel model = (template != null) ? getPrinters(template) : new DefaultListModel();
         printerSelector = BoundSelectFieldFactory.create(printerName, model);
         printerEditor = new PropertyComponentEditor(printerName, printerSelector);
-        getEditors().add(printerEditor);
+        addEditor(printerEditor);
 
         reportLink.addModifiableListener(modifiable -> onReportChanged());
     }
@@ -274,18 +273,6 @@ public class ScheduledReportJobConfigurationEditor extends AbstractJobConfigurat
     protected boolean doValidation(Validator validator) {
         return super.doValidation(validator) && validateSelection(validator) && validateParameters(validator)
                && validateFile(validator) && validateEmail(validator) && validatePrint(validator);
-    }
-
-    /**
-     * Determines if an editor should be disposed on layout change.
-     * This implementation always returns true.
-     *
-     * @param editor the editor
-     * @return {@code true}
-     */
-    @Override
-    protected boolean disposeOnChangeLayout(Editor editor) {
-        return editor != reportLink && editor != printerEditor;
     }
 
     /**

@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
 
 import org.apache.commons.lang.time.DateUtils;
+import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -24,13 +25,17 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.LookupHelper;
+import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectSet;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -43,6 +48,27 @@ import static org.openvpms.archetype.test.TestHelper.getDatetime;
  * @author Tim Anderson
  */
 public class AppointmentQueryTestCase extends ArchetypeServiceTest {
+
+    /**
+     * Status names keyed on status code.
+     */
+    private Map<String, String> statusNames;
+
+    /**
+     * Reason name keyed on reason code.
+     */
+    private Map<String, String> reasonNames;
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        IArchetypeService service = getArchetypeService();
+        ILookupService lookups = getLookupService();
+        statusNames = LookupHelper.getNames(service, lookups, ScheduleArchetypes.APPOINTMENT, "status");
+        reasonNames = LookupHelper.getNames(service, lookups, ScheduleArchetypes.APPOINTMENT, "reason");
+    }
 
     /**
      * Tests the {@link AppointmentQuery#query()} method.
@@ -86,7 +112,8 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
         }
         Date to = new Date();
 
-        AppointmentQuery query = new AppointmentQuery(schedule, from, to, getArchetypeService(), getLookupService());
+        AppointmentQuery query = new AppointmentQuery(schedule, from, to, statusNames, reasonNames,
+                                                      getArchetypeService());
         IPage<ObjectSet> page = query.query();
         assertNotNull(page);
         List<ObjectSet> results = page.getResults();
@@ -162,7 +189,8 @@ public class AppointmentQueryTestCase extends ArchetypeServiceTest {
         createAppointment(schedule2, "2015-01-03 10:00:00", "2015-01-03 11:00:00"); // intersect start
         createAppointment(schedule2, "2015-01-03 10:30:00", "2015-01-03 11:00:00"); // at start
 
-        AppointmentQuery query = new AppointmentQuery(schedule1, from, to, getArchetypeService(), getLookupService());
+        AppointmentQuery query = new AppointmentQuery(schedule1, from, to, statusNames, reasonNames,
+                                                      getArchetypeService());
         IPage<ObjectSet> page = query.query();
         List<ObjectSet> appointments = page.getResults();
         assertEquals(7, appointments.size());

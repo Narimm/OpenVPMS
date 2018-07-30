@@ -40,7 +40,6 @@ import org.openvpms.web.component.im.product.FixedPriceEditor;
 import org.openvpms.web.component.im.product.ProductParticipationEditor;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
@@ -168,12 +167,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
 
         lowQuantity = new Quantity(getProperty(LOW_QTY), act, getLayoutContext());
         if (context.overrideMinimumQuantities()) {
-            lowQuantity.getProperty().addModifiableListener(new ModifiableListener() {
-                @Override
-                public void modified(Modifiable modifiable) {
-                    onLowQuantityChanged();
-                }
-            });
+            lowQuantity.getProperty().addModifiableListener(modifiable -> onLowQuantityChanged());
         }
         highQuantity = new Quantity(getProperty(HIGH_QTY), act, getLayoutContext());
 
@@ -184,23 +178,9 @@ public class EstimateItemEditor extends PriceActItemEditor {
 
         // add a listener to update the discount when the fixed, high unit price
         // or quantity, changes
-        ModifiableListener listener = new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                updateDiscount();
-            }
-        };
-        ModifiableListener lowListener = new ModifiableListener() {
-            @Override
-            public void modified(Modifiable modifiable) {
-                updateLowDiscount();
-            }
-        };
-        ModifiableListener highListener = new ModifiableListener() {
-            @Override
-            public void modified(Modifiable modifiable) {
-                updateHighDiscount();
-            }
-        };
+        ModifiableListener listener = modifiable -> updateDiscount();
+        ModifiableListener lowListener = modifiable -> updateLowDiscount();
+        ModifiableListener highListener = modifiable -> updateHighDiscount();
         getProperty(FIXED_PRICE).addModifiableListener(listener);
         getProperty(LOW_UNIT_PRICE).addModifiableListener(lowListener);
         lowQuantity.getProperty().addModifiableListener(lowListener);
@@ -208,11 +188,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
         highQuantity.getProperty().addModifiableListener(highListener);
 
         // add a listener to update the tax amount when the total changes
-        totalListener = new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onTotalChanged();
-            }
-        };
+        totalListener = modifiable -> onTotalChanged();
         getProperty(LOW_TOTAL).addModifiableListener(totalListener);
         getProperty(HIGH_TOTAL).addModifiableListener(totalListener);
     }
@@ -229,7 +205,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
 
     /**
      * Returns the quantity.
-     * <p/>
+     * <p>
      * This implementation returns the high quantity.
      *
      * @return the quantity
@@ -277,7 +253,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
 
     /**
      * Sets the unit price.
-     * <p/>
+     * <p>
      * This implementation updates both the lowUnitPrice and highUnitPrice.
      *
      * @param unitPrice the unit price
@@ -290,7 +266,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
 
     /**
      * Returns the unit price.
-     * <p/>
+     * <p>
      * This implementation returns the high unit price.
      *
      * @return the unit price
@@ -442,16 +418,11 @@ public class EstimateItemEditor extends PriceActItemEditor {
         Property highDiscount = getProperty(HIGH_DISCOUNT);
         lowDiscount.setValue(ZERO);
         highDiscount.setValue(ZERO);
-        boolean showPrint = false;
 
+        updatePrices(product);
+
+        boolean showPrint = false;
         if (TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
-            // zero out the fixed, low and high prices.
-            Property fixedPrice = getProperty(FIXED_PRICE);
-            Property lowUnitPrice = getProperty(LOW_UNIT_PRICE);
-            Property highUnitPrice = getProperty(HIGH_UNIT_PRICE);
-            fixedPrice.setValue(ZERO);
-            lowUnitPrice.setValue(ZERO);
-            highUnitPrice.setValue(ZERO);
             updateSellingUnits(null);
         } else {
             boolean clearDefault = true;
@@ -470,29 +441,6 @@ public class EstimateItemEditor extends PriceActItemEditor {
                 // the quantity is not a default for the product, so turn off any highlighting
                 lowQuantity.clearDefault();
                 highQuantity.clearDefault();
-            }
-            Property fixedPrice = getProperty(FIXED_PRICE);
-            Property lowUnitPrice = getProperty(LOW_UNIT_PRICE);
-            Property highUnitPrice = getProperty(HIGH_UNIT_PRICE);
-            ProductPrice fixed = null;
-            ProductPrice unit = null;
-            if (product != null) {
-                fixed = getDefaultFixedProductPrice(product);
-                unit = getDefaultUnitProductPrice(product);
-            }
-
-            if (fixed != null) {
-                fixedPrice.setValue(getPrice(product, fixed));
-            } else {
-                fixedPrice.setValue(ZERO);
-            }
-            if (unit != null) {
-                BigDecimal price = getPrice(product, unit);
-                lowUnitPrice.setValue(price);
-                highUnitPrice.setValue(price);
-            } else {
-                lowUnitPrice.setValue(ZERO);
-                highUnitPrice.setValue(ZERO);
             }
             showPrint = updatePrint(product);
             updateSellingUnits(product);
@@ -514,8 +462,59 @@ public class EstimateItemEditor extends PriceActItemEditor {
     }
 
     /**
+     * Invoked when the service ratio is modified.
+     */
+    @Override
+    protected void serviceRatioModified() {
+        super.serviceRatioModified();
+        updatePrices(getProduct());
+    }
+
+    /**
+     * Updates prices.
+     *
+     * @param product the product. May be {@code null}
+     */
+    protected void updatePrices(Product product) {
+        if (TypeHelper.isA(product, ProductArchetypes.TEMPLATE)) {
+            // zero out the fixed, low and high prices.
+            Property fixedPrice = getProperty(FIXED_PRICE);
+            Property lowUnitPrice = getProperty(LOW_UNIT_PRICE);
+            Property highUnitPrice = getProperty(HIGH_UNIT_PRICE);
+            fixedPrice.setValue(ZERO);
+            lowUnitPrice.setValue(ZERO);
+            highUnitPrice.setValue(ZERO);
+        } else {
+            Property fixedPrice = getProperty(FIXED_PRICE);
+            Property lowUnitPrice = getProperty(LOW_UNIT_PRICE);
+            Property highUnitPrice = getProperty(HIGH_UNIT_PRICE);
+            ProductPrice fixed = null;
+            ProductPrice unit = null;
+            BigDecimal serviceRatio = getServiceRatio();
+            if (product != null) {
+                fixed = getDefaultFixedProductPrice(product);
+                unit = getDefaultUnitProductPrice(product);
+            }
+
+            if (fixed != null) {
+                fixedPrice.setValue(getPrice(product, fixed, serviceRatio));
+            } else {
+                fixedPrice.setValue(ZERO);
+            }
+            if (unit != null) {
+                BigDecimal price = getPrice(product, unit, serviceRatio);
+                lowUnitPrice.setValue(price);
+                highUnitPrice.setValue(price);
+            } else {
+                lowUnitPrice.setValue(ZERO);
+                highUnitPrice.setValue(ZERO);
+            }
+        }
+    }
+
+    /**
      * Returns the fixed cost.
-     * <p/>
+     * <p>
      * TODO - estimates lose the fixed cost if the fixed price is changed
      *
      * @return the fixed cost
@@ -528,7 +527,7 @@ public class EstimateItemEditor extends PriceActItemEditor {
 
     /**
      * Returns the unit cost.
-     * <p/>
+     * <p>
      * TODO - estimates lose the unit cost if the unit price is changed
      *
      * @return the unit cost
@@ -554,21 +553,23 @@ public class EstimateItemEditor extends PriceActItemEditor {
     /**
      * Creates the layout strategy.
      *
-     * @param fixedPrice the fixed price editor
+     * @param fixedPrice         the fixed price editor
+     * @param serviceRatioEditor the service ratio editor
      * @return a new layout strategy
      */
     @Override
-    protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice) {
-        return new EstimateItemLayoutStrategy(fixedPrice);
+    protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice,
+                                                          ServiceRatioEditor serviceRatioEditor) {
+        return new EstimateItemLayoutStrategy(fixedPrice, serviceRatioEditor);
     }
 
     /**
      * Invoked when the low quantity changes and the user can override the minimum quantity.
-     * <p/>
+     * <p>
      * This ensures that the minimum quantity is set to the low quantity if it is less, in order for
      * the estimate to be valid.
-     * <p/>
-     // Setting the low quantity to zero disables the minimum.
+     * <p>
+     * Setting the low quantity to zero disables the minimum.
      */
     private void onLowQuantityChanged() {
         BigDecimal minQuantity = getMinimumQuantity();
@@ -669,42 +670,6 @@ public class EstimateItemEditor extends PriceActItemEditor {
         return result;
     }
 
-    protected class EstimateItemLayoutStrategy extends PriceItemLayoutStrategy {
-        public EstimateItemLayoutStrategy(FixedPriceEditor fixedPrice) {
-            super(fixedPrice);
-        }
-
-        /**
-         * Apply the layout strategy.
-         * <p/>
-         * This renders an object in a {@code Component}, using a factory to create the child components.
-         *
-         * @param object     the object to apply
-         * @param properties the object's properties
-         * @param parent     the parent object. May be {@code null}
-         * @param context    the layout context
-         * @return the component containing the rendered {@code object}
-         */
-        @Override
-        public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-            addComponent(createQuantity(lowQuantity, lowQtySellingUnits));
-            addComponent(createQuantity(highQuantity, highQtySellingUnits));
-            return super.apply(object, properties, parent, context);
-        }
-
-        /**
-         * Creates a component containing a quantity and their selling units.
-         *
-         * @param quantity the quantity
-         * @param units    the selling units
-         * @return a new component
-         */
-        protected ComponentState createQuantity(Quantity quantity, Label units) {
-            Row row = RowFactory.create(Styles.CELL_SPACING, quantity.getComponent(), units);
-            return new ComponentState(row, quantity.getProperty());
-        }
-    }
-
     /**
      * Invoked when the total changes.
      */
@@ -739,10 +704,9 @@ public class EstimateItemEditor extends PriceActItemEditor {
         return result;
     }
 
-
     /**
      * Returns a node filter for the specified product reference.
-     * <p/>
+     * <p>
      * This excludes:
      * <ul>
      * <li>the price and discount nodes for <em>product.template</em>
@@ -768,8 +732,50 @@ public class EstimateItemEditor extends PriceActItemEditor {
                 result.simple(PRINT);
                 result.order(PRINT, LOW_TOTAL);
             }
+            if (showServiceRatio()) {
+                if (result == null) {
+                    result = new ArchetypeNodes();
+                }
+                result.simple(SERVICE_RATIO).hidden(true);
+            }
         }
         return result;
+    }
+
+    protected class EstimateItemLayoutStrategy extends PriceItemLayoutStrategy {
+        public EstimateItemLayoutStrategy(FixedPriceEditor fixedPrice, ServiceRatioEditor serviceRatioEditor) {
+            super(fixedPrice, serviceRatioEditor);
+        }
+
+        /**
+         * Apply the layout strategy.
+         * <p>
+         * This renders an object in a {@code Component}, using a factory to create the child components.
+         *
+         * @param object     the object to apply
+         * @param properties the object's properties
+         * @param parent     the parent object. May be {@code null}
+         * @param context    the layout context
+         * @return the component containing the rendered {@code object}
+         */
+        @Override
+        public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
+            addComponent(createQuantity(lowQuantity, lowQtySellingUnits));
+            addComponent(createQuantity(highQuantity, highQtySellingUnits));
+            return super.apply(object, properties, parent, context);
+        }
+
+        /**
+         * Creates a component containing a quantity and their selling units.
+         *
+         * @param quantity the quantity
+         * @param units    the selling units
+         * @return a new component
+         */
+        protected ComponentState createQuantity(Quantity quantity, Label units) {
+            Row row = RowFactory.create(Styles.CELL_SPACING, quantity.getComponent(), units);
+            return new ComponentState(row, quantity.getProperty());
+        }
     }
 
 }

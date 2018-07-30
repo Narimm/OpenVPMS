@@ -25,11 +25,11 @@ import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.bound.BoundCheckBox;
 import org.openvpms.web.component.bound.BoundDateTimeField;
@@ -57,7 +57,7 @@ import org.openvpms.web.workspace.alert.AlertSummary;
 import org.openvpms.web.workspace.customer.CustomerSummary;
 import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeries;
-import org.openvpms.web.workspace.workflow.appointment.repeat.CalendarEventSeries;
+import org.openvpms.web.workspace.workflow.appointment.repeat.ScheduleEventSeries;
 
 import java.util.Date;
 
@@ -74,7 +74,7 @@ import static org.openvpms.web.echo.style.Styles.INSET;
  *
  * @author Tim Anderson
  */
-public class AppointmentEditor extends CalendarEventEditor {
+public class AppointmentEditor extends AbstractCalendarEventEditor {
 
     /**
      * The appointment rules.
@@ -159,7 +159,7 @@ public class AppointmentEditor extends CalendarEventEditor {
             // set the appointment type to the default for the schedule
             if (schedule != null) {
                 appointmentType = getDefaultAppointmentType(schedule);
-                setParticipant("appointmentType", appointmentType);
+                setParticipant("appointmentType", (IMObject) appointmentType);
             }
         }
         appointmentTypeReminders = rules.isRemindersEnabled(appointmentType);
@@ -218,7 +218,7 @@ public class AppointmentEditor extends CalendarEventEditor {
      * @return a new event series
      */
     @Override
-    protected CalendarEventSeries createSeries() {
+    protected ScheduleEventSeries createSeries() {
         return new AppointmentSeries(getObject(), ServiceHelper.getArchetypeService());
     }
 
@@ -310,7 +310,7 @@ public class AppointmentEditor extends CalendarEventEditor {
     @Override
     protected void initSchedule(Entity schedule) {
         AppointmentTypeParticipationEditor editor = getAppointmentTypeEditor();
-        editor.setSchedule(schedule);
+        editor.setSchedule((org.openvpms.component.business.domain.im.common.Entity) schedule);
         scheduleReminders = schedule != null && rules.isRemindersEnabled(schedule);
     }
 
@@ -471,7 +471,8 @@ public class AppointmentEditor extends CalendarEventEditor {
      * @return the appointment type editor
      */
     private AppointmentTypeParticipationEditor getAppointmentTypeEditor() {
-        ParticipationEditor<Entity> result = getParticipationEditor("appointmentType", true);
+        ParticipationEditor<org.openvpms.component.business.domain.im.common.Entity> result
+                = getParticipationEditor("appointmentType", true);
         return (AppointmentTypeParticipationEditor) result;
     }
 

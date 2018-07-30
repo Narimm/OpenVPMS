@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
@@ -173,7 +173,8 @@ public class TaskWorkspace extends SchedulingWorkspace {
      * @return the default schedule view, or {@code null} if there is no default
      */
     protected Entity getDefaultView(Party location, Preferences prefs) {
-        return new TaskSchedules(location, prefs).getDefaultScheduleView();
+        TaskSchedules schedules = new TaskSchedules(location, prefs);
+        return (Entity) schedules.getDefaultScheduleView();
     }
 
     /**

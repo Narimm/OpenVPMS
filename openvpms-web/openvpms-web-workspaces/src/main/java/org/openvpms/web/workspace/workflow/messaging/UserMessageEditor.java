@@ -29,8 +29,6 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.patient.PatientParticipationEditor;
-import org.openvpms.web.component.property.Modifiable;
-import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.help.HelpContext;
@@ -80,7 +78,7 @@ public class UserMessageEditor extends ActEditor {
 
         HelpContext help = context.getHelpContext().subtopic("to");
         toAddressEditor = new ToAddressEditor(act, getProperty("to"), new DefaultLayoutContext(context, help));
-        getEditors().add(toAddressEditor);
+        addEditor(toAddressEditor);
     }
 
     /**
@@ -196,11 +194,7 @@ public class UserMessageEditor extends ActEditor {
         CustomerParticipationEditor customer = getCustomerEditor();
         PatientParticipationEditor patient = getPatientEditor();
         customer.setPatientParticipationEditor(patient);
-        customer.addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onCustomerChanged();
-            }
-        });
+        customer.addModifiableListener(modifiable -> onCustomerChanged());
     }
 
     /**

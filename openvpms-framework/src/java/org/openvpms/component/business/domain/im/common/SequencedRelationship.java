@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.common;
@@ -23,7 +23,8 @@ import org.openvpms.component.business.domain.archetype.ArchetypeId;
  *
  * @author Tim Anderson
  */
-public abstract class SequencedRelationship extends PeriodRelationship {
+public abstract class SequencedRelationship extends PeriodRelationship
+        implements org.openvpms.component.model.object.SequencedRelationship {
 
     /**
      * An optional sequence for the relationship, used to order similar relationships.

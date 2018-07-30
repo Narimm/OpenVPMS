@@ -29,7 +29,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -39,11 +38,14 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.bean.Predicates;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Relationship;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -109,8 +111,8 @@ public class AppointmentRules {
     public Entity getScheduleView(Party location, Entity schedule) {
         EntityBean bean = new EntityBean(location, service);
         for (Entity view : bean.getNodeTargetEntities("scheduleViews", SequenceComparator.INSTANCE)) {
-            IMObjectBean viewBean = new IMObjectBean(view, service);
-            if (viewBean.hasNodeTarget("schedules", schedule)) {
+            IMObjectBean viewBean = service.getBean(view);
+            if (viewBean.getValue("schedules", Relationship.class, Predicates.targetEquals(schedule)) != null) {
                 return view;
             }
         }
@@ -124,8 +126,8 @@ public class AppointmentRules {
      * @return the location, or {@code null} if none is found
      */
     public Party getLocation(Entity schedule) {
-        IMObjectBean bean = new IMObjectBean(schedule, service);
-        return (Party) bean.getNodeTargetObject("location");
+        IMObjectBean bean = service.getBean(schedule);
+        return bean.getTarget("location", Party.class);
     }
 
     /**
@@ -136,7 +138,7 @@ public class AppointmentRules {
      * @throws OpenVPMSException for any error
      */
     public int getSlotSize(Entity schedule) {
-        IMObjectBean bean = new IMObjectBean(schedule, service);
+        IMObjectBean bean = service.getBean(schedule);
         return getSlotSize(bean);
     }
 
@@ -148,7 +150,8 @@ public class AppointmentRules {
      * @throws OpenVPMSException for any error
      */
     public Entity getDefaultAppointmentType(Entity schedule) {
-        return EntityRelationshipHelper.getDefaultTarget(schedule, "appointmentTypes", false, service);
+        return EntityRelationshipHelper.getDefaultTarget((org.openvpms.component.business.domain.im.common.Entity)
+                                                                 schedule, "appointmentTypes", false, service);
     }
 
     /**
@@ -162,9 +165,9 @@ public class AppointmentRules {
      * @throws OpenVPMSException for any error
      */
     public Date calculateEndTime(Date startTime, Entity schedule, Entity appointmentType) {
-        EntityBean schedBean = new EntityBean(schedule, service);
-        int noSlots = getSlots(schedBean, appointmentType);
-        int minutes = getSlotSize(schedBean) * noSlots;
+        IMObjectBean bean = service.getBean(schedule);
+        int noSlots = getSlots(bean, appointmentType);
+        int minutes = getSlotSize(bean) * noSlots;
         return DateRules.getDate(startTime, minutes, DateUnits.MINUTES);
     }
 
@@ -228,14 +231,14 @@ public class AppointmentRules {
      */
     public Act copy(Act appointment) {
         IMObjectCopyHandler handler = new DefaultActCopyHandler() {
-            {
-                setCopy(Act.class, Participation.class);
-                setExclude(ActRelationship.class);
-            }
-
             @Override
             protected boolean checkCopyable(ArchetypeDescriptor archetype, NodeDescriptor node) {
                 return true;
+            }
+
+            {
+                setCopy(Act.class, Participation.class);
+                setExclude(ActRelationship.class);
             }
         };
         IMObjectCopier copier = new IMObjectCopier(handler, service);
@@ -250,7 +253,7 @@ public class AppointmentRules {
      */
     public boolean isRemindersEnabled(Entity entity) {
         if (entity != null) {
-            IMObjectBean bean = new IMObjectBean(entity, service);
+            IMObjectBean bean = service.getBean(entity);
             return bean.getBoolean("sendReminders");
         }
         return false;
@@ -265,7 +268,7 @@ public class AppointmentRules {
         Period result = null;
         IMObject object = getAppointmentReminderJob();
         if (object != null) {
-            IMObjectBean bean = new IMObjectBean(object, service);
+            IMObjectBean bean = service.getBean(object);
             int period = bean.getInt("noReminder");
             DateUnits units = DateUnits.fromString(bean.getString("noReminderUnits"));
             if (period > 0 && units != null) {
@@ -286,8 +289,8 @@ public class AppointmentRules {
         ActBean bean = new ActBean(appointment, service);
         Entity schedule = bean.getNodeParticipant("schedule");
         if (schedule != null) {
-            IMObjectBean scheduleBean = new IMObjectBean(schedule, service);
-            if (scheduleBean.getNodeTargetObjectRef("cageType") != null) {
+            IMObjectBean scheduleBean = service.getBean(schedule);
+            if (scheduleBean.getTargetRef("cageType") != null) {
                 result = true;
             }
         }
@@ -538,12 +541,12 @@ public class AppointmentRules {
      * @return the no. of slots, or {@code 0} if unknown
      * @throws OpenVPMSException for any error
      */
-    private int getSlots(EntityBean schedule, Entity appointmentType) {
+    private int getSlots(IMObjectBean schedule, Entity appointmentType) {
         int noSlots = 0;
-        EntityRelationship relationship
-                = schedule.getRelationship(appointmentType);
+        EntityRelationship relationship = schedule.getValue("appointmentTypes", EntityRelationship.class,
+                                                            Predicates.targetEquals(appointmentType));
         if (relationship != null) {
-            IMObjectBean bean = new IMObjectBean(relationship, service);
+            IMObjectBean bean = service.getBean(relationship);
             noSlots = bean.getInt("noSlots");
         }
         return noSlots;

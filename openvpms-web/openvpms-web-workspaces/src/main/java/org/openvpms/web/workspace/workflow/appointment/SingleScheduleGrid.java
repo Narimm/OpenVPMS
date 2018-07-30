@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -19,8 +19,8 @@ package org.openvpms.web.workspace.workflow.appointment;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 
@@ -32,7 +32,7 @@ import java.util.List;
 
 /**
  * An {@link AppointmentGrid} for a single schedule.
- * <p/>
+ * <p>
  * This handles overlapping and double booked appointments by ordering them one after another.
  *
  * @author Tim Anderson
@@ -118,7 +118,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
 
     /**
      * Returns the no. of slots that an event occupies, from the specified slot.
-     * <p/>
+     * <p>
      * If the event begins prior to the slot, the remaining slots will be returned.
      *
      * @param event    the event
@@ -250,7 +250,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
 
     /**
      * Adds an event.
-     * <p/>
+     * <p>
      * This adds it to the schedule, and creates a new SlotGroup for it.
      *
      * @param event the event
@@ -333,12 +333,12 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
     }
 
     /**
-     * A group of slots, associated with a single appointment.
+     * A group of slots, associated with a single event.
      */
     private static class SlotGroup {
 
         /**
-         * The appointment.
+         * The event.
          */
         private final PropertySet appointment;
 

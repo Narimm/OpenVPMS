@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -21,14 +21,12 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.basic.TypedValue;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.LookupHelper;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NamedQuery;
@@ -55,6 +53,16 @@ abstract class ScheduleEventQuery {
     private final IArchetypeService service;
 
     /**
+     * Status lookup names, keyed on code.
+     */
+    private final Map<String, String> statusNames;
+
+    /**
+     * Reason lookup names, keyed on code.
+     */
+    private final Map<String, String> reasonNames;
+
+    /**
      * The schedule.
      */
     private Entity schedule;
@@ -69,35 +77,25 @@ abstract class ScheduleEventQuery {
      */
     private Date to;
 
-    /**
-     * Status lookup names, keyed on code.
-     */
-    private final Map<String, String> statusNames;
-
-    /**
-     * Reason lookup names, keyed on code.
-     */
-    private final Map<String, String> reasonNames;
-
 
     /**
      * Constructs a {@link ScheduleEventQuery}.
      *
-     * @param schedule       the schedule
-     * @param from           the 'from' start time
-     * @param to             the 'to' start time
-     * @param eventShortName the event archetype short name
-     * @param service        the archetype service
-     * @param lookups        the lookup service
+     * @param schedule    the schedule
+     * @param from        the 'from' start time
+     * @param to          the 'to' start time
+     * @param statusNames the status names, keyed on status code
+     * @param reasonNames the reason names, keyed on reason code
+     * @param service     the archetype service
      */
-    public ScheduleEventQuery(Entity schedule, Date from, Date to, String eventShortName, IArchetypeService service,
-                              ILookupService lookups) {
+    public ScheduleEventQuery(Entity schedule, Date from, Date to, Map<String, String> statusNames,
+                              Map<String, String> reasonNames, IArchetypeService service) {
         this.schedule = schedule;
         this.from = from;
         this.to = to;
         this.service = service;
-        statusNames = LookupHelper.getNames(service, lookups, eventShortName, "status");
-        reasonNames = LookupHelper.getNames(service, lookups, eventShortName, "reason");
+        this.statusNames = statusNames;
+        this.reasonNames = reasonNames;
     }
 
     /**
@@ -110,21 +108,21 @@ abstract class ScheduleEventQuery {
         IArchetypeQuery query = createQuery(from, to);
         IPage<ObjectSet> page = service.getObjects(query);
         List<ObjectSet> result = new ArrayList<>();
-        IMObjectReference currentAct = null;
+        Reference currentAct = null;
         ObjectSet current = null;
         String scheduleType = null;
         for (ObjectSet set : page.getResults()) {
-            IMObjectReference actRef = getAct(set);
+            Reference actRef = getAct(set);
             if (currentAct == null || !currentAct.equals(actRef)) {
                 if (current != null) {
                     result.add(current);
                 }
                 currentAct = actRef;
                 current = createEvent(actRef, set);
-                scheduleType = getScheduleType(actRef.getArchetypeId().getShortName());
+                scheduleType = getScheduleType(actRef.getArchetype());
                 current.set(ScheduleEvent.ACT_VERSION, set.getLong("act.version"));
             }
-            IMObjectReference entityRef = getEntity(set);
+            Reference entityRef = getEntity(set);
             String participation = set.getString("participation.shortName");
             String entityName = set.getString("entity.name");
             if (CustomerArchetypes.CUSTOMER_PARTICIPATION.equals(participation)) {
@@ -135,7 +133,7 @@ abstract class ScheduleEventQuery {
                 current.set(ScheduleEvent.PATIENT_REFERENCE, entityRef);
                 current.set(ScheduleEvent.PATIENT_NAME, entityName);
                 current.set(ScheduleEvent.PATIENT_PARTICIPATION_VERSION, set.getLong("participation.version"));
-            } else if (TypeHelper.isA(entityRef, scheduleType)) {
+            } else if (scheduleType != null && entityRef.isA(scheduleType)) {
                 current.set(ScheduleEvent.SCHEDULE_TYPE_REFERENCE, entityRef);
                 current.set(ScheduleEvent.SCHEDULE_TYPE_NAME, entityName);
                 current.set(ScheduleEvent.SCHEDULE_PARTICIPATION_VERSION, set.getLong("participation.version"));
@@ -165,12 +163,12 @@ abstract class ScheduleEventQuery {
     protected abstract String getQueryName();
 
     /**
-     * Returns the archetype short name of the schedule type.
+     * Returns the archetype of the schedule type.
      *
-     * @param eventShortName the event archetype short name
-     * @return the short name of the schedule type
+     * @param eventArchetype the event archetype
+     * @return the archetype of the schedule type, or {@code null} if none is present
      */
-    protected abstract String getScheduleType(String eventShortName);
+    protected abstract String getScheduleType(String eventArchetype);
 
     /**
      * Creates a new query.
@@ -210,7 +208,7 @@ abstract class ScheduleEventQuery {
      * @param set    the source set
      * @return a new event
      */
-    protected ObjectSet createEvent(IMObjectReference actRef, ObjectSet set) {
+    protected ObjectSet createEvent(Reference actRef, ObjectSet set) {
         ObjectSet result = new ObjectSet();
         String status = set.getString(ScheduleEvent.ACT_STATUS);
         String reason = set.getString(ScheduleEvent.ACT_REASON);
@@ -244,7 +242,7 @@ abstract class ScheduleEventQuery {
      * @param set the set
      * @return the ct
      */
-    private IMObjectReference getAct(ObjectSet set) {
+    private Reference getAct(ObjectSet set) {
         ArchetypeId archetypeId = (ArchetypeId) set.get("act.archetypeId");
         long id = set.getLong("act.id");
         String linkId = set.getString("act.linkId");
@@ -257,7 +255,7 @@ abstract class ScheduleEventQuery {
      * @param set the set
      * @return the entity
      */
-    private IMObjectReference getEntity(ObjectSet set) {
+    private Reference getEntity(ObjectSet set) {
         ArchetypeId archetypeId = (ArchetypeId) set.get("entity.archetypeId");
         long id = set.getLong("entity.id");
         String linkId = set.getString("entity.linkId");

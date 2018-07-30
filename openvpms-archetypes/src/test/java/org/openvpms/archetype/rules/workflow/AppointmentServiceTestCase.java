@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -141,7 +141,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     }
 
     /**
-     * Tests the {@link AppointmentService#getEvents(Entity, Date)} method.
+     * Tests the {@link AppointmentService#getEvents} method.
      */
     @Test
     public void testGetEvents() {
@@ -263,7 +263,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
 
     /**
      * Verifies that if a lookup.visitReason is removed, the cache is updated.
-     * <p/>
+     * <p>
      * Strictly speaking, the application shouldn't remove a lookup in use, but if it occurs,
      * this implementation will return null for the reason name.
      */
@@ -483,6 +483,58 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     }
 
     /**
+     * Tests the {@link AppointmentService#getOverlappingEvents(List, Entity, int)} method.
+     */
+    @Test
+    public void testGetOverlappingEvents() {
+        service = createScheduleService(1);
+        Date start1 = getDatetime("2015-05-14 09:00:00");
+        Date end1 = getDatetime("2015-05-14 09:15:00");
+        Date start2 = getDatetime("2015-05-15 09:00:00");
+        Date end2 = getDatetime("2015-05-15 09:15:00");
+        Date beforeStart = getDatetime("2015-05-15 08:45:00");
+        Date beforeEnd = getDatetime("2015-05-15 09:00:00");
+        Date afterStart = getDatetime("2015-05-15 09:30:00");
+        Date afterEnd = getDatetime("2015-05-15 09:45:00");
+        Date overlap1Start = getDatetime("2015-05-15 09:05:00");
+        Date overlap1End = getDatetime("2015-05-15 09:20:00");
+        Date overlap2Start = getDatetime("2015-05-15 09:10:00");
+        Date overlap2End = getDatetime("2015-05-15 09:25:00");
+
+        Times times1 = new Times(start1, end1);
+        Times times2 = new Times(start2, end2);
+        List<Times> list = Arrays.asList(times1, times2);
+        assertNull(service.getOverlappingEvents(list, schedule, 1));
+
+        // overlaps time1 exactly
+        Act appointment1 = createAppointment(start1, end1, schedule, true);
+        checkOverlappingEvents(service.getOverlappingEvents(list, schedule, 1), times1);
+        remove(appointment1);
+
+        // overlaps time2 exactly
+        Act appointment2 = createAppointment(start2, end2, schedule, true);
+        checkOverlappingEvents(service.getOverlappingEvents(list, schedule, 1), times2);
+        remove(appointment2);
+
+        // before time2
+        createAppointment(beforeStart, beforeEnd, schedule, true);
+        assertNull(service.getOverlappingEvents(list, schedule, 1));
+
+        // after time2
+        createAppointment(afterStart, afterEnd, schedule, true);
+        assertNull(service.getOverlappingEvents(list, schedule, 1));
+
+        // intersects start of time2
+        Act appointment5 = createAppointment(overlap1Start, overlap1End, schedule, true);
+        checkOverlappingEvents(service.getOverlappingEvents(list, schedule, 1), Times.create(appointment5));
+        remove(appointment5);
+
+        // intersects end of time2
+        Act appointment6 = createAppointment(overlap2Start, overlap2End, schedule, true);
+        checkOverlappingEvents(service.getOverlappingEvents(list, schedule, 1), Times.create(appointment6));
+    }
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -538,6 +590,22 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     @Override
     protected Act createEvent(Entity schedule, Date date, Party patient) {
         return createAppointment(date, (Party) schedule, patient, true);
+    }
+
+    /**
+     * Verifies that overlapping events match those expected.
+     *
+     * @param events the overlapping events
+     * @param times  the expected times
+     */
+    private void checkOverlappingEvents(OverlappingEvents events, Times... times) {
+        assertEquals(times.length, events.getEvents().size());
+        for (int i = 0; i < times.length; ++i) {
+            Times expected = times[i];
+            Times actual = events.getEvents().get(i);
+            assertEquals(expected.getStartTime(), actual.getStartTime());
+            assertEquals(expected.getEndTime(), actual.getEndTime());
+        }
     }
 
     /**

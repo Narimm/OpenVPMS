@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.estimate;
@@ -25,7 +25,7 @@ import org.openvpms.web.workspace.customer.charge.ChargeEditContext;
 import org.openvpms.web.workspace.customer.estimate.EstimateItemEditor;
 
 /**
- * Enter description.
+ * An {@link EstimateItemEditor} for visits.
  *
  * @author Tim Anderson
  */
@@ -47,12 +47,13 @@ public class VisitEstimateItemEditor extends EstimateItemEditor {
     /**
      * Creates the layout strategy.
      *
-     * @param fixedPrice the fixed price editor
+     * @param fixedPrice         the fixed price editor
+     * @param serviceRatioEditor the service ration editor
      * @return a new layout strategy
      */
     @Override
-    protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice) {
-        return new VisitEstimateLayoutStrategy(fixedPrice);
+    protected IMObjectLayoutStrategy createLayoutStrategy(FixedPriceEditor fixedPrice, ServiceRatioEditor serviceRatioEditor) {
+        return new VisitEstimateLayoutStrategy(fixedPrice, serviceRatioEditor);
     }
 
     /**
@@ -74,8 +75,8 @@ public class VisitEstimateItemEditor extends EstimateItemEditor {
      */
     private class VisitEstimateLayoutStrategy extends EstimateItemLayoutStrategy {
 
-        public VisitEstimateLayoutStrategy(FixedPriceEditor fixedPrice) {
-            super(fixedPrice);
+        public VisitEstimateLayoutStrategy(FixedPriceEditor fixedPrice, ServiceRatioEditor serviceRatioEditor) {
+            super(fixedPrice, serviceRatioEditor);
             getArchetypeNodes().exclude(PATIENT);
         }
     }

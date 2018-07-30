@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -109,7 +109,7 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
                 Party location = getContext().getLocation();
                 if (schedule != null && location != null) {
                     AppointmentRules rules = ServiceHelper.getBean(AppointmentRules.class);
-                    Entity view = rules.getScheduleView(location, schedule);
+                    Entity view = (Entity) rules.getScheduleView(location, schedule);
                     if (view != null) {
                         setScheduleView(view, act.getActivityStartTime());
                         ScheduleBrowser scheduleBrowser = getBrowser();
@@ -211,7 +211,8 @@ public class AppointmentWorkspace extends SchedulingWorkspace {
      * @return the default schedule view, or {@code null} if there is no default
      */
     protected Entity getDefaultView(Party location, Preferences prefs) {
-        return new AppointmentSchedules(location, prefs).getDefaultScheduleView();
+        AppointmentSchedules schedules = new AppointmentSchedules(location, prefs);
+        return (Entity) schedules.getDefaultScheduleView();
     }
 
     /**

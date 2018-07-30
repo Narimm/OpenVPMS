@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.boarding;
@@ -21,8 +21,8 @@ import nextapp.echo2.app.table.TableCellRenderer;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.table.StyleTableCellRenderer;
@@ -222,7 +222,7 @@ public abstract class CageTableModel extends AbstractMultiDayTableModel {
      * @param scheduleRef the schedule reference
      * @return the rows
      */
-    protected List<ScheduleRow> getRows(IMObjectReference scheduleRef) {
+    protected List<ScheduleRow> getRows(Reference scheduleRef) {
         List<ScheduleRow> result = new ArrayList<>();
         int index = 0;
         for (CageRow row : getGrid().getRows()) {
@@ -282,7 +282,7 @@ public abstract class CageTableModel extends AbstractMultiDayTableModel {
         }
 
         private static class Group {
-            private final IMObjectReference cageType;
+            private final Reference cageType;
 
             private final boolean expanded;
 

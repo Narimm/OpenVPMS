@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -26,6 +26,7 @@ import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.archetype.rules.product.ServiceRatioService;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -98,13 +99,16 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
         super(null);
         ProductPriceRules rules = ServiceHelper.getBean(ProductPriceRules.class);
         PracticeRules practiceRules = ServiceHelper.getBean(PracticeRules.class);
+        ServiceRatioService serviceRatios = ServiceHelper.getBean(ServiceRatioService.class);
         Party practice = context.getContext().getPractice();
         Currency currency = practiceRules.getCurrency(practice);
         if (query != null) {
-            pricingContext = new ProductPricingContext(currency, query.getPricingGroup(), practice, location, rules);
+            pricingContext = new ProductPricingContext(currency, query.getPricingGroup(), practice, location, rules,
+                                                       serviceRatios);
         } else {
             LocationRules locationRules = ServiceHelper.getBean(LocationRules.class);
-            pricingContext = new ProductPricingContext(currency, practice, location, rules, locationRules);
+            pricingContext = new ProductPricingContext(currency, practice, location, rules, locationRules,
+                                                       serviceRatios);
         }
         showActive = (query == null) || query.getActive() == BaseArchetypeConstraint.State.BOTH;
         setTableColumnModel(createTableColumnModel(showActive));
@@ -209,7 +213,7 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
     private Component getPrice(Product product, ProductPrice price) {
         Component result = null;
         if (price != null) {
-            BigDecimal value = pricingContext.getPrice(product, price);
+            BigDecimal value = pricingContext.getPrice(product, price, BigDecimal.ONE);
             result = TableHelper.rightAlign(NumberFormatter.formatCurrency(value));
         }
         return result;

@@ -18,6 +18,7 @@ package org.openvpms.archetype.rules.product;
 
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.stock.StockArchetypes;
+import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
@@ -26,6 +27,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.act.Act;
 import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.model.object.Relationship;
 
@@ -34,6 +36,7 @@ import java.util.Date;
 import java.util.List;
 
 import static org.openvpms.archetype.test.TestHelper.create;
+import static org.openvpms.archetype.test.TestHelper.randomName;
 import static org.openvpms.archetype.test.TestHelper.save;
 
 /**
@@ -461,6 +464,18 @@ public class ProductTestHelper {
     }
 
     /**
+     * Creates a new service ratio calendar.
+     *
+     * @return the calendar
+     */
+    public static Entity createServiceRatioCalendar() {
+        Entity entity = (Entity) create(ProductArchetypes.SERVICE_RATIO_CALENDAR);
+        entity.setName(randomName("Service Ratio Calendar"));
+        save(entity);
+        return entity;
+    }
+
+    /**
      * Adds a service ratio between a practice location and product type.
      *
      * @param location    the practice location
@@ -468,11 +483,44 @@ public class ProductTestHelper {
      * @param ratio       the service ratio
      */
     public static void addServiceRatio(Party location, Entity productType, BigDecimal ratio) {
+        addServiceRatio(location, productType, ratio, null);
+    }
+
+    /**
+     * Adds a service ratio between a practice location and product type.
+     *
+     * @param location    the practice location
+     * @param productType the product type
+     * @param ratio       the service ratio
+     * @param calendar    the calendar when the ratio applies. May be {@code null}
+     */
+    public static void addServiceRatio(Party location, Entity productType, BigDecimal ratio, Entity calendar) {
         EntityBean bean = new EntityBean(location);
         IMObjectRelationship relationship = bean.addNodeTarget("serviceRatios", productType);
         IMObjectBean relBean = new IMObjectBean(relationship);
         relBean.setValue("ratio", ratio);
+        if (calendar != null) {
+            relBean.setValue("calendar", calendar.getObjectReference());
+        }
         bean.save();
+    }
+
+    /**
+     * Adds a calendar event to a service ratio calendar.
+     *
+     * @param calendar the calendar
+     * @param from     the start time
+     * @param to       the end time
+     * @return the new event
+     */
+    public static Act addServiceRatioEvent(Entity calendar, Date from, Date to) {
+        Act event = (Act) create(ScheduleArchetypes.CALENDAR_EVENT);
+        event.setActivityStartTime(from);
+        event.setActivityEndTime(to);
+        IMObjectBean bean = new IMObjectBean(event);
+        bean.setTarget("schedule", calendar);
+        bean.save();
+        return event;
     }
 
     /**

@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
-import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
@@ -62,7 +62,7 @@ public abstract class AbstractScheduleEventGrid implements ScheduleEventGrid {
     /**
      * Constructs an {@link AbstractScheduleEventGrid}.
      *
-     * @param scheduleView the schedule view
+     * @param scheduleView the schedule view. May be {@code null}
      * @param date         the grid start and end date
      * @param rules        the appointment rules
      */
@@ -73,7 +73,7 @@ public abstract class AbstractScheduleEventGrid implements ScheduleEventGrid {
     /**
      * Constructs an {@link AbstractScheduleEventGrid}.
      *
-     * @param scheduleView the schedule view
+     * @param scheduleView the schedule view. May be {@code null}
      * @param startDate    the grid start date
      * @param endDate      the grid end date
      * @param rules        the appointment rules
@@ -88,7 +88,7 @@ public abstract class AbstractScheduleEventGrid implements ScheduleEventGrid {
     /**
      * Returns the schedule view associated with this grid.
      *
-     * @return the schedule view
+     * @return the schedule view. May be {@code null}
      */
     @Override
     public Entity getScheduleView() {

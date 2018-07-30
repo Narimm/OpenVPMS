@@ -22,6 +22,7 @@ import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.archetype.rules.product.ServiceRatioService;
 import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -85,11 +86,8 @@ public class PriceActEditContext {
     private final StockRules stockRules;
 
     /**
-     * The dose manager. May be {@code null}
+     * Determines if discounting has been disabled.
      */
-    private DoseManager doseManager;
-
-
     private final boolean disableDiscounts;
 
     /**
@@ -111,6 +109,11 @@ public class PriceActEditContext {
      * The product pricer.
      */
     private final PricingContext pricingContext;
+
+    /**
+     * The dose manager. May be {@code null}
+     */
+    private DoseManager doseManager;
 
     /**
      * Constructs a {@link PriceActEditContext}.
@@ -143,7 +146,9 @@ public class PriceActEditContext {
         stockRules = new StockRules(service);
         Currency currency = ServiceHelper.getBean(PracticeRules.class).getCurrency(practice);
         locationRules = ServiceHelper.getBean(LocationRules.class);
-        pricingContext = new CustomerPricingContext(customer, location, currency, priceRules, locationRules, taxRules);
+        ServiceRatioService serviceRatios = ServiceHelper.getBean(ServiceRatioService.class);
+        pricingContext = new CustomerPricingContext(customer, location, currency, priceRules, locationRules, taxRules,
+                                                    serviceRatios);
     }
 
     /**
@@ -166,18 +171,19 @@ public class PriceActEditContext {
 
     /**
      * Returns the price of a product.
-     * <p/>
+     * <p>
      * This:
      * <ul>
      * <li>applies any service ratio to the price</li>
      * <li>subtracts any tax exclusions the customer may have</li>
      * </ul>
      *
-     * @param price the price
+     * @param price        the price
+     * @param serviceRatio the service ratio. May be {@code null}
      * @return the price, minus any tax exclusions
      */
-    public BigDecimal getPrice(Product product, ProductPrice price) {
-        return pricingContext.getPrice(product, price);
+    public BigDecimal getPrice(Product product, ProductPrice price, BigDecimal serviceRatio) {
+        return pricingContext.getPrice(product, price, serviceRatio);
     }
 
     /**
@@ -302,7 +308,7 @@ public class PriceActEditContext {
     }
 
     /**
-     * Determines if discounts are disabled at a  practice location.
+     * Determines if discounts are disabled at a practice location.
      *
      * @param location the location. May be {@code null}
      * @return {@code true} if discounts are disabled

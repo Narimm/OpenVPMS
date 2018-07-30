@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -24,8 +24,8 @@ import net.sf.ehcache.constructs.blocking.LockTimeoutException;
 import org.apache.commons.collections.map.ReferenceMap;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.util.PropertySet;
 
@@ -40,17 +40,17 @@ import java.util.Map;
 
 /**
  * The {@link ScheduleEventCache} caches events for schedules.
- * <p/>
+ * <p>
  * It uses an underlying {@code Ehcache} to manage {@link ScheduleDay} instances.
- * <p/>
+ * <p>
  * While events are being read from the database, updated instances of the same events may be added via
  * {@link #addEvent(Act)} and {@link #removeEvent(Act)}. This will check versions to ensure that the latest version
  * of the event is used.
- * <p/>
+ * <p>
  * NOTE: as the cache can be updated from multiple threads, there is a very small possibility that an event deletion
  * could be received before the event addition. In this case, the deletion will be ignored and the addition will be
  * cached. A workaround for this is to enable timeToLive on the underlying Ehcache.
- * <p/>
+ * <p>
  * Another reason for setting a timeToLive on the underlying Ehcache is to ensure that customer and patient names
  * reflect those in the database. If the underlying cache is eternal, then changes to customer and patient names won't
  * be reflected in the cached entries.
@@ -78,9 +78,9 @@ class ScheduleEventCache {
             = Collections.<Long, Schedule>synchronizedMap(new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK));
 
     /**
-     * A map of act {@link IMObjectReference} to {@link Event}. Event instances can be reclaimed by the garbage
+     * A map of act {@link Reference} to {@link Event}. Event instances can be reclaimed by the garbage
      * collector when no {@link ScheduleDay} references them.
-     * <p/>
+     * <p>
      * Events spanning multiple days may be shared by multiple {@link ScheduleDay} instances.
      */
     private final ReferenceMap events = new ReferenceMap(ReferenceMap.HARD, ReferenceMap.WEAK);
@@ -98,7 +98,7 @@ class ScheduleEventCache {
 
     /**
      * Returns all events for a schedule on the given day.
-     * <p/>
+     * <p>
      * If the events are not cached, they will be read in from the database. Whilst this occurs, updates to the
      * events may be received via {@link #addEvent(Act)} and {@link #removeEvent(Act)}.
      *
@@ -146,7 +146,7 @@ class ScheduleEventCache {
      * @param day      the day
      * @return the events, or {@code null} if they are not in the cache
      */
-    public List<PropertySet> getCached(IMObjectReference schedule, Date day) {
+    public List<PropertySet> getCached(Reference schedule, Date day) {
         day = DateRules.getDate(day);
         Key key = new Key(schedule.getId(), day);
         Element element = cache.getQuiet(key);
@@ -229,7 +229,7 @@ class ScheduleEventCache {
 
     /**
      * Creates {@link Event} instances for the supplied {@link PropertySet}s.
-     * <p/>
+     * <p>
      * If an event already exists for a property set, it will be updated.
      *
      * @param events the event property sets
@@ -252,7 +252,7 @@ class ScheduleEventCache {
      */
     private Event[] update(PropertySet set) {
         Event[] result = new Event[2];
-        IMObjectReference act = set.getReference(ScheduleEvent.ACT_REFERENCE);
+        Reference act = set.getReference(ScheduleEvent.ACT_REFERENCE);
         synchronized (events) {
             Event event = (Event) events.get(act);
             if (event == null) {
@@ -273,7 +273,7 @@ class ScheduleEventCache {
      * @param act the event act reference
      * @return the corresponding event, or {@code null} if it doesn't exist
      */
-    private Event removeEvent(IMObjectReference act) {
+    private Event removeEvent(Reference act) {
         Event result;
         synchronized (events) {
             result = (Event) events.remove(act);
@@ -342,9 +342,9 @@ class ScheduleEventCache {
 
     /**
      * Tracks {@link ScheduleDay} instances held by the underlying cache.
-     * <p/>
+     * <p>
      * It only holds weak references so they can be discarded when the cache no longer has them.
-     * <p/>
+     * <p>
      * Each {@link Schedule} is only weakly referenced by {@link ScheduleEventCache} so they can be garbage collected
      * when there is no {@link ScheduleDay} instance referencing them.
      */
@@ -429,27 +429,27 @@ class ScheduleEventCache {
 
 
         /**
-         * The events, keyed on act identifier. Note that the PropertySets that these refer to may change.
-         */
-        private Map<Long, EventHandle> map;
-
-        /**
          * The schedule day.
          */
         private final Date day;
-
-        /**
-         * Changes that may need to be applied the schedule, after its events are populated.
-         * <p/>
-         * This is required as events may be updated whilst they are being fetched from the database.
-         */
-        private List<Change> changes = new ArrayList<>();
 
         /**
          * The owning schedule. This reference is kept to ensure that the Schedule instance isn't garbage collected
          * while the underlying cache has an instance of this.
          */
         private final Schedule schedule;
+
+        /**
+         * The events, keyed on act identifier. Note that the PropertySets that these refer to may change.
+         */
+        private Map<Long, EventHandle> map;
+
+        /**
+         * Changes that may need to be applied the schedule, after its events are populated.
+         * <p>
+         * This is required as events may be updated whilst they are being fetched from the database.
+         */
+        private List<Change> changes = new ArrayList<>();
 
         /**
          * Constructs an {@link ScheduleDay}.
@@ -474,7 +474,7 @@ class ScheduleEventCache {
 
         /**
          * Registers events.
-         * <p/>
+         * <p>
          * The events can change at any time, and may have changed between being read from the database and this
          * method being called.
          *
@@ -503,7 +503,7 @@ class ScheduleEventCache {
 
         /**
          * Returns a shallow copy of the events.
-         * <p/>
+         * <p>
          * Note that this sorts on each access. Would be better to sort on Event, and resort if any Event changes.
          *
          * @return the events
@@ -580,14 +580,14 @@ class ScheduleEventCache {
     private static class Event {
 
         /**
-         * The event.
-         */
-        private PropertySet event;
-
-        /**
          * The event identifier.
          */
         private final long id;
+
+        /**
+         * The event.
+         */
+        private PropertySet event;
 
         /**
          * The event version.
@@ -709,7 +709,7 @@ class ScheduleEventCache {
 
         /**
          * Returns the event, if it is for the specified schedule and day.
-         * <p/>
+         * <p>
          * If the handle modCount is not up-to-date, but the event still applies, it will be updated.
          *
          * @param scheduleId the schedule identifier
@@ -747,7 +747,7 @@ class ScheduleEventCache {
          * @param key   the version key
          * @param other the set to compare with
          * @return {@code -1} if this has older version than {@code other}, {@code 0} if they are equal, {@code 1}
-         *         if this has a newer version
+         * if this has a newer version
          */
         private int compareVersions(String key, PropertySet other) {
             if (!event.exists(key) || !other.exists(key)) {
@@ -778,9 +778,9 @@ class ScheduleEventCache {
 
     /**
      * A handle to an {@link Event}.
-     * <p/>
+     * <p>
      * This holds the modCount of the Event when the handle was constructed, in order to detect changes to the Event.
-     * <p/>
+     * <p>
      * Note that access to EventHandle is single-threaded via ScheduleDay, so it doesn't need its own synchronization.
      */
     private static class EventHandle {
@@ -808,7 +808,7 @@ class ScheduleEventCache {
 
         /**
          * Returns the event.
-         * <p/>
+         * <p>
          * If the event has been changed since the handle was constructed, the following may occur;
          * <ul>
          * <li>the event may no longer be for the scheduleId and day. In this case {@code null} is returned.</li>
@@ -857,20 +857,20 @@ class ScheduleEventCache {
          * Compares its two arguments for order.  Returns a negative integer,
          * zero, or a positive integer as the first argument is less than, equal
          * to, or greater than the second.<p>
-         * <p/>
+         * <p>
          *
          * @param o1 the first object to be compared.
          * @param o2 the second object to be compared.
          * @return a negative integer, zero, or a positive integer as the first argument is less than, equal to, or
-         *         greater than the second.
+         * greater than the second.
          */
         public int compare(PropertySet o1, PropertySet o2) {
             Date startTime1 = o1.getDate(ScheduleEvent.ACT_START_TIME);
             Date startTime2 = o2.getDate(ScheduleEvent.ACT_START_TIME);
             int result = DateRules.compareTo(startTime1, startTime2);
             if (result == 0) {
-                IMObjectReference ref1 = o1.getReference(ScheduleEvent.ACT_REFERENCE);
-                IMObjectReference ref2 = o2.getReference(ScheduleEvent.ACT_REFERENCE);
+                Reference ref1 = o1.getReference(ScheduleEvent.ACT_REFERENCE);
+                Reference ref2 = o2.getReference(ScheduleEvent.ACT_REFERENCE);
                 if (ref1.getId() < ref2.getId()) {
                     result = -1;
                 } else if (ref1.getId() == ref2.getId()) {

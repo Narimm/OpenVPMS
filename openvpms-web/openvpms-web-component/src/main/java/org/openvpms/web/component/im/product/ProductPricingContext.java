@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -21,6 +21,7 @@ import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
+import org.openvpms.archetype.rules.product.ServiceRatioService;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -54,10 +55,11 @@ public class ProductPricingContext extends AbstractPricingContext {
      * @param location      the practice location. May be {@code null}
      * @param priceRules    the price rules
      * @param locationRules the location rules
+     * @param serviceRatios the service ratios
      */
     public ProductPricingContext(Currency currency, Party practice, Party location, ProductPriceRules priceRules,
-                                 LocationRules locationRules) {
-        super(currency, location, priceRules, locationRules);
+                                 LocationRules locationRules, ServiceRatioService serviceRatios) {
+        super(currency, location, priceRules, locationRules, serviceRatios);
         taxRules = new TaxRules(practice, ServiceHelper.getArchetypeService());
         includeTax = includeTax(practice);
     }
@@ -65,36 +67,39 @@ public class ProductPricingContext extends AbstractPricingContext {
     /**
      * Constructs a {@link ProductPricingContext}.
      *
-     * @param currency     the currency
-     * @param pricingGroup the pricing group
-     * @param practice     the practice
-     * @param location     the practice location. May be {@code null}
-     * @param priceRules   the price rules
+     * @param currency      the currency
+     * @param pricingGroup  the pricing group
+     * @param practice      the practice
+     * @param location      the practice location. May be {@code null}
+     * @param priceRules    the price rules
+     * @param serviceRatios the service ratios
      */
     public ProductPricingContext(Currency currency, PricingGroup pricingGroup, Party practice, Party location,
-                                 ProductPriceRules priceRules) {
-        super(currency, pricingGroup, location, priceRules);
+                                 ProductPriceRules priceRules, ServiceRatioService serviceRatios) {
+        super(currency, pricingGroup, location, priceRules, serviceRatios);
         taxRules = new TaxRules(practice, ServiceHelper.getArchetypeService());
         includeTax = includeTax(practice);
     }
 
     /**
-     * Returns the tax-inclusive price given a tax-exclusive price.
-     * <p/>
-     * This implementation
+     * Returns the tax-inclusive price given a tax-exclusive price and service ratio.
      *
      * @param product the product
      * @param price   the tax-exclusive price
+     * @param serviceRatio the service ratio. May be {@code null}
      * @return the tax-inclusive price, rounded according to the practice currency conventions
      */
     @Override
-    public BigDecimal getPrice(Product product, ProductPrice price) {
+    public BigDecimal getPrice(Product product, ProductPrice price, BigDecimal serviceRatio) {
         BigDecimal result;
         if (includeTax) {
-            result = super.getPrice(product, price);
+            result = super.getPrice(product, price, serviceRatio);
         } else {
             BigDecimal taxExPrice = price.getPrice();
             if (taxExPrice != null) {
+                if (serviceRatio != null) {
+                    taxExPrice = taxExPrice.multiply(serviceRatio);
+                }
                 // don't round to the minimum price as this only applies when tax is included
                 result = getCurrency().round(taxExPrice);
             } else {

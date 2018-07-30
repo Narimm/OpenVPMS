@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.system.common.query;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.Arrays;
 
@@ -61,7 +61,7 @@ public class Constraints {
      * @param value the value
      * @return a new <em>equal</em> constraint
      */
-    public static ObjectRefNodeConstraint eq(String name, IMObjectReference value) {
+    public static ObjectRefNodeConstraint eq(String name, Reference value) {
         return new ObjectRefNodeConstraint(name, value);
     }
 
@@ -95,7 +95,7 @@ public class Constraints {
      * @param value the value
      * @return a new <em>not-equal</em> constraint
      */
-    public static ObjectRefNodeConstraint ne(String name, IMObjectReference value) {
+    public static ObjectRefNodeConstraint ne(String name, Reference value) {
         return new ObjectRefNodeConstraint(name, RelationalOp.NE, value);
     }
 

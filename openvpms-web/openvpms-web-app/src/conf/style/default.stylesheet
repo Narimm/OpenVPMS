@@ -684,6 +684,46 @@
         </properties>
     </style>
 
+    <!--  Calendar -->
+    <style name="Calendar" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="${Calendar.separatorPosition}"/>
+        </properties>
+    </style>
+
+    <style name="Calendar.View" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="${Calendar.View.separatorPosition}"/>
+        </properties>
+    </style>
+
+    <style name="Calendar.Date" type="nextapp.echo2.app.Column">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="insets" value="${padding.medium} 1px"/>
+                        <property name="background" value="#ffffff"/>
+                    </properties>
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
+    <style name="Calendar.Event" type="nextapp.echo2.app.Component">
+        <properties>
+            <property name="layoutData">
+                <layout-data type="nextapp.echo2.app.layout.TableLayoutData">
+                    <properties>
+                        <property name="background" value="${calendar.event.colour}"/>
+                    </properties>e
+                </layout-data>
+            </property>
+        </properties>
+    </style>
+
     <!--  Appointment reminders -->
 
     <style name="AppointmentReminder.sent" type="nextapp.echo2.app.Label">

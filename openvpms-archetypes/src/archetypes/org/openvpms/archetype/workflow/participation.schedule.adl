@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -26,6 +26,9 @@
                     <propertyMap name="archetype">
                         <property name="shortName" value="party.organisationSchedule"/>
                     </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="entity.calendarServiceRatio"/>
+                    </propertyMap>
                 </propertyList>
             </assertion>
         </node>
@@ -38,6 +41,9 @@
                     </propertyMap>
                     <propertyMap name="archetype">
                         <property name="shortName" value="act.calendarBlock"/>
+                    </propertyMap>
+                    <propertyMap name="archetype">
+                        <property name="shortName" value="act.calendarEvent"/>
                     </propertyMap>
                 </propertyList>
             </assertion>

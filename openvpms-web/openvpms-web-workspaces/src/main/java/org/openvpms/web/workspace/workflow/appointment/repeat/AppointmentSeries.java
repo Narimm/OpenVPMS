@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
@@ -21,9 +21,10 @@ import org.joda.time.Period;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.Times;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.Date;
 
@@ -32,7 +33,7 @@ import java.util.Date;
  *
  * @author Tim Anderson
  */
-public class AppointmentSeries extends CalendarEventSeries {
+public class AppointmentSeries extends ScheduleEventSeries {
 
     /**
      * The period for new reminders during which reminders should not be scheduled, or {@code null} if
@@ -94,7 +95,7 @@ public class AppointmentSeries extends CalendarEventSeries {
 
     /**
      * Updates an event.
-     * <p/>
+     * <p>
      * This sets the sendReminder flag for future appointments.
      *
      * @param act   the event
@@ -103,8 +104,8 @@ public class AppointmentSeries extends CalendarEventSeries {
      * @return the event
      */
     @Override
-    protected ActBean populate(Act act, Times times, State state) {
-        ActBean bean = super.populate(act, times, state);
+    protected IMObjectBean populate(Act act, Times times, State state) {
+        IMObjectBean bean = super.populate(act, times, state);
         AppointmentState appointment = (AppointmentState) state;
         if (noReminderPeriod != null) {
             boolean sendReminder = false;
@@ -134,15 +135,15 @@ public class AppointmentSeries extends CalendarEventSeries {
      * @param bean  the event bean
      * @param state the state
      */
-    protected void populate(ActBean bean, State state) {
+    protected void populate(IMObjectBean bean, State state) {
         super.populate(bean, state);
-        Act act = bean.getAct();
+        Act act = (Act) bean.getObject();
         AppointmentState appointment = (AppointmentState) state;
-        bean.setNodeParticipant("appointmentType", appointment.getAppointmentType());
+        bean.setTarget("appointmentType", appointment.getAppointmentType());
         act.setStatus(appointment.getStatus());
-        bean.setNodeParticipant("customer", appointment.getCustomer());
-        bean.setNodeParticipant("patient", appointment.getPatient());
-        bean.setNodeParticipant("clinician", appointment.getClinician());
+        bean.setTarget("customer", appointment.getCustomer());
+        bean.setTarget("patient", appointment.getPatient());
+        bean.setTarget("clinician", appointment.getClinician());
         act.setReason(appointment.getReason());
         act.setDescription(appointment.getNotes());
     }
@@ -155,7 +156,7 @@ public class AppointmentSeries extends CalendarEventSeries {
         /**
          * The appointment type.
          */
-        private IMObjectReference appointmentType;
+        private Reference appointmentType;
 
         /**
          * The status.
@@ -165,17 +166,17 @@ public class AppointmentSeries extends CalendarEventSeries {
         /**
          * The customer.
          */
-        private IMObjectReference customer;
+        private Reference customer;
 
         /**
          * The patient.
          */
-        private IMObjectReference patient;
+        private Reference patient;
 
         /**
          * The clinician.
          */
-        private IMObjectReference clinician;
+        private Reference clinician;
 
         /**
          * The appointment reason.
@@ -197,27 +198,8 @@ public class AppointmentSeries extends CalendarEventSeries {
          *
          * @param appointment the appointment
          */
-        public AppointmentState(ActBean appointment) {
+        public AppointmentState(IMObjectBean appointment) {
             super(appointment);
-        }
-
-        /**
-         * Updates the state from an appointment.
-         *
-         * @param appointment the appointment
-         */
-        @Override
-        public void update(ActBean appointment) {
-            super.update(appointment);
-            Act act = appointment.getAct();
-            appointmentType = appointment.getNodeParticipantRef("appointmentType");
-            status = act.getStatus();
-            customer = appointment.getNodeParticipantRef("customer");
-            patient = appointment.getNodeParticipantRef("patient");
-            clinician = appointment.getNodeParticipantRef("clinician");
-            reason = appointment.getString("reason");
-            notes = appointment.getString("description");
-            sendReminder = appointment.getBoolean("sendReminder");
         }
 
         /**
@@ -237,7 +219,26 @@ public class AppointmentSeries extends CalendarEventSeries {
             this.sendReminder = state.sendReminder;
         }
 
-        public IMObjectReference getAppointmentType() {
+        /**
+         * Updates the state from an appointment.
+         *
+         * @param appointment the appointment
+         */
+        @Override
+        public void update(IMObjectBean appointment) {
+            super.update(appointment);
+            Act act = (Act) appointment.getObject();
+            appointmentType = appointment.getTargetRef("appointmentType");
+            status = act.getStatus();
+            customer = appointment.getTargetRef("customer");
+            patient = appointment.getTargetRef("patient");
+            clinician = appointment.getTargetRef("clinician");
+            reason = appointment.getString("reason");
+            notes = appointment.getString("description");
+            sendReminder = appointment.getBoolean("sendReminder");
+        }
+
+        public Reference getAppointmentType() {
             return appointmentType;
         }
 
@@ -245,15 +246,15 @@ public class AppointmentSeries extends CalendarEventSeries {
             return status;
         }
 
-        public IMObjectReference getCustomer() {
+        public Reference getCustomer() {
             return customer;
         }
 
-        public IMObjectReference getPatient() {
+        public Reference getPatient() {
             return patient;
         }
 
-        public IMObjectReference getClinician() {
+        public Reference getClinician() {
             return clinician;
         }
 

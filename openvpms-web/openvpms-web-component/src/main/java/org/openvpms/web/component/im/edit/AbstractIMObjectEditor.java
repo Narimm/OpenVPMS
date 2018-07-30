@@ -22,10 +22,10 @@ import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
@@ -65,12 +65,14 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -100,6 +102,16 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     private final ArchetypeDescriptor archetype;
 
     /**
+     * The editors.
+     */
+    private final Editors editors;
+
+    /**
+     * Tracks the editors created via the factory. By default, these are disposed if the layout changes.
+     */
+    private final Set<Editor> createdEditors = new HashSet<>();
+
+    /**
      * The object viewer.
      */
     private IMObjectView viewer;
@@ -108,11 +120,6 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * The listeners.
      */
     private ModifiableListeners listeners = new ModifiableListeners();
-
-    /**
-     * The child editors.
-     */
-    private Editors editors;
 
     /**
      * The object properties.
@@ -182,11 +189,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
         IMObjectComponentFactory factory = new ComponentFactory(context);
         context.setComponentFactory(factory);
 
-        editors.addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onModified(modifiable);
-            }
-        });
+        editors.addModifiableListener(this::onModified);
     }
 
     /**
@@ -555,7 +558,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Save any edits.
-     * <p/>
+     * <p>
      * This uses {@link #saveChildren()} to save the children prior to invoking {@link #saveObject()}.
      *
      * @throws OpenVPMSException if the save fails
@@ -588,7 +591,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Deletes the object.
-     * <p/>
+     * <p>
      * This uses {@link #deleteChildren()} to delete the children prior to invoking {@link #deleteObject()}.
      *
      * @throws OpenVPMSException if the delete fails
@@ -628,6 +631,17 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      */
     protected PropertySet getProperties() {
         return properties;
+    }
+
+    /**
+     * Adds an editor.
+     * <br/>
+     * Any editors added via this will not automatically be disposed of if the layout changes.
+     *
+     * @param editor the editor to add
+     */
+    protected void addEditor(Editor editor) {
+        editors.add(editor);
     }
 
     /**
@@ -723,6 +737,8 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Change the layout.
+     * <p>
+     * This disposes created editors first, using {@link #disposeOnChangeLayout()}.
      */
     protected void onLayout() {
         disposeOnChangeLayout();
@@ -750,7 +766,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Invoked by {@link #onLayout} to dispose of existing editors.
-     * <p/>
+     * <p>
      * This implementation disposes each editor for which {@link #disposeOnChangeLayout(Editor)} returns {@code true}.
      */
     protected void disposeOnChangeLayout() {
@@ -758,6 +774,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
         for (Editor editor : set.toArray(new Editor[set.size()])) {
             if (disposeOnChangeLayout(editor)) {
                 editors.remove(editor);
+                createdEditors.remove(editor);
                 editor.dispose();
             }
         }
@@ -765,18 +782,18 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Determines if an editor should be disposed on layout change.
-     * This implementation always returns true.
+     * This implementation returns {@code true} for editors created via the {@link ComponentFactory}.
      *
      * @param editor the editor
-     * @return {@code true}
+     * @return {@code true} if the editor should be disposed
      */
     protected boolean disposeOnChangeLayout(Editor editor) {
-        return true;
+        return createdEditors.contains(editor);
     }
 
     /**
      * Invoked when layout has completed.
-     * <p/>
+     * <p>
      * This can be used to perform processing that requires all editors to be created.
      */
     protected void onLayoutCompleted() {
@@ -784,7 +801,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Invoked when any of the child editors or properties update.
-     * <p/>
+     * <p>
      * This resets the cached valid state
      *
      * @param modifiable the updated object
@@ -840,7 +857,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     /**
      * Helper to return an editor associated with a property, given the property
      * name.
-     * <p/>
+     * <p>
      * This performs a layout of the component if it hasn't already been done, to ensure the editors are created
      *
      * @param name the property name
@@ -878,13 +895,13 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Helper to return an object given its reference.
-     * <p/>
+     * <p>
      * This implementation uses the cache associated with the layout context.
      *
      * @param reference the reference. May be {@code null}
      * @return the object corresponding to {@code reference} or {@code null} if none exists
      */
-    protected IMObject getObject(IMObjectReference reference) {
+    protected IMObject getObject(Reference reference) {
         return getLayoutContext().getCache().get(reference);
     }
 
@@ -986,23 +1003,26 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
         lookups.clear();
     }
 
-    private class ComponentFactory extends NodeEditorFactory {
+    /**
+     * A factory that tracks creation of editors.
+     */
+    private class ComponentFactory extends AbstractEditableComponentFactory {
 
         /**
-         * Construct a new {@code ComponentFactory}.
+         * Constructs a {@link  ComponentFactory}.
          *
          * @param context the layout context
          */
         public ComponentFactory(LayoutContext context) {
-            super(editors, context);
+            super(context, Styles.EDIT);
         }
 
         /**
-         * Returns a component to edit a lookup property.
+         * Returns an editor for a lookup property.
          *
          * @param property the lookup property
          * @param context  the parent object
-         * @return a component to edit the property
+         * @return a new editor for {@code property}
          */
         @Override
         protected LookupPropertyEditor createLookupEditor(Property property, IMObject context) {
@@ -1010,15 +1030,70 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
             Component component = editor.getComponent();
             if (component instanceof LookupField) {
                 final LookupField lookup = (LookupField) editor.getComponent();
-                ModifiableListener listener = new ModifiableListener() {
-                    public void modified(Modifiable modifiable) {
-                        refreshLookups(lookup);
-                    }
-                };
+                ModifiableListener listener = modifiable -> refreshLookups(lookup);
                 property.addModifiableListener(listener);
                 lookups.put(editor, listener);
             }
+            return register(editor);
+        }
+
+        /**
+         * Returns an editor for a collection property.
+         *
+         * @param property the collection property
+         * @param object   the parent object
+         * @return a new editor for {@code property}
+         */
+        @Override
+        protected Editor createCollectionEditor(CollectionProperty property, IMObject object) {
+            Editor editor = super.createCollectionEditor(property, object);
+            return register(editor);
+        }
+
+        /**
+         * Creates an editor for an {@link IMObject}.
+         *
+         * @param object the object to edit
+         * @param parent the object's parent. May be {@code null}
+         * @return a new editor for {@code object}
+         */
+        @Override
+        protected IMObjectEditor getObjectEditor(IMObject object, IMObject parent, LayoutContext context) {
+            IMObjectEditor editor = super.getObjectEditor(object, parent, context);
+            return register(editor);
+        }
+
+        /**
+         * Returns an editor for an object reference property.
+         *
+         * @param property the object reference property
+         * @param object   the parent object
+         * @return a new editor for {@code property}
+         */
+        @Override
+        protected Editor createObjectReferenceEditor(Property property, IMObject object) {
+            Editor editor = super.createObjectReferenceEditor(property, object);
+            return register(editor);
+        }
+
+        /**
+         * Creates a {@link PropertyEditor} for a component.
+         *
+         * @param property  the property
+         * @param component the component
+         * @return a new editor
+         */
+        @Override
+        protected PropertyEditor createPropertyEditor(Property property, Component component) {
+            PropertyEditor editor = super.createPropertyEditor(property, component);
+            return register(editor);
+        }
+
+        private <T extends Editor> T register(T editor) {
+            editors.add(editor);
+            createdEditors.add(editor);
             return editor;
         }
+
     }
 }

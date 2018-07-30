@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -20,12 +20,12 @@ import net.sf.ehcache.Ehcache;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.springframework.beans.factory.DisposableBean;
 
@@ -57,9 +57,9 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
     private final ScheduleEventFactory factory;
 
     /**
-     * The archetype short name of the events that this service caches.
+     * The archetypes of the events that this service caches.
      */
-    private final String[] eventShortNames;
+    private final String[] eventArchetypes;
 
     /**
      * Listener for event updates.
@@ -70,18 +70,18 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
     /**
      * Constructs an {@link AbstractScheduleService}.
      *
-     * @param eventShortNames the event act archetype short names
-     * @param service        the archetype service
-     * @param cache          the event cache
-     * @param factory        the event factory
+     * @param eventArchetypes the event act archetype short names
+     * @param service         the archetype service
+     * @param cache           the event cache
+     * @param factory         the event factory
      */
-    public AbstractScheduleService(String[] eventShortNames, IArchetypeService service, Ehcache cache,
+    public AbstractScheduleService(String[] eventArchetypes, IArchetypeService service, Ehcache cache,
                                    ScheduleEventFactory factory) {
         this.service = service;
         this.factory = factory;
         this.cache = new ScheduleEventCache(cache, factory);
 
-        this.eventShortNames = eventShortNames;
+        this.eventArchetypes = eventArchetypes;
 
         // add a listener to receive notifications from the archetype service
         listener = new AbstractArchetypeServiceListener() {
@@ -96,7 +96,7 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
                 removeEvent((Act) object);
             }
         };
-        for (String shortName : eventShortNames) {
+        for (String shortName : eventArchetypes) {
             service.addListener(shortName, listener);
         }
     }
@@ -110,10 +110,22 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
      */
     @Override
     public void destroy() throws Exception {
-        cache.clear();
-        for (String shortName : eventShortNames) {
-            service.removeListener(shortName, listener);
+        try {
+            for (String shortName : eventArchetypes) {
+                service.removeListener(shortName, listener);
+            }
+        } finally {
+            cache.clear();
         }
+    }
+
+    /**
+     * Returns the event archetypes.
+     *
+     * @return the event archetypes
+     */
+    public String[] getEventArchetypes() {
+        return eventArchetypes;
     }
 
     /**
@@ -124,6 +136,7 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
      * @param day      the day
      * @return a list of events
      */
+    @Override
     public List<PropertySet> getEvents(Entity schedule, Date day) {
         return cache.getEvents(schedule, day);
     }
@@ -136,6 +149,7 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
      * @param to       the to time
      * @return a list of events
      */
+    @Override
     public List<PropertySet> getEvents(Entity schedule, Date from, Date to) {
         Date fromDay = DateRules.getDate(from);
         Date toDay = DateRules.getDate(to);
@@ -163,7 +177,7 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
      * @param day      the day
      * @return the events, or {@code null} if they are not in the cache
      */
-    protected List<PropertySet> getCached(IMObjectReference schedule, Date day) {
+    protected List<PropertySet> getCached(Reference schedule, Date day) {
         return cache.getCached(schedule, day);
     }
 

@@ -46,7 +46,7 @@ import static org.openvpms.web.workspace.workflow.appointment.repeat.Repeats.wee
 import static org.openvpms.web.workspace.workflow.appointment.repeat.Repeats.yearly;
 
 /**
- * Base class for {@link CalendarEventSeries} tests.
+ * Base class for {@link ScheduleEventSeries} tests.
  *
  * @author Tim Anderson
  */
@@ -130,7 +130,7 @@ public abstract class CalendarEventSeriesTest extends ArchetypeServiceTest {
     public void testChangeSeriesExpression() {
         Act event = createEvent(startTime, endTime);
 
-        CalendarEventSeries series = createSeries(event, monthly(), times(11));
+        ScheduleEventSeries series = createSeries(event, monthly(), times(11));
 
         checkSeries(series, event, 1, DateUnits.MONTHS, 12);
         series.setExpression(Repeats.yearly());
@@ -145,7 +145,7 @@ public abstract class CalendarEventSeriesTest extends ArchetypeServiceTest {
     public void testChangeSeriesConditionToFewerEvents() {
         Act event = createEvent(startTime, endTime);
 
-        CalendarEventSeries series = createSeries(event, monthly(), times(11));
+        ScheduleEventSeries series = createSeries(event, monthly(), times(11));
         checkSeries(series, event, 1, DateUnits.MONTHS, 12);
         List<Act> oldEvents = series.getEvents();
         assertEquals(12, oldEvents.size());
@@ -175,7 +175,7 @@ public abstract class CalendarEventSeriesTest extends ArchetypeServiceTest {
     public void testChangeSeriesConditionToMoreEvents() {
         Act event = createEvent(startTime, endTime);
 
-        CalendarEventSeries series = createSeries(event, monthly(), times(9));
+        ScheduleEventSeries series = createSeries(event, monthly(), times(9));
         checkSeries(series, event, 1, DateUnits.MONTHS, 10);
         List<Act> oldEvents = series.getEvents();
         assertEquals(10, oldEvents.size());
@@ -200,10 +200,10 @@ public abstract class CalendarEventSeriesTest extends ArchetypeServiceTest {
     @Test
     public void testSeriesWithOverlappingEvents() {
         Act event = createEvent(startTime, DateRules.getDate(startTime, 2, DateUnits.DAYS));
-        CalendarEventSeries series = createSeries(event);
+        ScheduleEventSeries series = createSeries(event);
         series.setExpression(daily());  // the next event overlaps the previous
         series.setCondition(once());
-        CalendarEventSeries.Overlap overlap = series.getFirstOverlap();
+        ScheduleEventSeries.Overlap overlap = series.getFirstOverlap();
         assertNotNull(overlap);
         assertEquals(overlap.getEvent1(), Times.create(event));
     }
@@ -216,7 +216,7 @@ public abstract class CalendarEventSeriesTest extends ArchetypeServiceTest {
     @Test
     public void testDeleteSeriesWithNoExpiredEvents() {
         Act event = createEvent();
-        CalendarEventSeries series = createSeries(event, Repeats.yearly(), times(9));
+        ScheduleEventSeries series = createSeries(event, Repeats.yearly(), times(9));
         Act act = series.getSeries();
         assertNotNull(act);
 
@@ -239,7 +239,7 @@ public abstract class CalendarEventSeriesTest extends ArchetypeServiceTest {
     @Test
     public void testChangeSchedule() {
         Act event = createEvent();
-        CalendarEventSeries series = createSeries(event, Repeats.yearly(), times(2));
+        ScheduleEventSeries series = createSeries(event, Repeats.yearly(), times(2));
         checkSeries(series, event, 1, DateUnits.YEARS, 3);
 
         Entity schedule2 = ScheduleTestHelper.createSchedule(15, DateUnits.MINUTES.toString(), 1, appointmentType,
@@ -260,7 +260,7 @@ public abstract class CalendarEventSeriesTest extends ArchetypeServiceTest {
     public void testCannotChangeAuthor() {
         Act event = createEvent();
 
-        CalendarEventSeries series = createSeries(event, monthly(), times(2));
+        ScheduleEventSeries series = createSeries(event, monthly(), times(2));
         checkSeries(series, event, 1, DateUnits.MONTHS, 3);
 
         User author2 = TestHelper.createUser();
@@ -281,12 +281,12 @@ public abstract class CalendarEventSeriesTest extends ArchetypeServiceTest {
     @Test
     public void testNewSeriesCreatedForNonInitialEvent() {
         Act first = createEvent(startTime, endTime);
-        CalendarEventSeries series1 = createSeries(first, monthly(), times(4));
+        ScheduleEventSeries series1 = createSeries(first, monthly(), times(4));
         List<Act> events = checkSeries(series1, first, 1, DateUnits.MONTHS, 5);
 
         // get the third event, and create a new series
         Act third = events.get(2);
-        CalendarEventSeries series2 = createSeries(third);
+        ScheduleEventSeries series2 = createSeries(third);
         RepeatCondition condition = series2.getCondition();
         assertEquals(times(2), condition);                   // times reflects the position in the series
 
@@ -307,7 +307,7 @@ public abstract class CalendarEventSeriesTest extends ArchetypeServiceTest {
     public void testChangeEventDate() {
         Act event = createEvent(startTime, endTime);
 
-        CalendarEventSeries series = createSeries(event, monthly(), times(11));
+        ScheduleEventSeries series = createSeries(event, monthly(), times(11));
 
         checkSeries(series, event, 1, DateUnits.MONTHS, 12);
 
@@ -330,7 +330,7 @@ public abstract class CalendarEventSeriesTest extends ArchetypeServiceTest {
         endTime = TestHelper.getDatetime("2018-05-07 10:00:00");
         Act event = createEvent(startTime, endTime);
 
-        CalendarEventSeries series = createSeries(event, weekdays(startTime), times(4));
+        ScheduleEventSeries series = createSeries(event, weekdays(startTime), times(4));
         List<Act> acts1 = series.getEvents();
         assertEquals(5, acts1.size());
 
@@ -358,7 +358,7 @@ public abstract class CalendarEventSeriesTest extends ArchetypeServiceTest {
     }
 
     /**
-     * Creates an {@link CalendarEventSeries}, and verifies the expected events have been created.
+     * Creates an {@link ScheduleEventSeries}, and verifies the expected events have been created.
      *
      * @param expression the expression
      * @param startTime  the first event start time
@@ -370,7 +370,7 @@ public abstract class CalendarEventSeriesTest extends ArchetypeServiceTest {
                                      DateUnits units) {
         Act event = createEvent(startTime, endTime);
 
-        CalendarEventSeries series = createSeries(event, expression, times(9));
+        ScheduleEventSeries series = createSeries(event, expression, times(9));
         checkSeries(series, event, interval, units, 10);
         assertFalse(series.isModified());
     }
@@ -385,7 +385,7 @@ public abstract class CalendarEventSeriesTest extends ArchetypeServiceTest {
      * @param count    the expected no. of events in the series
      * @return the events
      */
-    protected List<Act> checkSeries(CalendarEventSeries series, Act event, int interval, DateUnits units, int count) {
+    protected List<Act> checkSeries(ScheduleEventSeries series, Act event, int interval, DateUnits units, int count) {
         ActBean bean = new ActBean(event);
         return checkSeries(series, event, interval, units, count, (User) bean.getNodeParticipant("author"));
     }
@@ -442,7 +442,7 @@ public abstract class CalendarEventSeriesTest extends ArchetypeServiceTest {
      * @param author   the expected author
      * @return the events
      */
-    protected abstract List<Act> checkSeries(CalendarEventSeries series, Act event, int interval, DateUnits units,
+    protected abstract List<Act> checkSeries(ScheduleEventSeries series, Act event, int interval, DateUnits units,
                                              int count, User author);
 
     /**
@@ -450,7 +450,7 @@ public abstract class CalendarEventSeriesTest extends ArchetypeServiceTest {
      *
      * @param series the series
      */
-    protected void checkSave(CalendarEventSeries series) {
+    protected void checkSave(ScheduleEventSeries series) {
         assertNull(series.getFirstOverlap());
         series.save();
     }
@@ -463,8 +463,8 @@ public abstract class CalendarEventSeriesTest extends ArchetypeServiceTest {
      * @param condition  the repeat condition
      * @return the series
      */
-    protected CalendarEventSeries createSeries(Act event, RepeatExpression expression, RepeatCondition condition) {
-        CalendarEventSeries series = createSeries(event);
+    protected ScheduleEventSeries createSeries(Act event, RepeatExpression expression, RepeatCondition condition) {
+        ScheduleEventSeries series = createSeries(event);
         assertEquals(0, series.getEvents().size());
         assertTrue(series.isModified());
         assertNull(series.getSeries());
@@ -479,11 +479,11 @@ public abstract class CalendarEventSeriesTest extends ArchetypeServiceTest {
     }
 
     /**
-     * Creates a new {@link CalendarEventSeries}.
+     * Creates a new {@link ScheduleEventSeries}.
      *
      * @param event the event
      * @return a new series
      */
-    protected abstract CalendarEventSeries createSeries(final Act event);
+    protected abstract ScheduleEventSeries createSeries(final Act event);
 
 }

@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
@@ -266,7 +267,7 @@ public abstract class AbstractActEditor extends AbstractIMObjectEditor {
      * @return {@code true} if the participant was modified, otherwise {@code false}
      * @throws IllegalArgumentException if the name doesn't correspond to a valid node
      */
-    protected boolean setParticipant(String name, IMObjectReference entity) {
+    protected boolean setParticipant(String name, Reference entity) {
         boolean modified = false;
         ParticipationEditor editor = getParticipationEditor(name, false);
         if (editor != null) {
@@ -332,7 +333,7 @@ public abstract class AbstractActEditor extends AbstractIMObjectEditor {
      * @return the participant. May be {@code null}
      */
     protected IMObject getParticipant(String name) {
-        IMObjectReference ref = getParticipantRef(name);
+        Reference ref = getParticipantRef(name);
         return getObject(ref);
     }
 

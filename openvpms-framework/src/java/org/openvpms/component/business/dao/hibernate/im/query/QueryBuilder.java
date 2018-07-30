@@ -24,8 +24,8 @@ import org.openvpms.component.business.dao.hibernate.im.query.QueryContext.Logic
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeConstraint;
 import org.openvpms.component.system.common.query.ArchetypeIdConstraint;
@@ -387,7 +387,7 @@ public class QueryBuilder {
         RelationalOp op = constraint.getOperator();
         String property = getQualifiedPropertyName(constraint.getNodeName(), constraint.getAlias(), context);
         if (constraint.getObjectReference() != null) {
-            IMObjectReference ref = constraint.getObjectReference();
+            Reference ref = constraint.getObjectReference();
             context.addConstraint(property + ".id", op, ref.getId());
         } else {
             ArchetypeId id = constraint.getArchetypeId();

@@ -60,7 +60,7 @@ public class ClaimItemEditor extends AbstractClaimEditor {
         this.charges = new ChargeCollectionEditor(getCollectionProperty("items"), act, customer, patient, charges,
                                                   attachments, context);
         this.charges.addModifiableListener(modifiable -> onItemsChanged());
-        getEditors().add(this.charges);
+        addEditor(this.charges);
 
         addStartEndTimeListeners();
         getProperty("status").addModifiableListener(modifiable -> onStatusChanged());

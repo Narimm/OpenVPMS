@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -109,4 +109,9 @@ public class ProductArchetypes {
      * The drug schedule.
      */
     public static final String DRUG_SCHEDULE = "lookup.productDrugSchedule";
+
+    /**
+     * Service ratio calendar.
+     */
+    public static final String SERVICE_RATIO_CALENDAR = "entity.calendarServiceRatio";
 }

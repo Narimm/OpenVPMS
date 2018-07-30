@@ -81,7 +81,7 @@ public class PatientVisitNoteEditor extends AbstractPatientClinicalActEditor {
         }
         items.add(object);
         noteEditor = (PatientActEditor) items.getEditor(object);
-        getEditors().add(noteEditor);
+        addEditor(noteEditor);
 
         // update the event clinician when the note clinician changes
         clinicianEditor = new ParticipationCollectionEditor(noteEditor.getCollectionProperty("clinician"),

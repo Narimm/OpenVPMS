@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.sms;
@@ -73,21 +73,6 @@ public class SMSEditor extends AbstractModifiable {
     private final Context context;
 
     /**
-     * The phone number, if 0 or 1 no. are provided.
-     */
-    private TextField phone;
-
-    /**
-     * The phone selector, if multiple phone numbers are provided.
-     */
-    private SelectField phoneSelector;
-
-    /**
-     * The selected contact.
-     */
-    private Contact selected;
-
-    /**
      * The text message.
      */
     private final SMSTextArea message;
@@ -111,6 +96,21 @@ public class SMSEditor extends AbstractModifiable {
      * Used to track property modification, and perform validation.
      */
     private final Editors editors;
+
+    /**
+     * The phone number, if 0 or 1 no. are provided.
+     */
+    private TextField phone;
+
+    /**
+     * The phone selector, if multiple phone numbers are provided.
+     */
+    private SelectField phoneSelector;
+
+    /**
+     * The selected contact.
+     */
+    private Contact selected;
 
     /**
      * The maximum number of parts in multi-part SMS messages.
@@ -377,6 +377,15 @@ public class SMSEditor extends AbstractModifiable {
     }
 
     /**
+     * Resets the cached validity state of the object, to force revalidation of the object and its descendants.
+     */
+    @Override
+    public void resetValid() {
+        super.resetValid();
+        editors.resetValid();
+    }
+
+    /**
      * Validates the object.
      *
      * @param validator the validator
@@ -390,15 +399,6 @@ public class SMSEditor extends AbstractModifiable {
             valid = false;
         }
         return valid;
-    }
-
-    /**
-     * Resets the cached validity state of the object, to force revalidation of the object and its descendants.
-     */
-    @Override
-    public void resetValid() {
-        super.resetValid();
-        editors.resetValid();
     }
 
     /**

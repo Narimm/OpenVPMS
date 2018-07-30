@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -149,7 +149,7 @@ public class EstimateInvoicerTestCase extends AbstractCustomerChargeActEditorTes
 
         EstimateInvoicer invoicer = createEstimateInvoicer();
 
-        EditDialog dialog = invoicer.invoice(estimation, null, context);
+        EditDialog dialog = invoicer.invoice(estimation, (FinancialAct) null, context);
         IMObjectEditor editor = dialog.getEditor();
         assertTrue(SaveHelper.save(editor));
 
