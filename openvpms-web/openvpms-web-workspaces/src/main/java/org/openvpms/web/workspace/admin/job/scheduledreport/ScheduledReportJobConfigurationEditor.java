@@ -105,8 +105,6 @@ public class ScheduledReportJobConfigurationEditor extends AbstractJobConfigurat
      */
     public static final String PRINTER = "printer";
 
-    // private final ToAddressSelector to;
-
     /**
      * The report factory.
      */
@@ -450,10 +448,12 @@ public class ScheduledReportJobConfigurationEditor extends AbstractJobConfigurat
         Property paramName = getParamName(index);
         Property paramDisplayName = getParamDisplayName(index);
         Property paramType = getParamType(index);
+        Property paramExpressionType = getParamExpressionType(index);
         Property paramValue = getParamValue(index);
         paramName.setValue(name);
         paramType.setValue(type);
         paramDisplayName.setValue(displayName);
+        paramExpressionType.setValue(null);
         paramValue.setValue(value);
     }
 
@@ -620,6 +620,16 @@ public class ScheduledReportJobConfigurationEditor extends AbstractJobConfigurat
      */
     private Property getParamType(int index) {
         return getProperty("paramType" + index);
+    }
+
+    /**
+     * Returns a parameter expression type property, given its index.
+     *
+     * @param index the index
+     * @return property, or {@code null} if none is found
+     */
+    private Property getParamExpressionType(int index) {
+        return getProperty("paramExprType" + index);
     }
 
     /**

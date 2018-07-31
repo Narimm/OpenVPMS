@@ -58,7 +58,6 @@ import javax.sql.DataSource;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -211,22 +210,8 @@ public class ScheduledReportJob implements InterruptableJob {
         SQLReportPrinter printer = new SQLReportPrinter(template, context, reportFactory, formatter, dataSource,
                                                         service);
         Set<ParameterType> parameterTypes = printer.getParameterTypes();
-        Map<String, Object> parameters = new HashMap<>();
-        int i = 0;
-        while (true) {
-            String node = "paramName" + i;
-            if (config.hasNode(node)) {
-                String name = config.getString(node);
-                if (!StringUtils.isEmpty(name)) {
-                    Object value = config.getValue("paramValue" + i);
-                    checkParameterType(parameterTypes, name);
-                    parameters.put(name, value);
-                }
-            } else {
-                break;
-            }
-            ++i;
-        }
+        ParameterEvaluator evaluator = new ParameterEvaluator();
+        Map<String, Object> parameters = evaluator.evaluate(config, parameterTypes);
         printer.setParameters(parameters);
         if (!stop && config.getBoolean(ScheduledReportJobConfigurationEditor.FILE)) {
             file(printer, state);
@@ -252,22 +237,6 @@ public class ScheduledReportJob implements InterruptableJob {
                                             + config.getObject().getName());
         }
         return new DocumentTemplate(entity, service);
-    }
-
-    /**
-     * Verifies that a parameter is supported by the report.
-     *
-     * @param parameterTypes the report parameter types
-     * @param name           the parameter name
-     * @throws IllegalStateException if the parameter is not supported
-     */
-    private void checkParameterType(Set<ParameterType> parameterTypes, String name) {
-        for (ParameterType type : parameterTypes) {
-            if (!type.isSystem() && StringUtils.equals(type.getName(), name)) {
-                return;
-            }
-        }
-        throw new IllegalStateException("Invalid parameter " + name);
     }
 
     /**

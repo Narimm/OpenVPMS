@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.util;
@@ -22,6 +22,9 @@ import org.joda.time.Period;
 import org.openvpms.component.system.common.util.DateHelper;
 
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -411,4 +414,26 @@ public class DateRules {
     public static Date max(Date date1, Date date2) {
         return compareTo(date1, date2) > 0 ? date1 : date2;
     }
+
+    /**
+     * Helper to convert a {@code Date} to a {@code LocalDate}, using the system default time zone.
+     *
+     * @param date the date to convert. May be {@code null}
+     * @return the converted date. May be {@code null}
+     */
+    public static LocalDate toLocalDate(Date date) {
+        return (date != null) ? Instant.ofEpochMilli(date.getTime()).atZone(ZoneId.systemDefault()).toLocalDate()
+                              : null;
+    }
+
+    /**
+     * Helper to convert a {@code LocalDate} to a {@code Date}, using the system default time zone.
+     *
+     * @param date the date to convert. May be {@code null}
+     * @return the converted date. May be {@code null}
+     */
+    public static Date toDate(LocalDate date) {
+        return (date != null) ? Date.from(date.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()) : null;
+    }
+
 }

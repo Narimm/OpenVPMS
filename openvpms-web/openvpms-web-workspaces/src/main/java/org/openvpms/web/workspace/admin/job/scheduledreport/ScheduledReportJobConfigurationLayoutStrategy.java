@@ -18,24 +18,31 @@ package org.openvpms.web.workspace.admin.job.scheduledreport;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.SelectField;
+import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.bound.BoundSelectFieldFactory;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.IMObjectTabPane;
 import org.openvpms.web.component.im.layout.IMObjectTabPaneModel;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.list.PairListModel;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.SimpleProperty;
+import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -222,11 +229,13 @@ public class ScheduledReportJobConfigurationLayoutStrategy extends AbstractLayou
             Property paramName = properties.get("paramName" + i);
             Property paramDisplayName = properties.get("paramDisplayName" + i);
             Property paramType = properties.get("paramType" + i);
+            Property paramExpressionType = properties.get("paramExprType" + i);
             Property paramValue = properties.get("paramValue" + i);
             if (paramName != null && paramDisplayName != null && paramType != null && paramValue != null) {
                 nodes.exclude(paramName.getName());
                 nodes.exclude(paramDisplayName.getName());
                 nodes.exclude(paramType.getName());
+                nodes.exclude(paramExpressionType.getName());
                 nodes.exclude(paramValue.getName());
 
                 String name = paramName.getString();
@@ -235,11 +244,14 @@ public class ScheduledReportJobConfigurationLayoutStrategy extends AbstractLayou
                 Class type = getClass(typeName);
                 if (!StringUtils.isEmpty(name) && type != null) {
                     SimpleProperty property = new SimpleProperty(name, type);
-                    if (!StringUtils.isEmpty(displayName)) {
-                        property.setDisplayName(displayName);
+                    if (Date.class.isAssignableFrom(type)) {
+                        addComponent(createDateComponent(property, object, paramExpressionType, context));
                     }
                     if (context.isEdit()) {
                         property.addModifiableListener(modifiable -> paramValue.setValue(property.getValue()));
+                    }
+                    if (!StringUtils.isEmpty(displayName)) {
+                        property.setDisplayName(displayName);
                     }
                     property.setValue(paramValue.getValue());
                     parameters.add(property);
@@ -256,4 +268,84 @@ public class ScheduledReportJobConfigurationLayoutStrategy extends AbstractLayou
         }
         return result;
     }
+
+    /**
+     * Creates a date component.
+     *
+     * @param property       the date property
+     * @param parent         the parent object
+     * @param expressionType the date expression type
+     * @param context        the context
+     * @return a new component
+     */
+    private ComponentState createDateComponent(SimpleProperty property, IMObject parent, Property expressionType,
+                                               LayoutContext context) {
+        PairListModel model = new PairListModel();
+        addDateExpression(model, ExpressionType.VALUE, "scheduledreport.expression.date");
+        addDateExpression(model, ExpressionType.NOW, "scheduledreport.expression.now");
+        addDateExpression(model, ExpressionType.TODAY, "scheduledreport.expression.today");
+        addDateExpression(model, ExpressionType.YESTERDAY, "scheduledreport.expression.yesterday");
+        addDateExpression(model, ExpressionType.TOMORROW, "scheduledreport.expression.tomorrow");
+        addDateExpression(model, ExpressionType.START_OF_MONTH, "scheduledreport.expression.startOfMonth");
+        addDateExpression(model, ExpressionType.END_OF_MONTH, "scheduledreport.expression.endOfMonth");
+        addDateExpression(model, ExpressionType.START_OF_LAST_MONTH, "scheduledreport.expression.startOfLastMonth");
+        addDateExpression(model, ExpressionType.END_OF_LAST_MONTH, "scheduledreport.expression.endOfLastMonth");
+        addDateExpression(model, ExpressionType.START_OF_NEXT_MONTH, "scheduledreport.expression.startOfNextMonth");
+        addDateExpression(model, ExpressionType.END_OF_NEXT_MONTH, "scheduledreport.expression.endOfNextMonth");
+        addDateExpression(model, ExpressionType.START_OF_YEAR, "scheduledreport.expression.startOfYear");
+        addDateExpression(model, ExpressionType.END_OF_YEAR, "scheduledreport.expression.endOfYear");
+        addDateExpression(model, ExpressionType.START_OF_LAST_YEAR, "scheduledreport.expression.startOfLastYear");
+        addDateExpression(model, ExpressionType.END_OF_LAST_YEAR, "scheduledreport.expression.endOfLastYear");
+        addDateExpression(model, ExpressionType.START_OF_NEXT_YEAR, "scheduledreport.expression.startOfNextYear");
+        addDateExpression(model, ExpressionType.END_OF_NEXT_YEAR, "scheduledreport.expression.endOfNextYear");
+        addDateExpression(model, ExpressionType.JUNE_30, "scheduledreport.expression.june30");
+        addDateExpression(model, ExpressionType.LAST_JUNE_30, "scheduledreport.expression.lastJune30");
+        addDateExpression(model, ExpressionType.NEXT_JUNE_30, "scheduledreport.expression.nextJune30");
+        addDateExpression(model, ExpressionType.JULY_1, "scheduledreport.expression.july1");
+        addDateExpression(model, ExpressionType.LAST_JULY_1, "scheduledreport.expression.lastJuly1");
+        addDateExpression(model, ExpressionType.NEXT_JULY_1, "scheduledreport.expression.nextJuly1");
+
+        SelectField field = BoundSelectFieldFactory.create(expressionType, model);
+        if (field.getSelectedItem() == null) {
+            field.setSelectedItem(ExpressionType.VALUE.toString());
+        }
+        field.setCellRenderer(PairListModel.RENDERER);
+        Component date = createComponent(property, parent, context).getComponent();
+        if (context.isEdit()) {
+            // register with the field rather than with the property. If the report changes, the UI is recreated,
+            // and any listeners need to be unregistered to avoid memory leaks.
+            field.addActionListener(new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    showDate(date, expressionType);
+                }
+            });
+        }
+        showDate(date, expressionType);
+
+        return new ComponentState(RowFactory.create(Styles.CELL_SPACING, field, date), property);
+    }
+
+    /**
+     * Shows/hides the date, based on the expression type property.
+     *
+     * @param date     the date component to show/hide
+     * @param property the expression type property
+     */
+    private void showDate(Component date, Property property) {
+        boolean visible = ExpressionType.VALUE.toString().equals(property.getString());
+        date.setVisible(visible);
+    }
+
+    /**
+     * Adds a date expression to a list model.
+     *
+     * @param model the model
+     * @param type  the expression type
+     * @param key   the localisation key
+     */
+    private void addDateExpression(PairListModel model, ExpressionType type, String key) {
+        model.add(type.toString(), Messages.get(key));
+    }
+
 }
