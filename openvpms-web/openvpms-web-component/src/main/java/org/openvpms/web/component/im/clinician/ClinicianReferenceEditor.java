@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.im.clinician;
 
+import nextapp.echo2.app.Component;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
@@ -27,6 +28,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.echo.focus.FocusHelper;
 
 /**
  * Editor for <em>security.user</em> references with clinician classifications.
@@ -90,9 +92,14 @@ public class ClinicianReferenceEditor extends AbstractIMObjectReferenceEditor<Us
     @Override
     protected boolean isValidReference(IMObjectReference reference) {
         ClinicianQuery query = new ClinicianQuery(getContext());
+        Component focus = FocusHelper.getFocus();
         query.getComponent();
         query.setAllLocations(true); // don't restrict the clinician to a particular location after is has been entered
         query.setActive(BaseArchetypeConstraint.State.BOTH); // allow active & inactive clinicians
+        if (focus != null) {
+            // getComponent() moves the focus. Move it back. TODO - better approach is not to rely on UI creation...
+            FocusHelper.setFocus(focus);
+        }
         return query.selects(reference);
     }
 }
