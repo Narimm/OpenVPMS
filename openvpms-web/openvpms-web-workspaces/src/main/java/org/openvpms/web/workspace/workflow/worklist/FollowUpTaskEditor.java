@@ -122,7 +122,7 @@ public class FollowUpTaskEditor extends AbstractTaskActEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         ArchetypeNodes nodes = new ArchetypeNodes(true, true).simple("worklist").order("worklist", "startTime")
-                .order("taskType", "startTime");
+                .order("taskType", "startTime").hidden(true);
         DefaultLayoutStrategy strategy = new DefaultLayoutStrategy(nodes);
         strategy.addComponent(new ComponentState(workListEditor));
         strategy.addComponent(new ComponentState(getStartTimeEditor()));
