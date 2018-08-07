@@ -26,6 +26,10 @@
     <includeBaseDirectory>false</includeBaseDirectory>
 
     <fileSets>
+        <fileSet>
+            <directory>target/classes/etc</directory>
+            <outputDirectory>/etc</outputDirectory>
+        </fileSet>
         <!-- the following creates empty data and deploy directories. It needs a valid directory, of which all -->
         <!-- files are excluded.                                                                               -->
         <fileSet>
