@@ -71,8 +71,23 @@ public class DialogManager {
     }
 
     /**
+     * Determines if a {@code WindowPane} is being displayed.
+     *
+     * @return {@code true} if a window is being displayed, otherwise {@code false}
+     */
+    public static boolean isWindowDisplayed() {
+        Window root = ApplicationInstance.getActive().getDefaultWindow();
+        for (Component component : root.getContent().getComponents()) {
+            if (component instanceof WindowPane) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Determines if a component is hidden behind modal dialogs.
-     * <p/>
+     * <p>
      * The component must be a child of a {@link WindowPane}.
      *
      * @param component the component

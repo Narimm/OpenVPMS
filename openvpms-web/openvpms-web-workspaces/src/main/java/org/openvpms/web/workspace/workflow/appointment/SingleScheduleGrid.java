@@ -19,7 +19,7 @@ package org.openvpms.web.workspace.workflow.appointment;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
-import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.archetype.rules.workflow.ScheduleEvents;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
@@ -64,8 +64,8 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
      * @param events               the events
      * @param rules                the appointment rules
      */
-    public SingleScheduleGrid(Entity scheduleView, Date date, Party organisationSchedule,
-                              List<PropertySet> events, AppointmentRules rules) {
+    public SingleScheduleGrid(Entity scheduleView, Date date, Entity organisationSchedule,
+                              ScheduleEvents events, AppointmentRules rules) {
         super(scheduleView, date, -1, -1, rules);
         schedule = createSchedule(organisationSchedule);
         setSchedules(Collections.singletonList(schedule));
@@ -74,7 +74,7 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
         int slotSize = schedule.getSlotSize();
 
         // adjust the start and end minutes based on the appointments present
-        for (PropertySet set : events) {
+        for (PropertySet set : events.getEvents()) {
             Date startTime = set.getDate(ScheduleEvent.ACT_START_TIME);
             Date endTime = set.getDate(ScheduleEvent.ACT_END_TIME);
             int slotStart = getSlotMinutes(startTime, false);
@@ -210,8 +210,8 @@ public class SingleScheduleGrid extends AbstractAppointmentGrid {
      *
      * @param events the events
      */
-    private void setEvents(List<PropertySet> events) {
-        for (PropertySet event : events) {
+    private void setEvents(ScheduleEvents events) {
+        for (PropertySet event : events.getEvents()) {
             // add the event, and create a new SlotGroup for it
             addEvent(event);
         }

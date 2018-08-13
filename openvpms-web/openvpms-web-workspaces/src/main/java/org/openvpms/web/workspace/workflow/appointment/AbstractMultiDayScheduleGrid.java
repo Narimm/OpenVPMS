@@ -23,8 +23,8 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.archetype.rules.workflow.ScheduleEvents;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.cache.IMObjectCache;
@@ -60,7 +60,7 @@ public abstract class AbstractMultiDayScheduleGrid extends AbstractScheduleEvent
      * @param rules        the appointment rules
      */
     public AbstractMultiDayScheduleGrid(Entity scheduleView, Date date, int days,
-                                        Map<Entity, List<PropertySet>> events, AppointmentRules rules) {
+                                        Map<Entity, ScheduleEvents> events, AppointmentRules rules) {
         super(scheduleView, date, DateRules.getDate(date, days - 1, DateUnits.DAYS), rules);
         this.days = days;
         setEvents(events);
@@ -157,7 +157,7 @@ public abstract class AbstractMultiDayScheduleGrid extends AbstractScheduleEvent
 
     /**
      * Returns the no. of slots an event occupies, from the specified slot.
-     * <p/>
+     * <p>
      * If the event begins prior to the slot, the remaining slots will be returned.
      *
      * @param event the event
@@ -188,7 +188,7 @@ public abstract class AbstractMultiDayScheduleGrid extends AbstractScheduleEvent
      *
      * @param events the events, keyed on schedule
      */
-    protected void setEvents(Map<Entity, List<PropertySet>> events) {
+    protected void setEvents(Map<Entity, ScheduleEvents> events) {
         List<Schedule> schedules = new ArrayList<>();
         IMObjectCache cageTypes = new SoftRefIMObjectCache(ServiceHelper.getArchetypeService());
 
@@ -208,9 +208,9 @@ public abstract class AbstractMultiDayScheduleGrid extends AbstractScheduleEvent
         setSchedules(schedules);
 
         // add the events
-        for (Map.Entry<Entity, List<PropertySet>> entry : events.entrySet()) {
-            Party schedule = (Party) entry.getKey();
-            List<PropertySet> sets = entry.getValue();
+        for (Map.Entry<Entity, ScheduleEvents> entry : events.entrySet()) {
+            Entity schedule = entry.getKey();
+            List<PropertySet> sets = entry.getValue().getEvents();
 
             for (PropertySet set : sets) {
                 addEvent(schedule, set);
@@ -220,7 +220,7 @@ public abstract class AbstractMultiDayScheduleGrid extends AbstractScheduleEvent
 
     /**
      * Adds an event or blocking event.
-     * <p/>
+     * <p>
      * If the event is not a blocking event, and the corresponding Schedule already has an event that intersects
      * it, a new Schedule will be created with the same start and end times, and the event added to that.
      *

@@ -41,10 +41,55 @@ public interface ScheduleService {
     List<PropertySet> getEvents(Entity schedule, Date day);
 
     /**
+     * Returns all events for the specified schedule and day.
+     * Events are represented by {@link PropertySet PropertySets}.
+     *
+     * @param schedule the schedule
+     * @param day      the day
+     * @return the events
+     */
+    ScheduleEvents getScheduleEvents(Entity schedule, Date day);
+
+    /**
+     * Returns the modification hash for the specified schedule and day.
+     * <p>
+     * This can be used to determine if any of the events have changed.
+     *
+     * @param schedule the schedule
+     * @param day      the schedule day
+     * @return the modification hash, or {@code -1} if the schedule and day are not cached
+     */
+    long getModHash(Entity schedule, Date day);
+
+    /**
      * Returns all events for the specified schedule, and time range.
      *
      * @param schedule the schedule
+     * @param from     the from time
+     * @param to       the to time
      * @return a list of events
      */
     List<PropertySet> getEvents(Entity schedule, Date from, Date to);
+
+    /**
+     * Returns all events for the specified schedule, and time range.
+     *
+     * @param schedule the schedule
+     * @param from     the from time
+     * @param to       the to time
+     * @return the events
+     */
+    ScheduleEvents getScheduleEvents(Entity schedule, Date from, Date to);
+
+    /**
+     * Returns the modification hash for the specified schedule and date range.
+     * <p>
+     * This can be used to determine if any of the events have changed.
+     *
+     * @param schedule the schedule
+     * @param from     the from time
+     * @param to       the to time
+     * @return the modification hash, or {@code -1} if the schedule and range are not cached
+     */
+    long getModHash(Entity schedule, Date from, Date to);
 }

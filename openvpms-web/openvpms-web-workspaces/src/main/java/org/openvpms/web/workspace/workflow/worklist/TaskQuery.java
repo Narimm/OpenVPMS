@@ -23,6 +23,7 @@ import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
 import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.archetype.rules.workflow.ScheduleEvents;
 import org.openvpms.archetype.rules.workflow.TaskStatus;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.model.entity.Entity;
@@ -168,25 +169,26 @@ public class TaskQuery extends ScheduleServiceQuery {
      * @return the events
      */
     @Override
-    protected List<PropertySet> getEvents(Entity schedule, Date date) {
-        List<PropertySet> events = super.getEvents(schedule, date);
-        List<PropertySet> result;
+    protected ScheduleEvents getEvents(Entity schedule, Date date) {
+        ScheduleEvents result;
+        ScheduleEvents events = super.getEvents(schedule, date);
         StatusRange range = getStatusRange();
-        if (!events.isEmpty() && range != StatusRange.ALL) {
+        if (!events.getEvents().isEmpty() && range != StatusRange.ALL) {
             boolean complete = range == StatusRange.COMPLETE;
-            result = new ArrayList<>();
-            for (PropertySet event : events) {
+            List<PropertySet> filtered = new ArrayList<>();
+            for (PropertySet event : events.getEvents()) {
                 String status = event.getString(ScheduleEvent.ACT_STATUS);
                 if (complete) {
                     if (TaskStatus.isComplete(status)) {
-                        result.add(event);
+                        filtered.add(event);
                     }
                 } else {
                     if (TaskStatus.isIncomplete(status)) {
-                        result.add(event);
+                        filtered.add(event);
                     }
                 }
             }
+            result = new ScheduleEvents(filtered, events.getModHash());
         } else {
             result = events;
         }

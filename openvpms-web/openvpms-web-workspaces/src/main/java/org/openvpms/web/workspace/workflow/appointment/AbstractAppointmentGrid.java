@@ -20,8 +20,7 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
@@ -36,6 +35,21 @@ import java.util.Date;
  * @author Tim Anderson
  */
 public abstract class AbstractAppointmentGrid extends AbstractScheduleEventGrid implements AppointmentGrid {
+
+    /**
+     * The default slot size, in minutes.
+     */
+    protected static final int DEFAULT_SLOT_SIZE = 15;
+
+    /**
+     * The default start time, as minutes from midnight.
+     */
+    protected static final int DEFAULT_START = 8 * 60;
+
+    /**
+     * The default end time, as minutes from midnight.
+     */
+    protected static final int DEFAULT_END = 18 * 60;
 
     /**
      * The grid start time, as minutes since midnight.
@@ -56,21 +70,6 @@ public abstract class AbstractAppointmentGrid extends AbstractScheduleEventGrid 
      * The slot size, in minutes.
      */
     private int slotSize = DEFAULT_SLOT_SIZE;
-
-    /**
-     * The default slot size, in minutes.
-     */
-    protected static final int DEFAULT_SLOT_SIZE = 15;
-
-    /**
-     * The default start time, as minutes from midnight.
-     */
-    protected static final int DEFAULT_START = 8 * 60;
-
-    /**
-     * The default end time, as minutes from midnight.
-     */
-    protected static final int DEFAULT_END = 18 * 60;
 
     /**
      * The maximum end time, in minutes.
@@ -132,7 +131,7 @@ public abstract class AbstractAppointmentGrid extends AbstractScheduleEventGrid 
 
     /**
      * Returns the no. of slots that an event occupies, from the specified slot.
-     * <p/>
+     * <p>
      * If the event begins prior to the slot, the remaining slots will be returned.
      *
      * @param event    the event
@@ -263,7 +262,7 @@ public abstract class AbstractAppointmentGrid extends AbstractScheduleEventGrid 
      * @param rules    the appointment rules
      * @return the slot size
      */
-    public static int getSlotSize(Party schedule, AppointmentRules rules) {
+    public static int getSlotSize(Entity schedule, AppointmentRules rules) {
         int slotSize = rules.getSlotSize(schedule);
         if (slotSize <= 0) {
             slotSize = DEFAULT_SLOT_SIZE;
@@ -315,8 +314,8 @@ public abstract class AbstractAppointmentGrid extends AbstractScheduleEventGrid 
      * @param schedule the schedule
      * @return a new schedule
      */
-    protected Schedule createSchedule(Party schedule) {
-        EntityBean bean = new EntityBean(schedule);
+    protected Schedule createSchedule(Entity schedule) {
+        IMObjectBean bean = new IMObjectBean(schedule);
         Date start = bean.getDate("startTime");
         int startMins;
         int endMins;
@@ -343,7 +342,7 @@ public abstract class AbstractAppointmentGrid extends AbstractScheduleEventGrid 
 
     /**
      * Determines an appointment grid boundary, in minutes from midnight.
-     * <p/>
+     * <p>
      * This supports minutes in the range 00:00..24:00
      *
      * @param time the time

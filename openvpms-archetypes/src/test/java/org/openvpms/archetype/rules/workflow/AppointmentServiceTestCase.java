@@ -16,7 +16,6 @@
 
 package org.openvpms.archetype.rules.workflow;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -27,8 +26,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.Arrays;
@@ -38,9 +36,9 @@ import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.test.TestHelper.createPatient;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 import static org.openvpms.archetype.test.TestHelper.getDatetime;
@@ -52,11 +50,6 @@ import static org.openvpms.archetype.test.TestHelper.getDatetime;
  * @author Tim Anderson
  */
 public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
-
-    /**
-     * The appointment service.
-     */
-    private AppointmentService service;
 
     /**
      * The schedule.
@@ -78,29 +71,23 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         Date date2 = getDate("2008-01-02");
         Date date3 = getDate("2008-01-03");
 
-        // retrieve the appointments for date1 and date2 and verify they are
-        // empty.
+        // retrieve the appointments for date1 and date2 and verify they are empty.
         // This caches the appointments for each date.
-        service = createScheduleService(30);
-        List<PropertySet> results = service.getEvents(schedule, date1);
-        assertEquals(0, results.size());
-
-        results = service.getEvents(schedule, date2);
-        assertEquals(0, results.size());
+        ScheduleService service = initScheduleService(30);
+        long hash1 = checkEvents(schedule, date1, 0);
+        checkEvents(schedule, date2, 0);
 
         // create and save appointment for date1
         Act appointment = createAppointment(date1);
 
-        results = service.getEvents(schedule, date1);
-        assertEquals(1, results.size());
-        PropertySet set = results.get(0);
+        ScheduleEvents events3 = service.getScheduleEvents(schedule, date1);
+        assertEquals(1, events3.size());
+        PropertySet set = events3.getEvents().get(0);
         checkAppointment(appointment, set);
+        assertNotEquals(hash1, events3.getModHash());  // hash should have changed
 
-        results = service.getEvents(schedule, date2);
-        assertEquals(0, results.size());
-
-        results = service.getEvents(schedule, date3);
-        assertEquals(0, results.size());
+        checkEvents(schedule, date2, 0);
+        checkEvents(schedule, date3, 0);
     }
 
     /**
@@ -112,32 +99,33 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         Date date2 = getDate("2008-01-02");
         Date date3 = getDate("2008-01-03");
 
-        // retrieve the appointments for date1 and date2 and verify they are
-        // empty.
-        // This caches the appointments for each date.
-        service = createScheduleService(30);
-        List<PropertySet> results = service.getEvents(schedule, date1);
-        assertEquals(0, results.size());
+        initScheduleService(30);
 
-        results = service.getEvents(schedule, date2);
-        assertEquals(0, results.size());
+        // retrieve the appointments for date1 and date2 and verify they are empty.
+        // This caches the appointments for each date.
+
+        long hash1 = checkEvents(schedule, date1, 0);
+        long hash2 = checkEvents(schedule, date2, 0);
+        long hash3 = checkEvents(schedule, date3, 0);
+        assertNotEquals(hash1, hash2);
+        assertNotEquals(hash1, hash3);
 
         // create and save appointment for date1
         Act appointment = createAppointment(date1);
-
-        results = service.getEvents(schedule, date1);
-        assertEquals(1, results.size());
-
-        results = service.getEvents(schedule, date2);
-        assertEquals(0, results.size());
+        long hash4 = checkEvents(schedule, date1, 1);
+        assertNotEquals(hash1, hash4);
+        checkEvents(schedule, date2, 0, hash2);
+        checkEvents(schedule, date3, 0, hash3);
 
         // now remove it
-        getArchetypeService().remove(appointment);
+        remove(appointment);
 
         // verify it has been removed
-        assertEquals(0, service.getEvents(schedule, date1).size());
-        assertEquals(0, service.getEvents(schedule, date2).size());
-        assertEquals(0, service.getEvents(schedule, date3).size());
+        long hash5 = checkEvents(schedule, date1, 0);
+        assertNotEquals(hash1, hash5);
+
+        checkEvents(schedule, date2, 0, hash2);
+        checkEvents(schedule, date3, 0, hash3);
     }
 
     /**
@@ -158,14 +146,14 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
             User clinician = TestHelper.createClinician();
             Act appointment = ScheduleTestHelper.createAppointment(
                     startTime, endTime, schedule, customer, patient);
-            ActBean bean = new ActBean(appointment);
-            bean.addParticipation("participation.clinician", clinician);
+            IMObjectBean bean = getBean(appointment);
+            bean.setTarget("clinician", clinician);
             bean.setValue("arrivalTime", arrivalTime);
             appointments[i] = appointment;
             bean.save();
         }
 
-        service = createScheduleService(30);
+        ScheduleService service = initScheduleService(30);
         List<PropertySet> results = service.getEvents(schedule, date);
         assertEquals(count, results.size());
         for (int i = 0; i < results.size(); ++i) {
@@ -182,22 +170,24 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         Date date1 = getDate("2008-01-01");
         Date date2 = getDate("2008-03-01");
 
-        service = createScheduleService(30);
-        service.getEvents(schedule, date1);
-        assertEquals(0, service.getEvents(schedule, date1).size());
-        assertEquals(0, service.getEvents(schedule, date2).size());
+        initScheduleService(30);
+        long hash1 = checkEvents(schedule, date1, 0);
+        long hash2 = checkEvents(schedule, date2, 0);
 
         Act act = createAppointment(date1);
 
-        assertEquals(1, service.getEvents(schedule, date1).size());
-        assertEquals(0, service.getEvents(schedule, date2).size());
+        long hash3 = checkEvents(schedule, date1, 1);
+        assertNotEquals(hash1, hash3);
+        checkEvents(schedule, date2, 0, hash2);
 
         act.setActivityStartTime(date2); // move it to date2
         act.setActivityEndTime(DateRules.getDate(date2, 15, DateUnits.MINUTES));
-        getArchetypeService().save(act);
+        save(act);
 
-        assertEquals(0, service.getEvents(schedule, date1).size());
-        assertEquals(1, service.getEvents(schedule, date2).size());
+        long hash4 = checkEvents(schedule, date1, 0);
+        long hash5 = checkEvents(schedule, date2, 1);
+        assertNotEquals(hash3, hash4);
+        assertNotEquals(hash2, hash5);
     }
 
     /**
@@ -211,10 +201,10 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
 
         // create and save appointment for date1
         Act appointment1 = createAppointment(date1);
-        service = createScheduleService(30);
-        List<PropertySet> results = service.getEvents(schedule, date1);
-        assertEquals(1, results.size());
-        PropertySet set = results.get(0);
+        ScheduleService service = initScheduleService(30);
+        ScheduleEvents events = service.getScheduleEvents(schedule, date1);
+        assertEquals(1, events.size());
+        PropertySet set = events.getEvents().get(0);
         checkAppointment(appointment1, set);
 
         String code = "XREASON" + System.currentTimeMillis();
@@ -226,9 +216,9 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         save(appointment2);
 
         // verify the reason code and name appears in the new event
-        results = service.getEvents(schedule, date2);
-        assertEquals(1, results.size());
-        set = results.get(0);
+        ScheduleEvents events2 = service.getScheduleEvents(schedule, date2);
+        assertEquals(1, events2.size());
+        set = events2.getEvents().get(0);
         assertEquals(code, set.getString(ScheduleEvent.ACT_REASON));
         assertEquals(name, set.getString(ScheduleEvent.ACT_REASON_NAME));
     }
@@ -239,14 +229,14 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     @Test
     public void testUpdateReason() {
         Date date = getDate("2008-01-01");
-        service = createScheduleService(30);
+        ScheduleService service = initScheduleService(30);
 
         // create and save appointment for date
         Act appointment = createAppointment(date);
-        List<PropertySet> results = service.getEvents(schedule, date);
-        assertEquals(1, results.size());
-        PropertySet set = results.get(0);
-        checkAppointment(appointment, set);
+        ScheduleEvents events1 = service.getScheduleEvents(schedule, date);
+        assertEquals(1, events1.size());
+        PropertySet set1 = events1.getEvents().get(0);
+        checkAppointment(appointment, set1);
 
         Lookup reason = getLookupService().getLookup(appointment, "reason");
         assertNotNull(reason);
@@ -254,11 +244,12 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         reason.setName(name);
         save(reason);
 
-        results = service.getEvents(schedule, date);
-        assertEquals(1, results.size());
-        set = results.get(0);
-        assertEquals(reason.getCode(), set.getString(ScheduleEvent.ACT_REASON));
-        assertEquals(name, set.getString(ScheduleEvent.ACT_REASON_NAME));
+        ScheduleEvents events2 = service.getScheduleEvents(schedule, date);
+        assertEquals(1, events2.size());
+        PropertySet set2 = events2.getEvents().get(0);
+        assertEquals(reason.getCode(), set2.getString(ScheduleEvent.ACT_REASON));
+        assertEquals(name, set2.getString(ScheduleEvent.ACT_REASON_NAME));
+        assertNotEquals(events1.getModHash(), events2.getModHash());
     }
 
     /**
@@ -272,7 +263,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         Date date = getDate("2008-01-01");
         Party patient = TestHelper.createPatient();
 
-        service = createScheduleService(30);
+        ScheduleService service = initScheduleService(30);
         // create and save appointment for date
         Act appointment = createAppointment(date, schedule, patient, false);
         String code = "XREASON" + System.currentTimeMillis();
@@ -281,12 +272,12 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         appointment.setReason(code);
         save(appointment);
 
-        List<PropertySet> results = service.getEvents(schedule, date);
-        assertEquals(1, results.size());
-        PropertySet set = results.get(0);
+        ScheduleEvents events1 = service.getScheduleEvents(schedule, date);
+        assertEquals(1, events1.size());
+        PropertySet set1 = events1.getEvents().get(0);
 
-        assertEquals(code, set.getString(ScheduleEvent.ACT_REASON));
-        assertEquals(name, set.getString(ScheduleEvent.ACT_REASON_NAME));
+        assertEquals(code, set1.getString(ScheduleEvent.ACT_REASON));
+        assertEquals(name, set1.getString(ScheduleEvent.ACT_REASON_NAME));
 
         // now remove the appointment and the reason lookup
         remove(appointment);
@@ -296,11 +287,12 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         appointment.setReason(code);
         save(appointment);
 
-        results = service.getEvents(schedule, date);
-        assertEquals(1, results.size());
-        set = results.get(0);
-        assertEquals(code, set.getString(ScheduleEvent.ACT_REASON));
-        assertNull(set.getString(ScheduleEvent.ACT_REASON_NAME));
+        ScheduleEvents events2 = service.getScheduleEvents(schedule, date);
+        assertEquals(1, events2.size());
+        PropertySet set2 = events2.getEvents().get(0);
+        assertEquals(code, set2.getString(ScheduleEvent.ACT_REASON));
+        assertNull(set2.getString(ScheduleEvent.ACT_REASON_NAME));
+        assertNotEquals(events1.getModHash(), events2.getModHash());
     }
 
     /**
@@ -312,12 +304,12 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         Date end = getDate("2008-01-05");
         Party patient = TestHelper.createPatient();
 
-        service = createScheduleService(30);
+        ScheduleService service = initScheduleService(30);
 
         // retrieve the appointments from start to end and verify they are empty.
         // This caches the appointments for each date.
-        List<PropertySet> results = service.getEvents(schedule, start, end);
-        assertTrue(results.isEmpty());
+        ScheduleEvents events1 = service.getScheduleEvents(schedule, start, end);
+        assertEquals(0, events1.size());
 
         // create and save a multiple day appointment
         Date startTime = DateRules.getDate(start, 15, DateUnits.MINUTES);
@@ -331,8 +323,10 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         startTime = DateRules.getDate(startTime, 2, DateUnits.DAYS);
         appointment.setActivityStartTime(startTime);
         save(appointment);
-        results = service.getEvents(schedule, start, DateRules.getDate(start, 1, DateUnits.DAYS));
-        assertTrue(results.isEmpty());
+        ScheduleEvents events2 = service.getScheduleEvents(schedule, start, DateRules.getNextDate(start));
+        assertEquals(0, events2.size());
+        assertNotEquals(events1.getModHash(), events2.getModHash());
+        assertEquals(events2.getModHash(), service.getModHash(schedule, start, DateRules.getNextDate(start)));
 
         // verify the appointment exists for the subsequent days
         checkAppointment(appointment, 3);
@@ -343,8 +337,8 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         save(appointment);
         checkAppointment(appointment, 2);
 
-        results = service.getEvents(schedule, endTime);
-        assertTrue(results.isEmpty());
+        ScheduleEvents events3 = service.getScheduleEvents(schedule, endTime);
+        assertEquals(0, events3.size());
     }
 
     /**
@@ -368,7 +362,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
             days[i] = appointments;
         }
 
-        service = createScheduleService(6); // cache 6 days
+        ScheduleService service = initScheduleService(6); // cache 6 days
 
         // repeatedly read 10 days worth of appointments. This will force the cache to shed and re-read data.
         for (int j = 0; j < 10; ++j) {
@@ -385,7 +379,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
      */
     @Test
     public void testGetOverlappingEvent() {
-        service = createScheduleService(1);
+        AppointmentService service = (AppointmentService) initScheduleService(1);
         Date start = getDatetime("2015-05-14 09:00:00");
         Date end = getDatetime("2015-05-14 09:15:00");
 
@@ -435,7 +429,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
      */
     @Test
     public void getOverlappingEventTimes() {
-        service = createScheduleService(1);
+        AppointmentService service = (AppointmentService) initScheduleService(1);
         Date start1 = getDatetime("2015-05-14 09:00:00");
         Date end1 = getDatetime("2015-05-14 09:15:00");
         Date start2 = getDatetime("2015-05-15 09:00:00");
@@ -487,7 +481,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
      */
     @Test
     public void testGetOverlappingEvents() {
-        service = createScheduleService(1);
+        AppointmentService service = (AppointmentService) initScheduleService(1);
         Date start1 = getDatetime("2015-05-14 09:00:00");
         Date end1 = getDatetime("2015-05-14 09:15:00");
         Date start2 = getDatetime("2015-05-15 09:00:00");
@@ -544,20 +538,6 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     }
 
     /**
-     * Cleans up after the test.
-     *
-     * @throws Exception for any error
-     */
-    @After
-    @Override
-    public void tearDown() throws Exception {
-        super.tearDown();
-        if (service != null) {
-            service.destroy();
-        }
-    }
-
-    /**
      * Creates a new {@link ScheduleService}.
      *
      * @param scheduleCacheSize the maximum number of schedule days to cache
@@ -565,7 +545,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
      */
     @Override
     protected AppointmentService createScheduleService(int scheduleCacheSize) {
-        return new AppointmentService(getArchetypeService(), applicationContext.getBean(ILookupService.class),
+        return new AppointmentService(getArchetypeService(), getLookupService(),
                                       ScheduleTestHelper.createCache(scheduleCacheSize));
     }
 
@@ -620,7 +600,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         Date date = start;
         int count = 0;
         while (date.compareTo(end) <= 0) {
-            List<PropertySet> results = service.getEvents(schedule, date);
+            List<PropertySet> results = getScheduleService().getEvents(schedule, date);
             assertEquals(1, results.size());
             PropertySet set = results.get(0);
             checkAppointment(act, set);
@@ -639,7 +619,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
      * @param set the set
      */
     private void checkAppointment(Act act, PropertySet set) {
-        ActBean bean = new ActBean(act);
+        IMObjectBean bean = getBean(act);
         assertEquals(act.getObjectReference(), set.get(ScheduleEvent.ACT_REFERENCE));
         assertEquals(act.getActivityStartTime(), set.get(ScheduleEvent.ACT_START_TIME));
         assertEquals(act.getActivityEndTime(), set.get(ScheduleEvent.ACT_END_TIME));
@@ -648,16 +628,16 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         assertEquals(act.getReason(), set.get(ScheduleEvent.ACT_REASON));
         assertEquals(TestHelper.getLookupName(act, "reason"), set.get(ScheduleEvent.ACT_REASON_NAME));
         assertEquals(act.getDescription(), set.get(ScheduleEvent.ACT_DESCRIPTION));
-        assertEquals(bean.getNodeParticipantRef("customer"), set.get(ScheduleEvent.CUSTOMER_REFERENCE));
-        assertEquals(bean.getNodeParticipant("customer").getName(), set.get(ScheduleEvent.CUSTOMER_NAME));
-        assertEquals(bean.getNodeParticipantRef("patient"), set.get(ScheduleEvent.PATIENT_REFERENCE));
-        assertEquals(bean.getNodeParticipant("patient").getName(), set.get(ScheduleEvent.PATIENT_NAME));
-        assertEquals(bean.getNodeParticipantRef("clinician"), set.get(ScheduleEvent.CLINICIAN_REFERENCE));
-        assertEquals(bean.getNodeParticipant("clinician").getName(), set.get(ScheduleEvent.CLINICIAN_NAME));
-        assertEquals(bean.getNodeParticipantRef("appointmentType"), set.get(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
-        assertEquals(bean.getNodeParticipantRef("schedule"), set.get(ScheduleEvent.SCHEDULE_REFERENCE));
-        assertEquals(bean.getNodeParticipant("schedule").getName(), set.get(ScheduleEvent.SCHEDULE_NAME));
-        assertEquals(bean.getNodeParticipant("appointmentType").getName(), set.get(ScheduleEvent.SCHEDULE_TYPE_NAME));
+        assertEquals(bean.getTargetRef("customer"), set.get(ScheduleEvent.CUSTOMER_REFERENCE));
+        assertEquals(bean.getTarget("customer").getName(), set.get(ScheduleEvent.CUSTOMER_NAME));
+        assertEquals(bean.getTargetRef("patient"), set.get(ScheduleEvent.PATIENT_REFERENCE));
+        assertEquals(bean.getTarget("patient").getName(), set.get(ScheduleEvent.PATIENT_NAME));
+        assertEquals(bean.getTargetRef("clinician"), set.get(ScheduleEvent.CLINICIAN_REFERENCE));
+        assertEquals(bean.getTarget("clinician").getName(), set.get(ScheduleEvent.CLINICIAN_NAME));
+        assertEquals(bean.getTargetRef("appointmentType"), set.get(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
+        assertEquals(bean.getTargetRef("schedule"), set.get(ScheduleEvent.SCHEDULE_REFERENCE));
+        assertEquals(bean.getTarget("schedule").getName(), set.get(ScheduleEvent.SCHEDULE_NAME));
+        assertEquals(bean.getTarget("appointmentType").getName(), set.get(ScheduleEvent.SCHEDULE_TYPE_NAME));
         assertEquals(bean.getDate("arrivalTime"), set.get(ScheduleEvent.ARRIVAL_TIME));
     }
 

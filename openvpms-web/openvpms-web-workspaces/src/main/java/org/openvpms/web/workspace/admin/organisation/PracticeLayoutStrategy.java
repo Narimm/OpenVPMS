@@ -112,6 +112,7 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
         addPrescriptionExpiry(object, properties, factory);
         addAutoLockScreen(object, properties, factory);
         addAutoLogout(object, properties, factory);
+        addSchedulingRefresh(object, properties, factory);
         addRecordLockPeriod(object, properties, factory);
         addMinimumQuantities(object, properties, factory);
         if (subscription == null) {
@@ -214,6 +215,21 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
      */
     private void addAutoLogout(IMObject object, PropertySet properties, IMObjectComponentFactory factory) {
         addInterval("autoLogout", object, properties, factory);
+    }
+
+    /**
+     * Registers a component to render the scheduling refresh and units.
+     *
+     * @param object     the practice object
+     * @param properties the properties
+     * @param factory    the component factory
+     */
+    private void addSchedulingRefresh(IMObject object, PropertySet properties, IMObjectComponentFactory factory) {
+        Property property = properties.get("schedulingRefresh");
+        ComponentState state = factory.create(property, object);
+        Row row = RowFactory.create(Styles.CELL_SPACING, state.getComponent(),
+                                    LabelFactory.create("admin.practice.seconds"));
+        addComponent(new ComponentState(row, property));
     }
 
     /**

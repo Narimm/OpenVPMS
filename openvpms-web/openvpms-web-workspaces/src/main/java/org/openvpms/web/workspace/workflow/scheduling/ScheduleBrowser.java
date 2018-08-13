@@ -26,10 +26,11 @@ import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.Table;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.archetype.rules.workflow.ScheduleEvents;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
@@ -72,9 +73,14 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
     private final Context context;
 
     /**
+     * Used to determine if there has been a double click.
+     */
+    private final DoubleClickMonitor click = new DoubleClickMonitor();
+
+    /**
      * The schedule events, keyed on schedule.
      */
-    private Map<Entity, List<PropertySet>> results;
+    private Map<Entity, ScheduleEvents> results;
 
     /**
      * The browser component.
@@ -110,11 +116,6 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
      * The event selected to be cut. May be {@code null}
      */
     private PropertySet marked;
-
-    /**
-     * Used to determine if there has been a double click.
-     */
-    private final DoubleClickMonitor click = new DoubleClickMonitor();
 
 
     /**
@@ -275,10 +276,8 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
             query();
         }
         List<PropertySet> result = new ArrayList<>();
-        for (List<PropertySet> list : results.values()) {
-            for (PropertySet set : list) {
-                result.add(set);
-            }
+        for (ScheduleEvents list : results.values()) {
+            result.addAll(list.getEvents());
         }
         return result;
     }
@@ -325,22 +324,18 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
      * @return the associated event, or {@code null} if {@code act} is null or has been deleted
      */
     public PropertySet getEvent(Act act) {
+        PropertySet result = null;
         if (act != null) {
-            ActBean bean = new ActBean(act);
-            Entity schedule = bean.getNodeParticipant("schedule");
+            IMObjectBean bean = new IMObjectBean(act);
+            Entity schedule = bean.getTarget("schedule", Entity.class);
             if (schedule != null) {
-                List<PropertySet> events = results.get(schedule);
-                IMObjectReference ref = act.getObjectReference();
+                ScheduleEvents events = results.get(schedule);
                 if (events != null) {
-                    for (PropertySet set : events) {
-                        if (ref.equals(set.getReference(ScheduleEvent.ACT_REFERENCE))) {
-                            return set;
-                        }
-                    }
+                    result = events.getEvent(act.getObjectReference());
                 }
             }
         }
-        return null;
+        return result;
     }
 
     /**
@@ -349,6 +344,17 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
      * This implementation is a no-op.
      */
     public void setFocusOnResults() {
+    }
+
+    /**
+     * Refreshes the display, if the events have changed.
+     */
+    public void refresh() {
+        if (results != null) {
+            if (query.updated(results)) {
+                query();
+            }
+        }
     }
 
     /**
@@ -385,7 +391,7 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
      * @param events the events
      * @return a new grid
      */
-    protected abstract ScheduleEventGrid createEventGrid(Date date, Map<Entity, List<PropertySet>> events);
+    protected abstract ScheduleEventGrid createEventGrid(Date date, Map<Entity, ScheduleEvents> events);
 
     /**
      * Creates a new table model.
@@ -415,12 +421,6 @@ public abstract class ScheduleBrowser extends AbstractBrowser<PropertySet> {
             }
         };
         table.setStyleName("ScheduleTable");
-/*
-        table.setScrollable(true);
-        table.setResizeable(true);
-        table.setResizeGrowsTable(true);
-        table.setResizeDragBarUsed(true);
-*/
         return table;
     }
 

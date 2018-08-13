@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.workflow.scheduling;
 
+import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import org.apache.commons.lang.ObjectUtils;
@@ -27,6 +28,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextListener;
@@ -36,7 +38,9 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workspace.AbstractViewWorkspace;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.component.workspace.CRUDWindowListener;
+import org.openvpms.web.echo.dialog.DialogManager;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
+import org.openvpms.web.echo.util.PeriodicTask;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.CustomerPatientSummary;
 import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
@@ -67,6 +71,11 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
     private final PreferenceMonitor monitor;
 
     /**
+     * Used to periodically refresh the display, or {@code null} if refresh has been disabled.
+     */
+    private final PeriodicTask refresher;
+
+    /**
      * The workspace.
      */
     private Component workspace;
@@ -92,6 +101,11 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
     private ContextListener locationListener;
 
     /**
+     * The minimum no. of seconds between refreshes.
+     */
+    private static final int MIN_REFRESH_INTERVAL = 5;
+
+    /**
      * Constructs a {@code SchedulingWorkspace}.
      * <p>
      * If no archetypes are supplied, the {@link #setArchetypes} method must before performing any operations.
@@ -105,17 +119,30 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
     public SchedulingWorkspace(String id, Archetypes<Entity> archetypes, Context context, Preferences preferences,
                                String preferenceGroup) {
         super(id, archetypes, context, false);
-        locationListener = new ContextListener() {
-            public void changed(String key, IMObject value) {
-                if (Context.LOCATION_SHORTNAME.equals(key)) {
-                    locationChanged((Party) value);
-                }
+        locationListener = (key, value) -> {
+            if (Context.LOCATION_SHORTNAME.equals(key)) {
+                locationChanged((Party) value);
             }
         };
         this.preferences = preferences;
         this.preferenceGroup = preferenceGroup;
         monitor = new PreferenceMonitor(preferences);
         monitor.add(preferenceGroup);
+        IMObjectBean bean = ServiceHelper.getArchetypeService().getBean(context.getPractice());
+        int refreshInterval = bean.getInt("schedulingRefresh");
+        if (refreshInterval > 0) {
+            if (refreshInterval < MIN_REFRESH_INTERVAL) {
+                // limit the no. of calls
+                refreshInterval = MIN_REFRESH_INTERVAL;
+            }
+            refresher = new PeriodicTask(ApplicationInstance.getActive(), refreshInterval, () -> {
+                if (browser != null && !DialogManager.isWindowDisplayed()) {
+                    browser.refresh();
+                }
+            });
+        } else {
+            refresher = null;
+        }
     }
 
     /**
@@ -153,13 +180,20 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
         // listen for context change events
         ((GlobalContext) getContext()).addListener(locationListener);
         checkPreferences();
+        if (refresher != null) {
+            refresher.start();
+        }
     }
+
 
     /**
      * Invoked when the workspace is hidden.
      */
     @Override
     public void hide() {
+        if (refresher != null) {
+            refresher.stop();
+        }
         ((GlobalContext) getContext()).removeListener(locationListener);
     }
 
@@ -171,6 +205,18 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
     @Override
     public void preferencesChanged() {
         checkPreferences();
+    }
+
+    /**
+     * Queries the browser.
+     * <p>
+     * If automatic refreshes are being done, this restarts it.
+     */
+    protected void query() {
+        if (refresher != null) {
+            refresher.restart();
+        }
+        browser.query();
     }
 
     /**
@@ -199,7 +245,6 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
                 }
             }
             setObject(object);
-
         }
     }
 
@@ -257,7 +302,7 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
      * @param isNew  determines if the object is a new instance
      */
     protected void onSaved(IMObject object, boolean isNew) {
-        browser.query();
+        query();
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -267,7 +312,7 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
      * @param object the object
      */
     protected void onDeleted(IMObject object) {
-        browser.query();
+        query();
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -277,7 +322,7 @@ public abstract class SchedulingWorkspace extends AbstractViewWorkspace<Entity> 
      * @param object the object
      */
     protected void onRefresh(IMObject object) {
-        browser.query();
+        query();
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 

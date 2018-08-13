@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.workflow.appointment.boarding;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.archetype.rules.workflow.ScheduleEvents;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.workspace.workflow.appointment.AbstractMultiDayScheduleGrid;
@@ -46,7 +47,7 @@ public class CheckOutScheduleGrid extends AbstractMultiDayScheduleGrid {
      * @param events       the events
      * @param rules        the appointment rules
      */
-    public CheckOutScheduleGrid(Entity scheduleView, Date date, int days, Map<Entity, List<PropertySet>> events,
+    public CheckOutScheduleGrid(Entity scheduleView, Date date, int days, Map<Entity, ScheduleEvents> events,
                                 AppointmentRules rules) {
         super(scheduleView, date, days, filterEvents(events, date), rules);
     }
@@ -60,14 +61,15 @@ public class CheckOutScheduleGrid extends AbstractMultiDayScheduleGrid {
      * @param date   the date
      * @return the filtered appointments
      */
-    private static Map<Entity, List<PropertySet>> filterEvents(Map<Entity, List<PropertySet>> events, Date date) {
-        Map<Entity, List<PropertySet>> map = new LinkedHashMap<>();
-        for (Map.Entry<Entity, List<PropertySet>> eventsBySchedule : events.entrySet()) {
+    private static Map<Entity, ScheduleEvents> filterEvents(Map<Entity, ScheduleEvents> events, Date date) {
+        Map<Entity, ScheduleEvents> map = new LinkedHashMap<>();
+        for (Map.Entry<Entity, ScheduleEvents> eventsBySchedule : events.entrySet()) {
             Date midnight = DateRules.getNextDate(date);
-            if (!eventsBySchedule.getValue().isEmpty()) {
+            ScheduleEvents scheduleEvents = eventsBySchedule.getValue();
+            if (!scheduleEvents.getEvents().isEmpty()) {
                 List<PropertySet> onDate = new ArrayList<>();        // check-outs on date
                 List<PropertySet> afterDate = new ArrayList<>();     // check-outs after date
-                for (PropertySet event : eventsBySchedule.getValue()) {
+                for (PropertySet event : scheduleEvents.getEvents()) {
                     Date endTime = event.getDate(ScheduleEvent.ACT_END_TIME);
                     Date endDate = DateRules.getDate(endTime);
                     if (endDate.compareTo(date) == 0 || DateRules.compareTo(midnight, endTime) == 0) {
@@ -83,7 +85,8 @@ public class CheckOutScheduleGrid extends AbstractMultiDayScheduleGrid {
                 }
                 if (!onDate.isEmpty()) {
                     onDate.addAll(afterDate);                   // add all check-outs after the date to provide context
-                    map.put(eventsBySchedule.getKey(), onDate);
+                    map.put(eventsBySchedule.getKey(), new ScheduleEvents(onDate,
+                                                                          scheduleEvents.getModHash()));
                 }
             }
         }

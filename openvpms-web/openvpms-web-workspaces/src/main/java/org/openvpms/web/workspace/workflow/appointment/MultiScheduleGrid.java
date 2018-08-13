@@ -19,7 +19,7 @@ package org.openvpms.web.workspace.workflow.appointment;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
-import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.archetype.rules.workflow.ScheduleEvents;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
@@ -47,7 +47,7 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
      * @param events       the events
      * @param rules        the appointment rules
      */
-    public MultiScheduleGrid(Entity scheduleView, Date date, Map<Entity, List<PropertySet>> events,
+    public MultiScheduleGrid(Entity scheduleView, Date date, Map<Entity, ScheduleEvents> events,
                              AppointmentRules rules) {
         super(scheduleView, date, -1, -1, rules);
         setEvents(events);
@@ -129,7 +129,7 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
      *
      * @param events the events, keyed on schedule
      */
-    private void setEvents(Map<Entity, List<PropertySet>> events) {
+    private void setEvents(Map<Entity, ScheduleEvents> events) {
         int startMins = -1;
         int endMins = -1;
         int slotSize = -1;
@@ -142,7 +142,7 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
         // . endMins is the minimum endMins of all schedules
         // . slotSize is the minimum slotSize of all schedules
         for (Entity schedule : events.keySet()) {
-            Schedule column = createSchedule((Party) schedule);
+            Schedule column = createSchedule(schedule);
             schedules.add(column);
             int start = column.getStartMins();
             if (startMins == -1 || start < startMins) {
@@ -171,9 +171,9 @@ class MultiScheduleGrid extends AbstractAppointmentGrid {
         setSlotSize(slotSize);
 
         // add the events
-        for (Map.Entry<Entity, List<PropertySet>> entry : events.entrySet()) {
-            Party schedule = (Party) entry.getKey();
-            List<PropertySet> sets = entry.getValue();
+        for (Map.Entry<Entity, ScheduleEvents> entry : events.entrySet()) {
+            Entity schedule = entry.getKey();
+            List<PropertySet> sets = entry.getValue().getEvents();
 
             for (PropertySet set : sets) {
                 addEvent(schedule, set);

@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.workflow.appointment.boarding;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.archetype.rules.workflow.ScheduleEvents;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.workspace.workflow.appointment.AbstractMultiDayScheduleGrid;
@@ -46,7 +47,7 @@ public class CheckInScheduleGrid extends AbstractMultiDayScheduleGrid {
      * @param events       the events
      * @param rules        the appointment rules
      */
-    public CheckInScheduleGrid(Entity scheduleView, Date date, int days, Map<Entity, List<PropertySet>> events,
+    public CheckInScheduleGrid(Entity scheduleView, Date date, int days, Map<Entity, ScheduleEvents> events,
                                AppointmentRules rules) {
         super(scheduleView, date, days, filterEvents(events, date), rules);
     }
@@ -60,13 +61,14 @@ public class CheckInScheduleGrid extends AbstractMultiDayScheduleGrid {
      * @param date   the date
      * @return the filtered events
      */
-    private static Map<Entity, List<PropertySet>> filterEvents(Map<Entity, List<PropertySet>> events, Date date) {
-        Map<Entity, List<PropertySet>> map = new LinkedHashMap<>();
-        for (Map.Entry<Entity, List<PropertySet>> eventsBySchedule : events.entrySet()) {
-            if (!eventsBySchedule.getValue().isEmpty()) {
+    private static Map<Entity, ScheduleEvents> filterEvents(Map<Entity, ScheduleEvents> events, Date date) {
+        Map<Entity, ScheduleEvents> map = new LinkedHashMap<>();
+        for (Map.Entry<Entity, ScheduleEvents> eventsBySchedule : events.entrySet()) {
+            ScheduleEvents scheduleEvents = eventsBySchedule.getValue();
+            if (!scheduleEvents.getEvents().isEmpty()) {
                 List<PropertySet> onDate = new ArrayList<>();    // check-ins on date
                 List<PropertySet> afterDate = new ArrayList<>(); // check-ins after date
-                for (PropertySet event : eventsBySchedule.getValue()) {
+                for (PropertySet event : scheduleEvents.getEvents()) {
                     Date startDate = DateRules.getDate(event.getDate(ScheduleEvent.ACT_START_TIME));
                     if (startDate.compareTo(date) == 0) {
                         // only add blocking events on the date if there is an appointment before it, to provide context
@@ -79,7 +81,8 @@ public class CheckInScheduleGrid extends AbstractMultiDayScheduleGrid {
                 }
                 if (!onDate.isEmpty()) {
                     onDate.addAll(afterDate);                   // add all check-ins after the date to provide context
-                    map.put(eventsBySchedule.getKey(), onDate);
+                    map.put(eventsBySchedule.getKey(), new ScheduleEvents(onDate,
+                                                                          scheduleEvents.getModHash()));
                 }
             }
         }

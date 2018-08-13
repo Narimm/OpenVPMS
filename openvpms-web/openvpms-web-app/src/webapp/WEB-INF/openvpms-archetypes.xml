@@ -70,7 +70,7 @@
         <constructor-arg>
             <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
                 <property name="diskPersistent" value="false"/>
-                <property name="cacheName" value="taskCache"/>
+                <property name="cacheName" value="calendarCache"/>
                 <property name="maxEntriesLocalHeap" value="30"/>
                 <!-- 30 days of data -->
                 <property name="overflowToDisk" value="false"/>

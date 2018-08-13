@@ -20,12 +20,12 @@ import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.prefs.Preferences;
+import org.openvpms.archetype.rules.workflow.ScheduleEvents;
 import org.openvpms.archetype.rules.workflow.ScheduleService;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.model.entity.Entity;
-import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.im.clinician.ClinicianSelectField;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
@@ -39,7 +39,6 @@ import org.openvpms.web.echo.focus.FocusGroup;
 
 import java.util.Date;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel.Highlight;
@@ -114,9 +113,27 @@ public abstract class ScheduleServiceQuery extends ScheduleQuery {
      *
      * @return the query result set. May be {@code null}
      */
-    public Map<Entity, List<PropertySet>> query() {
+    public Map<Entity, ScheduleEvents> query() {
         getComponent();
         return getEvents();
+    }
+
+    /**
+     * Determines if any of the events have been updated.
+     * <p>
+     * This assumes that none of the query criteria have changed since the events were returned.
+     *
+     * @param events the events to check
+     * @return {@code true} if any of the events have been updated, otherwise {@code false}
+     */
+    public boolean updated(Map<Entity, ScheduleEvents> events) {
+        Date date = getDate();
+        for (Map.Entry<Entity, ScheduleEvents> entry : events.entrySet()) {
+            if (updated(entry.getKey(), entry.getValue(), date)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -155,6 +172,19 @@ public abstract class ScheduleServiceQuery extends ScheduleQuery {
     }
 
     /**
+     * Determines if events have been updated since they were last queried.
+     *
+     * @param schedule the schedule
+     * @param events   the events
+     * @param date     the date the event query was based on
+     * @return {@code true} if the events have been updated, otherwise {@code false}
+     */
+    protected boolean updated(Entity schedule, ScheduleEvents events, Date date) {
+        long hash = service.getModHash(schedule, date);
+        return hash == -1 || hash != events.getModHash();
+    }
+
+    /**
      * Returns the default clinician.
      *
      * @return the default clinician, or {@code null} to indicate all clinicians.
@@ -175,8 +205,8 @@ public abstract class ScheduleServiceQuery extends ScheduleQuery {
      * @param date     the date
      * @return the events
      */
-    protected List<PropertySet> getEvents(Entity schedule, Date date) {
-        return service.getEvents(schedule, date);
+    protected ScheduleEvents getEvents(Entity schedule, Date date) {
+        return service.getScheduleEvents(schedule, date);
     }
 
     /**
@@ -272,11 +302,11 @@ public abstract class ScheduleServiceQuery extends ScheduleQuery {
      *
      * @return the events
      */
-    private Map<Entity, List<PropertySet>> getEvents() {
+    private Map<Entity, ScheduleEvents> getEvents() {
         Date date = getDate();
-        Map<Entity, List<PropertySet>> result = new LinkedHashMap<>();
+        Map<Entity, ScheduleEvents> result = new LinkedHashMap<>();
         for (Entity schedule : getSelectedSchedules()) {
-            List<PropertySet> events = getEvents(schedule, date);
+            ScheduleEvents events = getEvents(schedule, date);
             result.put(schedule, events);
         }
         return result;

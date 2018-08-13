@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.workflow.worklist;
 
 import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
+import org.openvpms.archetype.rules.workflow.ScheduleEvents;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
@@ -32,7 +33,6 @@ import org.openvpms.web.workspace.workflow.scheduling.ScheduleEventGrid;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 
@@ -99,11 +99,10 @@ public class TaskBrowser extends ScheduleBrowser {
 
     /**
      * Creates a new grid for a set of events.
-     *
-     * @param date   the query date
+     *  @param date   the query date
      * @param events the events
      */
-    protected ScheduleEventGrid createEventGrid(Date date, Map<Entity, List<PropertySet>> events) {
+    protected ScheduleEventGrid createEventGrid(Date date, Map<Entity, ScheduleEvents> events) {
         return new TaskGrid(getScheduleView(), date, events, rules);
     }
 

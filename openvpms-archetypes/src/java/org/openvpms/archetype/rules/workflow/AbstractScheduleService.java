@@ -17,6 +17,7 @@
 package org.openvpms.archetype.rules.workflow;
 
 import net.sf.ehcache.Ehcache;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -138,7 +139,34 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
      */
     @Override
     public List<PropertySet> getEvents(Entity schedule, Date day) {
+        return cache.getEvents(schedule, day).getEvents();
+    }
+
+    /**
+     * Returns all events for the specified schedule and day.
+     * Events are represented by {@link PropertySet PropertySets}.
+     *
+     * @param schedule the schedule
+     * @param day      the day
+     * @return the events
+     */
+    @Override
+    public ScheduleEvents getScheduleEvents(Entity schedule, Date day) {
         return cache.getEvents(schedule, day);
+    }
+
+    /**
+     * Returns the modification hash for the specified schedule and day.
+     * <p>
+     * This can be used to determine if any of the events have changed.
+     *
+     * @param schedule the schedule
+     * @param day      the schedule day
+     * @return the modification hash, or {@code -1} if the schedule and day are not cached
+     */
+    @Override
+    public long getModHash(Entity schedule, Date day) {
+        return cache.getModHash(schedule, day);
     }
 
     /**
@@ -151,11 +179,27 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
      */
     @Override
     public List<PropertySet> getEvents(Entity schedule, Date from, Date to) {
+        return getScheduleEvents(schedule, from, to).getEvents();
+    }
+
+    /**
+     * Returns all events for the specified schedule, and time range.
+     *
+     * @param schedule the schedule
+     * @param from     the from time
+     * @param to       the to time
+     * @return the events
+     */
+    @Override
+    public ScheduleEvents getScheduleEvents(Entity schedule, Date from, Date to) {
+        HashCodeBuilder builder = new HashCodeBuilder();
         Date fromDay = DateRules.getDate(from);
         Date toDay = DateRules.getDate(to);
         List<PropertySet> results = new ArrayList<>();
         while (fromDay.compareTo(toDay) <= 0) {
-            for (PropertySet event : getEvents(schedule, fromDay)) {
+            ScheduleEvents events = getScheduleEvents(schedule, fromDay);
+            builder.append(events.getModHash());
+            for (PropertySet event : events.getEvents()) {
                 Date startTime = event.getDate(ScheduleEvent.ACT_START_TIME);
                 Date endTime = event.getDate(ScheduleEvent.ACT_END_TIME);
                 if (DateRules.intersects(startTime, endTime, from, to)) {
@@ -166,8 +210,33 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
             }
             fromDay = DateRules.getDate(fromDay, 1, DateUnits.DAYS);
         }
+        return new ScheduleEvents(results, builder.toHashCode()); // 64 bit to 32 bit not ideal
+    }
 
-        return results;
+    /**
+     * Returns the modification hash for the specified schedule and date range.
+     * <p>
+     * This can be used to determine if any of the events have changed.
+     *
+     * @param schedule the schedule
+     * @param from     the from time
+     * @param to       the to time
+     * @return the modification hash, or {@code -1} if the schedule and range are not cached
+     */
+    @Override
+    public long getModHash(Entity schedule, Date from, Date to) {
+        HashCodeBuilder builder = new HashCodeBuilder();
+        Date fromDay = DateRules.getDate(from);
+        Date toDay = DateRules.getDate(to);
+        while (fromDay.compareTo(toDay) <= 0) {
+            long modHash = getModHash(schedule, fromDay);
+            if (modHash == -1) {
+                return -1;
+            }
+            builder.append(modHash);
+            fromDay = DateRules.getDate(fromDay, 1, DateUnits.DAYS);
+        }
+        return builder.toHashCode();
     }
 
     /**

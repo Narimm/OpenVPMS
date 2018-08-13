@@ -22,6 +22,7 @@ import net.sf.ehcache.Element;
 import net.sf.ehcache.constructs.blocking.BlockingCache;
 import net.sf.ehcache.constructs.blocking.LockTimeoutException;
 import org.apache.commons.collections.map.ReferenceMap;
+import org.apache.commons.lang.math.RandomUtils;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.model.entity.Entity;
@@ -106,7 +107,7 @@ class ScheduleEventCache {
      * @param day      the day
      * @return all events on the specified day for the schedule
      */
-    public List<PropertySet> getEvents(Entity schedule, Date day) {
+    public ScheduleEvents getEvents(Entity schedule, Date day) {
         ScheduleDay result;
         day = DateRules.getDate(day);
         Key key = new Key(schedule.getId(), day);
@@ -131,12 +132,24 @@ class ScheduleEventCache {
             // do not release the lock, as it was not acquired
             String message = "Timeout waiting on another thread to fetch object for cache entry \"" + key + "\".";
             throw new LockTimeoutException(message, exception);
-        } catch (final Throwable throwable) {
+        } catch (Throwable throwable) {
             // Could not fetch - ditch the entry from the cache and rethrow.
             cache.put(new Element(key, null));  // releases the lock
             throw new CacheException("Could not fetch object for cache entry with key \"" + key + "\".", throwable);
         }
-        return result.getEvents();
+        return result.getScheduleEvents();
+    }
+
+    /**
+     * Returns the modification hash for the specified schedule and day.
+     *
+     * @param schedule the schedule
+     * @param day      the day
+     * @return the modification hash, or {@code -1} if they are not present in the cache
+     */
+    public long getModHash(Entity schedule, Date day) {
+        ScheduleDay cached = getScheduleDay(schedule.getId(), day);
+        return cached != null ? cached.getModHash() : -1;
     }
 
     /**
@@ -147,10 +160,8 @@ class ScheduleEventCache {
      * @return the events, or {@code null} if they are not in the cache
      */
     public List<PropertySet> getCached(Reference schedule, Date day) {
-        day = DateRules.getDate(day);
-        Key key = new Key(schedule.getId(), day);
-        Element element = cache.getQuiet(key);
-        return (element != null) ? ((ScheduleDay) element.getObjectValue()).getEvents() : null;
+        ScheduleDay cached = getScheduleDay(schedule.getId(), day);
+        return (cached != null) ? cached.getEvents() : null;
     }
 
     /**
@@ -186,6 +197,20 @@ class ScheduleEventCache {
         synchronized (events) {
             events.clear();
         }
+    }
+
+    /**
+     * Returns the cached {@link ScheduleDay} for the given schedule and day.
+     *
+     * @param id  the schedule identifier.
+     * @param day the day
+     * @return the corresponding {@link ScheduleDay} or {@code null} if it is not cached
+     */
+    private ScheduleDay getScheduleDay(long id, Date day) {
+        day = DateRules.getDate(day);
+        Key key = new Key(id, day);
+        Element element = cache.getQuiet(key);
+        return (element != null) ? (ScheduleDay) element.getObjectValue() : null;
     }
 
     /**
@@ -303,7 +328,7 @@ class ScheduleEventCache {
 
 
         /**
-         * Constructs an {@link Key}.
+         * Constructs a {@link Key}.
          *
          * @param scheduleId the schedule identifier
          * @param day        the schedule day
@@ -427,7 +452,6 @@ class ScheduleEventCache {
 
     private static class ScheduleDay {
 
-
         /**
          * The schedule day.
          */
@@ -452,6 +476,11 @@ class ScheduleEventCache {
         private List<Change> changes = new ArrayList<>();
 
         /**
+         * The modification hash, used to determine if the object has changed.
+         */
+        private long modHash;
+
+        /**
          * Constructs an {@link ScheduleDay}.
          *
          * @param schedule the schedule
@@ -460,6 +489,7 @@ class ScheduleEventCache {
         public ScheduleDay(Schedule schedule, Date day) {
             this.day = day;
             this.schedule = schedule;
+            modHash = RandomUtils.nextLong();
             schedule.add(this);
         }
 
@@ -489,6 +519,7 @@ class ScheduleEventCache {
                     map.put(event.getId(), handle);
                 }
             }
+            modHash++;
             if (!changes.isEmpty()) {
                 for (Change change : changes) {
                     if (change.add) {
@@ -522,11 +553,33 @@ class ScheduleEventCache {
                     result.add(new ObjectSet(event)); // shallow copy
                 } else {
                     // handle is out of date
+                    modHash++;
                     iterator.remove();
                 }
             }
             Collections.sort(result, EventComparator.INSTANCE);
             return result;
+        }
+
+        /**
+         * Returns the {@link ScheduleEvents} for the day.
+         *
+         * @return the events
+         */
+        public synchronized ScheduleEvents getScheduleEvents() {
+            List<PropertySet> events = getEvents();
+            return new ScheduleEvents(events, modHash);
+        }
+
+        /**
+         * Returns the modification hash. This can be used to determine if the events have been modified since they
+         * were last accessed.
+         *
+         * @return the modification hash
+         */
+        public synchronized long getModHash() {
+            getEvents(); // applies changes
+            return modHash;
         }
 
         /**
@@ -544,6 +597,7 @@ class ScheduleEventCache {
                 // queue the addition
                 changes.add(new Change(event, true));
             }
+            modHash++;
         }
 
         /**
@@ -558,6 +612,7 @@ class ScheduleEventCache {
                 // queue the removal
                 changes.add(new Change(event, false));
             }
+            modHash++;
         }
 
         /**

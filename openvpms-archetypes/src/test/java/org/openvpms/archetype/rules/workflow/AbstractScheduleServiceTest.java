@@ -16,19 +16,17 @@
 
 package org.openvpms.archetype.rules.workflow;
 
-import org.junit.Assert;
 import org.junit.Test;
-import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.springframework.beans.factory.DisposableBean;
 
@@ -99,18 +97,31 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
         Entity schedule2 = createSchedule();
         Party patient = TestHelper.createPatient();
 
-        service = createScheduleService(30);
-        service.getEvents(schedule1, date);
-        assertEquals(0, service.getEvents(schedule1, date).size());
+        initScheduleService(30);
+
+        assertEquals(-1, service.getModHash(schedule1, date)); // not cached
+
+        long hash1 = checkEvents(schedule1, date, 0);
+        assertNotEquals(-1, hash1);
+
+        checkEvents(schedule1, date, 0, hash1);
+        assertEquals(hash1, service.getModHash(schedule1, date));
 
         Act act = createEvent(schedule1, date, patient);
-        assertEquals(1, service.getEvents(schedule1, date).size());
+        long hash2 = checkEvents(schedule1, date, 1);
+        assertNotEquals(hash2, hash1); // Hash should have changed
+        assertEquals(hash2, service.getModHash(schedule1, date));
 
         setSchedule(act, schedule2);
         save(act);
 
-        assertEquals(0, service.getEvents(schedule1, date).size());
-        assertEquals(1, service.getEvents(schedule2, date).size());
+        long hash3 = checkEvents(schedule1, date, 0);
+        assertNotEquals(hash2, hash3); // Hash should have changed
+        assertEquals(hash3, service.getModHash(schedule1, date));
+
+        long hash4 = checkEvents(schedule2, date, 1);
+        assertNotEquals(-1, hash4);
+        assertEquals(hash4, service.getModHash(schedule2, date));
     }
 
     /**
@@ -123,41 +134,47 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
         Entity schedule = createSchedule();
         Party patient1 = TestHelper.createPatient();
 
-        service = createScheduleService(30);
-        service.getEvents(schedule, date);
-        Assert.assertEquals(0, service.getEvents(schedule, date).size());
+        initScheduleService(30);
+        long hash1 = checkEvents(schedule, date, 0);
+        checkEvents(schedule, date, 0, hash1);  // Hash should be the same
 
         // create an event with no patient
         Act event = createEvent(schedule, date, null);
-        List<PropertySet> events = service.getEvents(schedule, date);
-        assertEquals(1, events.size());
-        assertNull(events.get(0).getReference(ScheduleEvent.PATIENT_REFERENCE));
+        ScheduleEvents events1 = service.getScheduleEvents(schedule, date);
+        assertEquals(1, events1.size());
+        assertNull(events1.getEvents().get(0).getReference(ScheduleEvent.PATIENT_REFERENCE));
+        assertNotEquals(hash1, events1.getModHash());
 
         // now update it to include the patient
-        ActBean bean = new ActBean(event);
-        bean.addNodeParticipation("patient", patient1);
+        IMObjectBean bean = getBean(event);
+        bean.setTarget("patient", patient1);
         bean.save();
 
         // verify the patient matches that expected.
-        events = service.getEvents(schedule, date);
-        assertEquals(1, events.size());
-        assertEquals(patient1.getObjectReference(), events.get(0).getReference(ScheduleEvent.PATIENT_REFERENCE));
+        ScheduleEvents events2 = service.getScheduleEvents(schedule, date);
+        assertEquals(1, events2.size());
+        assertEquals(patient1.getObjectReference(),
+                     events2.getEvents().get(0).getReference(ScheduleEvent.PATIENT_REFERENCE));
+        assertNotEquals(events1.getModHash(), events2.getModHash()); // Hash should have changed
 
         // remove the patient
-        bean.removeParticipation(PatientArchetypes.PATIENT_PARTICIPATION);
+        bean.removeTarget("patient", patient1);
         bean.save();
-        events = service.getEvents(schedule, date);
-        assertEquals(1, events.size());
-        assertNull(events.get(0).getReference(ScheduleEvent.PATIENT_REFERENCE));
+        ScheduleEvents events3 = service.getScheduleEvents(schedule, date);
+        assertEquals(1, events3.size());
+        assertNull(events3.getEvents().get(0).getReference(ScheduleEvent.PATIENT_REFERENCE));
+        assertNotEquals(events2.getModHash(), events3.getModHash()); // Hash should have changed
 
         // now change the patient
         Party patient2 = TestHelper.createPatient();
-        bean.setParticipant(PatientArchetypes.PATIENT_PARTICIPATION, patient2);
+        bean.setTarget("patient", patient2);
         bean.save();
 
-        events = service.getEvents(schedule, date);
-        assertEquals(1, events.size());
-        assertEquals(patient2.getObjectReference(), events.get(0).getReference(ScheduleEvent.PATIENT_REFERENCE));
+        ScheduleEvents events4 = service.getScheduleEvents(schedule, date);
+        assertEquals(1, events4.size());
+        assertEquals(patient2.getObjectReference(),
+                     events4.getEvents().get(0).getReference(ScheduleEvent.PATIENT_REFERENCE));
+        assertNotEquals(events3.getModHash(), events2.getModHash()); // Hash should have changed
     }
 
     /**
@@ -170,27 +187,31 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
         Entity schedule = createSchedule();
         Party patient = TestHelper.createPatient();
 
-        service = createScheduleService(30);
-        service.getEvents(schedule, date);
-        Assert.assertEquals(0, service.getEvents(schedule, date).size());
+        initScheduleService(30);
+
+        long hash1 = checkEvents(schedule, date, 0);
+        checkEvents(schedule, date, 0, hash1);
 
         Act task = createEvent(schedule, date, patient);
-        ActBean bean = new ActBean(task);
-        IMObjectReference customer1 = bean.getNodeParticipantRef("customer");
+        IMObjectBean bean = getBean(task);
+        Reference customer1 = bean.getTargetRef("customer");
         assertNotNull(customer1);
 
         // verify the customer matches that expected.
-        List<PropertySet> events = service.getEvents(schedule, date);
-        assertEquals(1, events.size());
-        assertEquals(customer1, events.get(0).getReference(ScheduleEvent.CUSTOMER_REFERENCE));
+        ScheduleEvents events1 = service.getScheduleEvents(schedule, date);
+        assertEquals(1, events1.size());
+        assertEquals(customer1, events1.getEvents().get(0).getReference(ScheduleEvent.CUSTOMER_REFERENCE));
+        assertNotEquals(hash1, events1.getModHash());
 
         Party customer2 = TestHelper.createCustomer();
-        bean.setParticipant(CustomerArchetypes.CUSTOMER_PARTICIPATION, customer2);
+        bean.setTarget("customer", customer2);
         bean.save();
 
-        events = service.getEvents(schedule, date);
-        assertEquals(1, events.size());
-        assertEquals(customer2.getObjectReference(), events.get(0).getReference(ScheduleEvent.CUSTOMER_REFERENCE));
+        ScheduleEvents events2 = service.getScheduleEvents(schedule, date);
+        assertEquals(1, events2.size());
+        assertEquals(customer2.getObjectReference(),
+                     events2.getEvents().get(0).getReference(ScheduleEvent.CUSTOMER_REFERENCE));
+        assertNotEquals(events1.getModHash(), events2.getModHash());
     }
 
     /**
@@ -203,32 +224,34 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
         Entity schedule = createSchedule();
         Party patient = TestHelper.createPatient();
 
-        service = createScheduleService(30);
-        service.getEvents(schedule, date);
-        Assert.assertEquals(0, service.getEvents(schedule, date).size());
+        initScheduleService(30);
+        long hash1 = checkEvents(schedule, date, 0);
+        checkEvents(schedule, date, 0, hash1);
 
         Act task = createEvent(schedule, date, patient);
-        ActBean bean = new ActBean(task);
-        IMObjectReference clinician = bean.getNodeParticipantRef("clinician");
+        IMObjectBean bean = getBean(task);
+        Reference clinician = bean.getTargetRef("clinician");
         assertNotNull(clinician);
 
         // verify the clinician matches that expected.
-        List<PropertySet> events = service.getEvents(schedule, date);
-        assertEquals(1, events.size());
-        assertEquals(clinician, events.get(0).getReference(ScheduleEvent.CLINICIAN_REFERENCE));
+        ScheduleEvents events1 = service.getScheduleEvents(schedule, date);
+        assertEquals(1, events1.size());
+        assertEquals(clinician, events1.getEvents().get(0).getReference(ScheduleEvent.CLINICIAN_REFERENCE));
 
         User clinician2 = TestHelper.createClinician();
-        bean.setParticipant(UserArchetypes.CLINICIAN_PARTICIPATION, clinician2);
+        bean.setTarget("clinician", clinician2);
         bean.save();
 
-        events = service.getEvents(schedule, date);
-        assertEquals(1, events.size());
-        assertEquals(clinician2.getObjectReference(), events.get(0).getReference(ScheduleEvent.CLINICIAN_REFERENCE));
+        ScheduleEvents events2 = service.getScheduleEvents(schedule, date);
+        assertEquals(1, events2.size());
+        assertEquals(clinician2.getObjectReference(),
+                     events2.getEvents().get(0).getReference(ScheduleEvent.CLINICIAN_REFERENCE));
+        assertNotEquals(events1.getModHash(), events2.getModHash());
     }
 
     /**
      * Reads a schedule for two separate dates in two threads, whilst changing an event's schedule in a third.
-     * <p/>
+     * <p>
      * Verifies that the schedules contains the expected result.
      */
     @Test
@@ -247,7 +270,7 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
 
     /**
      * Reads a schedule for two separate dates in two threads, whilst changing an event's schedule in a third.
-     * <p/>
+     * <p>
      * Verifies that the schedules contains the expected result.
      */
     @Test
@@ -262,6 +285,28 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
                 destroyService(service);
             }
         }
+    }
+
+    /**
+     * Initialises the {@link ScheduleService}.
+     * <p>
+     * This will be destroyed by {@link #tearDown()}.
+     *
+     * @param scheduleCacheSize the maximum number of schedule days to cache
+     * @return the new service
+     */
+    protected ScheduleService initScheduleService(int scheduleCacheSize) {
+        service = createScheduleService(scheduleCacheSize);
+        return service;
+    }
+
+    /**
+     * Returns the service.
+     *
+     * @return the service, or {@code null} if {@link #initScheduleService(int)} has not been invoked
+     */
+    protected ScheduleService getScheduleService() {
+        return service;
     }
 
     /**
@@ -289,7 +334,6 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
      */
     protected abstract Act createEvent(Entity schedule, Date date, Party patient);
 
-
     /**
      * Sets an event's schedule.
      *
@@ -314,7 +358,7 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
      * @return the event ids
      */
     protected Set<Long> getIds(Date date, Entity schedule, ScheduleService service) {
-        Set<Long> result = new HashSet<Long>();
+        Set<Long> result = new HashSet<>();
         List<PropertySet> events = service.getEvents(schedule, date);
         for (PropertySet event : events) {
             result.add(event.getReference(ScheduleEvent.ACT_REFERENCE).getId());
@@ -328,7 +372,8 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
      * @param tasks the tasks to run
      * @throws Exception for any error
      */
-    protected void runConcurrent(Callable<PropertySet>... tasks) throws Exception {
+    @SafeVarargs
+    protected final void runConcurrent(Callable<PropertySet>... tasks) throws Exception {
         List<Callable<PropertySet>> list = Arrays.asList(tasks);
         ExecutorService executorService = Executors.newFixedThreadPool(list.size());
         List<Future<PropertySet>> futures = executorService.invokeAll(list);
@@ -352,6 +397,33 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies events match those expected for a schedule and date.
+     *
+     * @param schedule the schedule
+     * @param date     the date
+     * @param size     the expected no. of events
+     * @param modHash  the expected modification hash
+     */
+    protected void checkEvents(Entity schedule, Date date, int size, long modHash) {
+        long actualETag = checkEvents(schedule, date, size);
+        assertEquals(modHash, actualETag);
+    }
+
+    /**
+     * Verifies events match those expected for a schedule and date.
+     *
+     * @param schedule the schedule
+     * @param date     the date
+     * @param size     the expected no. of events
+     * @return the modification hash
+     */
+    protected long checkEvents(Entity schedule, Date date, int size) {
+        ScheduleEvents events = service.getScheduleEvents(schedule, date);
+        assertEquals(size, events.size());
+        return events.getModHash();
+    }
+
+    /**
      * Reads two schedules in two separate threads, while moving an event from one schedule to another in a third
      * thread.
      *
@@ -366,32 +438,23 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
 
         final Act event = createEvent(schedule1, date, patient);
 
-        Callable<PropertySet> readSchedule1 = new Callable<PropertySet>() {
-            @Override
-            public PropertySet call() throws Exception {
-                System.err.println("Read date1 thread=" + Thread.currentThread().getName());
-                List<PropertySet> events = service.getEvents(schedule1, date);
-                assertFalse(events.size() > 1);
-                return events.isEmpty() ? null : events.get(0);
-            }
+        Callable<PropertySet> readSchedule1 = () -> {
+            System.err.println("Read date1 thread=" + Thread.currentThread().getName());
+            List<PropertySet> events = service.getEvents(schedule1, date);
+            assertFalse(events.size() > 1);
+            return events.isEmpty() ? null : events.get(0);
         };
-        Callable<PropertySet> readSchedule2 = new Callable<PropertySet>() {
-            @Override
-            public PropertySet call() throws Exception {
-                System.err.println("Read date2 thread=" + Thread.currentThread().getName());
-                List<PropertySet> events = service.getEvents(schedule2, date);
-                assertFalse(events.size() > 1);
-                return events.isEmpty() ? null : events.get(0);
-            }
+        Callable<PropertySet> readSchedule2 = () -> {
+            System.err.println("Read date2 thread=" + Thread.currentThread().getName());
+            List<PropertySet> events = service.getEvents(schedule2, date);
+            assertFalse(events.size() > 1);
+            return events.isEmpty() ? null : events.get(0);
         };
-        Callable<PropertySet> write = new Callable<PropertySet>() {
-            @Override
-            public PropertySet call() throws Exception {
-                System.err.println("Writer thread=" + Thread.currentThread().getName());
-                setSchedule(event, schedule2);
-                save(event);
-                return null;
-            }
+        Callable<PropertySet> write = () -> {
+            System.err.println("Writer thread=" + Thread.currentThread().getName());
+            setSchedule(event, schedule2);
+            save(event);
+            return null;
         };
 
         runConcurrent(readSchedule1, readSchedule2, write);
@@ -416,33 +479,24 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
         final Act event = createEvent(schedule, date, patient);
         final Party patient2 = TestHelper.createPatient();
 
-        Callable<PropertySet> read1 = new Callable<PropertySet>() {
-            @Override
-            public PropertySet call() throws Exception {
-                System.err.println("Read 1 thread=" + Thread.currentThread().getName());
-                List<PropertySet> events = service.getEvents(schedule, date);
-                assertFalse(events.size() > 1);
-                return events.isEmpty() ? null : events.get(0);
-            }
+        Callable<PropertySet> read1 = () -> {
+            System.err.println("Read 1 thread=" + Thread.currentThread().getName());
+            List<PropertySet> events = service.getEvents(schedule, date);
+            assertFalse(events.size() > 1);
+            return events.isEmpty() ? null : events.get(0);
         };
-        Callable<PropertySet> read2 = new Callable<PropertySet>() {
-            @Override
-            public PropertySet call() throws Exception {
-                System.err.println("Read 2 thread=" + Thread.currentThread().getName());
-                List<PropertySet> events = service.getEvents(schedule, date);
-                assertFalse(events.size() > 1);
-                return events.isEmpty() ? null : events.get(0);
-            }
+        Callable<PropertySet> read2 = () -> {
+            System.err.println("Read 2 thread=" + Thread.currentThread().getName());
+            List<PropertySet> events = service.getEvents(schedule, date);
+            assertFalse(events.size() > 1);
+            return events.isEmpty() ? null : events.get(0);
         };
-        Callable<PropertySet> write = new Callable<PropertySet>() {
-            @Override
-            public PropertySet call() throws Exception {
-                System.err.println("Writer thread=" + Thread.currentThread().getName());
-                ActBean bean = new ActBean(event);
-                bean.setParticipant(PatientArchetypes.PATIENT_PARTICIPATION, patient2);
-                save(event);
-                return null;
-            }
+        Callable<PropertySet> write = () -> {
+            System.err.println("Writer thread=" + Thread.currentThread().getName());
+            ActBean bean = new ActBean(event);
+            bean.setParticipant(PatientArchetypes.PATIENT_PARTICIPATION, patient2);
+            save(event);
+            return null;
         };
 
         List<PropertySet> events = service.getEvents(schedule, date);

@@ -18,9 +18,9 @@ package org.openvpms.web.workspace.workflow.appointment.boarding;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
+import org.openvpms.archetype.rules.workflow.ScheduleEvents;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.model.object.Reference;
-import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.workspace.workflow.appointment.AbstractMultiDayScheduleGrid;
 import org.openvpms.web.workspace.workflow.scheduling.Schedule;
 
@@ -58,7 +58,7 @@ public class CageScheduleGrid extends AbstractMultiDayScheduleGrid {
      * @param appointments the appointments
      * @param rules        the appointment rules
      */
-    public CageScheduleGrid(Entity scheduleView, Date date, int days, Map<Entity, List<PropertySet>> appointments,
+    public CageScheduleGrid(Entity scheduleView, Date date, int days, Map<Entity, ScheduleEvents> appointments,
                             AppointmentRules rules) {
         super(scheduleView, date, days, appointments, rules);
 

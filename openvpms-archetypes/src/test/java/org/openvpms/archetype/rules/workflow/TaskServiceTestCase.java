@@ -25,9 +25,8 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.Date;
@@ -38,6 +37,7 @@ import java.util.concurrent.Callable;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 
 
@@ -49,26 +49,9 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
 public class TaskServiceTestCase extends AbstractScheduleServiceTest {
 
     /**
-     * The task service.
-     */
-    private TaskService service;
-
-    /**
      * The work list.
      */
     private Party workList;
-
-    /**
-     * Cleans up after the test.
-     *
-     * @throws Exception for any error
-     */
-    public void tearDown() throws Exception {
-        super.tearDown();
-        if (service != null) {
-            service.destroy();
-        }
-    }
 
     /**
      * Sets up the test case.
@@ -87,34 +70,34 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
         Date date2 = getDate("2008-01-02");
         Date date3 = getDate("2008-01-03");
 
-        service = createScheduleService(30);
+        ScheduleService service = initScheduleService(30);
 
         // retrieve the tasks for date1 and date2 and verify they are empty.
         // This caches the tasks for each date.
-        List<PropertySet> results = service.getEvents(workList, date1);
-        assertEquals(0, results.size());
-
-        results = service.getEvents(workList, date2);
-        assertEquals(0, results.size());
+        long hash1 = checkEvents(workList, date1, 0);
+        long hash2 = checkEvents(workList, date2, 0);
+        assertNotEquals(hash1, hash2);
 
         // create and save task for date1. As it has no end time, it should
         // appear for the 3 dates.
         Act task = createTask(date1);
 
-        results = service.getEvents(workList, date1);
-        assertEquals(1, results.size());
-        PropertySet set = results.get(0);
-        checkTask(task, set);
+        ScheduleEvents events1 = service.getScheduleEvents(workList, date1);
+        assertEquals(1, events1.size());
+        PropertySet set1 = events1.getEvents().get(0);
+        checkTask(task, set1);
+        assertNotEquals(hash1, events1.getModHash());
 
-        results = service.getEvents(workList, date2);
-        assertEquals(1, results.size());
-        set = results.get(0);
-        checkTask(task, set);
+        ScheduleEvents events2 = service.getScheduleEvents(workList, date2);
+        assertEquals(1, events2.size());
+        PropertySet set2 = events2.getEvents().get(0);
+        checkTask(task, set2);
+        assertNotEquals(hash2, events2.getModHash());
 
-        results = service.getEvents(workList, date3);
-        assertEquals(1, results.size());
-        set = results.get(0);
-        checkTask(task, set);
+        ScheduleEvents events3 = service.getScheduleEvents(workList, date3);
+        assertEquals(1, events3.size());
+        PropertySet set3 = events3.getEvents().get(0);
+        checkTask(task, set3);
     }
 
     /**
@@ -126,26 +109,27 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
         Date date2 = getDate("2008-01-02");
         Date date3 = getDate("2008-01-03");
 
-        service = createScheduleService(30);
-        List<PropertySet> results = service.getEvents(workList, date1);
-        assertEquals(0, results.size());
-
-        results = service.getEvents(workList, date2);
-        assertEquals(0, results.size());
+        initScheduleService(30);
+        long hash1 = checkEvents(workList, date1, 0);
+        long hash2 = checkEvents(workList, date2, 0);
 
         Act task = createTask(date1);
 
-        results = service.getEvents(workList, date1);
-        assertEquals(1, results.size());
+        long hash3 = checkEvents(workList, date1, 1);
+        assertNotEquals(hash1, hash3);
 
-        results = service.getEvents(workList, date2);
-        assertEquals(1, results.size());
+        long hash4 = checkEvents(workList, date2, 1);
+        assertNotEquals(hash2, hash4);
 
-        getArchetypeService().remove(task);
+        remove(task);
 
-        assertEquals(0, service.getEvents(workList, date1).size());
-        assertEquals(0, service.getEvents(workList, date2).size());
-        assertEquals(0, service.getEvents(workList, date3).size());
+        long hash5 = checkEvents(workList, date1, 0);
+        assertNotEquals(hash3, hash5);
+
+        long hash6 = checkEvents(workList, date2, 0);
+        assertNotEquals(hash4, hash6);
+
+        checkEvents(workList, date3, 0);
     }
 
     /**
@@ -156,22 +140,28 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
         Date date1 = getDate("2008-01-01");
         Date date2 = getDate("2008-03-01");
 
-        service = createScheduleService(30);
-        service.getEvents(workList, date1);
-        assertEquals(0, service.getEvents(workList, date1).size());
-        assertEquals(0, service.getEvents(workList, date2).size());
+        initScheduleService(30);
+        long hash1 = checkEvents(workList, date1, 0);
+        checkEvents(workList, date1, 0, hash1);
+        long hash2 = checkEvents(workList, date2, 0);
+        checkEvents(workList, date2, 0, hash2);
 
         Act task = createTask(date1);
 
         // the task has no end date, so will appear in both dates
-        assertEquals(1, service.getEvents(workList, date1).size());
-        assertEquals(1, service.getEvents(workList, date2).size());
+        long hash3 = checkEvents(workList, date1, 1);
+        long hash4 = checkEvents(workList, date2, 1);
+        assertNotEquals(hash1, hash3);
+        assertNotEquals(hash2, hash4);
 
         task.setActivityStartTime(date2); // move it to date2
-        getArchetypeService().save(task);
+        save(task);
 
-        assertEquals(0, service.getEvents(workList, date1).size());
-        assertEquals(1, service.getEvents(workList, date2).size());
+        long hash5 = checkEvents(workList, date1, 0);
+        assertNotEquals(hash3, hash5);
+
+        long hash6 = checkEvents(workList, date2, 1);
+        assertNotEquals(hash4, hash6);
     }
 
     /**
@@ -180,7 +170,7 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
     @Test
     public void testGetEvents() {
         final int count = 10;
-        service = createScheduleService(30);
+        ScheduleService service = initScheduleService(30);
         Party patient = TestHelper.createPatient();
         Act[] tasks = new Act[count];
         Date date = getDate("2007-01-01");
@@ -249,13 +239,13 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
         Date start = getDate("2008-01-01");
 
         // create some open tasks
-        Set<Long> tasks = new HashSet<Long>();
+        Set<Long> tasks = new HashSet<>();
         for (int i = 0; i < 100; ++i) {
             Act task = createTask(start);
             tasks.add(task.getId());
         }
 
-        service = createScheduleService(6); // cache 6 days
+        ScheduleService service = initScheduleService(6); // cache 6 days
 
         // repeatedly read 10 days worth of tasks. This will force the cache to shed and re-read data.
         for (int j = 0; j < 10; ++j) {
@@ -311,31 +301,25 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
      * @param taskService the task service
      * @throws Exception for any error
      */
-    private void checkConcurrentReadWrite(final TaskService taskService) throws Exception {
+    private void checkConcurrentReadWrite(TaskService taskService) throws Exception {
         final Date startTime = getDate("2007-01-01");
         final Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
         final Party schedule = ScheduleTestHelper.createWorkList();
         Party patient = TestHelper.createPatient();
         final Act task = createTask(startTime, schedule, patient);
 
-        Callable<PropertySet> read = new Callable<PropertySet>() {
-            @Override
-            public PropertySet call() throws Exception {
-                System.err.println("read");
-                List<PropertySet> events = taskService.getEvents(schedule, startTime);
-                assertFalse(events.size() > 1);
-                return events.isEmpty() ? null : events.get(0);
-            }
+        Callable<PropertySet> read = () -> {
+            System.err.println("read");
+            List<PropertySet> events = taskService.getEvents(schedule, startTime);
+            assertFalse(events.size() > 1);
+            return events.isEmpty() ? null : events.get(0);
         };
 
-        Callable<PropertySet> write = new Callable<PropertySet>() {
-            @Override
-            public PropertySet call() throws Exception {
-                System.err.println("write");
-                task.setActivityEndTime(endTime);
-                save(task);
-                return null;
-            }
+        Callable<PropertySet> write = () -> {
+            System.err.println("write");
+            task.setActivityEndTime(endTime);
+            save(task);
+            return null;
         };
 
         runConcurrent(read, write);
@@ -354,39 +338,30 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
      * @throws Exception for any error
      */
     private void checkConcurrentReadWrite2(final TaskService taskService) throws Exception {
-        final Date startTime = getDate("2007-01-01");
-        final Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
-        final Date date2 = getDate("2007-01-02");
-        final Party schedule = ScheduleTestHelper.createWorkList();
+        Date startTime = getDate("2007-01-01");
+        Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
+        Date date2 = getDate("2007-01-02");
+        Party schedule = ScheduleTestHelper.createWorkList();
         Party patient = TestHelper.createPatient();
-        final Act task = createTask(startTime, schedule, patient);
+        Act task = createTask(startTime, schedule, patient);
 
-        Callable<PropertySet> readDate1 = new Callable<PropertySet>() {
-            @Override
-            public PropertySet call() throws Exception {
-                System.err.println("Read date1 thread=" + Thread.currentThread().getName());
-                List<PropertySet> events = taskService.getEvents(schedule, startTime);
-                assertFalse(events.size() > 1);
-                return events.isEmpty() ? null : events.get(0);
-            }
+        Callable<PropertySet> readDate1 = () -> {
+            System.err.println("Read date1 thread=" + Thread.currentThread().getName());
+            List<PropertySet> events = taskService.getEvents(schedule, startTime);
+            assertFalse(events.size() > 1);
+            return events.isEmpty() ? null : events.get(0);
         };
-        Callable<PropertySet> readDate2 = new Callable<PropertySet>() {
-            @Override
-            public PropertySet call() throws Exception {
-                System.err.println("Read date2 thread=" + Thread.currentThread().getName());
-                List<PropertySet> events = taskService.getEvents(schedule, date2);
-                assertFalse(events.size() > 1);
-                return events.isEmpty() ? null : events.get(0);
-            }
+        Callable<PropertySet> readDate2 = () -> {
+            System.err.println("Read date2 thread=" + Thread.currentThread().getName());
+            List<PropertySet> events = taskService.getEvents(schedule, date2);
+            assertFalse(events.size() > 1);
+            return events.isEmpty() ? null : events.get(0);
         };
-        Callable<PropertySet> write = new Callable<PropertySet>() {
-            @Override
-            public PropertySet call() throws Exception {
-                System.err.println("Writer thread=" + Thread.currentThread().getName());
-                task.setActivityEndTime(endTime);
-                save(task);
-                return null;
-            }
+        Callable<PropertySet> write = () -> {
+            System.err.println("Writer thread=" + Thread.currentThread().getName());
+            task.setActivityEndTime(endTime);
+            save(task);
+            return null;
         };
 
         runConcurrent(readDate1, readDate2, write);
@@ -435,7 +410,7 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
         User clinician = TestHelper.createClinician();
         User author = TestHelper.createClinician();
         Act task = ScheduleTestHelper.createTask(startTime, endTime, workList, customer, patient, clinician, author);
-        IMObjectBean bean = new IMObjectBean(task);
+        IMObjectBean bean = getBean(task);
         bean.setValue("consultStartTime", consultStartTime);
         save(task);
         return task;
@@ -448,23 +423,23 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
      * @param set  the set
      */
     private void checkTask(Act task, PropertySet set) {
-        ActBean bean = new ActBean(task);
+        IMObjectBean bean = getBean(task);
         assertEquals(task.getObjectReference(), set.get(ScheduleEvent.ACT_REFERENCE));
         assertEquals(task.getActivityStartTime(), set.get(ScheduleEvent.ACT_START_TIME));
         assertEquals(task.getActivityEndTime(), set.get(ScheduleEvent.ACT_END_TIME));
         assertEquals(task.getStatus(), set.get(ScheduleEvent.ACT_STATUS));
         assertEquals(task.getReason(), set.get(ScheduleEvent.ACT_REASON));
         assertEquals(task.getDescription(), set.get(ScheduleEvent.ACT_DESCRIPTION));
-        assertEquals(bean.getNodeParticipantRef("customer"), set.get(ScheduleEvent.CUSTOMER_REFERENCE));
-        assertEquals(bean.getNodeParticipant("customer").getName(), set.get(ScheduleEvent.CUSTOMER_NAME));
-        assertEquals(bean.getNodeParticipantRef("patient"), set.get(ScheduleEvent.PATIENT_REFERENCE));
-        assertEquals(bean.getNodeParticipant("patient").getName(), set.get(ScheduleEvent.PATIENT_NAME));
-        assertEquals(bean.getNodeParticipantRef("clinician"), set.get(ScheduleEvent.CLINICIAN_REFERENCE));
-        assertEquals(bean.getNodeParticipant("clinician").getName(), set.get(ScheduleEvent.CLINICIAN_NAME));
-        assertEquals(bean.getNodeParticipantRef("worklist"), set.get(ScheduleEvent.SCHEDULE_REFERENCE));
-        assertEquals(bean.getNodeParticipant("worklist").getName(), set.get(ScheduleEvent.SCHEDULE_NAME));
-        assertEquals(bean.getNodeParticipantRef("taskType"), set.get(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
-        assertEquals(bean.getNodeParticipant("taskType").getName(), set.get(ScheduleEvent.SCHEDULE_TYPE_NAME));
+        assertEquals(bean.getTargetRef("customer"), set.get(ScheduleEvent.CUSTOMER_REFERENCE));
+        assertEquals(bean.getTarget("customer").getName(), set.get(ScheduleEvent.CUSTOMER_NAME));
+        assertEquals(bean.getTargetRef("patient"), set.get(ScheduleEvent.PATIENT_REFERENCE));
+        assertEquals(bean.getTarget("patient").getName(), set.get(ScheduleEvent.PATIENT_NAME));
+        assertEquals(bean.getTargetRef("clinician"), set.get(ScheduleEvent.CLINICIAN_REFERENCE));
+        assertEquals(bean.getTarget("clinician").getName(), set.get(ScheduleEvent.CLINICIAN_NAME));
+        assertEquals(bean.getTargetRef("worklist"), set.get(ScheduleEvent.SCHEDULE_REFERENCE));
+        assertEquals(bean.getTarget("worklist").getName(), set.get(ScheduleEvent.SCHEDULE_NAME));
+        assertEquals(bean.getTargetRef("taskType"), set.get(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
+        assertEquals(bean.getTarget("taskType").getName(), set.get(ScheduleEvent.SCHEDULE_TYPE_NAME));
         assertEquals(bean.getDate("consultStartTime"), set.get(ScheduleEvent.CONSULT_START_TIME));
     }
 

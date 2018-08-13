@@ -18,6 +18,7 @@ package org.openvpms.web.workspace.workflow.worklist;
 
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.archetype.rules.workflow.ScheduleEvents;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.workspace.workflow.appointment.AbstractScheduleEventGrid;
@@ -53,13 +54,13 @@ public class TaskGrid extends AbstractScheduleEventGrid {
      * @param tasks        the tasks
      * @param rules        the appointment rules
      */
-    public TaskGrid(Entity scheduleView, Date date, Map<Entity, List<PropertySet>> tasks, AppointmentRules rules) {
+    public TaskGrid(Entity scheduleView, Date date, Map<Entity, ScheduleEvents> tasks, AppointmentRules rules) {
         super(scheduleView, date, rules);
 
         List<Schedule> schedules = new ArrayList<>();
-        for (Map.Entry<Entity, List<PropertySet>> entry : tasks.entrySet()) {
+        for (Map.Entry<Entity, ScheduleEvents> entry : tasks.entrySet()) {
             Entity workList = entry.getKey();
-            List<PropertySet> sets = entry.getValue();
+            List<PropertySet> sets = entry.getValue().getEvents();
             TaskSchedule schedule = new TaskSchedule(workList, rules);
             for (PropertySet set : sets) {
                 schedule.addEvent(set);

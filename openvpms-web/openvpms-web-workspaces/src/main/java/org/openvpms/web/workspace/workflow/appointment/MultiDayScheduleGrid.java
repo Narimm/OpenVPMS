@@ -17,11 +17,10 @@
 package org.openvpms.web.workspace.workflow.appointment;
 
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
+import org.openvpms.archetype.rules.workflow.ScheduleEvents;
 import org.openvpms.component.model.entity.Entity;
-import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,7 +39,7 @@ public class MultiDayScheduleGrid extends AbstractMultiDayScheduleGrid {
      * @param events       the events
      * @param rules        the appointment rules
      */
-    public MultiDayScheduleGrid(Entity scheduleView, Date date, int days, Map<Entity, List<PropertySet>> events,
+    public MultiDayScheduleGrid(Entity scheduleView, Date date, int days, Map<Entity, ScheduleEvents> events,
                                 AppointmentRules rules) {
         super(scheduleView, date, days, events, rules);
     }

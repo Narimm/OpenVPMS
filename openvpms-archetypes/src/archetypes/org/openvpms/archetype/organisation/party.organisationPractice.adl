@@ -73,6 +73,8 @@
               defaultValue="5"/>
         <node name="autoLogout" path="/details/autoLogout" type="java.lang.Integer" minCardinality="0"
               defaultValue="30"/>
+        <node name="schedulingRefresh" path="/details/schedulingRefresh" type="java.lang.Integer" minCardinality="0"
+              defaultValue="30"/>
         <node name="showProblemsInVisit" path="/details/showProblemsInVisit" type="java.lang.Boolean"
               defaultValue="false()"/>
         <node name="ignoreListPriceDecreases" path="/details/ignoreListPriceDecreases"

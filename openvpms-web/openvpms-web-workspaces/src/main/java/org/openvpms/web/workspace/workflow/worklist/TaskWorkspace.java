@@ -99,19 +99,9 @@ public class TaskWorkspace extends SchedulingWorkspace {
      * @param isNew  determines if the object is a new instance
      */
     protected void onSaved(IMObject object, boolean isNew) {
+        query();
         TaskBrowser browser = (TaskBrowser) getBrowser();
-        browser.query();
         browser.setSelected((Act) object);
-        firePropertyChange(SUMMARY_PROPERTY, null, null);
-    }
-
-    /**
-     * Invoked when the object has been deleted.
-     *
-     * @param object the object
-     */
-    protected void onDeleted(IMObject object) {
-        getBrowser().query();
         firePropertyChange(SUMMARY_PROPERTY, null, null);
     }
 
@@ -121,8 +111,8 @@ public class TaskWorkspace extends SchedulingWorkspace {
      * @param object the object
      */
     protected void onRefresh(IMObject object) {
+        query();
         TaskBrowser browser = (TaskBrowser) getBrowser();
-        browser.query();
         if (!browser.setSelected((Act) object)) {
             // task no longer visible in the work list view, so remove it
             // from the CRUD window

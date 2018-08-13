@@ -28,6 +28,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.ColumnLayoutData;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
+import org.openvpms.archetype.rules.workflow.ScheduleEvents;
 import org.openvpms.archetype.rules.workflow.Slot;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.model.entity.Entity;
@@ -239,11 +240,10 @@ public class AppointmentBrowser extends ScheduleBrowser {
 
     /**
      * Creates a new grid for a set of events.
-     *
-     * @param date   the query date
+     *  @param date   the query date
      * @param events the events
      */
-    protected ScheduleEventGrid createEventGrid(Date date, Map<Entity, List<PropertySet>> events) {
+    protected ScheduleEventGrid createEventGrid(Date date, Map<Entity, ScheduleEvents> events) {
         Set<Entity> schedules = events.keySet();
         ScheduleEventGrid grid;
         Entity scheduleView = getScheduleView();
@@ -264,8 +264,8 @@ public class AppointmentBrowser extends ScheduleBrowser {
             }
         } else {
             if (schedules.size() == 1) {
-                Party schedule = (Party) schedules.iterator().next();
-                List<PropertySet> sets = events.get(schedule);
+                Entity schedule = schedules.iterator().next();
+                ScheduleEvents sets = events.get(schedule);
                 if (!hasOverlappingEvents(sets, schedule)) {
                     grid = new SingleScheduleGrid(scheduleView, date, schedule, sets, rules);
                 } else {
@@ -449,13 +449,12 @@ public class AppointmentBrowser extends ScheduleBrowser {
      * @param schedule the schedule, used to determine the slot size
      * @return {@code true} if one or more events have overlapping times
      */
-    private boolean hasOverlappingEvents(List<PropertySet> events, Party schedule) {
-        AppointmentRules rules = ServiceHelper.getBean(AppointmentRules.class);
+    private boolean hasOverlappingEvents(ScheduleEvents events, Entity schedule) {
         int slotSize = AbstractAppointmentGrid.getSlotSize(schedule, rules);
         IntersectComparator comparator = new IntersectComparator(slotSize, rules);
         List<PropertySet> list = new ArrayList<>();
 
-        for (PropertySet event : events) {
+        for (PropertySet event : events.getEvents()) {
             if (Collections.binarySearch(list, event, comparator) >= 0) {
                 return true;
             }

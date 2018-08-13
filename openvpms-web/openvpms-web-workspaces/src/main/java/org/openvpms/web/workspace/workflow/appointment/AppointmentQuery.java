@@ -25,12 +25,12 @@ import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
 import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
+import org.openvpms.archetype.rules.workflow.ScheduleEvents;
 import org.openvpms.archetype.rules.workflow.ScheduleService;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.model.entity.Entity;
-import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.web.component.im.query.DateNavigator;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.GridFactory;
@@ -42,7 +42,6 @@ import org.openvpms.web.workspace.workflow.scheduling.ScheduleServiceQuery;
 import org.openvpms.web.workspace.workflow.scheduling.ScheduleTableModel.Highlight;
 
 import java.util.Date;
-import java.util.List;
 
 
 /**
@@ -248,12 +247,31 @@ class AppointmentQuery extends ScheduleServiceQuery {
      * @return the events
      */
     @Override
-    protected List<PropertySet> getEvents(Entity schedule, Date date) {
+    protected ScheduleEvents getEvents(Entity schedule, Date date) {
         ScheduleService service = getService();
         if (days == 1) {
-            return service.getEvents(schedule, date);
+            return service.getScheduleEvents(schedule, date);
         } else {
-            return service.getEvents(schedule, date, DateRules.getDate(date, days, DateUnits.DAYS));
+            return service.getScheduleEvents(schedule, date, DateRules.getDate(date, days, DateUnits.DAYS));
+        }
+    }
+
+    /**
+     * Determines if events have been updated since they were last queried.
+     *
+     * @param schedule the schedule
+     * @param events   the events
+     * @param date     the date the event query was based on
+     * @return {@code true} if the events have been updated, otherwise {@code false}
+     */
+    @Override
+    protected boolean updated(Entity schedule, ScheduleEvents events, Date date) {
+        if (days == 1) {
+            return super.updated(schedule, events, date);
+        } else {
+            ScheduleService service = getService();
+            long hash = service.getModHash(schedule, date, DateRules.getDate(date, days, DateUnits.DAYS));
+            return hash == -1 || hash != events.getModHash();
         }
     }
 
