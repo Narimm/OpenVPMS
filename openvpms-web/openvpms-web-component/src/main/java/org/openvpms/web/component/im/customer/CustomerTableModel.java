@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.customer;
@@ -105,6 +105,35 @@ public class CustomerTableModel extends AbstractEntityObjectSetTableModel {
     }
 
     /**
+     * Returns the sort criteria.
+     *
+     * @param column    the primary sort column
+     * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
+     * @return the sort criteria, or {@code null} if the column isn't sortable
+     */
+    public SortConstraint[] getSortConstraints(int column, boolean ascending) {
+        SortConstraint[] result;
+        if (column == NAME_INDEX && showPatient) {
+            result = new SortConstraint[]{new NodeSortConstraint("customer", "name", ascending),
+                                          new NodeSortConstraint("patient", "name", true)};
+        } else if (column == PATIENT_NAME_INDEX) {
+            result = new SortConstraint[]{new NodeSortConstraint("patient", "name", ascending),
+                                          new NodeSortConstraint("customer", "name", true)};
+        } else if (column == CONTACT_INDEX) {
+            NodeSortConstraint contact = new NodeSortConstraint("contact", "description", ascending);
+            NodeSortConstraint customer = new NodeSortConstraint("customer", "name", true);
+            if (showPatient) {
+                result = new SortConstraint[]{contact, customer, new NodeSortConstraint("patient", "name", true)};
+            } else {
+                result = new SortConstraint[]{contact, customer};
+            }
+        } else {
+            result = super.getSortConstraints(column, ascending);
+        }
+        return result;
+    }
+
+    /**
      * Returns the value found at the given coordinate within the table.
      *
      * @param set    the object
@@ -135,22 +164,30 @@ public class CustomerTableModel extends AbstractEntityObjectSetTableModel {
     }
 
     /**
-     * Returns the sort criteria.
+     * Creates the column model.
      *
-     * @param column    the primary sort column
-     * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
-     * @return the sort criteria, or {@code null} if the column isn't sortable
+     * @param showPatient  if {@code true}, display the patient column
+     * @param showContact  if {@code true}, display the contact column
+     * @param showIdentity if {@code true}, display the identity column
+     * @param showActive   if {@code true}, display the active column
+     * @return a new column model
      */
-    public SortConstraint[] getSortConstraints(int column, boolean ascending) {
-        SortConstraint[] result;
-        if (column == PATIENT_NAME_INDEX) {
-            result = new SortConstraint[]{new NodeSortConstraint("patient", "name", ascending)};
-        } else if (column == CONTACT_INDEX) {
-            result = new SortConstraint[]{new NodeSortConstraint("contact", "description", ascending)};
-        } else {
-            result = super.getSortConstraints(column, ascending);
+    protected TableColumnModel createTableColumnModel(boolean showPatient, boolean showContact, boolean showIdentity,
+                                                      boolean showActive) {
+        DefaultTableColumnModel model = createTableColumnModel(false, showActive);
+        if (showPatient) {
+            model.addColumn(createTableColumn(PATIENT_NAME_INDEX, "customerquery.patient.name"));
+            model.addColumn(createTableColumn(PATIENT_DESC_INDEX, "customerquery.patient.description"));
+            model.addColumn(createTableColumn(PATIENT_ACTIVE_INDEX, "customerquery.patient.active"));
         }
-        return result;
+        if (showContact) {
+            model.addColumn(createTableColumn(CONTACT_INDEX, "customerquery.contact"));
+        }
+        if (showIdentity) {
+            model.addColumn(createTableColumn(IDENTITY_INDEX, IDENTITY));
+        }
+
+        return model;
     }
 
     /**
@@ -195,33 +232,6 @@ public class CustomerTableModel extends AbstractEntityObjectSetTableModel {
     private String getContact(ObjectSet set) {
         Contact contact = (Contact) set.get("contact");
         return (contact != null) ? contact.getDescription() : null;
-    }
-
-    /**
-     * Creates the column model.
-     *
-     * @param showPatient  if {@code true}, display the patient column
-     * @param showContact  if {@code true}, display the contact column
-     * @param showIdentity if {@code true}, display the identity column
-     * @param showActive   if {@code true}, display the active column
-     * @return a new column model
-     */
-    protected TableColumnModel createTableColumnModel(boolean showPatient, boolean showContact, boolean showIdentity,
-                                                      boolean showActive) {
-        DefaultTableColumnModel model = createTableColumnModel(false, showActive);
-        if (showPatient) {
-            model.addColumn(createTableColumn(PATIENT_NAME_INDEX, "customerquery.patient.name"));
-            model.addColumn(createTableColumn(PATIENT_DESC_INDEX, "customerquery.patient.description"));
-            model.addColumn(createTableColumn(PATIENT_ACTIVE_INDEX, "customerquery.patient.active"));
-        }
-        if (showContact) {
-            model.addColumn(createTableColumn(CONTACT_INDEX, "customerquery.contact"));
-        }
-        if (showIdentity) {
-            model.addColumn(createTableColumn(IDENTITY_INDEX, IDENTITY));
-        }
-
-        return model;
     }
 
 }

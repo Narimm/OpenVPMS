@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -27,6 +27,10 @@ import org.openvpms.component.system.common.query.SortConstraint;
 
 import java.util.Date;
 
+import static org.openvpms.component.system.common.query.Constraints.join;
+import static org.openvpms.component.system.common.query.Constraints.leftJoin;
+import static org.openvpms.component.system.common.query.Constraints.shortName;
+
 
 /**
  * An {@link org.openvpms.web.component.im.query.ResultSet} implementation that queries patients. The search can be
@@ -35,7 +39,7 @@ import java.util.Date;
  * <li>partial patient name; and/or
  * <li>partial identity
  * </ul>
- * <p/>
+ * <p>
  * The returned {@link org.openvpms.component.system.common.query.ObjectSet}s contain:
  * <ul>
  * <li>the patient:
@@ -75,7 +79,7 @@ public class PatientResultSet extends AbstractEntityResultSet<ObjectSet> {
      * Determines if all patients are being queried.
      *
      * @return {@code true} if all patients are being queried, or {@code false} if only the patients for the
-     *         specified customer are being returned.
+     * specified customer are being returned.
      */
     public boolean isSearchingAllPatients() {
         return customer == null;
@@ -91,15 +95,17 @@ public class PatientResultSet extends AbstractEntityResultSet<ObjectSet> {
         ArchetypeQuery query = super.createQuery();
         query.add(new ObjectSelectConstraint("patient"));
 
+        Date now = new Date();
         if (customer != null) {
-            Date now = new Date();
-            query.add(Constraints.join("customers", Constraints.shortName("rel", "entityRelationship.patientOwner")));
+            query.add(join("customers", shortName("rel", "entityRelationship.patientOwner")));
             query.add(Constraints.eq("rel.source", customer.getObjectReference()));
             if (getArchetypes().isActiveOnly()) {
                 query.add(Constraints.lte("rel.activeStartTime", now));
                 query.add(Constraints.or(Constraints.gte("rel.activeEndTime", now),
                                          Constraints.isNull("rel.activeEndTime")));
             }
+        } else {
+            query.add(leftJoin("customers").add(leftJoin("source", "customer")));
         }
 
         if (isSearchingIdentities()) {
