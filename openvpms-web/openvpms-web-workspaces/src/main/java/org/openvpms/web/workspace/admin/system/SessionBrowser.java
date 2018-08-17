@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.system;
@@ -54,6 +54,7 @@ import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.admin.system.cache.CacheDialog;
 import org.springframework.web.util.Log4jWebConfigurer;
 
 import javax.servlet.ServletContext;
@@ -93,6 +94,11 @@ public class SessionBrowser extends AbstractTabComponent {
     private static final String QUERY_ID = "button.query";
 
     /**
+     * The caches button identifier.
+     */
+    private static final String CACHES_ID = "button.caches";
+
+    /**
      * The 'Reload Log4j configuration' button identifier.
      */
     private static final String RELOAD_LOG4J = "button.reloadlog4j";
@@ -100,7 +106,7 @@ public class SessionBrowser extends AbstractTabComponent {
     /**
      * Constructs an {@link SessionBrowser}.
      *
-     * @param help the help context
+     * @param help    the help context
      */
     public SessionBrowser(HelpContext help) {
         super(help);
@@ -155,6 +161,12 @@ public class SessionBrowser extends AbstractTabComponent {
                     onReloadLog();
                 }
             });
+            getButtons().addButton(CACHES_ID, new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    onCaches();
+                }
+            });
             focus.add(getButtonSet().getFocusGroup());
         }
         // Cannot cache the SplitPane for some reason. Get a:
@@ -175,6 +187,14 @@ public class SessionBrowser extends AbstractTabComponent {
     }
 
     /**
+     * Invoked when the caches button is pressed.
+     */
+    private void onCaches() {
+        CacheDialog dialog = new CacheDialog(getHelpContext().subtopic("cache"));
+        dialog.show();
+    }
+
+    /**
      * Refreshes the list of sessions.
      */
     private void refresh() {
@@ -192,12 +212,7 @@ public class SessionBrowser extends AbstractTabComponent {
             @Override
             public void sort(SortConstraint[] sort) {
                 super.sort(sort);
-                IMObjectSorter.sort(getObjects(), sort, new Transformer() {
-                    @Override
-                    public Object transform(Object input) {
-                        return input;
-                    }
-                });
+                IMObjectSorter.sort(getObjects(), sort, input -> input);
             }
         };
         final String query = search.getString();
@@ -221,8 +236,9 @@ public class SessionBrowser extends AbstractTabComponent {
     }
 
     /**
+     * `
      * Reloads the log4j configuration file.
-     * <p/>
+     * <p>
      * Note that this is only here for lack of another place to put it.
      */
     private void onReloadLog() {
@@ -272,37 +288,6 @@ public class SessionBrowser extends AbstractTabComponent {
             model.addColumn(createTableColumn(LOGGED_IN_INDEX, "admin.system.session.loggedin"));
             model.addColumn(createTableColumn(LAST_ACCESSED_INDEX, "admin.system.session.lastaccessed"));
             setTableColumnModel(model);
-        }
-
-        /**
-         * Returns the value found at the given coordinate within the table.
-         *
-         * @param object the object
-         * @param column the column
-         * @param row    the row
-         * @return the value at the given coordinate.
-         */
-        @Override
-        protected Object getValue(SessionMonitor.Session object, TableColumn column, int row) {
-            Object result = null;
-            switch (column.getModelIndex()) {
-                case LOGIN_INDEX:
-                    result = object.getName();
-                    break;
-                case USER_INDEX:
-                    result = UserHelper.getName(object.getName());
-                    break;
-                case HOST_INDEX:
-                    result = object.getHost();
-                    break;
-                case LOGGED_IN_INDEX:
-                    result = DateFormatter.formatDateTimeAbbrev(object.getLoggedIn());
-                    break;
-                case LAST_ACCESSED_INDEX:
-                    result = DateFormatter.formatDateTimeAbbrev(object.getLastAccessed());
-                    break;
-            }
-            return result;
         }
 
         /**
@@ -365,6 +350,37 @@ public class SessionBrowser extends AbstractTabComponent {
                 }
             });
             return sort;
+        }
+
+        /**
+         * Returns the value found at the given coordinate within the table.
+         *
+         * @param object the object
+         * @param column the column
+         * @param row    the row
+         * @return the value at the given coordinate.
+         */
+        @Override
+        protected Object getValue(SessionMonitor.Session object, TableColumn column, int row) {
+            Object result = null;
+            switch (column.getModelIndex()) {
+                case LOGIN_INDEX:
+                    result = object.getName();
+                    break;
+                case USER_INDEX:
+                    result = UserHelper.getName(object.getName());
+                    break;
+                case HOST_INDEX:
+                    result = object.getHost();
+                    break;
+                case LOGGED_IN_INDEX:
+                    result = DateFormatter.formatDateTimeAbbrev(object.getLoggedIn());
+                    break;
+                case LAST_ACCESSED_INDEX:
+                    result = DateFormatter.formatDateTimeAbbrev(object.getLastAccessed());
+                    break;
+            }
+            return result;
         }
 
     }

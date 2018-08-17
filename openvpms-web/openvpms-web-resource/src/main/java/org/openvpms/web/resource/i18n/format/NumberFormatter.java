@@ -11,14 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.resource.i18n.format;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.web.resource.i18n.Messages;
 
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
@@ -148,4 +150,40 @@ public class NumberFormatter {
         // Doesn't appear to be a simple way of going from Currency -> NumberFormat
         return NumberFormat.getCurrencyInstance();
     }
+
+
+    /**
+     * Helper to format a size.
+     *
+     * @param size the size, in bytes
+     * @return the formatted size
+     */
+    public static String getSize(long size) {
+        String result;
+
+        if (size / FileUtils.ONE_GB > 0) {
+            result = getSize(size, FileUtils.ONE_GB, "size.GB");
+        } else if (size / FileUtils.ONE_MB > 0) {
+            result = getSize(size, FileUtils.ONE_MB, "size.MB");
+        } else if (size / FileUtils.ONE_KB > 0) {
+            result = getSize(size, FileUtils.ONE_KB, "size.KB");
+        } else {
+            result = Messages.format("size.bytes", size);
+        }
+        return result;
+    }
+
+    /**
+     * Helper to return a formatted size, rounded.
+     *
+     * @param size    the size
+     * @param divisor the divisor
+     * @param key     the resource bundle key
+     * @return the formatted size
+     */
+    private static String getSize(long size, long divisor, String key) {
+        BigDecimal result = new BigDecimal(size).divide(BigDecimal.valueOf(divisor), BigDecimal.ROUND_CEILING);
+        return Messages.format(key, result);
+    }
+
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -30,7 +30,6 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
 import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableModel;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -48,7 +47,6 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.bound.BoundRichTextArea;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.doc.Downloader;
-import org.openvpms.web.component.im.doc.DownloaderListener;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.AbstractModifiable;
@@ -74,9 +72,9 @@ import org.openvpms.web.echo.text.MacroExpander;
 import org.openvpms.web.echo.text.RichTextArea;
 import org.openvpms.web.echo.util.DoubleClickMonitor;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.resource.i18n.format.NumberFormatter;
 import org.openvpms.web.system.ServiceHelper;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -109,7 +107,22 @@ public class MailEditor extends AbstractModifiable {
     /**
      * The message body property. Used to support macro expansion.
      */
-    private SimpleProperty message;
+    private final SimpleProperty message;
+
+    /**
+     * The macro expanded.
+     */
+    private final MacroExpander macroExpander;
+
+    /**
+     * The listeners.
+     */
+    private final ModifiableListeners listeners = new ModifiableListeners();
+
+    /**
+     * The document attachment references.
+     */
+    private final List<DocRef> documents = new ArrayList<>();
 
     /**
      * Determines if this has been modified.
@@ -120,16 +133,6 @@ public class MailEditor extends AbstractModifiable {
      * The attachments table. May be {@code null}.
      */
     private Table attachments;
-
-    /**
-     * The document attachment references.
-     */
-    private List<DocRef> documents = new ArrayList<>();
-
-    /**
-     * The listeners.
-     */
-    private ModifiableListeners listeners = new ModifiableListeners();
 
     /**
      * Focus group.
@@ -154,17 +157,12 @@ public class MailEditor extends AbstractModifiable {
     /**
      * Monitors double clicks on attachments.
      */
-    private DoubleClickMonitor monitor = new DoubleClickMonitor();
+    private final DoubleClickMonitor monitor = new DoubleClickMonitor();
 
     /**
      * The message editor.
      */
-    private RichTextArea messageEditor;
-
-    /**
-     * The macro expanded.
-     */
-    private final MacroExpander macroExpander;
+    private final RichTextArea messageEditor;
 
     /**
      * The object to evaluate templates against.
@@ -190,8 +188,8 @@ public class MailEditor extends AbstractModifiable {
         header = createHeader(mailContext, preferredTo, context);
         this.context = context.getContext();
         this.help = context.getHelpContext();
-        final Variables variables = mailContext.getVariables();
-        final Macros macros = ServiceHelper.getMacros();
+        Variables variables = mailContext.getVariables();
+        Macros macros = ServiceHelper.getMacros();
 
         message = new SimpleProperty("message", null, String.class, Messages.get("mail.message"));
         message.setTransformer(new StringPropertyTransformer(message, false) {
@@ -339,12 +337,9 @@ public class MailEditor extends AbstractModifiable {
      */
     public void setContent(Entity template, boolean prompt) {
         ParameterEmailTemplateEvaluator evaluator = new ParameterEmailTemplateEvaluator(template, context, help);
-        evaluator.evaluate(object, prompt, new ParameterEmailTemplateEvaluator.Listener() {
-            @Override
-            public void generated(String subject, String message) {
-                setSubject(subject);
-                setMessage(message);
-            }
+        evaluator.evaluate(object, prompt, (subject, message) -> {
+            setSubject(subject);
+            setMessage(message);
         });
     }
 
@@ -395,11 +390,8 @@ public class MailEditor extends AbstractModifiable {
         DocumentViewer documentViewer = new DocumentViewer(ref.getReference(), null, ref.getName(), true, false,
                                                            new DefaultLayoutContext(context, help));
         documentViewer.setNameLength(18);  // display up to 18 characters of the name to avoid scrollbars
-        documentViewer.setDownloadListener(new DownloaderListener() {
-            public void download(Downloader downloader, String mimeType) {
-                onDownload(downloader, mimeType, ref.getReference());
-            }
-        });
+        documentViewer.setDownloadListener(
+                (downloader, mimeType) -> onDownload(downloader, mimeType, ref.getReference()));
         Component viewer = documentViewer.getComponent();
         if (viewer instanceof Button) {
             // TODO - hardcoded style not ideal
@@ -595,6 +587,28 @@ public class MailEditor extends AbstractModifiable {
     }
 
     /**
+     * Creates the component.
+     *
+     * @return the component
+     */
+    protected SplitPane createComponent() {
+        focus = new FocusGroup("MailEditor");
+
+        int inset = StyleSheetHelper.getProperty("padding.large", 1);
+
+        GridLayoutData rightInset = new GridLayoutData();
+        rightInset.setInsets(new Insets(0, 0, inset, 0));
+
+        SplitPane component = SplitPaneFactory.create(
+                SplitPane.ORIENTATION_VERTICAL, "MailEditor", header.getComponent(),
+                ColumnFactory.create(LARGE_INSET, messageEditor));
+        focus.add(header.getFocusGroup());
+        focus.add(messageEditor);
+        focus.setDefault(header.getFocusGroup().getDefaultFocus());
+        return component;
+    }
+
+    /**
      * Creates the table to display attachments.
      */
     private void createAttachments() {
@@ -642,7 +656,7 @@ public class MailEditor extends AbstractModifiable {
             size += doc.getSize();
         }
         model.setColumnName(0, Messages.format("mail.attachments", documents.size()));
-        model.setColumnName(1, getSize(size));
+        model.setColumnName(1, NumberFormatter.getSize(size));
     }
 
     /**
@@ -664,28 +678,6 @@ public class MailEditor extends AbstractModifiable {
         } else {
             updateAttachments();
         }
-    }
-
-    /**
-     * Creates the component.
-     *
-     * @return the component
-     */
-    protected SplitPane createComponent() {
-        focus = new FocusGroup("MailEditor");
-
-        int inset = StyleSheetHelper.getProperty("padding.large", 1);
-
-        GridLayoutData rightInset = new GridLayoutData();
-        rightInset.setInsets(new Insets(0, 0, inset, 0));
-
-        SplitPane component = SplitPaneFactory.create(
-                SplitPane.ORIENTATION_VERTICAL, "MailEditor", header.getComponent(),
-                ColumnFactory.create(LARGE_INSET, messageEditor));
-        focus.add(header.getFocusGroup());
-        focus.add(messageEditor);
-        focus.setDefault(header.getFocusGroup().getDefaultFocus());
-        return component;
     }
 
     /**
@@ -728,44 +720,10 @@ public class MailEditor extends AbstractModifiable {
      * @return a label for the size
      */
     private Label getSizeLabel(long size) {
-        String displaySize = getSize(size);
+        String displaySize = NumberFormatter.getSize(size);
         Label label = LabelFactory.create();
         label.setText(displaySize);
         return label;
-    }
-
-    /**
-     * Helper to format a size.
-     *
-     * @param size the size, in bytes
-     * @return the formatted size
-     */
-    private String getSize(long size) {
-        String result;
-
-        if (size / FileUtils.ONE_GB > 0) {
-            result = getSize(size, FileUtils.ONE_GB, "mail.size.GB");
-        } else if (size / FileUtils.ONE_MB > 0) {
-            result = getSize(size, FileUtils.ONE_MB, "mail.size.MB");
-        } else if (size / FileUtils.ONE_KB > 0) {
-            result = getSize(size, FileUtils.ONE_KB, "mail.size.KB");
-        } else {
-            result = Messages.format("mail.size.bytes", size);
-        }
-        return result;
-    }
-
-    /**
-     * Helper to return a formatted size, rounded.
-     *
-     * @param size    the size
-     * @param divisor the divisor
-     * @param key     the resource bundle key
-     * @return the formatted size
-     */
-    private String getSize(long size, long divisor, String key) {
-        BigDecimal result = new BigDecimal(size).divide(BigDecimal.valueOf(divisor), BigDecimal.ROUND_CEILING);
-        return Messages.format(key, result);
     }
 
     /**

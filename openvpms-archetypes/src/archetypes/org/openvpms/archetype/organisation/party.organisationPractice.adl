@@ -139,6 +139,14 @@
         </node>
         <node name="restrictOrdering" minCardinality="0" maxCardinality="1" path="/details/restrictOrdering"
               type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="appointmentCacheMaxElements" type="java.lang.Long" minCardinality="0"
+              path="/details/appointmentCacheMaxElements" defaultValue="30" hidden="true"/>
+        <node name="calendarCacheMaxElements" type="java.lang.Long" minCardinality="0"
+              path="/details/calendarCacheMaxElements" defaultValue="30" hidden="true"/>
+        <node name="taskCacheMaxElements" type="java.lang.Long" minCardinality="0"
+              path="/details/taskCacheMaxElements" defaultValue="30" hidden="true"/>
+        <node name="lookupCacheMaxElements" type="java.lang.Long" minCardinality="0"
+              path="/details/lookupCacheMaxElements" defaultValue="3000" hidden="true"/>
         <node name="contacts" path="/contacts"
               type="java.util.HashSet" baseName="Contact" minCardinality="0" maxCardinality="*">
             <assertion name="archetypeRange">

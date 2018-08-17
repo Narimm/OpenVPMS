@@ -27,15 +27,8 @@
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
         <constructor-arg>
-            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
-                <property name="diskPersistent" value="false"/>
-                <property name="cacheName" value="appointmentCache"/>
-                <property name="maxEntriesLocalHeap" value="30"/>
-                <!-- 30 days of data -->
-                <property name="overflowToDisk" value="false"/>
-                <property name="timeToIdleSeconds" value="0"/>
-                <property name="timeToLiveSeconds" value="0"/>
-                <property name="eternal" value="true"/>
+            <bean class="net.sf.ehcache.Ehcache" factory-bean="cacheFactory" factory-method="create">
+                <constructor-arg value="appointmentCache"/>
             </bean>
         </constructor-arg>
     </bean>
@@ -48,15 +41,8 @@
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
         <constructor-arg>
-            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
-                <property name="diskPersistent" value="false"/>
-                <property name="cacheName" value="taskCache"/>
-                <property name="maxEntriesLocalHeap" value="30"/>
-                <!-- 30 days of data -->
-                <property name="overflowToDisk" value="false"/>
-                <property name="timeToIdleSeconds" value="0"/>
-                <property name="timeToLiveSeconds" value="0"/>
-                <property name="eternal" value="true"/>
+            <bean class="net.sf.ehcache.Ehcache" factory-bean="cacheFactory" factory-method="create">
+                <constructor-arg value="taskCache"/>
             </bean>
         </constructor-arg>
     </bean>
@@ -68,15 +54,8 @@
     <bean id="calendarService" class="org.openvpms.archetype.rules.workflow.CalendarService">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg>
-            <bean class="org.springframework.cache.ehcache.EhCacheFactoryBean">
-                <property name="diskPersistent" value="false"/>
-                <property name="cacheName" value="calendarCache"/>
-                <property name="maxEntriesLocalHeap" value="30"/>
-                <!-- 30 days of data -->
-                <property name="overflowToDisk" value="false"/>
-                <property name="timeToIdleSeconds" value="0"/>
-                <property name="timeToLiveSeconds" value="0"/>
-                <property name="eternal" value="true"/>
+            <bean class="net.sf.ehcache.Ehcache" factory-bean="cacheFactory" factory-method="create">
+                <constructor-arg value="calendarCache"/>
             </bean>
         </constructor-arg>
     </bean>

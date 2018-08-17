@@ -21,6 +21,7 @@ import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.constructs.blocking.BlockingCache;
 import net.sf.ehcache.constructs.blocking.LockTimeoutException;
+import net.sf.ehcache.pool.sizeof.annotations.IgnoreSizeOf;
 import org.apache.commons.collections.map.ReferenceMap;
 import org.apache.commons.lang.math.RandomUtils;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -197,6 +198,15 @@ class ScheduleEventCache {
         synchronized (events) {
             events.clear();
         }
+    }
+
+    /**
+     * Returns the underlying cache.
+     *
+     * @return the cache
+     */
+    public Ehcache getCache() {
+        return cache;
     }
 
     /**
@@ -461,6 +471,7 @@ class ScheduleEventCache {
          * The owning schedule. This reference is kept to ensure that the Schedule instance isn't garbage collected
          * while the underlying cache has an instance of this.
          */
+        @IgnoreSizeOf
         private final Schedule schedule;
 
         /**

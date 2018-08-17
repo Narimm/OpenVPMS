@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
+import org.openvpms.component.business.service.cache.EhCacheable;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.util.PropertySet;
@@ -40,7 +41,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public abstract class AbstractScheduleService implements ScheduleService, DisposableBean {
+public abstract class AbstractScheduleService implements ScheduleService, DisposableBean, EhCacheable {
 
     /**
      * The archetype service.
@@ -100,6 +101,24 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
         for (String shortName : eventArchetypes) {
             service.addListener(shortName, listener);
         }
+    }
+
+    /**
+     * Returns the underlying cache.
+     *
+     * @return the underlying cache
+     */
+    @Override
+    public Ehcache getCache() {
+        return cache.getCache();
+    }
+
+    /**
+     * Clears cached data, including the underlying cache.
+     */
+    @Override
+    public void clear() {
+        cache.clear();
     }
 
     /**

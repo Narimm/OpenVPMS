@@ -16,7 +16,7 @@
 
 package org.openvpms.component.business.service.lookup;
 
-import net.sf.ehcache.Cache;
+import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
@@ -26,6 +26,7 @@ import org.openvpms.component.business.service.archetype.AbstractArchetypeServic
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.cache.EhCacheable;
 import org.openvpms.component.model.lookup.LookupRelationship;
 import org.openvpms.component.model.object.Reference;
 
@@ -44,12 +45,12 @@ import java.util.Set;
  *
  * @author Tim Anderson
  */
-public class CachingLookupService extends AbstractLookupService {
+public class CachingLookupService extends AbstractLookupService implements EhCacheable {
 
     /**
      * The cache.
      */
-    private final Cache cache;
+    private final Ehcache cache;
 
     /**
      * Creates a new {@code CachingLookupService}.
@@ -58,7 +59,7 @@ public class CachingLookupService extends AbstractLookupService {
      * @param dao     the data access object
      * @param cache   the cache
      */
-    public CachingLookupService(IArchetypeService service, IMObjectDAO dao, Cache cache) {
+    public CachingLookupService(IArchetypeService service, IMObjectDAO dao, Ehcache cache) {
         super(service, dao);
         this.cache = cache;
         service.addListener(
@@ -73,7 +74,7 @@ public class CachingLookupService extends AbstractLookupService {
                     public void removed(IMObject object) {
                         removeLookup((Lookup) object, true);
                     }
-        });
+                });
     }
 
     /**
@@ -161,6 +162,24 @@ public class CachingLookupService extends AbstractLookupService {
             }
         }
         return null;
+    }
+
+    /**
+     * Clears the cache.
+     */
+    @Override
+    public void clear() {
+        cache.removeAll();
+    }
+
+    /**
+     * Returns the underlying cache.
+     *
+     * @return the underlying cache
+     */
+    @Override
+    public Ehcache getCache() {
+        return cache;
     }
 
     /**

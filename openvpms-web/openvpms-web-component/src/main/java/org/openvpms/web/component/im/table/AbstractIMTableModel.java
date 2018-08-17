@@ -17,6 +17,7 @@
 package org.openvpms.web.component.im.table;
 
 import nextapp.echo2.app.CheckBox;
+import nextapp.echo2.app.table.TableCellRenderer;
 import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -342,6 +343,20 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel impleme
         TableColumn column = new TableColumn(index);
         String label = Messages.get(headerKey);
         column.setHeaderValue(label);
+        return column;
+    }
+
+    /**
+     * Helper to create a table column.
+     *
+     * @param index     the column index
+     * @param headerKey the header label resource key
+     * @param renderer  the cell renderer
+     * @return a new table column
+     */
+    protected static TableColumn createTableColumn(int index, String headerKey, TableCellRenderer renderer) {
+        TableColumn column = createTableColumn(index, headerKey);
+        column.setCellRenderer(renderer);
         return column;
     }
 
