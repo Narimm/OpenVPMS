@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.text;
@@ -207,21 +207,16 @@ public class DefaultRichTextRenderer implements RichTextRenderer, Serializable {
                                                          ColorKit.makeColor("#333300"), ColorKit.makeColor("#003300"), ColorKit.makeColor("#003333"), ColorKit.makeColor("#000066"),
                                                          ColorKit.makeColor("#330099"), ColorKit.makeColor("#330033"),};
 
-    private class StringArrayComparator implements Comparator {
+    private class StringArrayComparator implements Comparator<String[]> {
         private int compareIndex = 0;
 
         StringArrayComparator(int compareIndex) {
             this.compareIndex = compareIndex;
         }
 
-        /**
-         * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
-         */
-        public int compare(Object o1, Object o2) {
-            String[] s1 = (String[]) o1;
-            String[] s2 = (String[]) o2;
-
-            return s1[compareIndex].compareTo(s2[compareIndex]);
+        @Override
+        public int compare(String[] o1, String[] o2) {
+            return o1[compareIndex].compareTo(o2[compareIndex]);
         }
     }
 
@@ -280,9 +275,10 @@ public class DefaultRichTextRenderer implements RichTextRenderer, Serializable {
      */
     public String[][] getFontNames(RichTextArea rta, String userAgent) {
 
-        List list = Arrays.asList(fontNames);
+        List<String[]> list = Arrays.asList(fontNames);
         Collections.sort(list, new StringArrayComparator(1));
-        return (String[][]) list.toArray();
+        String[][] result = new String[list.size()][];
+        return list.toArray(result);
     }
 
     /**
