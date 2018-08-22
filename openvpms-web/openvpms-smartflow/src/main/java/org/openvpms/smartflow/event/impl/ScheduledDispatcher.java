@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.event.impl;
@@ -143,7 +143,7 @@ class ScheduledDispatcher {
                 executor.shutdownNow(); // Cancel currently executing tasks
                 // Wait a while for tasks to respond to being cancelled
                 if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
-                    log.error("Pool did not terminate");
+                    log.error("ScheduledDispatcher pool did not terminate");
                 }
             }
         } catch (InterruptedException exception) {

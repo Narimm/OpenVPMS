@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.event.impl;
@@ -22,6 +22,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.smartflow.event.EventDispatcher;
+import org.openvpms.smartflow.event.EventStatus;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -136,15 +137,30 @@ class QueueDispatchers {
      * @return the event dispatcher, or {@code null} if none is found
      */
     public synchronized EventDispatcher getEventDispatcher(Party location) {
-        EventDispatcher result = null;
+        QueueDispatcher dispatcher = getQueueDispatcher(location);
+        return (dispatcher != null) ? dispatcher.getEventDispatcher() : null;
+    }
+
+    /**
+     * Returns the status of events at the specified location.
+     *
+     * @param location the location
+     * @return the event status
+     */
+    public synchronized EventStatus getStatus(Party location) {
+        QueueDispatcher dispatcher = getQueueDispatcher(location);
+        return (dispatcher != null) ? dispatcher.getStatus() : new EventStatus(null, null, null);
+    }
+
+    /**
+     * Returns the {@link QueueDispatcher} for the specified location.
+     *
+     * @param location location
+     * @return the dispatcher, or {@code null} if none exists
+     */
+    private QueueDispatcher getQueueDispatcher(Party location) {
         String key = keysByLocation.get(location);
-        if (key != null) {
-            QueueDispatcher dispatcher = dispatchers.get(key);
-            if (dispatcher != null) {
-                result = dispatcher.getEventDispatcher();
-            }
-        }
-        return result;
+        return (key != null) ? dispatchers.get(key) : null;
     }
 
     /**

@@ -97,6 +97,9 @@ public class ErrorFormatter {
         if (result == null) {
             result = exception.getLocalizedMessage();
         }
+        if (result == null) {
+            result = exception.getClass().getName();
+        }
         return result;
     }
 

@@ -11,14 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.event;
 
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.system.common.event.Listener;
-import org.openvpms.smartflow.model.event.Event;
 
 /**
  * The Smart Flow Sheet event service is used to receive events from Smart Flow Sheet.
@@ -40,22 +38,15 @@ public interface SmartFlowSheetEventService {
     void poll();
 
     /**
-     * Monitors for a single event with the specified id.
-     * <p/>
-     * The listener is automatically removed, once the event is handled.
-     *
-     * @param location the location the event belongs to
-     * @param id       the event identifier
-     * @param listener the listener
+     * Restarts event processing.
      */
-    void addListener(Party location, String id, Listener<Event> listener);
+    void restart();
 
     /**
-     * Removes a listener for an event identifier.
+     * Returns the status of events at the specified location.
      *
-     * @param location the location the event belongs to
-     * @param id       the event identifier
+     * @param location the location
+     * @return the event status
      */
-    void removeListener(Party location, String id);
-
+    EventStatus getStatus(Party location);
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.system;
@@ -27,6 +27,7 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.im.query.FilteredResultSet;
 import org.openvpms.web.component.im.query.ListResultSet;
@@ -54,6 +55,7 @@ import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.admin.system.smartflow.SmartFlowSheetAdminDialog;
 import org.springframework.web.util.Log4jWebConfigurer;
 
 import javax.servlet.ServletContext;
@@ -66,6 +68,11 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class SessionBrowser extends AbstractTabComponent {
+
+    /**
+     * The context.
+     */
+    private final Context context;
 
     /**
      * The browser component.
@@ -98,12 +105,19 @@ public class SessionBrowser extends AbstractTabComponent {
     private static final String RELOAD_LOG4J = "button.reloadlog4j";
 
     /**
-     * Constructs an {@link SessionBrowser}.
-     *
-     * @param help the help context
+     * The 'Smart Flow Sheet' button identifier.
      */
-    public SessionBrowser(HelpContext help) {
+    private static final String SFS_ID = "button.smartflowsheet";
+
+    /**
+     * Constructs a {@link SessionBrowser}.
+     *
+     * @param context the context
+     * @param help    the help context
+     */
+    public SessionBrowser(Context context, HelpContext help) {
         super(help);
+        this.context = context;
     }
 
     /**
@@ -149,6 +163,13 @@ public class SessionBrowser extends AbstractTabComponent {
                                              ColumnFactory.create(Styles.WIDE_CELL_SPACING, row,
                                                                   sessions.getComponent()));
             focus.add(sessions.getComponent());
+            getButtonSet().add(SFS_ID, new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    SmartFlowSheetAdminDialog dialog = new SmartFlowSheetAdminDialog(context, getHelpContext());
+                    dialog.show();
+                }
+            });
             getButtons().addButton(RELOAD_LOG4J, new ActionListener() {
                 @Override
                 public void onAction(ActionEvent event) {
@@ -222,7 +243,7 @@ public class SessionBrowser extends AbstractTabComponent {
 
     /**
      * Reloads the log4j configuration file.
-     * <p/>
+     * <p>
      * Note that this is only here for lack of another place to put it.
      */
     private void onReloadLog() {
@@ -272,37 +293,6 @@ public class SessionBrowser extends AbstractTabComponent {
             model.addColumn(createTableColumn(LOGGED_IN_INDEX, "admin.system.session.loggedin"));
             model.addColumn(createTableColumn(LAST_ACCESSED_INDEX, "admin.system.session.lastaccessed"));
             setTableColumnModel(model);
-        }
-
-        /**
-         * Returns the value found at the given coordinate within the table.
-         *
-         * @param object the object
-         * @param column the column
-         * @param row    the row
-         * @return the value at the given coordinate.
-         */
-        @Override
-        protected Object getValue(SessionMonitor.Session object, TableColumn column, int row) {
-            Object result = null;
-            switch (column.getModelIndex()) {
-                case LOGIN_INDEX:
-                    result = object.getName();
-                    break;
-                case USER_INDEX:
-                    result = UserHelper.getName(object.getName());
-                    break;
-                case HOST_INDEX:
-                    result = object.getHost();
-                    break;
-                case LOGGED_IN_INDEX:
-                    result = DateFormatter.formatDateTimeAbbrev(object.getLoggedIn());
-                    break;
-                case LAST_ACCESSED_INDEX:
-                    result = DateFormatter.formatDateTimeAbbrev(object.getLastAccessed());
-                    break;
-            }
-            return result;
         }
 
         /**
@@ -365,6 +355,37 @@ public class SessionBrowser extends AbstractTabComponent {
                 }
             });
             return sort;
+        }
+
+        /**
+         * Returns the value found at the given coordinate within the table.
+         *
+         * @param object the object
+         * @param column the column
+         * @param row    the row
+         * @return the value at the given coordinate.
+         */
+        @Override
+        protected Object getValue(SessionMonitor.Session object, TableColumn column, int row) {
+            Object result = null;
+            switch (column.getModelIndex()) {
+                case LOGIN_INDEX:
+                    result = object.getName();
+                    break;
+                case USER_INDEX:
+                    result = UserHelper.getName(object.getName());
+                    break;
+                case HOST_INDEX:
+                    result = object.getHost();
+                    break;
+                case LOGGED_IN_INDEX:
+                    result = DateFormatter.formatDateTimeAbbrev(object.getLoggedIn());
+                    break;
+                case LAST_ACCESSED_INDEX:
+                    result = DateFormatter.formatDateTimeAbbrev(object.getLastAccessed());
+                    break;
+            }
+            return result;
         }
 
     }

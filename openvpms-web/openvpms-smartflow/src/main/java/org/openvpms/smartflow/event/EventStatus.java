@@ -19,37 +19,67 @@ package org.openvpms.smartflow.event;
 import java.util.Date;
 
 /**
- * .
+ * Smart Flow Sheet event status.
  *
  * @author Tim Anderson
  */
 public class EventStatus {
 
-    private final Date lastReceived;
+    /**
+     * The time when an event was last received.
+     */
+    private final Date received;
 
-    private final Date lastError;
+    /**
+     * The time of the last error.
+     */
+    private final Date error;
 
+    /**
+     * The error message.
+     */
     private final String errorMessage;
 
-    public EventStatus(Date lastReceived, Date lastError, String errorMessage) {
-        this.lastReceived = lastReceived;
-        this.lastError = lastError;
+    /**
+     * Constructs a {@link EventStatus}.
+     *
+     * @param received     the time when an event was last received, or {@code null} if none has been received
+     * @param error        the time when an error last occurred, or {@code null} if no error has occurred, or the the
+     *                     last event was processed successfully
+     * @param errorMessage the error message associated with the last error or {@code null} if no error has occurred,
+     *                     or the the last event was processed successfully
+     */
+    public EventStatus(Date received, Date error, String errorMessage) {
+        this.received = received;
+        this.error = error;
         this.errorMessage = errorMessage;
     }
 
     /**
-     * Returns the time when a message was last received.
+     * Returns the time when an event was last received.
      *
-     * @return the time when a message was last received, or {@code null} if no message has been received
+     * @return the time when an event was last received, or {@code null} if no message has been received
      */
-    public Date getLastReceived() {
-        return lastReceived;
+    public Date getReceived() {
+        return received;
     }
 
-    public Date getLastError() {
-        return lastError;
+    /**
+     * Returns the time when an error last occurred.
+     *
+     * @return the time when an error last occurred, or {@code null} if no error has occurred or the last event was
+     * processed successfully
+     */
+    public Date getError() {
+        return error;
     }
 
+    /**
+     * Returns the error message for the time when an error last occurred.
+     *
+     * @return the error message for the time when an error last occurred, or {@code null} if no error has occurred or
+     * the last event was processed successfully
+     */
     public String getErrorMessage() {
         return errorMessage;
     }

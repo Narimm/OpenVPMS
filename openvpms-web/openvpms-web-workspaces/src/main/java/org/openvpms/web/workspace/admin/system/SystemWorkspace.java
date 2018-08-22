@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.system;
@@ -67,7 +67,7 @@ public class SystemWorkspace extends TabbedWorkspace<IMObject> {
      */
     private void addInfoBrowser(ObjectTabPaneModel<TabComponent> model) {
         HelpContext help = subtopic("session");
-        addTab("admin.system.session", model, new SessionBrowser(help));
+        addTab("admin.system.session", model, new SessionBrowser(getContext(), help));
     }
 
     /**

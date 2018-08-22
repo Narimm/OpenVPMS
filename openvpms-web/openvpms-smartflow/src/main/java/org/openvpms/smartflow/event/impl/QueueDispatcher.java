@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.event.impl;
@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.smartflow.event.EventDispatcher;
+import org.openvpms.smartflow.event.EventStatus;
 import org.openvpms.smartflow.model.ServiceBusConfig;
 import org.openvpms.smartflow.model.event.Event;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -32,6 +33,7 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.IOException;
+import java.util.Date;
 
 /**
  * Reads and dispatches messages on a {@link Queue} using an {@link EventDispatcher}.
@@ -64,6 +66,21 @@ class QueueDispatcher {
      * The transaction manager.
      */
     private final PlatformTransactionManager transactionManager;
+
+    /**
+     * The date when an event was last received.
+     */
+    private Date lastReceived;
+
+    /**
+     * The time of the last error.
+     */
+    private Date lastError;
+
+    /**
+     * The last error message, if the last event was not processed successfully.
+     */
+    private String errorMessage;
 
     /**
      * The logger.
@@ -106,12 +123,31 @@ class QueueDispatcher {
      */
     public boolean dispatch() throws IOException, ServiceException {
         boolean result = false;
-        BrokeredMessage message = queue.next();
-        if (message != null) {
-            dispatch(message);
-            result = true;
-        } else if (log.isDebugEnabled()) {
-            log.debug("No messages for location='" + location.getName() + "'");
+
+        try {
+            BrokeredMessage message = queue.next();
+            if (message != null) {
+                synchronized (this) {
+                    lastReceived = new Date();
+                    lastError = null;
+                    errorMessage = null;
+                }
+                dispatch(message);
+                result = true;
+            } else if (log.isDebugEnabled()) {
+                log.debug("No messages for location='" + location.getName() + "'");
+            }
+        } catch (Throwable exception) {
+            log.error("Failed to dispatch message for location=" + location.getName() + ":" + exception.getMessage(),
+                      exception);
+            synchronized (this) {
+                lastError = new Date();
+                errorMessage = exception.getMessage();
+                if (errorMessage == null) {
+                    errorMessage = exception.getClass().getSimpleName();
+                }
+            }
+            throw exception;
         }
         return result;
     }
@@ -123,6 +159,15 @@ class QueueDispatcher {
      */
     public EventDispatcher getEventDispatcher() {
         return dispatcher;
+    }
+
+    /**
+     * Returns the status of event processing.
+     *
+     * @return the status
+     */
+    public synchronized EventStatus getStatus() {
+        return new EventStatus(lastReceived, lastError, errorMessage);
     }
 
     /**
