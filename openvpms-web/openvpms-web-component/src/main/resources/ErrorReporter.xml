@@ -38,6 +38,7 @@
             <className>java.awt.print.PrinterException</className>
             <message>Printer is not accepting job.</message>
             <message>No printer found.</message>
+            <message>Invalid name of PrintService.</message>
         </cause>
         <cause>
             <className>net.sf.jasperreports.engine.JRException</className>
