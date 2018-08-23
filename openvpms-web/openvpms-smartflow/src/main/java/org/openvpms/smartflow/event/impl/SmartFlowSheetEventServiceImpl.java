@@ -25,11 +25,9 @@ import org.openvpms.component.business.service.archetype.AbstractArchetypeServic
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
 import org.openvpms.component.business.service.lookup.ILookupService;
-import org.openvpms.component.system.common.event.Listener;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
-import org.openvpms.smartflow.event.EventDispatcher;
+import org.openvpms.smartflow.event.EventStatus;
 import org.openvpms.smartflow.event.SmartFlowSheetEventService;
-import org.openvpms.smartflow.model.event.Event;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -55,16 +53,6 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
     private final PracticeService practiceService;
 
     /**
-     * The queue dispatchers.
-     */
-    private final QueueDispatchers dispatchers;
-
-    /**
-     * The scheduled event dispatcher.
-     */
-    private final ScheduledDispatcher dispatcher;
-
-    /**
      * Used to handle practice location updates.
      */
     private final ExecutorService updateService;
@@ -73,6 +61,26 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
      * The listener for practice location updates.
      */
     private final IArchetypeServiceListener listener;
+
+    /**
+     * The dispatcher factory.
+     */
+    private final QueueDispatcherFactory dispatcherFactory;
+
+    /**
+     * The queue dispatchers.
+     */
+    private QueueDispatchers dispatchers;
+
+    /**
+     * The scheduled event dispatcher.
+     */
+    private ScheduledDispatcher dispatcher;
+
+    /**
+     * The interval between polls, in seconds.
+     */
+    private int pollInterval = 30;
 
     /**
      * Constructs a {@link SmartFlowSheetEventServiceImpl}.
@@ -97,29 +105,18 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
         listener = new AbstractArchetypeServiceListener() {
             @Override
             public void saved(final IMObject object) {
-                updateService.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        locationSaved((Party) object);
-                    }
-                });
+                updateService.execute(() -> locationSaved((Party) object));
             }
 
             @Override
             public void removed(final IMObject object) {
 
-                updateService.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        locationRemoved((Party) object);
-                    }
-                });
+                updateService.execute(() -> locationRemoved((Party) object));
             }
         };
-        QueueDispatcherFactory readerFactory = new QueueDispatcherFactory(factory, service, lookups, transactionManager,
-                                                                          practiceService, rules);
-        dispatchers = new QueueDispatchers(readerFactory);
-        dispatcher = new ScheduledDispatcher(dispatchers, practiceService);
+        dispatcherFactory = new QueueDispatcherFactory(factory, service, lookups, transactionManager, practiceService,
+                                                       rules);
+        init();
     }
 
     /**
@@ -128,48 +125,39 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
      * @param interval the interval, in seconds
      */
     @Override
-    public void setPollInterval(int interval) {
+    public synchronized void setPollInterval(int interval) {
         dispatcher.setPollInterval(interval);
+        pollInterval = interval;
     }
 
     /**
      * Triggers a poll for events.
      */
     @Override
-    public void poll() {
+    public synchronized void poll() {
         dispatcher.dispatch();
     }
 
     /**
-     * Monitors for a single event with the specified id.
-     * <p>
-     * The listener is automatically removed, once the event is handled.
+     * Returns the status of events at the specified location.
      *
-     * @param location the location the event belongs to
-     * @param id       the event identifier
-     * @param listener the listener
+     * @param location the location
+     * @return the event status
      */
     @Override
-    public void addListener(Party location, String id, Listener<Event> listener) {
-        EventDispatcher dispatcher = dispatchers.getEventDispatcher(location);
-        if (dispatcher != null) {
-            dispatcher.addListener(id, listener);
-            poll();
-        }
+    public synchronized EventStatus getStatus(Party location) {
+        return dispatchers.getStatus(location);
     }
 
     /**
-     * Removes a listener for an event identifier.
-     *
-     * @param location the location the event belongs to
-     * @param id       the event identifier
+     * Restarts event processing.
      */
     @Override
-    public void removeListener(Party location, String id) {
-        EventDispatcher dispatcher = dispatchers.getEventDispatcher(location);
-        if (dispatcher != null) {
-            dispatcher.removeListener(id);
-        }
+    public synchronized void restart() {
+        dispatcher.destroy();
+        init();
+        addLocations();
+        poll();
     }
 
     /**
@@ -184,9 +172,7 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
      */
     @Override
     public void afterPropertiesSet() throws Exception {
-        for (Party location : practiceService.getLocations()) {
-            dispatchers.add(location);
-        }
+        addLocations();
         service.addListener(PracticeArchetypes.LOCATION, listener);
         poll();
     }
@@ -199,8 +185,26 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
     @Override
     public void destroy() throws Exception {
         service.removeListener(PracticeArchetypes.LOCATION, listener);
-        dispatcher.destroy();
         updateService.shutdown();
+        dispatcher.destroy();
+    }
+
+    /**
+     * Initialises dispatchers.
+     */
+    private void init() {
+        dispatchers = new QueueDispatchers(dispatcherFactory);
+        dispatcher = new ScheduledDispatcher(dispatchers, practiceService);
+        dispatcher.setPollInterval(pollInterval);
+    }
+
+    /**
+     * Adds locations to dispatch.
+     */
+    private void addLocations() {
+        for (Party location : practiceService.getLocations()) {
+            dispatchers.add(location);
+        }
     }
 
     /**
@@ -208,7 +212,7 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
      *
      * @param location the practice location
      */
-    private void locationSaved(Party location) {
+    private synchronized void locationSaved(Party location) {
         QueueDispatcher reader = dispatchers.add(location);
         if (reader != null) {
             dispatcher.dispatch();
@@ -220,7 +224,7 @@ public class SmartFlowSheetEventServiceImpl implements InitializingBean, Disposa
      *
      * @param location the practice location
      */
-    private void locationRemoved(Party location) {
+    private synchronized void locationRemoved(Party location) {
         dispatchers.remove(location);
         dispatcher.dispatch();
     }

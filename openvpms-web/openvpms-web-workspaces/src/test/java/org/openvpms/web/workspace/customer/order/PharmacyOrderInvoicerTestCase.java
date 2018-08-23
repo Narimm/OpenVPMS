@@ -651,7 +651,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
      */
     @Test
     public void testInvalidProduct() {
-        String expected = "Product is not valid for this field";
+        String expected = "Product does not exist or is not valid for this field";
         Product template = ProductTestHelper.createTemplate("ZTemplate");
         FinancialAct act1 = createOrder(customer, patient, template, ONE, null);
         checkRequired(act1, expected);

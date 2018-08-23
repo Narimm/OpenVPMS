@@ -67,7 +67,7 @@ public class SystemWorkspace extends TabbedWorkspace<IMObject> {
      */
     private void addInfoBrowser(ObjectTabPaneModel<TabComponent> model) {
         HelpContext help = subtopic("session");
-        addTab("admin.system.session", model, new SessionBrowser(help));
+        addTab("admin.system.session", model, new SessionBrowser(getContext(), help));
     }
 
     /**

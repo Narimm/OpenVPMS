@@ -29,7 +29,7 @@ where n.archetype_desc_id = a.archetype_desc_id and a.name = "contact.mobileNumb
 #
 
 # remove any entity classifications linked to lookup.paymentType
-delete entity_classifications c
+delete c
 from lookups l, entity_classifications c
 where c.lookup_id = l.Lookup_id and arch_short_name = "lookup.paymentType";
 

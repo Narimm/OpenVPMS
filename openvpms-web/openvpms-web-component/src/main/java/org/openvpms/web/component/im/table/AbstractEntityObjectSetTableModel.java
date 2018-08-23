@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.component.im.table;
 
@@ -31,16 +31,6 @@ import org.openvpms.component.system.common.query.SortConstraint;
  * @author Tim Anderson
  */
 public abstract class AbstractEntityObjectSetTableModel extends AbstractIMTableModel<ObjectSet> {
-
-    /**
-     * The entity key.
-     */
-    private final String entityKey;
-
-    /**
-     * The identity key.
-     */
-    private final String identityKey;
 
     /**
      * The ID index.
@@ -77,10 +67,20 @@ public abstract class AbstractEntityObjectSetTableModel extends AbstractIMTableM
      */
     protected static final String IDENTITY = "table.entity.identity";
 
+    /**
+     * The entity key.
+     */
+    private final String entityKey;
+
+    /**
+     * The identity key.
+     */
+    private final String identityKey;
+
 
     /**
      * Constructs a {@code AbstractEntityObjectSetTableModel}.
-     * <p/>
+     * <p>
      * The subclass is responsible for creating the table column model.
      *
      * @param entityKey   the key of the entity in the object set
@@ -89,6 +89,29 @@ public abstract class AbstractEntityObjectSetTableModel extends AbstractIMTableM
     public AbstractEntityObjectSetTableModel(String entityKey, String identityKey) {
         this.entityKey = entityKey;
         this.identityKey = identityKey;
+    }
+
+    /**
+     * Returns the sort criteria.
+     *
+     * @param column    the primary sort column
+     * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
+     * @return the sort criteria, or {@code null} if the column isn't sortable
+     */
+    public SortConstraint[] getSortConstraints(int column, boolean ascending) {
+        SortConstraint[] result = null;
+        if (column == ID_INDEX) {
+            result = new NodeSortConstraint[]{new NodeSortConstraint(entityKey, "id", ascending)};
+        } else if (column == NAME_INDEX) {
+            result = new NodeSortConstraint[]{new NodeSortConstraint(entityKey, "name", ascending)};
+        } else if (column == DESCRIPTION_INDEX) {
+            result = new NodeSortConstraint[]{new NodeSortConstraint(entityKey, "description", ascending),
+                                              new NodeSortConstraint(entityKey, "name", true)};
+        } else if (column == ACTIVE_INDEX) {
+            result = new NodeSortConstraint[]{new NodeSortConstraint(entityKey, "active", ascending),
+                                              new NodeSortConstraint(entityKey, "name", true)};
+        }
+        return result;
     }
 
     /**
@@ -120,27 +143,6 @@ public abstract class AbstractEntityObjectSetTableModel extends AbstractIMTableM
                 break;
         }
         return result;
-    }
-
-    /**
-     * Returns the sort criteria.
-     *
-     * @param column    the primary sort column
-     * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
-     * @return the sort criteria, or {@code null} if the column isn't sortable
-     */
-    public SortConstraint[] getSortConstraints(int column, boolean ascending) {
-        SortConstraint result = null;
-        if (column == ID_INDEX) {
-            result = new NodeSortConstraint(entityKey, "id", ascending);
-        } else if (column == NAME_INDEX) {
-            result = new NodeSortConstraint(entityKey, "name", ascending);
-        } else if (column == DESCRIPTION_INDEX) {
-            result = new NodeSortConstraint(entityKey, "description", ascending);
-        } else if (column == ACTIVE_INDEX) {
-            result = new NodeSortConstraint(entityKey, "active", ascending);
-        }
-        return (result != null) ? new SortConstraint[]{result} : null;
     }
 
     /**

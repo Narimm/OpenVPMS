@@ -27,6 +27,7 @@ import nextapp.echo2.app.table.TableColumnModel;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.im.query.FilteredResultSet;
 import org.openvpms.web.component.im.query.ListResultSet;
@@ -54,6 +55,7 @@ import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.admin.system.smartflow.SmartFlowSheetAdminDialog;
 import org.openvpms.web.workspace.admin.system.cache.CacheDialog;
 import org.springframework.web.util.Log4jWebConfigurer;
 
@@ -67,6 +69,11 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class SessionBrowser extends AbstractTabComponent {
+
+    /**
+     * The context.
+     */
+    private final Context context;
 
     /**
      * The browser component.
@@ -104,12 +111,19 @@ public class SessionBrowser extends AbstractTabComponent {
     private static final String RELOAD_LOG4J = "button.reloadlog4j";
 
     /**
-     * Constructs an {@link SessionBrowser}.
+     * The 'Smart Flow Sheet' button identifier.
+     */
+    private static final String SFS_ID = "button.smartflowsheet";
+
+    /**
+     * Constructs a {@link SessionBrowser}.
      *
+     * @param context the context
      * @param help    the help context
      */
-    public SessionBrowser(HelpContext help) {
+    public SessionBrowser(Context context, HelpContext help) {
         super(help);
+        this.context = context;
     }
 
     /**
@@ -155,16 +169,23 @@ public class SessionBrowser extends AbstractTabComponent {
                                              ColumnFactory.create(Styles.WIDE_CELL_SPACING, row,
                                                                   sessions.getComponent()));
             focus.add(sessions.getComponent());
-            getButtons().addButton(RELOAD_LOG4J, new ActionListener() {
+            getButtonSet().add(SFS_ID, new ActionListener() {
                 @Override
                 public void onAction(ActionEvent event) {
-                    onReloadLog();
+                    SmartFlowSheetAdminDialog dialog = new SmartFlowSheetAdminDialog(context, getHelpContext());
+                    dialog.show();
                 }
             });
             getButtons().addButton(CACHES_ID, new ActionListener() {
                 @Override
                 public void onAction(ActionEvent event) {
                     onCaches();
+                }
+            });
+            getButtons().addButton(RELOAD_LOG4J, new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    onReloadLog();
                 }
             });
             focus.add(getButtonSet().getFocusGroup());
@@ -236,7 +257,6 @@ public class SessionBrowser extends AbstractTabComponent {
     }
 
     /**
-     * `
      * Reloads the log4j configuration file.
      * <p>
      * Note that this is only here for lack of another place to put it.

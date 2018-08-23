@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.patient;
@@ -23,7 +23,9 @@ import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.table.AbstractEntityObjectSetTableModel;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
@@ -71,7 +73,7 @@ public class PatientTableModel extends AbstractEntityObjectSetTableModel {
 
 
     /**
-     * Constructs a {@code PatientTableModel}.
+     * Constructs a {@link PatientTableModel}.
      */
     public PatientTableModel(Context context) {
         super("patient", "identity");
@@ -94,6 +96,22 @@ public class PatientTableModel extends AbstractEntityObjectSetTableModel {
             showActive = active;
             setTableColumnModel(createTableColumnModel());
         }
+    }
+
+    /**
+     * Returns the sort criteria.
+     *
+     * @param column    the primary sort column
+     * @param ascending if {@code true} sort in ascending order; otherwise sort in {@code descending} order
+     * @return the sort criteria, or {@code null} if the column isn't sortable
+     */
+    @Override
+    public SortConstraint[] getSortConstraints(int column, boolean ascending) {
+        if (column == OWNER_INDEX) {
+            return new SortConstraint[]{new NodeSortConstraint("customer", "name", ascending),
+                                        new NodeSortConstraint("patient", "name", true)};
+        }
+        return super.getSortConstraints(column, ascending);
     }
 
     /**

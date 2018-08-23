@@ -13,6 +13,7 @@
  *
  * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.component.error;
 
 import net.sf.jasperreports.engine.JRException;
@@ -162,15 +163,19 @@ public class ErrorReporterConfigTestCase {
                                           ReportException.ErrorCode.FailedToGenerateReport);
         Throwable c = new ReportException(new PrinterException("Printer not found."),
                                           ReportException.ErrorCode.FailedToGenerateReport);
+        Throwable d = new ReportException(new JRException(new PrinterException("Invalid name of PrintService.")),
+                                          ReportException.ErrorCode.FailedToGenerateReport);
 
         // verify that no exception is excluded from reporting
         assertFalse(config.isExcluded(a));
         assertFalse(config.isExcluded(b));
         assertFalse(config.isExcluded(c));
+        assertFalse(config.isExcluded(d));
 
-        // now exclude the "Printer is not accepting job." exception when it is a root cause for ReportException
+        // now exclude the "Printer is not accepting job." and "Invalid name of PrintService." exceptions when it is a
+        // root cause for ReportException
         ExceptionConfig cause = new ExceptionConfig(PrinterException.class.getName());
-        cause.setMessages(Collections.singletonList("Printer is not accepting job."));
+        cause.setMessages(Arrays.asList("Printer is not accepting job.", "Invalid name of PrintService."));
 
         ExceptionConfig exception = new ExceptionConfig(ReportException.class.getName());
         exception.setCauses(Collections.singletonList(cause));
@@ -181,6 +186,7 @@ public class ErrorReporterConfigTestCase {
         assertFalse(config.isExcluded(a));
         assertTrue(config.isExcluded(b));
         assertFalse(config.isExcluded(c));
+        assertTrue(config.isExcluded(d));
     }
 
     /**
@@ -224,6 +230,8 @@ public class ErrorReporterConfigTestCase {
                                             ReportException.ErrorCode.FailedToGenerateReport);
         Throwable ex7 = new ReportException(new JRException("No suitable print service found."),
                                             ReportException.ErrorCode.FailedToGenerateReport);
+        Throwable ex8 = new ReportException(new JRException(new PrinterException("Invalid name of PrintService.")),
+                                            ReportException.ErrorCode.FailedToGenerateReport);
 
         assertTrue(config.isExcluded(ex1));
         assertTrue(config.isExcluded(ex2));
@@ -232,6 +240,7 @@ public class ErrorReporterConfigTestCase {
         assertTrue(config.isExcluded(ex5));
         assertTrue(config.isExcluded(ex6));
         assertTrue(config.isExcluded(ex7));
+        assertTrue(config.isExcluded(ex8));
 
         Throwable inc1 = new NullPointerException();
         Throwable inc2 = new ReportException(ReportException.ErrorCode.FailedToCreateReport);
