@@ -340,7 +340,7 @@ class AttachmentGenerator {
      */
     private boolean save(IMObjectBean bean, Reporter<Act> reporter) {
         reporter.setFields(ReportContextFactory.create(context));
-        Document document = reporter.getDocument(DocFormats.PDF_TYPE, false);
+        Document document = reporter.getDocument(DocFormats.PDF_TYPE, true); // ensure letterhead is included
         return save(bean, document);
     }
 
