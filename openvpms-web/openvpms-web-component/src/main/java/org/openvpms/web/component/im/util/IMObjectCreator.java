@@ -27,6 +27,7 @@ import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.util.ErrorHelper;
+import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.echo.dialog.SelectionDialog;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ListBoxFactory;
@@ -135,7 +136,13 @@ public final class IMObjectCreator {
             String title = Messages.format("imobject.create.title", type);
             String message = Messages.format("imobject.create.message", type);
             ListBox list = ListBoxFactory.create(model);
-            list.setHeight(new Extent(12, Extent.EM));
+            // TODO - move into SelectionDialog.
+            int height = StyleSheetHelper.getProperty("SelectionDialog.list.height", -1);
+            if (height != -1) {
+                list.setHeight(new Extent(height, Extent.PX));
+            } else {
+                list.setHeight(new Extent(12, Extent.EM));
+            }
             list.setCellRenderer(new ShortNameListCellRenderer());
             if (defaultShortName != null) {
                 int index = model.indexOf(defaultShortName);
