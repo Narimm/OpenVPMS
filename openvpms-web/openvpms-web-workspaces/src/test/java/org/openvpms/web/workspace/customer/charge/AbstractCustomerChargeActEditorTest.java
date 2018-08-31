@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -42,6 +42,7 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -478,7 +479,8 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         EntityBean productBean = new EntityBean(product);
 
         ReminderRules rules = ServiceHelper.getBean(ReminderRules.class);
-        List<EntityRelationship> rels = productBean.getNodeRelationships("reminders");
+        List<EntityRelationship> rels = productBean.getNodeRelationships("reminders"
+                , RefEquals.getTargetEquals(reminderType));
         assertEquals(1, rels.size());
         ActBean bean = new ActBean(reminder);
         Date createdTime = DateUtils.truncate(bean.getDate("createdTime"), Calendar.SECOND); // details nodes store ms

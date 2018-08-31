@@ -31,6 +31,7 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceTestHelper;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
@@ -39,6 +40,7 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
@@ -48,6 +50,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.model.entity.EntityIdentity;
+import org.openvpms.component.model.object.Relationship;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -864,6 +867,114 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
     }
 
     /**
+     * Verifies that if a reminder type is for a different species than the patient, no reminder is generated.
+     */
+    @Test
+    public void testReminderForDifferentSpecies() {
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(new BigDecimal(100), customer, null, null,
+                                                                           ActStatus.IN_PROGRESS);
+        FinancialAct invoice = acts.get(0);
+        FinancialAct item = acts.get(1);
+
+        LayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        Party patient1 = TestHelper.createPatient(); // CANINE
+        User author1 = TestHelper.createUser();
+        User clinician1 = TestHelper.createClinician();
+        context.setUser(author1);
+        context.setClinician(clinician1);
+
+        BigDecimal quantity1 = BigDecimal.valueOf(2);
+        BigDecimal unitCost1 = BigDecimal.valueOf(5);
+        BigDecimal unitPrice1 = new BigDecimal("9.09");
+        BigDecimal unitPrice1IncTax = BigDecimal.TEN;
+        BigDecimal fixedCost1 = BigDecimal.ONE;
+        BigDecimal fixedPrice1 = new BigDecimal("1.82");
+        BigDecimal fixedPrice1IncTax = BigDecimal.valueOf(2);
+        BigDecimal discount1 = BigDecimal.ZERO;
+        BigDecimal tax1 = BigDecimal.valueOf(2);
+        BigDecimal total1 = BigDecimal.valueOf(22);
+        Product product = createProduct(ProductArchetypes.MERCHANDISE, fixedCost1, fixedPrice1, unitCost1, unitPrice1);
+        Entity reminderType1 = addReminderType("ZReminderType1", product);
+        Entity reminderType2 = addReminderType("ZReminderType2", product, "FELINE");
+        Entity reminderType3 = addReminderType("ZReminderType3", product, "CANINE");
+        Entity reminderType4 = addReminderType("ZReminderType4", product, "CANINE", "FELINE");
+
+        // create the editor
+        CustomerChargeEditContext editContext = createEditContext(layout);
+        TestCustomerChargeActItemEditor editor = createEditor(invoice, item, editContext, layout);
+        assertFalse(editor.isValid());
+
+        editor.setQuantity(quantity1);
+        editor.setPatient(patient1);
+        editor.setProduct(product);
+
+        // editor should now be valid
+        assertTrue(editor.isValid());
+
+        // save it
+        checkSave(invoice, editor);
+
+        invoice = get(invoice);
+        item = get(item);
+        assertNotNull(invoice);
+        assertNotNull(item);
+
+        // verify the item matches that expected
+        checkItem(item, patient1, product, null, author1, clinician1, BigDecimal.ZERO, quantity1, unitCost1,
+                  unitPrice1IncTax, fixedCost1, fixedPrice1IncTax, discount1, tax1, total1);
+        ActBean itemBean = new ActBean(item);
+        assertTrue(itemBean.getActs(PatientArchetypes.PATIENT_MEDICATION).isEmpty());
+        assertEquals(3, itemBean.getActs(ReminderArchetypes.REMINDER).size());
+
+        checkReminder(item, patient1, product, reminderType1, author1, clinician1);
+        checkReminder(item, patient1, product, reminderType3, author1, clinician1);
+        checkReminder(item, patient1, product, reminderType4, author1, clinician1);
+
+        // now change the patient
+        Party patient2 = TestHelper.createPatient();
+        IMObjectBean bean = new IMObjectBean(patient2);
+        bean.setValue("species", "FELINE");
+        bean.save();
+        editor.setPatient(patient2);
+
+        // save it
+        checkSave(invoice, editor);
+        item = get(item);
+
+        checkItem(item, patient2, product, null, author1, clinician1, BigDecimal.ZERO, quantity1, unitCost1,
+                  unitPrice1IncTax, fixedCost1, fixedPrice1IncTax, discount1, tax1, total1);
+
+        itemBean = new ActBean(item);
+        assertEquals(3, itemBean.getActs(ReminderArchetypes.REMINDER).size());
+
+        checkReminder(item, patient2, product, reminderType1, author1, clinician1);
+        checkReminder(item, patient2, product, reminderType2, author1, clinician1);
+        checkReminder(item, patient2, product, reminderType4, author1, clinician1);
+    }
+
+    /**
+     * Adds a reminder type to a product.
+     *
+     * @param name    the reminder type name
+     * @param product the product
+     * @param species the species the reminder type applies to
+     * @return the reminder type
+     */
+    private Entity addReminderType(String name, Product product, String... species) {
+        Entity reminderType = ReminderTestHelper.createReminderType();
+        reminderType.setName(name);
+        for (String code : species) {
+            Lookup lookup = TestHelper.getLookup(PatientArchetypes.SPECIES, code);
+            reminderType.addClassification(lookup);
+        }
+        IMObjectBean bean = new IMObjectBean(product);
+        Relationship relationship = bean.addTarget("reminders", reminderType);
+        reminderType.addEntityRelationship((EntityRelationship) relationship);
+        bean.save(reminderType);
+        return reminderType;
+    }
+
+    /**
      * Verifies stock matches that expected.
      *
      * @param product  the product
@@ -1094,6 +1205,10 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
         if (itemBean.hasNode("patient")) {
             editor.setPatient(patient2);
         }
+        if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
+            checkSavePopup(queue, ReminderArchetypes.REMINDER, false);
+        }
+
         editor.setProduct(product2);
         editor.setQuantity(quantity2);
         editor.setDiscount(discount2);
