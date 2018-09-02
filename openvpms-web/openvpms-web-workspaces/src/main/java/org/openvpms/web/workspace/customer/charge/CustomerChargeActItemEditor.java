@@ -1199,7 +1199,8 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                 reminders.remove(act);
             }
             if (product != null) {
-                Map<Entity, EntityRelationship> reminderTypes = getEditContext().getReminderTypes(product);
+                Party patient = getPatient();
+                Map<Entity, EntityRelationship> reminderTypes = getEditContext().getReminderTypes(product, patient);
                 for (Map.Entry<Entity, EntityRelationship> entry : reminderTypes.entrySet()) {
                     Entity reminderType = entry.getKey();
                     EntityRelationship relationship = entry.getValue();
@@ -1211,7 +1212,7 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
                             Date startTime = getStartTime();
                             reminder.setCreatedTime(startTime);
                             reminder.setReminderType(reminderType);
-                            reminder.setPatient(getPatient());
+                            reminder.setPatient(patient);
                             reminder.setProduct(product);
 
                             // marking matching reminders completed are handled via CustomerChargeActEditor.
@@ -1565,6 +1566,8 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
         // force the documents to be recreated
         updateDocuments();
+
+        updateReminders(getProduct()); // need to recreate the reminders, as they may be for a different species
     }
 
     /**

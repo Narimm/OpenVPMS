@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -23,6 +23,9 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.system.ServiceHelper;
@@ -30,6 +33,7 @@ import org.openvpms.web.workspace.customer.StockOnHand;
 import org.openvpms.web.workspace.patient.mr.Prescriptions;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -127,17 +131,25 @@ public class CustomerChargeEditContext extends ChargeEditContext {
 
     /**
      * Helper to return the reminder types and their relationships for a product.
+     * <p>
+     * This excludes any reminder type not for the patient species.
      * <p/>
      * If there are multiple reminder types, these will be sorted on name.
      *
      * @param product the product
+     * @param patient the patient, used to filter reminder types for a different species. May be {@code}
      * @return a the reminder type relationships
      */
-    public Map<Entity, EntityRelationship> getReminderTypes(Product product) {
+    public Map<Entity, EntityRelationship> getReminderTypes(Product product, Party patient) {
         Map<EntityRelationship, Entity> map = reminderRules.getReminderTypes(product);
         Map<Entity, EntityRelationship> result = new TreeMap<>(IMObjectSorter.getNameComparator(true));
+        IArchetypeService service = getCachingArchetypeService();
+        String species = (patient != null) ? service.getBean(patient).getString("species") : null;
         for (Map.Entry<EntityRelationship, Entity> entry : map.entrySet()) {
-            result.put(entry.getValue(), entry.getKey());
+            Entity reminderType = entry.getValue();
+            if (species == null || reminderTypeIsForSpecies(reminderType, species)) {
+                result.put(reminderType, entry.getKey());
+            }
         }
         return result;
     }
@@ -154,4 +166,27 @@ public class CustomerChargeEditContext extends ChargeEditContext {
         return reminderRules.calculateProductReminderDueDate(startTime, relationship);
     }
 
+    /**
+     * Determines if a reminder type supports the supplied species.
+     *
+     * @param reminderType the reminder type
+     * @param species      the species
+     * @return {@code true} if the reminder type supports the supplied species
+     */
+    private boolean reminderTypeIsForSpecies(Entity reminderType, String species) {
+        boolean result = false;
+        IMObjectBean bean = getCachingArchetypeService().getBean(reminderType);
+        List<Lookup> supported = bean.getValues("species", Lookup.class);
+        if (supported.isEmpty()) {
+            result = true;
+        } else {
+            for (Lookup lookup : supported) {
+                if (species.equals(lookup.getCode())) {
+                    result = true;
+                    break;
+                }
+            }
+        }
+        return result;
+    }
 }
