@@ -934,7 +934,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
 
         // now change the patient
         Party patient2 = TestHelper.createPatient();
-        IMObjectBean bean = new IMObjectBean(patient2);
+        IMObjectBean bean = getBean(patient2);
         bean.setValue("species", "FELINE");
         bean.save();
         editor.setPatient(patient2);
@@ -969,7 +969,7 @@ public class CustomerChargeActItemEditorTestCase extends AbstractCustomerChargeA
             Lookup lookup = TestHelper.getLookup(PatientArchetypes.SPECIES, code);
             reminderType.addClassification(lookup);
         }
-        IMObjectBean bean = new IMObjectBean(product);
+        IMObjectBean bean = getBean(product);
         Relationship relationship = bean.addTarget("reminders", reminderType);
         reminderType.addEntityRelationship((EntityRelationship) relationship);
         bean.save(reminderType);

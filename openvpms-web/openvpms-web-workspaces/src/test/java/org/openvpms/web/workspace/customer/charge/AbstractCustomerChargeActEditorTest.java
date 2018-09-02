@@ -488,8 +488,8 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         EntityBean productBean = new EntityBean(product);
 
         ReminderRules rules = ServiceHelper.getBean(ReminderRules.class);
-        List<EntityRelationship> rels = productBean.getNodeRelationships("reminders"
-                , RefEquals.getTargetEquals(reminderType));
+        List<EntityRelationship> rels = productBean.getNodeRelationships("reminders",
+                                                                         RefEquals.getTargetEquals(reminderType));
         assertEquals(1, rels.size());
         ActBean bean = new ActBean(reminder);
         Date createdTime = DateUtils.truncate(bean.getDate("createdTime"), Calendar.SECOND); // details nodes store ms
