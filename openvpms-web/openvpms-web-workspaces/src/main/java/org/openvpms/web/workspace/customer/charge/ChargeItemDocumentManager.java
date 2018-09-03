@@ -381,9 +381,9 @@ class ChargeItemDocumentManager extends AbstractPropertyEditor implements Saveab
         }
         if (bean.isA(PatientArchetypes.DOCUMENT_LETTER)) {
             DocumentActReporter reporter = new DocumentActReporter(act, template, formatter, service, lookups);
+            reporter.setFields(ReportContextFactory.create(context));
             Set<ParameterType> parameters = reporter.getParameterTypes();
             if (!parameters.isEmpty()) {
-                reporter.setFields(ReportContextFactory.create(context));
                 String title = Messages.format("document.input.parameters", template.getName());
                 MacroVariables variables = new MacroVariables(context, service, lookups);
                 ParameterDialog dialog = new ParameterDialog(title, parameters, act, context, help.subtopic("document"),
