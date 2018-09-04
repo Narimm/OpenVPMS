@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.organisation;
@@ -56,6 +56,11 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
     private ComponentState subscription;
 
     /**
+     * Estimate expiry units node.
+     */
+    private static final String ESTIMATE_EXPIRY_UNITS = "estimateExpiryUnits";
+
+    /**
      * Prescription expiry units node.
      */
     private static final String PRESCRIPTION_EXPIRY_UNITS = "prescriptionExpiryUnits";
@@ -73,7 +78,8 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
     /**
      * The archetype nodes. This excludes nodes rendered alongside others.
      */
-    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude(PRESCRIPTION_EXPIRY_UNITS,
+    private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude(ESTIMATE_EXPIRY_UNITS,
+                                                                             PRESCRIPTION_EXPIRY_UNITS,
                                                                              RECORD_LOCK_PERIOD_UNITS,
                                                                              MINIMUM_QUANTITIES_OVERRIDE);
 
@@ -109,6 +115,7 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         IMObjectComponentFactory factory = context.getComponentFactory();
+        addEstimateExpiry(object, properties, factory);
         addPrescriptionExpiry(object, properties, factory);
         addAutoLockScreen(object, properties, factory);
         addAutoLogout(object, properties, factory);
@@ -148,6 +155,17 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
             label = getShortcut(label, model.size() + 1);
         }
         model.addTab(label, inset);
+    }
+
+    /**
+     * Registers a component to render the estimate expiry period and units.
+     *
+     * @param object     the practice object
+     * @param properties the properties
+     * @param factory    the component factory
+     */
+    private void addEstimateExpiry(IMObject object, PropertySet properties, IMObjectComponentFactory factory) {
+        addPeriod(object, "estimateExpiryPeriod", ESTIMATE_EXPIRY_UNITS, properties, factory);
     }
 
     /**

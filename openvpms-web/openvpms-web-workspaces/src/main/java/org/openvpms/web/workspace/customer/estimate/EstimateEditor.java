@@ -21,6 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.EstimateActStatus;
 import org.openvpms.archetype.rules.finance.estimate.EstimateArchetypes;
 import org.openvpms.archetype.rules.practice.LocationRules;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
@@ -79,6 +80,12 @@ public class EstimateEditor extends ActEditor {
         super(act, parent, context);
         if (!TypeHelper.isA(act, EstimateArchetypes.ESTIMATE)) {
             throw new IllegalArgumentException("Invalid act type:" + act.getArchetypeId().getShortName());
+        }
+        if (act.isNew() && act.getActivityStartTime() != null && act.getActivityEndTime() == null) {
+            PracticeRules rules = ServiceHelper.getBean(PracticeRules.class);
+            Date estimateExpiryDate = rules.getEstimateExpiryDate(act.getActivityStartTime(),
+                                                                  context.getContext().getPractice());
+            setEndTime(estimateExpiryDate);
         }
         addStartEndTimeListeners();
         initLocation();

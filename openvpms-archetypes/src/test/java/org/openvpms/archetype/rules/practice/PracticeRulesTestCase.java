@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.practice;
@@ -30,8 +30,7 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
 
 import java.util.Date;
 import java.util.List;
@@ -42,7 +41,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.openvpms.archetype.rules.practice.PracticeArchetypes.PRACTICE_LOCATION_RELATIONSHIP;
 
 
 /**
@@ -50,8 +48,7 @@ import static org.openvpms.archetype.rules.practice.PracticeArchetypes.PRACTICE_
  * <em>archetypeService.save.party.organisationPractice.before</em>
  * rule.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class PracticeRulesTestCase extends ArchetypeServiceTest {
 
@@ -69,10 +66,10 @@ public class PracticeRulesTestCase extends ArchetypeServiceTest {
         Party practice = createPractice();
         Party location1 = TestHelper.createLocation();
         Party location2 = TestHelper.createLocation();
-        EntityBean bean = new EntityBean(practice);
+        IMObjectBean bean = getBean(practice);
 
-        bean.addRelationship(PRACTICE_LOCATION_RELATIONSHIP, location1);
-        bean.addRelationship(PRACTICE_LOCATION_RELATIONSHIP, location2);
+        bean.addTarget("locations", location1);
+        bean.addTarget("locations", location2);
 
         List<Party> locations = rules.getLocations(practice);
         assertEquals(2, locations.size());
@@ -91,20 +88,17 @@ public class PracticeRulesTestCase extends ArchetypeServiceTest {
 
         Party location1 = TestHelper.createLocation();
         Party location2 = TestHelper.createLocation();
-        EntityBean bean = new EntityBean(practice);
+        IMObjectBean bean = getBean(practice);
 
-        bean.addRelationship(PRACTICE_LOCATION_RELATIONSHIP, location1);
-        EntityRelationship rel2
-                = bean.addRelationship(PRACTICE_LOCATION_RELATIONSHIP,
-                                       location2);
+        bean.addTarget("locations", location1);
+        EntityRelationship rel2 = (EntityRelationship) bean.addTarget("locations", location2);
 
         Party defaultLocation = rules.getDefaultLocation(practice);
         assertNotNull(defaultLocation);
 
         // location can be one of location1, or location2, as default not
         // specified
-        assertTrue(defaultLocation.equals(location1)
-                   || defaultLocation.equals(location2));
+        assertTrue(defaultLocation.equals(location1) || defaultLocation.equals(location2));
 
         // mark rel2 as the default
         EntityRelationshipHelper.setDefault(practice, "locations", rel2,
@@ -143,12 +137,33 @@ public class PracticeRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link PracticeRules#getEstimateExpiryDate(Date, Party)} method.
+     */
+    @Test
+    public void testEstimateExpiryDate() {
+        Party practice = createPractice();
+        IMObjectBean bean = getBean(practice);
+        bean.setValue("estimateExpiryUnits", null);
+
+        Date startDate = TestHelper.getDate("2018-08-04");
+        assertNull(rules.getEstimateExpiryDate(startDate, practice));
+
+        bean.setValue("estimateExpiryPeriod", 1);
+        bean.setValue("estimateExpiryUnits", "YEARS");
+        assertEquals(TestHelper.getDate("2019-08-04"), rules.getEstimateExpiryDate(startDate, practice));
+
+        bean.setValue("estimateExpiryPeriod", 6);
+        bean.setValue("estimateExpiryUnits", "MONTHS");
+        assertEquals(TestHelper.getDate("2019-02-04"), rules.getEstimateExpiryDate(startDate, practice));
+    }
+
+    /**
      * Tests the {@link PracticeRules#getPrescriptionExpiryDate(Date, Party)} method.
      */
     @Test
     public void testPrescriptionExpiryDate() {
         Party practice = createPractice();
-        IMObjectBean bean = new IMObjectBean(practice);
+        IMObjectBean bean = getBean(practice);
         bean.setValue("prescriptionExpiryUnits", null);
 
         Date startDate = TestHelper.getDate("2013-07-01");
@@ -172,8 +187,8 @@ public class PracticeRulesTestCase extends ArchetypeServiceTest {
         assertNull(rules.getServiceUser(practice));
 
         User user = TestHelper.createUser();
-        EntityBean bean = new EntityBean(practice);
-        bean.addNodeTarget("serviceUser", user);
+        IMObjectBean bean = getBean(practice);
+        bean.addTarget("serviceUser", user);
 
         assertEquals(user, rules.getServiceUser(practice));
     }
@@ -198,7 +213,7 @@ public class PracticeRulesTestCase extends ArchetypeServiceTest {
 
         assertFalse(rules.useLocationProducts(practice));
 
-        IMObjectBean bean = new IMObjectBean(practice);
+        IMObjectBean bean = getBean(practice);
         bean.setValue("useLocationProducts", true);
         assertTrue(rules.useLocationProducts(practice));
     }
@@ -220,7 +235,7 @@ public class PracticeRulesTestCase extends ArchetypeServiceTest {
     private Party createPractice() {
         Party party = (Party) create(PracticeArchetypes.PRACTICE);
         party.setName("XPractice2");
-        IMObjectBean bean = new IMObjectBean(party);
+        IMObjectBean bean = getBean(party);
         Lookup currency = TestHelper.getCurrency("AUD");
         bean.setValue("currency", currency.getCode());
 

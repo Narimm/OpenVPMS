@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.practice;
@@ -30,7 +30,8 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
@@ -104,31 +105,15 @@ public class PracticeRules {
     }
 
     /**
-     * Returns the practice.
-     *
-     * @param service the archetype service
-     * @return the practice, or {@code null} if none is found
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public static Party getPractice(IArchetypeService service) {
-        ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.PRACTICE, true, true);
-        query.setMaxResults(1);
-        IMObjectQueryIterator<Party> iter = new IMObjectQueryIterator<>(service, query);
-        return (iter.hasNext()) ? iter.next() : null;
-    }
-
-    /**
      * Returns the locations associated with a practice.
      *
      * @param practice the practice
      * @return the locations associated with the user
      * @throws ArchetypeServiceException for any archetype service error
      */
-    @SuppressWarnings("unchecked")
     public List<Party> getLocations(Party practice) {
-        EntityBean bean = new EntityBean(practice, service);
-        List locations = bean.getNodeTargetEntities("locations");
-        return (List<Party>) locations;
+        IMObjectBean bean = service.getBean(practice);
+        return bean.getTargets("locations", Party.class);
     }
 
     /**
@@ -151,7 +136,7 @@ public class PracticeRules {
      *                           currency
      */
     public Currency getCurrency(Party practice) {
-        IMObjectBean bean = new IMObjectBean(practice, service);
+        IMObjectBean bean = service.getBean(practice);
         String code = bean.getString("currency");
         return currencies.getCurrency(code);
     }
@@ -176,13 +161,32 @@ public class PracticeRules {
      */
     public Period getRecordLockPeriod(Party practice) {
         Period result = null;
-        IMObjectBean bean = new IMObjectBean(practice, service);
+        IMObjectBean bean = service.getBean(practice);
         int period = bean.getInt("recordLockPeriod", -1);
         if (period > 0) {
             DateUnits units = DateUnits.fromString(bean.getString("recordLockPeriodUnits"), null);
             if (units != null) {
                 result = units.toPeriod(period);
             }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the default estimate expiry date, based on the practice settings for the
+     * <em>estimateExpiryPeriod</em> and <em>estimateExpiryUnits</em> nodes.
+     *
+     * @param startDate the estimate start date
+     * @param practice  the practice configuration
+     * @return the estimate expiry date, or {@code null} if there are no default expiry settings
+     */
+    public Date getEstimateExpiryDate(Date startDate, Party practice) {
+        Date result = null;
+        IMObjectBean bean = service.getBean(practice);
+        int period = bean.getInt("estimateExpiryPeriod");
+        String units = bean.getString("estimateExpiryUnits");
+        if (period > 0 && !StringUtils.isEmpty(units)) {
+            result = DateRules.getDate(startDate, period, DateUnits.valueOf(units));
         }
         return result;
     }
@@ -196,7 +200,7 @@ public class PracticeRules {
      * @return the prescription expiry date, or {@code startDate} if there are no default expiry settings
      */
     public Date getPrescriptionExpiryDate(Date startDate, Party practice) {
-        IMObjectBean bean = new IMObjectBean(practice, service);
+        IMObjectBean bean = service.getBean(practice);
         int period = bean.getInt("prescriptionExpiryPeriod");
         String units = bean.getString("prescriptionExpiryUnits");
         if (!StringUtils.isEmpty(units)) {
@@ -213,7 +217,7 @@ public class PracticeRules {
      */
     public char getExportFileFieldSeparator(Party practice) {
         char separator = ',';
-        IMObjectBean bean = new IMObjectBean(practice, service);
+        IMObjectBean bean = service.getBean(practice);
         if ("TAB".equals(bean.getString("fileExportFormat"))) {
             separator = '\t';
         }
@@ -228,9 +232,9 @@ public class PracticeRules {
      */
     public boolean isSMSEnabled(Party practice) {
         boolean enabled = false;
-        EntityBean bean = new EntityBean(practice, service);
-        List<IMObjectReference> refs = bean.getNodeTargetEntityRefs("sms");
-        for (IMObjectReference ref : refs) {
+        IMObjectBean bean = service.getBean(practice);
+        List<Reference> refs = bean.getTargetRefs("sms");
+        for (Reference ref : refs) {
             if (isActive(ref)) {
                 enabled = true;
                 break;
@@ -246,7 +250,7 @@ public class PracticeRules {
      * @return {@code true} if products should be filtered by location
      */
     public boolean useLocationProducts(Party practice) {
-        IMObjectBean bean = new IMObjectBean(practice, service);
+        IMObjectBean bean = service.getBean(practice);
         return bean.getBoolean("useLocationProducts");
     }
 
@@ -257,8 +261,22 @@ public class PracticeRules {
      * @return {@code true} if only clinicians can finalize and send ESCI orders.
      */
     public boolean isOrderingRestricted(Party practice) {
-        IMObjectBean bean = new IMObjectBean(practice, service);
+        IMObjectBean bean = service.getBean(practice);
         return bean.getBoolean("restrictOrdering");
+    }
+
+    /**
+     * Returns the practice.
+     *
+     * @param service the archetype service
+     * @return the practice, or {@code null} if none is found
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    public static Party getPractice(IArchetypeService service) {
+        ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.PRACTICE, true, true);
+        query.setMaxResults(1);
+        IMObjectQueryIterator<Party> iter = new IMObjectQueryIterator<>(service, query);
+        return (iter.hasNext()) ? iter.next() : null;
     }
 
     /**
@@ -267,7 +285,7 @@ public class PracticeRules {
      * @param reference the object reference. May be {@code null}
      * @return {@code true} if the object is active, otherwise {@code false}
      */
-    private boolean isActive(IMObjectReference reference) {
+    private boolean isActive(Reference reference) {
         ObjectRefConstraint constraint = new ObjectRefConstraint("o", reference);
         ArchetypeQuery query = new ArchetypeQuery(constraint);
         query.add(new NodeSelectConstraint("o.active"));

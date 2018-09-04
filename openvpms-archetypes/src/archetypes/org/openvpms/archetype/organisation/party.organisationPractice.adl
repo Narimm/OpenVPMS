@@ -46,6 +46,20 @@
                 <errorMessage>Invalid duration format</errorMessage>
             </assertion>
         </node>
+        <node name="estimateExpiryPeriod" displayName="Estimate Expiry"
+              path="/details/estimateExpiryPeriod" type="java.lang.Integer"
+              minCardinality="0" defaultValue="30"/>
+        <node name="estimateExpiryUnits" path="/details/estimateExpiryUnits"
+              type="java.lang.String" minCardinality="0" defaultValue="'DAYS'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="DAYS" value="days"/>
+                    <property name="WEEKS" value="weeks"/>
+                    <property name="MONTHS" value="months"/>
+                    <property name="YEARS" value="years"/>
+                </propertyList>
+            </assertion>
+        </node>
         <node name="prescriptionExpiryPeriod" displayName="Prescription Expiry"
               path="/details/prescriptionExpiryPeriod" type="java.lang.Integer"
               minCardinality="0" defaultValue="1"/>
