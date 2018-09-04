@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -46,6 +46,14 @@ public abstract class ActQuery<T> extends AbstractArchetypeQuery<T> {
      */
     public static final SortConstraint[] DESCENDING_START_TIME = {
             new NodeSortConstraint("startTime", false),
+            new NodeSortConstraint("id")
+    };
+
+    /**
+     * Sorts on ascending start time and ascending id.
+     */
+    public static final SortConstraint[] ASCENDING_START_TIME = {
+            new NodeSortConstraint("startTime", true),
             new NodeSortConstraint("id")
     };
 

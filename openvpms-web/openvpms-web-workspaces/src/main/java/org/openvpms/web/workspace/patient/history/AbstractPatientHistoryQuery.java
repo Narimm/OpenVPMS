@@ -83,7 +83,7 @@ public abstract class AbstractPatientHistoryQuery extends DateRangeActQuery<Act>
         super(patient, "patient", PatientArchetypes.PATIENT_PARTICIPATION, shortNames, Act.class);
         this.preferences = preferences;
         setAuto(true);
-        boolean ascending = (preferences == null) || isSortAscending(preferences);
+        boolean ascending = (preferences == null) || getSortAscending(preferences);
         setSortAscending(ascending);
     }
 
@@ -161,7 +161,7 @@ public abstract class AbstractPatientHistoryQuery extends DateRangeActQuery<Act>
 
     /**
      * Returns the value being queried on.
-     * <p/>
+     * <p>
      * This implementation does not append wildcards; all searches are 'contains'.
      *
      * @return the value. May be {@code null}
@@ -221,7 +221,7 @@ public abstract class AbstractPatientHistoryQuery extends DateRangeActQuery<Act>
 
     /**
      * Updates the item short names to query.
-     * <p/>
+     * <p>
      * This delegates to {@link #updateSelectedShortNames(ShortNameListModel, int)}
      */
     protected void updateSelectedShortNames() {
@@ -254,12 +254,13 @@ public abstract class AbstractPatientHistoryQuery extends DateRangeActQuery<Act>
     }
 
     /**
-     * Determines if medical records are sorted ascending or descending.
+     * Determines if medical records within a visit are sorted on ascending or descending start time.
      *
      * @param preferences user preferences
-     * @return the sort order
+     * @return the {@code true} if records are sorted on ascending start time, {@code false} if they are sorted
+     * descending
      */
-    protected boolean isSortAscending(Preferences preferences) {
+    protected boolean getSortAscending(Preferences preferences) {
         String sort = preferences.getString(PreferenceArchetypes.HISTORY, "sort", "ASC");
         return "ASC".equals(sort);
     }

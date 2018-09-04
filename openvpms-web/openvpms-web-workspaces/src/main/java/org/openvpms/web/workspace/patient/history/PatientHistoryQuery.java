@@ -56,6 +56,12 @@ import org.openvpms.web.echo.focus.FocusGroup;
  */
 public class PatientHistoryQuery extends AbstractPatientHistoryQuery {
 
+
+    /**
+     * Determines if the history is sorted on ascending or descending start time.
+     */
+    private final boolean sortHistoryAscending;
+
     /**
      * Determines if charges are included.
      */
@@ -84,7 +90,7 @@ public class PatientHistoryQuery extends AbstractPatientHistoryQuery {
      */
     public PatientHistoryQuery(Party patient, Preferences preferences) {
         super(patient, SHORT_NAMES, preferences);
-
+        sortHistoryAscending = getSortHistoryAscending(preferences);
         boolean charges = preferences.getBoolean(PreferenceArchetypes.HISTORY, "showCharges", true);
         init(charges);
     }
@@ -97,6 +103,7 @@ public class PatientHistoryQuery extends AbstractPatientHistoryQuery {
      */
     public PatientHistoryQuery(Party patient, boolean charges) {
         super(patient, SHORT_NAMES, null);
+        sortHistoryAscending = false;
         init(charges);
     }
 
@@ -123,7 +130,8 @@ public class PatientHistoryQuery extends AbstractPatientHistoryQuery {
         if (patient != null && ObjectUtils.equals(patient, getEntityId())) {
             ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.CLINICAL_EVENT);
             query.add(new ParticipantConstraint("patient", PatientArchetypes.PATIENT_PARTICIPATION, patient));
-            page = QueryHelper.getPage(object, query, getMaxResults(), "startTime", false, PageLocator.DATE_COMPARATOR);
+            page = QueryHelper.getPage(object, query, getMaxResults(), "startTime", isSortAscending(),
+                                       PageLocator.DATE_COMPARATOR);
         }
         return page;
     }
@@ -151,6 +159,12 @@ public class PatientHistoryQuery extends AbstractPatientHistoryQuery {
                 onQuery();
             }
         });
+
+        if (sortHistoryAscending) {
+            setDefaultSortConstraint(ASCENDING_START_TIME);
+        } else {
+            setDefaultSortConstraint(DESCENDING_START_TIME);
+        }
     }
 
     /**
@@ -193,6 +207,18 @@ public class PatientHistoryQuery extends AbstractPatientHistoryQuery {
             shortNames = (String[]) ArrayUtils.add(shortNames, CustomerAccountArchetypes.INVOICE_ITEM);
         }
         setSelectedItemShortNames(shortNames);
+    }
+
+    /**
+     * Determines if visits are sorted on ascending or descending start time.
+     *
+     * @param preferences user preferences
+     * @return the {@code true} if visits are sorted on ascending start time, {@code false} if they are sorted
+     * descending
+     */
+    protected boolean getSortHistoryAscending(Preferences preferences) {
+        String sort = preferences.getString(PreferenceArchetypes.HISTORY, "historySort", "DESC");
+        return "ASC".equals(sort);
     }
 
     /**

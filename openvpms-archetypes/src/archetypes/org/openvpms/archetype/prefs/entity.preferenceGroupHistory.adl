@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -28,11 +28,21 @@
               maxCardinality="1" defaultValue="false()"/>
         <node name="showBatches" path="/details/showBatches" type="java.lang.Boolean" minCardinality="0"
               maxCardinality="1" defaultValue="false()"/>
-        <node name="sort" path="/details/sort" type="java.lang.String" minCardinality="1" defaultValue='DESC'>
+        <node name="historySort" displayName="History Sort Order" path="/details/historySort" type="java.lang.String"
+              minCardinality="1" defaultValue='DESC'>
             <assertion name="lookup.local">
                 <propertyList name="entries">
-                    <property name="ASC" value="Ascending"/>
-                    <property name="DESC" value="Descending"/>
+                    <property name="ASC" value="Oldest Visit First"/>
+                    <property name="DESC" value="Newest Visit First"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="sort" displayName="Visit Record Sort Order" path="/details/sort" type="java.lang.String"
+              minCardinality="1" defaultValue='ASC'>
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="ASC" value="Oldest Record First"/>
+                    <property name="DESC" value="Newest Record First"/>
                 </propertyList>
             </assertion>
         </node>
