@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.statement;
@@ -122,7 +122,7 @@ public class AbstractStatementTest extends AbstractCustomerAccountTest {
         Date open = helper.getOpeningBalanceTimestamp(customer, statementDate);
         Date close = helper.getClosingBalanceTimestamp(customer, statementDate,
                                                        open);
-        Iterable<Act> acts = helper.getPostedActs(customer, open, close, true);
+        Iterable<FinancialAct> acts = helper.getPostedActs(customer, open, close, true);
         List<Act> result = new ArrayList<>();
         for (Act act : acts) {
             result.add(act);

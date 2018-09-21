@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <project>
@@ -110,13 +110,13 @@
         <scale-both src="src/reports/Customer/Invoice"/>
         <scale-both src="src/reports/Customer/Receipt"/>
         <scale-both src="src/reports/Customer/Refund"/>
+        <scale-both src="src/reports/Customer/Statement"/>
         <scale-both src="src/reports/Patient/Documents"/>
         <scale-both src="src/reports/Patient/Medical Records"/>
         <scale-both src="src/reports/Patient/Insurance"/>
         <scale-both src="src/reports/Product/Stock Adjustment"/>
         <scale-both src="src/reports/Product/Stock Transfer"/>
         <scale-both src="src/reports/Reporting/Debtors"/>
-        <scale-both src="src/reports/Reporting/Debtors/Statement"/>
         <scale-both src="src/reports/Reporting/Deposits"/>
         <scale-both src="src/reports/Reporting/Reminders"/>
         <scale-letter src="src/reports//Reporting/Reports/Customer"/>

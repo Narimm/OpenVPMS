@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -94,11 +94,11 @@ public class CustomerAccountQueryFactory {
 
     /**
      * Creates an object set query for acts for the specified customer.
-     * <p/>
+     * <p>
      * Returns only the amount, allocatedAmount and credit nodes,
      * named <em>a.amount</em>, <em>a.allocatedAmount</em> and <em>a.credit</em>
      * respectively.
-     * <p/>
+     * <p>
      * Results are ordered on descending <em>startTime</em>.
      *
      * @param customer   the customer
@@ -112,7 +112,7 @@ public class CustomerAccountQueryFactory {
 
     /**
      * Creates an object set query for acts for the specified customer.
-     * <p/>
+     * <p>
      * Returns only the amount, allocatedAmount and credit nodes,
      * named <em>a.amount</em>, <em>a.allocatedAmount</em> and <em>a.credit</em>
      * respectively.
@@ -133,6 +133,17 @@ public class CustomerAccountQueryFactory {
         query.add(new NodeSelectConstraint("allocatedAmount"));
         query.add(new NodeSelectConstraint("credit"));
         return query;
+    }
+
+    /**
+     * Creates a query for all acts matching the specified archetype, for a customer.
+     *
+     * @param customer  the customer
+     * @param archetype the act archetype
+     * @return the corresponding query
+     */
+    public static ArchetypeQuery createQuery(Party customer, String archetype) {
+        return createQuery(customer.getObjectReference(), new String[]{archetype});
     }
 
     /**
@@ -173,7 +184,7 @@ public class CustomerAccountQueryFactory {
 
     /**
      * Creates an account balance participation query.
-     * <p/>
+     * <p>
      * This sorts acts on ascending startTime and id.
      *
      * @param customer   the customer

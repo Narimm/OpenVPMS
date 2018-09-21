@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.messaging;
@@ -29,6 +29,7 @@ import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -102,9 +103,9 @@ public class UserMessageEditDialog extends EditDialog {
 
     private boolean doSend() {
         UserMessageEditor editor = getEditor();
-        Act template = (Act) editor.getObject();
-        IMObjectCopier copier = new IMObjectCopier(new DefaultActCopyHandler());
-        List<IMObject> toSave = new ArrayList<IMObject>();
+        Act template = editor.getObject();
+        IMObjectCopier copier = new IMObjectCopier(new DefaultActCopyHandler(), ServiceHelper.getArchetypeService());
+        List<IMObject> toSave = new ArrayList<>();
         Date startTime = new Date();
         for (User user : editor.getToUsers()) {
             List<IMObject> objects = copier.apply(template);

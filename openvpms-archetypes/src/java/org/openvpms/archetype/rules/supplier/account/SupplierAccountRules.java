@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier.account;
@@ -81,7 +81,7 @@ public class SupplierAccountRules {
      * @return the reversal of {@code act}
      */
     public FinancialAct reverse(FinancialAct act, Date startTime) {
-        IMObjectCopier copier = new IMObjectCopier(new SupplierActReversalHandler(act));
+        IMObjectCopier copier = new IMObjectCopier(new SupplierActReversalHandler(act), service);
         List<IMObject> objects = copier.apply(act);
         FinancialAct reversal = (FinancialAct) objects.get(0);
         reversal.setStatus(ActStatus.POSTED);

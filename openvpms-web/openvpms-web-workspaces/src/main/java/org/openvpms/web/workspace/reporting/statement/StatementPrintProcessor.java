@@ -20,7 +20,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.statement.Statement;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.exception.OpenVPMSException;
@@ -131,8 +131,8 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
     public void process(final Statement statement) {
         DocumentTemplateLocator locator = new ContextDocumentTemplateLocator(CustomerAccountArchetypes.OPENING_BALANCE,
                                                                              context);
-        Iterable<Act> acts = statement.getActs();
-        IMObjectReportPrinter<Act> printer = new IMObjectReportPrinter<>(acts, locator, context, factory);
+        Iterable<FinancialAct> acts = statement.getActs();
+        IMObjectReportPrinter<FinancialAct> printer = new IMObjectReportPrinter<>(acts, locator, context, factory);
         printer.setParameters(getParameters(statement));
         print(printer, statement);
     }
@@ -143,9 +143,9 @@ class StatementPrintProcessor extends AbstractStatementProcessorListener {
      * @param printer   the statement printer
      * @param statement the statement being printed
      */
-    protected void print(IMObjectReportPrinter<Act> printer, final Statement statement) {
+    protected void print(IMObjectReportPrinter<FinancialAct> printer, final Statement statement) {
         String title = Messages.get("reporting.statements.print.customer");
-        final InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<Act>(title, printer, context, help);
+        InteractiveIMPrinter<FinancialAct> iPrinter = new InteractiveIMPrinter<>(title, printer, context, help);
         if (printerName != null) {
             iPrinter.setInteractive(false);
         }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.print;
@@ -33,6 +33,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SelectFieldFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
@@ -65,6 +66,11 @@ public class PrintDialog extends PopupDialog {
     private final boolean mail;
 
     /**
+     * The no. of copies to print.
+     */
+    private SpinBox copies;
+
+    /**
      * The preview button identifier.
      */
     private static final String PREVIEW_ID = "preview";
@@ -73,11 +79,6 @@ public class PrintDialog extends PopupDialog {
      * The mail button identifier.
      */
     private static final String MAIL_ID = "mail";
-
-    /**
-     * The no. of copies to print.
-     */
-    private SpinBox copies;
 
 
     /**
@@ -98,6 +99,12 @@ public class PrintDialog extends PopupDialog {
         printers = SelectFieldFactory.create(model);
         this.preview = preview;
         this.mail = mail;
+
+        FocusGroup parent = getFocusGroup();
+        FocusGroup child = new FocusGroup("PrintDialog");
+        child.add(printers);
+        child.add(copies.getFocusGroup());
+        parent.add(0, child); // insert before buttons
     }
 
     /**
@@ -145,9 +152,9 @@ public class PrintDialog extends PopupDialog {
      */
     @Override
     protected void doLayout() {
-        Column column = ColumnFactory.create("WideCellSpacing");
+        Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING);
         doLayout(column);
-        getLayout().add(ColumnFactory.create("Inset", column));
+        getLayout().add(ColumnFactory.create(Styles.INSET, column));
     }
 
     /**
@@ -170,12 +177,6 @@ public class PrintDialog extends PopupDialog {
                 }
             });
         }
-
-        FocusGroup parent = getFocusGroup();
-        FocusGroup child = new FocusGroup("PrintDialog");
-        child.add(printers);
-        child.add(copies.getFocusGroup());
-        parent.add(0, child); // insert before buttons
 
         Grid grid = GridFactory.create(2);
         grid.add(LabelFactory.create("printdialog.printer"));

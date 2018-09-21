@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <!-- This file loads all the documents - ie all templates that are not report templates accessed via 
@@ -74,13 +74,12 @@
 
 <!-- Customer Documents - Statements -->
     <template name="Statement" archetype="act.customerAccountOpeningBalance" reportType="CUSTOMER"
-              description="Used by Reporting|Debtors|Print &#038; Send All buttons " 
-              path="Reporting/Debtors/Statement/A4/Statement.jrxml" mimeType="text/xml"
+              description="Statement" path="Customer/Statement/A4/Statement.jrxml" mimeType="text/xml"
               docType="document.other"/>
     <template name="Statement Items" archetype="SUBREPORT" reportType="CUSTOMER" description="Statement Items "
-              path="Reporting/Debtors/Statement/A4/Statement Items.jrxml" mimeType="text/xml" docType="document.other"/>
+              path="Customer/Statement/A4/Statement Items.jrxml" mimeType="text/xml" docType="document.other"/>
     <template name="Statement Items-PT" archetype="SUBREPORT" reportType="CUSTOMER" description="Statement Items-PT "
-              path="Reporting/Debtors/Statement/A4/Statement Items-PT.jrxml" mimeType="text/xml" docType="document.other"/>
+              path="Customer/Statement/A4/Statement Items-PT.jrxml" mimeType="text/xml" docType="document.other"/>
 
 <!-- Customer Documents - Pharmacy items -->
     <template name="Pharmacy Order" archetype="act.customerOrderPharmacy" reportType="WORKFLOW"

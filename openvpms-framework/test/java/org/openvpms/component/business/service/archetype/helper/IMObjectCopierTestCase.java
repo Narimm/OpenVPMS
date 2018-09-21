@@ -49,8 +49,7 @@ public class IMObjectCopierTestCase extends AbstractArchetypeServiceTest {
     @Test
     public void testApply() {
         String description = "MALE BLACK PUG";
-        IMObjectCopier copier
-                = new IMObjectCopier(new DefaultIMObjectCopyHandler());
+        IMObjectCopier copier = new IMObjectCopier(new DefaultIMObjectCopyHandler(), getArchetypeService());
         IMObjectBean bean = createBean("party.animalpet");
         bean.setValue("name", "Fido");
         bean.setValue("sex", "MALE");
@@ -78,8 +77,7 @@ public class IMObjectCopierTestCase extends AbstractArchetypeServiceTest {
      */
     @Test
     public void testCopyChildren() {
-        IMObjectCopier copier
-                = new IMObjectCopier(new DefaultIMObjectCopyHandler());
+        IMObjectCopier copier = new IMObjectCopier(new DefaultIMObjectCopyHandler(), getArchetypeService());
         Party party = (Party) create("party.customerperson");
         IMObjectBean bean = new IMObjectBean(party);
         bean.setValue("title", "MR");
@@ -119,7 +117,7 @@ public class IMObjectCopierTestCase extends AbstractArchetypeServiceTest {
         IArchetypeService service = (IArchetypeService) applicationContext.getBean("archetypeService");
         Lookup canine = LookupUtil.createLookup(service, "lookup.species", "CANINE");
 
-        IMObjectCopier copier = new IMObjectCopier(new DefaultIMObjectCopyHandler());
+        IMObjectCopier copier = new IMObjectCopier(new DefaultIMObjectCopyHandler(), getArchetypeService());
         Party pet = (Party) create("party.patientpet");
         IMObjectBean petBean = new IMObjectBean(pet);
         petBean.setValue("name", "Fido");

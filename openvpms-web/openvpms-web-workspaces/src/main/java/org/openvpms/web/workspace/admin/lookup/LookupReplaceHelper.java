@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
+import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.system.common.cache.IMObjectCache;
 import org.openvpms.component.system.common.cache.MapIMObjectCache;
@@ -107,12 +108,13 @@ class LookupReplaceHelper {
      * @return <tt>true</tt> if lookups were copied
      */
     private boolean mergeRelationships(Lookup source, Lookup target, boolean moveSourceRelationships) {
-        IMObjectCache cache = new MapIMObjectCache(ServiceHelper.getArchetypeService());
+        IArchetypeRuleService service = ServiceHelper.getArchetypeService();
+        IMObjectCache cache = new MapIMObjectCache(service);
         cache.add(source);
         cache.add(target);
         boolean result = false;
         if (!source.getLookupRelationships().isEmpty()) {
-            IMObjectCopier copier = new IMObjectCopier(new LookupRelationshipCopyHandler());
+            IMObjectCopier copier = new IMObjectCopier(new LookupRelationshipCopyHandler(), service);
 
             IMObjectReference targetRef = target.getObjectReference();
             Set<org.openvpms.component.model.lookup.LookupRelationship> srcRels = source.getSourceLookupRelationships();
@@ -135,7 +137,7 @@ class LookupReplaceHelper {
                     Lookup other = (Lookup) cache.get(relationship.getTarget());
                     if (other != null) {
                         other.removeLookupRelationship(relationship);
-                        service.save(other);
+                        this.service.save(other);
                     }
                 }
             }
@@ -157,7 +159,7 @@ class LookupReplaceHelper {
                 }
             }
             if (!moveSourceRelationships) {
-                service.save(source);
+                this.service.save(source);
             }
             result = true;
         }

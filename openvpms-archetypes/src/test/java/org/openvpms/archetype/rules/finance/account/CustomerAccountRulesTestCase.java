@@ -40,9 +40,9 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.ruleengine.RuleEngineException;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.service.archetype.ValidationError;
 
 import java.math.BigDecimal;
@@ -63,12 +63,14 @@ import static org.junit.Assert.fail;
 import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.BALANCE_PARTICIPATION;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.CLOSING_BALANCE;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.CREDIT;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.CREDIT_ADJUST;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.CREDIT_ITEM;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.DEBIT_ADJUST;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE_ITEM;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.OPENING_BALANCE;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT_CASH;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT_CHEQUE;
@@ -111,6 +113,71 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
  * @author Tim Anderson
  */
 public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
+
+    /**
+     * Tests the {@link CustomerAccountRules#getOpeningBalanceBefore(Party, Date)}
+     * and {@link CustomerAccountRules#getOpeningBalanceAfter(Party, Date)} methods.
+     */
+    @Test
+    public void testGetOpeningBalanceBeforeAndAfter() {
+        CustomerAccountRules rules = getRules();
+        Party customer = getCustomer();
+        assertNull(rules.getOpeningBalanceBefore(customer, new Date()));
+        assertNull(rules.getOpeningBalanceAfter(customer, new Date()));
+
+        Date date1 = getDate("2018-01-01");
+        Date date2 = getDate("2018-02-01");
+        Date date3 = getDate("2018-03-01");
+
+        FinancialAct open1 = rules.createOpeningBalance(customer, date1, BigDecimal.TEN);
+        FinancialAct open2 = rules.createOpeningBalance(customer, date2, BigDecimal.TEN.negate());
+        FinancialAct open3 = rules.createOpeningBalance(customer, date3, BigDecimal.ONE);
+        save(open1, open2, open3);
+
+        assertNull(rules.getOpeningBalanceBefore(customer, date1));
+        assertEquals(open1, rules.getOpeningBalanceBefore(customer, date2));
+        assertEquals(open2, rules.getOpeningBalanceBefore(customer, date3));
+
+        assertEquals(open2, rules.getOpeningBalanceAfter(customer, date1));
+        assertEquals(open3, rules.getOpeningBalanceAfter(customer, date2));
+        assertNull(rules.getOpeningBalanceAfter(customer, date3));
+    }
+
+    /**
+     * Tests the {@link CustomerAccountRules#createOpeningBalance(Party, Date, BigDecimal)} method.
+     */
+    @Test
+    public void testCreateOpeningBalance() {
+        CustomerAccountRules rules = getRules();
+        Party customer = getCustomer();
+
+        Date date = new Date();
+        FinancialAct open1 = rules.createOpeningBalance(customer, date, BigDecimal.ZERO);
+        FinancialAct open2 = rules.createOpeningBalance(customer, date, BigDecimal.TEN);
+        FinancialAct open3 = rules.createOpeningBalance(customer, date, BigDecimal.TEN.negate());
+
+        checkOpeningBalance(open1, customer, date, ZERO, false);
+        checkOpeningBalance(open2, customer, date, TEN, false);
+        checkOpeningBalance(open3, customer, date, TEN, true);
+    }
+
+    /**
+     * Tests the {@link CustomerAccountRules#createOpeningBalance(Party, Date, BigDecimal)} method.
+     */
+    @Test
+    public void testCreateClosingBalance() {
+        CustomerAccountRules rules = getRules();
+        Party customer = getCustomer();
+
+        Date date = new Date();
+        FinancialAct close1 = rules.createClosingBalance(customer, date, BigDecimal.ZERO);
+        FinancialAct close2 = rules.createClosingBalance(customer, date, BigDecimal.TEN);
+        FinancialAct close3 = rules.createClosingBalance(customer, date, BigDecimal.TEN.negate());
+
+        checkClosingBalance(close1, customer, date, ZERO, true);
+        checkClosingBalance(close2, customer, date, TEN, true);
+        checkClosingBalance(close3, customer, date, TEN, false);
+    }
 
     /**
      * Verifies that when a posted <em>act.customerAccountChargesInvoice</em>
@@ -1032,7 +1099,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
 
         // now set the patient as not desexed. When the invoice is reversed, the demographic update shouldn't fire
         // again.
-        IMObjectBean bean = new IMObjectBean(patient);
+        IMObjectBean bean = getBean(patient);
         bean.setValue("desexed", false);
         bean.save();
 
@@ -1178,7 +1245,6 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         checkReverse(refund, PAYMENT, PAYMENT_CASH, false, null, rounded);
     }
 
-
     /**
      * Verifies that when a refund of a cash payments is reversed, the new tendered amount reflects the rounded amount
      * of the refund, not the original tendered amount.
@@ -1222,6 +1288,53 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
         checkNegativeAmounts(createDebitAdjust(minusOne));
         checkNegativeAmounts(createInitialBalance(minusOne));
         checkNegativeAmounts(createBadDebt(minusOne));
+    }
+
+    /**
+     * Verifies an opening balance act matches that expected.
+     *
+     * @param act      the act to check
+     * @param customer the expected customer
+     * @param date     the expected start time
+     * @param total    the expected total
+     * @param credit   the expected credit flag
+     */
+    private void checkOpeningBalance(FinancialAct act, Party customer, Date date, BigDecimal total, boolean credit) {
+        checkBalanceAct(act, OPENING_BALANCE, customer, date, total, credit);
+    }
+
+    /**
+     * Verifies a closing balance act matches that expected.
+     *
+     * @param act      the act to check
+     * @param customer the expected customer
+     * @param date     the expected start time
+     * @param total    the expected total
+     * @param credit   the expected credit flag
+     */
+    private void checkClosingBalance(FinancialAct act, Party customer, Date date, BigDecimal total, boolean credit) {
+        checkBalanceAct(act, CLOSING_BALANCE, customer, date, total, credit);
+    }
+
+    /**
+     * Verifies an opening/closing balance act matches that expected.
+     *
+     * @param act       the act to check
+     * @param archetype the expected archetype
+     * @param customer  the expected customer
+     * @param date      the expected start time
+     * @param total     the expected total
+     * @param credit    the expected credit flag
+     */
+    private void checkBalanceAct(FinancialAct act, String archetype, Party customer, Date date, BigDecimal total,
+                                 boolean credit) {
+        assertTrue(act.isA(archetype));
+        IMObjectBean bean = getBean(act);
+        assertEquals(customer.getObjectReference(), bean.getTargetRef("customer"));
+        assertEquals(date, act.getActivityStartTime());
+        assertNull(act.getActivityEndTime());
+        assertTrue(total.compareTo(act.getTotal()) == 0);
+        assertEquals(credit, act.isCredit());
     }
 
     /**
@@ -1361,10 +1474,9 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
      * @param acts the acts contributing to the allocated amount
      */
     private void checkAllocation(FinancialAct act, FinancialAct... acts) {
-        IMObjectBean bean = new IMObjectBean(act);
+        IMObjectBean bean = getBean(act);
         BigDecimal total = ZERO;
-        List<ActRelationship> allocations = bean.getValues(
-                "allocation", ActRelationship.class);
+        List<ActRelationship> allocations = bean.getValues("allocation", ActRelationship.class);
         List<FinancialAct> matches = new ArrayList<>();
         for (ActRelationship relationship : allocations) {
             if (act.isCredit()) {
@@ -1388,7 +1500,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
                     }
                 }
             }
-            IMObjectBean relBean = new IMObjectBean(relationship);
+            IMObjectBean relBean = getBean(relationship);
             BigDecimal allocation = relBean.getBigDecimal("allocatedAmount");
             total = total.add(allocation);
         }
@@ -1459,7 +1571,7 @@ public class CustomerAccountRulesTestCase extends AbstractCustomerAccountTest {
     private void checkStock(IMObjectRelationship relationship, BigDecimal expected) {
         relationship = get(relationship);
         assertNotNull(relationship);
-        IMObjectBean bean = new IMObjectBean(relationship);
+        IMObjectBean bean = getBean(relationship);
         checkEquals(expected, bean.getBigDecimal("quantity"));
     }
 

@@ -19,11 +19,11 @@ package org.openvpms.web.workspace.reporting.statement;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.component.processor.BatchProcessorListener;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
@@ -33,6 +33,7 @@ import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -45,6 +46,8 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
+import org.openvpms.web.workspace.customer.account.InteractiveStatementPrinter;
+import org.openvpms.web.workspace.customer.account.StatementPrinter;
 import org.openvpms.web.workspace.reporting.AbstractReportingWorkspace;
 
 import java.util.Calendar;
@@ -171,40 +174,32 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
      * @param reprint if {@code true}, process statements that have been printed.
      */
     private void doSendAll(boolean reprint) {
-        try {
-            HelpContext help = getHelpContext().subtopic("send");
-            StatementGenerator generator = new StatementGenerator(query, getContext(), getMailContext(), help);
-            generator.setReprint(reprint);
-            generateStatements(generator, true);
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
+        HelpContext help = getHelpContext().subtopic("send");
+        StatementGenerator generator = new StatementGenerator(query, getContext(), getMailContext(), help);
+        generator.setReprint(reprint);
+        generateStatements(generator, true);
     }
 
     /**
      * Invoked when the 'print' button is pressed to print the selected statement.
      */
     private void onPrint() {
-        if (checkStatementDate("reporting.statements.run.invalidDate")) {
-            try {
-                ObjectSet selected = browser.getSelected();
-                if (selected != null) {
-                    IMObjectReference ref = selected.getReference(CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
-                    Party customer = (Party) IMObjectHelper.getObject(ref, getContext());
-                    if (customer != null) {
-                        HelpContext help = getHelpContext().subtopic("print");
-                        Context context = LocalContext.copy(getContext());
-                        context.setPatient(null);
-                        context.setCustomer(customer);
-                        MailContext mailContext = new CustomerMailContext(context, help);
-                        StatementGenerator generator = new StatementGenerator(
-                                ref, query.getDate(), true, context, mailContext, help);
-                        generator.setReprint(true);
-                        generateStatements(generator, false);
-                    }
-                }
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
+        ObjectSet selected = browser.getSelected();
+        if (selected != null) {
+            Reference ref = selected.getReference(CustomerBalanceSummaryQuery.CUSTOMER_REFERENCE);
+            Party customer = (Party) IMObjectHelper.getObject(ref, getContext());
+            if (customer != null) {
+                HelpContext help = getHelpContext().subtopic("print");
+                Context context = LocalContext.copy(getContext());
+                context.setPatient(null);
+                context.setCustomer(customer);
+                MailContext mailContext = new CustomerMailContext(context, help);
+                StatementPrinter printer = new StatementPrinter(
+                        context, ServiceHelper.getBean(CustomerAccountRules.class),
+                        ServiceHelper.getBean(ReporterFactory.class), ServiceHelper.getArchetypeService());
+                InteractiveStatementPrinter interactive = new InteractiveStatementPrinter(printer, context, help);
+                interactive.setMailContext(mailContext);
+                interactive.print();
             }
         }
     }
@@ -235,22 +230,18 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
      * @param help                  the help context
      */
     private void doEndPeriod(boolean postCompletedInvoices, HelpContext help) {
-        try {
-            EndOfPeriodGenerator generator = new EndOfPeriodGenerator(query.getDate(), postCompletedInvoices,
-                                                                      getContext(), help);
-            generator.setListener(new BatchProcessorListener() {
-                public void completed() {
-                    browser.query();
-                }
+        EndOfPeriodGenerator generator = new EndOfPeriodGenerator(query.getDate(), postCompletedInvoices,
+                                                                  getContext(), help);
+        generator.setListener(new BatchProcessorListener() {
+            public void completed() {
+                browser.query();
+            }
 
-                public void error(Throwable exception) {
-                    ErrorHelper.show(exception);
-                }
-            });
-            generator.process();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
-        }
+            public void error(Throwable exception) {
+                ErrorHelper.show(exception);
+            }
+        });
+        generator.process();
     }
 
     /**
@@ -276,7 +267,7 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
     }
 
     /**
-     * Verfies that the statement date is at least a day prior to the current
+     * Verifies that the statement date is at least a day prior to the current
      * date.
      *
      * @param errorKey the error message key, if the date is invalid
@@ -307,27 +298,23 @@ public class StatementWorkspace extends AbstractReportingWorkspace<Act> {
      * Invoked when the 'Report' button is pressed.
      */
     private void onReport() {
-        try {
-            IMPrinterFactory factory = ServiceHelper.getBean(IMPrinterFactory.class);
-            Context context = getContext();
-            ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator("CUSTOMER_BALANCE", context);
-            IMPrinter<ObjectSet> printer = factory.createObjectSetReportPrinter(query.getObjects(), locator, context);
-            String type;
-            if (query.queryAllBalances()) {
-                type = Messages.get("reporting.statements.print.all");
-            } else if (query.queryOverduebalances()) {
-                type = Messages.get("reporting.statements.print.overdue");
-            } else {
-                type = Messages.get("reporting.statements.print.nonOverdue");
-            }
-            String title = Messages.format("imobject.print.title", type);
-            HelpContext help = getHelpContext().subtopic("report");
-            InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<>(title, printer, context, help);
-            iPrinter.setMailContext(getMailContext());
-            iPrinter.print();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
+        IMPrinterFactory factory = ServiceHelper.getBean(IMPrinterFactory.class);
+        Context context = getContext();
+        ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator("CUSTOMER_BALANCE", context);
+        IMPrinter<ObjectSet> printer = factory.createObjectSetReportPrinter(query.getObjects(), locator, context);
+        String type;
+        if (query.queryAllBalances()) {
+            type = Messages.get("reporting.statements.print.all");
+        } else if (query.queryOverduebalances()) {
+            type = Messages.get("reporting.statements.print.overdue");
+        } else {
+            type = Messages.get("reporting.statements.print.nonOverdue");
         }
+        String title = Messages.format("imobject.print.title", type);
+        HelpContext help = getHelpContext().subtopic("report");
+        InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<>(title, printer, context, help);
+        iPrinter.setMailContext(getMailContext());
+        iPrinter.print();
     }
 
 }

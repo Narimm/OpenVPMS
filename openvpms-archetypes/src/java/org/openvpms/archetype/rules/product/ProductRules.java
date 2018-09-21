@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -105,7 +105,7 @@ public class ProductRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Product copy(Product product, String name) {
-        IMObjectCopier copier = new IMObjectCopier(new ProductCopyHandler(product));
+        IMObjectCopier copier = new IMObjectCopier(new ProductCopyHandler(product), service);
         List<IMObject> objects = copier.apply(product);
         Product copy = (Product) objects.get(0);
         copy.setName(name);

@@ -11,8 +11,9 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.archetype.rules.doc;
 
 import org.openvpms.component.business.domain.im.act.DocumentAct;
@@ -134,7 +135,7 @@ public class DocumentRules {
         IMObjectReference existing = source.getDocument();
         if (existing != null) {
             if (supportsVersions(source)) {
-                IMObjectCopier copier = new IMObjectCopier(new VersioningCopyHandler(source, service));
+                IMObjectCopier copier = new IMObjectCopier(new VersioningCopyHandler(source, service), service);
                 List<IMObject> objects = copier.apply(source);
                 result = (DocumentAct) objects.get(0);
             }

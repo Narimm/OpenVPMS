@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -30,11 +30,10 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.system.common.query.AndConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
@@ -51,16 +50,16 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.DEBITS;
+import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.OPENING_BALANCE;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.PAYMENT;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.REFUND;
-import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM;
-import static org.openvpms.archetype.rules.patient.PatientArchetypes.CLINICAL_EVENT_ITEM;
 
 
 /**
@@ -111,6 +110,62 @@ public class CustomerAccountRules {
     }
 
     /**
+     * Returns the opening balance before the specified date.
+     *
+     * @param date the date
+     * @return the opening balance, or {@code null} if none is found
+     */
+    public FinancialAct getOpeningBalanceBefore(Party customer, Date date) {
+        ArchetypeQuery query = CustomerAccountQueryFactory.createQuery(customer, OPENING_BALANCE);
+        query.add(Constraints.lt("startTime", date));
+        query.add(Constraints.sort("startTime", false));
+        query.add(Constraints.sort("id", false));
+        query.setMaxResults(1);
+        Iterator<FinancialAct> iterator = new IMObjectQueryIterator<>(service, query);
+        return iterator.hasNext() ? iterator.next() : null;
+    }
+
+    /**
+     * Returns the opening balance after the specified date.
+     *
+     * @param date the date
+     * @return the opening balance, or {@code null} if none is found
+     */
+    public FinancialAct getOpeningBalanceAfter(Party customer, Date date) {
+        ArchetypeQuery query = CustomerAccountQueryFactory.createQuery(customer, OPENING_BALANCE);
+        query.add(Constraints.gt("startTime", date));
+        query.add(Constraints.sort("startTime", true));
+        query.add(Constraints.sort("id", false));
+        query.setMaxResults(1);
+        Iterator<FinancialAct> iterator = new IMObjectQueryIterator<>(service, query);
+        return iterator.hasNext() ? iterator.next() : null;
+    }
+
+    /**
+     * Creates a new opening balance for a customer.
+     *
+     * @param customer the customer
+     * @param date     the act date
+     * @param amount   the amount. May be negative
+     * @return a new opening balance
+     */
+    public FinancialAct createOpeningBalance(Party customer, Date date, BigDecimal amount) {
+        return createBalance(OPENING_BALANCE, customer, date, amount);
+    }
+
+    /**
+     * Creates a new closing balance for a customer.
+     *
+     * @param customer the customer
+     * @param date     the act date
+     * @param amount   the amount. May be negative
+     * @return a new closing balance
+     */
+    public FinancialAct createClosingBalance(Party customer, Date date, BigDecimal amount) {
+        return createBalance(CustomerAccountArchetypes.CLOSING_BALANCE, customer, date, amount);
+    }
+
+    /**
      * Calculates the outstanding balance for a customer.
      *
      * @param customer the customer
@@ -139,15 +194,12 @@ public class CustomerAccountRules {
      * between two times, inclusive.
      *
      * @param customer       the customer
-     * @param from           the from time. If {@code null}, indicates that
-     *                       the time is unbounded
-     * @param to             the to time. If {@code null}, indicates that the
-     *                       time is unbounded
+     * @param from           the from time. If {@code null}, indicates that the time is unbounded
+     * @param to             the to time. If {@code null}, indicates that the time is unbounded
      * @param openingBalance the opening balance
      * @return the balance
      */
-    public BigDecimal getBalance(Party customer, Date from, Date to,
-                                 BigDecimal openingBalance) {
+    public BigDecimal getBalance(Party customer, Date from, Date to, BigDecimal openingBalance) {
         return calculator.getBalance(customer, from, to, openingBalance);
     }
 
@@ -184,8 +236,7 @@ public class CustomerAccountRules {
      * @return the new balance
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public BigDecimal getBalance(Party customer, BigDecimal total,
-                                 boolean payment) {
+    public BigDecimal getBalance(Party customer, BigDecimal total, boolean payment) {
         BigDecimal balance = getBalance(customer);
         BigDecimal result;
         if (payment) {
@@ -294,7 +345,7 @@ public class CustomerAccountRules {
      * @return the overdue date
      */
     public Date getOverdueDate(Party customer, Date date) {
-        IMObjectBean bean = new IMObjectBean(customer, service);
+        IMObjectBean bean = service.getBean(customer);
         Date overdue = date;
         if (bean.hasNode("type")) {
             List<Lookup> types = bean.getValues("type", Lookup.class);
@@ -346,7 +397,7 @@ public class CustomerAccountRules {
      * @return {@code true} if the act has been reversed
      */
     public boolean isReversed(FinancialAct act) {
-        ActBean bean = new ActBean(act, service);
+        IMObjectBean bean = service.getBean(act);
         return bean.hasNode("reversal") && !bean.getValues("reversal").isEmpty();
     }
 
@@ -357,7 +408,7 @@ public class CustomerAccountRules {
      * @return {@code true} if the act is a reversal
      */
     public boolean isReversal(FinancialAct act) {
-        ActBean bean = new ActBean(act, service);
+        IMObjectBean bean = service.getBean(act);
         return bean.hasNode("reverses") && !bean.getValues("reverses").isEmpty();
     }
 
@@ -411,20 +462,20 @@ public class CustomerAccountRules {
      */
     public FinancialAct reverse(final FinancialAct act, Date startTime, String notes, String reference, boolean hide,
                                 final FinancialAct tillBalance) {
-        final ActBean original = new ActBean(act, service);
+        IMObjectBean original = service.getBean(act);
         if (!original.getValues("reversal").isEmpty()) {
             throw new IllegalStateException("Act=" + act.getId() + " has already been reversed");
         }
-        IMObjectCopier copier = new IMObjectCopier(new CustomerActReversalHandler(act));
+        IMObjectCopier copier = new IMObjectCopier(new CustomerActReversalHandler(act), service);
         final List<IMObject> objects = copier.apply(act);
         FinancialAct reversal = (FinancialAct) objects.get(0);
-        ActBean bean = new ActBean(reversal, service);
+        IMObjectBean bean = service.getBean(reversal);
         bean.setValue("reference", !StringUtils.isEmpty(reference) ? reference : act.getId());
         bean.setValue("notes", notes);
         reversal.setStatus(POSTED);
         reversal.setActivityStartTime(startTime);
 
-        original.addNodeRelationship("reversal", reversal);
+        original.addTarget("reversal", reversal, "reverses");
 
         if (hide && !original.getBoolean("hide")) {
             bean.setValue("hide", true);
@@ -432,7 +483,7 @@ public class CustomerAccountRules {
         }
 
         boolean updateBalance = tillBalance != null && bean.isA(PAYMENT, REFUND);
-        final TillBalanceRules rules = (updateBalance) ? new TillBalanceRules(service) : null;
+        TillBalanceRules rules = (updateBalance) ? new TillBalanceRules(service) : null;
         if (updateBalance) {
             List<Act> changed = rules.addToBalance(reversal, tillBalance);
             objects.addAll(changed);
@@ -481,7 +532,7 @@ public class CustomerAccountRules {
      */
     public void setHidden(FinancialAct act, boolean hide) {
         if (canHide(act)) {
-            ActBean bean = new ActBean(act, service);
+            IMObjectBean bean = new org.openvpms.component.business.service.archetype.helper.IMObjectBean(act, service);
             // NOTE: must use non-rule based service to avoid balance recalculation
             if (hide != bean.getBoolean("hide")) {
                 bean.setValue("hide", hide);
@@ -497,7 +548,7 @@ public class CustomerAccountRules {
      * @return {@code true} if the {@code hide} node is {@code true}
      */
     public boolean isHidden(Act act) {
-        ActBean bean = new ActBean(act, service);
+        IMObjectBean bean = service.getBean(act);
         return bean.hasNode("hide") && bean.getBoolean("hide");
     }
 
@@ -573,31 +624,53 @@ public class CustomerAccountRules {
     }
 
     /**
+     * Creates an opening/closing balance act.
+     *
+     * @param archetype the act archetype
+     * @param customer  the customer
+     * @param date      the date
+     * @param amount    the total amount. Nay be negative
+     * @return a new act
+     */
+    private FinancialAct createBalance(String archetype, Party customer, Date date, BigDecimal amount) {
+        FinancialAct act = (FinancialAct) service.create(archetype);
+        act.setActivityStartTime(date);
+        if (amount.signum() == -1) {
+            amount = amount.negate();
+            act.setCredit(!act.isCredit());
+        }
+        act.setTotal(amount);
+        IMObjectBean bean = service.getBean(act);
+        bean.setTarget("customer", customer);
+        return act;
+    }
+
+    /**
      * Removes charge items and medications acts linked to an invoice from the patient history.
      *
      * @param invoice the invoice
      * @param toSave  a list of objects to save
      */
     private void removeInvoiceFromPatientHistory(FinancialAct invoice, List<IMObject> toSave) {
-        ActBean bean = new ActBean(invoice, service);
+        IMObjectBean bean = service.getBean(invoice);
         Map<IMObjectReference, Act> events = new HashMap<>();
-        for (Act item : bean.getNodeActs("items")) {
-            ActBean itemBean = new ActBean(item, service);
-            for (ActRelationship relationship : itemBean.getRelationships(CLINICAL_EVENT_CHARGE_ITEM)) {
+        for (Act item : bean.getTargets("items", Act.class)) {
+            IMObjectBean itemBean = service.getBean(item);
+            for (ActRelationship relationship : itemBean.getValues("event", ActRelationship.class)) {
                 toSave.add(item); // only one relationship to event
-                removeEventRelationship(events, itemBean, relationship);
+                removeEventRelationship(events, item, relationship);
             }
-            for (Act medication : itemBean.getNodeActs("dispensing")) {
+            for (Act medication : itemBean.getTargets("dispensing", Act.class)) {
                 if (removeEventRelationship(events, medication)) {
                     toSave.add(medication);
                 }
             }
-            for (Act investigation : itemBean.getNodeActs("investigations")) {
+            for (Act investigation : itemBean.getTargets("investigations", Act.class)) {
                 if (removeEventRelationship(events, investigation)) {
                     toSave.add(investigation);
                 }
             }
-            for (Act document : itemBean.getNodeActs("documents")) {
+            for (Act document : itemBean.getTargets("documents", Act.class)) {
                 if (removeEventRelationship(events, document)) {
                     toSave.add(document);
                 }
@@ -614,10 +687,10 @@ public class CustomerAccountRules {
      */
     private boolean removeEventRelationship(Map<IMObjectReference, Act> events, Act act) {
         boolean changed = false;
-        ActBean bean = new ActBean(act, service);
-        for (ActRelationship eventRelationship : bean.getRelationships(CLINICAL_EVENT_ITEM)) {
+        IMObjectBean bean = service.getBean(act);
+        for (ActRelationship eventRelationship : bean.getValues("event", ActRelationship.class)) {
             changed = true;
-            removeEventRelationship(events, bean, eventRelationship);
+            removeEventRelationship(events, act, eventRelationship);
         }
         return changed;
     }
@@ -629,9 +702,8 @@ public class CustomerAccountRules {
      * @param act          the act to remove the relationship from. It must be the target of the relationship
      * @param relationship the relationship to remove
      */
-    private void removeEventRelationship(Map<IMObjectReference, Act> events, ActBean act,
-                                         ActRelationship relationship) {
-        act.removeRelationship(relationship);
+    private void removeEventRelationship(Map<IMObjectReference, Act> events, Act act, ActRelationship relationship) {
+        act.removeActRelationship(relationship);
         IMObjectReference ref = relationship.getSource();
         Act event = events.get(ref);
         if (event == null) {

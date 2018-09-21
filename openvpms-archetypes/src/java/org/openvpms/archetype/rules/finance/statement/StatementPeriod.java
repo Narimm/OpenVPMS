@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.statement;
@@ -27,21 +25,21 @@ import java.util.Date;
 
 /**
  * Customer statement period information.
- * <p/>
+ * <p>
  * TODO: there are a number of deficiencies in statement processsing, namely
  * that it relies on 'magic' timestamps for the opening and closing balance
  * and fee acts. These are relative to the statementTimestamp, which is set to
  * <em>&lt;statementDate&gt; 23:59:00</em>.
- * <p/>
+ * <p>
  * The closing balance timestamp is <em>statementTimestamp + 2 secs</em>
- * <p/>
+ * <p>
  * The opening balance timestamp is <em>statementTimestamp + 3 secs</em>
- * <p/>
+ * <p>
  * The timestamp for completed charges being posted is
  * <em>statementTimestamp - 1 sec</em>
- * <p/>
+ * <p>
  * The timestamp for fee acts is <em>statementTimestamp + 1 sec</em>
- * <p/>
+ * <p>
  * This leads to the following limitations/restrictions:
  * <ul>
  * <li>Account acts cannot be backdated. If an account act has it start time
@@ -109,14 +107,13 @@ class StatementPeriod {
             openTime = open.getStartTime();
             openingBalance = open.getAmount();
         }
-        StatementActHelper.ActState close = helper.getClosingBalanceState(
-                customer, statementTime, openTime);
+        StatementActHelper.ActState close = helper.getClosingBalanceState(customer, statementTime, openTime);
         if (close != null) {
             closeTime = close.getStartTime();
             printed = close.isPrinted();
             statement = true;
         } else {
-            closeTime = getTimestamp(2);
+            closeTime = getClosingBalanceTimestamp(statementTime);
         }
     }
 
@@ -160,7 +157,7 @@ class StatementPeriod {
      * Returns the closing balance start time.
      *
      * @return the closing balance start time. If there is no statement for
-     *         the period, it is set to statementTimestamp + 2 secs
+     * the period, it is set to statementTimestamp + 2 secs
      */
     public Date getClosingBalanceTimestamp() {
         return closeTime;
@@ -173,7 +170,7 @@ class StatementPeriod {
      * @return a timestamp relative to the statement timestamp
      */
     public Date getCompletedChargeTimestamp() {
-        return getTimestamp(-1);
+        return getTimestamp(statementTime, -1);
     }
 
     /**
@@ -182,7 +179,7 @@ class StatementPeriod {
      * @return a timestamp relative to the statement timestamp
      */
     public Date getFeeTimestamp() {
-        return getTimestamp(1);
+        return getFeeTimestamp(statementTime);
     }
 
     /**
@@ -195,12 +192,32 @@ class StatementPeriod {
     }
 
     /**
+     * Returns a timestamp to assign to fee acts.
+     *
+     * @param statementTime the statement timestamp
+     * @return a timestamp relative to the statement timestamp
+     */
+    public static Date getFeeTimestamp(Date statementTime) {
+        return getTimestamp(statementTime, 1);
+    }
+
+    /**
+     * Returns a timestamp to assign to fee acts.
+     *
+     * @param statementTime the statement timestamp
+     * @return a timestamp relative to the statement timestamp
+     */
+    public static Date getClosingBalanceTimestamp(Date statementTime) {
+        return getTimestamp(statementTime, 2);
+    }
+
+    /**
      * Returns a timestamp relative to the statement timestamp.
      *
      * @param addSeconds the no. of seconds to add
      * @return the new timestamp
      */
-    private Date getTimestamp(int addSeconds) {
+    private static Date getTimestamp(Date statementTime, int addSeconds) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(statementTime);
         calendar.add(Calendar.SECOND, addSeconds);

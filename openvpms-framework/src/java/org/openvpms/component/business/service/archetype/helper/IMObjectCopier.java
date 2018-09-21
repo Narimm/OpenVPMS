@@ -20,7 +20,6 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeD
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 
 import java.util.ArrayList;
@@ -32,8 +31,7 @@ import java.util.Map;
 /**
  * Helper to copy {@link IMObject} instances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-06-27 04:04:11Z $
+ * @author Tim Anderson
  */
 public class IMObjectCopier {
 
@@ -43,33 +41,23 @@ public class IMObjectCopier {
     private final IArchetypeService service;
 
     /**
-     * Map of original -> copied objects, to avoid duplicate copying.
-     */
-    private Map<IMObjectReference, Copy> copies;
-
-    /**
      * The copy handler.
      */
     private final IMObjectCopyHandler handler;
 
-
     /**
-     * Construct a new <tt>IMObjectCopier</tt>.
-     *
-     * @param handler the copy handler
+     * Map of original -> copied objects, to avoid duplicate copying.
      */
-    public IMObjectCopier(IMObjectCopyHandler handler) {
-        this(handler, ArchetypeServiceHelper.getArchetypeService());
-    }
+    private Map<IMObjectReference, Copy> copies;
+
 
     /**
-     * Construct a new <tt>IMObjectCopier</tt>.
+     * Constructs a {@link IMObjectCopier}.
      *
      * @param handler the copy handler
      * @param service the archetype service
      */
-    public IMObjectCopier(IMObjectCopyHandler handler,
-                          IArchetypeService service) {
+    public IMObjectCopier(IMObjectCopyHandler handler, IArchetypeService service) {
         this.handler = handler;
         this.service = service;
     }
@@ -77,17 +65,17 @@ public class IMObjectCopier {
     /**
      * Copy an object, returning a list containing the copy, and any copied
      * child references.
-     * <p/>
+     * <p>
      * Any derived values will be populated on the returned objects.
      *
      * @param object the object to copy
-     * @return a copy of <tt>object</tt>, and any copied child references.
-     *         The copy of <tt>object</tt> is the first element in the returned
-     *         list
+     * @return a copy of {@code object}, and any copied child references.
+     * The copy of {@code object} is the first element in the returned
+     * list
      */
     public List<IMObject> apply(IMObject object) {
-        List<IMObject> result = new ArrayList<IMObject>();
-        copies = new HashMap<IMObjectReference, Copy>();
+        List<IMObject> result = new ArrayList<>();
+        copies = new HashMap<>();
         IMObject target = apply(object, result, false);
         result.add(0, target);
         return result;
@@ -100,8 +88,8 @@ public class IMObjectCopier {
      * @param source   the source object
      * @param children a list of child objects created during copying
      * @param save     determines if child objects should be saved
-     * @return a copy of <tt>source</tt> if the handler indicates it should
-     *         be copied; otherwise returns <tt>source</tt> unchanged
+     * @return a copy of {@code source} if the handler indicates it should
+     * be copied; otherwise returns {@code source} unchanged
      */
     protected IMObject apply(IMObject source, List<IMObject> children,
                              boolean save) {
@@ -202,8 +190,8 @@ public class IMObjectCopier {
      * @param parent    the parent object
      * @param children  a list of child objects created during copying
      * @param save      determines if child objects should be saved
-     * @return a new reference, or one from <tt>references</tt> if the
-     *         reference has already been copied
+     * @return a new reference, or one from {@code references} if the
+     * reference has already been copied
      */
     private IMObjectReference copyReference(IMObjectReference reference, IMObject parent, List<IMObject> children,
                                             boolean save) {
@@ -250,7 +238,7 @@ public class IMObjectCopier {
         private List<CollectionAdder> queue;
 
         /**
-         * Creates a new <tt>Copy</tt>.
+         * Creates a new {@code Copy}.
          *
          * @param object the copied object
          */
@@ -270,7 +258,7 @@ public class IMObjectCopier {
         /**
          * Determines if the object is complete.
          *
-         * @return <tt>true</tt> if the object is complete, otherwise <tt>false</tt>
+         * @return {@code true} if the object is complete, otherwise {@code false}
          */
         public boolean isComplete() {
             return complete;
@@ -291,7 +279,7 @@ public class IMObjectCopier {
 
         /**
          * Queues the object for addition to a collection.
-         * <p/>
+         * <p>
          * This should be used to queue incomplete objects for addition until such time as they are complete.
          *
          * @param target     the target object owns the collection
@@ -326,7 +314,7 @@ public class IMObjectCopier {
         private final IMObject value;
 
         /**
-         * Creates a new <tt>CollectionAdder</tt>.
+         * Constructs a {@link CollectionAdder}.
          *
          * @param parent     the parent object
          * @param descriptor the collection node descriptor

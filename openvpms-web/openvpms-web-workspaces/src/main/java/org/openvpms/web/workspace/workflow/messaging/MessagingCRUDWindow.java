@@ -43,6 +43,7 @@ import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 
 
@@ -240,7 +241,7 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
     private Act copyObject() {
         DefaultActCopyHandler handler = new DefaultActCopyHandler();
         handler.setCopy(Act.class, Participation.class);
-        IMObjectCopier copier = new IMObjectCopier(handler);
+        IMObjectCopier copier = new IMObjectCopier(handler, ServiceHelper.getArchetypeService());
         return (Act) copier.apply(getObject()).get(0);
     }
 

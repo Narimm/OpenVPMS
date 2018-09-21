@@ -22,26 +22,23 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.bean.IMObjectBean;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.CLOSING_BALANCE;
-import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.OPENING_BALANCE;
 import static org.openvpms.archetype.rules.finance.statement.StatementProcessorException.ErrorCode.InvalidStatementDate;
 
 
 /**
  * End-of-period statement processor.
- * <p/>
+ * <p>
  * This performs end-of-period for a customer. End-of-period processing
  * includes:
  * <ul>
@@ -49,7 +46,7 @@ import static org.openvpms.archetype.rules.finance.statement.StatementProcessorE
  * that incur a fee; and
  * <li>the creation of closing and opening balance acts</li>
  * </ul>
- * <p/>
+ * <p>
  * End-of-period processing only occurs if the customer has no statement
  * on or after the specified statement date and:
  * <ul>
@@ -187,30 +184,17 @@ public class EndOfPeriodProcessor implements Processor<Party> {
                 }
             }
         }
-        boolean reverseCredit = false;
-        if (balance.signum() == -1) {
-            balance = balance.negate();
-            // need to switch the credit/debit flags on the closing and
-            // opening balances respectively.
-            reverseCredit = true;
-        }
-
-        FinancialAct close = createAct(CLOSING_BALANCE, customer, balance);
-        FinancialAct open = createAct(OPENING_BALANCE, customer, balance);
-
-        if (reverseCredit) {
-            close.setCredit(!close.isCredit());
-            open.setCredit(!open.isCredit());
-        }
-
-        ActBean bean = new ActBean(close, service);
-        bean.setValue("overdueBalance", overdue);
 
         // ensure the acts are ordered correctly, ie. close before open
         Date closeTime = period.getClosingBalanceTimestamp();
         Date openTime = new Date(closeTime.getTime() + 1000);
-        close.setActivityStartTime(closeTime);
-        open.setActivityStartTime(openTime);
+
+        FinancialAct close = account.createClosingBalance(customer, closeTime, balance);
+        FinancialAct open = account.createOpeningBalance(customer, openTime, balance);
+
+        IMObjectBean bean = service.getBean(close);
+        bean.setValue("overdueBalance", overdue);
+
         if (fee != null) {
             service.save(Arrays.asList((IMObject) fee, close, open));
         } else {
@@ -230,24 +214,6 @@ public class EndOfPeriodProcessor implements Processor<Party> {
         act.setActivityStartTime(period.getCompletedChargeTimestamp());
         act.setStatus(ActStatus.POSTED);
         service.save(act);
-    }
-
-    /**
-     * Helper to create an act for a customer.
-     *
-     * @param shortName the act short name
-     * @param customer  the customer
-     * @param total     the act total
-     * @return a new act
-     */
-    private FinancialAct createAct(String shortName, Party customer, BigDecimal total) {
-        FinancialAct act = (FinancialAct) service.create(shortName);
-        Date startTime = new Date();
-        act.setActivityStartTime(startTime);
-        ActBean bean = new ActBean(act, service);
-        bean.addParticipation("participation.customer", customer);
-        act.setTotal(new Money(total));
-        return act;
     }
 
 }

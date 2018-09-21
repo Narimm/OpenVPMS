@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.estimate;
@@ -97,7 +97,7 @@ public class EstimateRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Act copy(Act estimate, String title) {
-        IMObjectCopier copier = new IMObjectCopier(createEstimateCopyHandler());
+        IMObjectCopier copier = new IMObjectCopier(createEstimateCopyHandler(), service);
         List<IMObject> objects = copier.apply(estimate);
         Act copy = (Act) objects.get(0);
         copy.setTitle(title);
@@ -116,7 +116,7 @@ public class EstimateRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public FinancialAct invoice(Act estimate, User clinician) {
-        IMObjectCopier copier = new IMObjectCopier(new EstimateHandler());
+        IMObjectCopier copier = new IMObjectCopier(new EstimateHandler(), service);
         List<IMObject> objects = copier.apply(estimate);
         List<Act> items = new ArrayList<Act>();
         for (IMObject object : objects) {

@@ -1,24 +1,22 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.statement;
 
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 
@@ -29,8 +27,7 @@ import java.util.List;
 /**
  * Customer statement.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class Statement {
 
@@ -53,15 +50,15 @@ public class Statement {
      * The statement acts. This represents all acts between the opening balance
      * and closing balance timestamps.
      */
-    private final Iterable<Act> acts;
+    private final Iterable<FinancialAct> acts;
 
     /**
-     * The opening balance timestamp. May be <tt>null</tt>
+     * The opening balance timestamp. May be {@code null}
      */
     private final Date openingBalanceTimestamp;
 
     /**
-     * The closing balance timestamp. May be <tt>null</tt>
+     * The closing balance timestamp. May be {@code null}
      */
     private final Date closingBalanceTimestamp;
 
@@ -72,22 +69,20 @@ public class Statement {
 
 
     /**
-     * Constructs a new <tt>Statement</tt>.
+     * Constructs a {@link Statement}.
      *
      * @param customer                the customer
      * @param contacts                the preferred contacts
      * @param statementDate           the statement date
-     * @param openingBalanceTimestamp the opening balance timestamp.
-     *                                May be <tt>null</tt>
-     * @param closingBalanceTimestamp the closing balance timestamp.
-     *                                May be <tt>null</tt>
+     * @param openingBalanceTimestamp the opening balance timestamp. May be {@code null}
+     * @param closingBalanceTimestamp the closing balance timestamp. May be {@code null}
      * @param acts                    all statement for the statement period
      * @param printed                 determines if the statement has already
      *                                been printed
      */
     public Statement(Party customer, List<Contact> contacts,
                      Date statementDate, Date openingBalanceTimestamp,
-                     Date closingBalanceTimestamp, Iterable<Act> acts,
+                     Date closingBalanceTimestamp, Iterable<FinancialAct> acts,
                      boolean printed) {
         this.customer = customer;
         this.contacts = contacts;
@@ -130,9 +125,8 @@ public class Statement {
      * <em>act.customerAccountOpeningBalance</em> act for the customer,
      * prior to the statement date.
      *
-     * @return the opening balance timestamp. If <tt>null</tt> there is no
-     *         <em>act.customerAccountOpeningBalance<em> act prior to the
-     *         statement date
+     * @return the opening balance timestamp. If {@code null} there is no <em>act.customerAccountOpeningBalance<em> act
+     * prior to the statement date
      */
     public Date getOpeningBalanceTimestamp() {
         return openingBalanceTimestamp;
@@ -144,9 +138,8 @@ public class Statement {
      * after the opening balance timestamp, or the statement date if there is
      * no opening balance.
      *
-     * @return the opening balance timestamp. If <tt>null</tt> there is no
-     *         <em>act.customerAccountClosingBalance<em> act after the opening
-     *         balance/statement date
+     * @return the closing balance timestamp. If {@code null} there is no <em>act.customerAccountClosingBalance<em> act
+     * after the opening balance/statement date
      */
     public Date getClosingBalanceTimestamp() {
         return closingBalanceTimestamp;
@@ -157,7 +150,7 @@ public class Statement {
      * A preview statement is one for which no end-of-period has yet been
      * run, i.e there is no closing balance.
      *
-     * @return <tt>true</tt> if this ia a preview statement
+     * @return {@code true} if this ia a preview statement
      */
     public boolean isPreview() {
         return (closingBalanceTimestamp == null);
@@ -166,7 +159,7 @@ public class Statement {
     /**
      * Determines if the statement has been printed previously.
      *
-     * @return <tt>true</tt> if the statement has been printed
+     * @return {@code true} if the statement has been printed
      */
     public boolean isPrinted() {
         return printed;
@@ -181,7 +174,7 @@ public class Statement {
      *
      * @return the statement acts.
      */
-    public Iterable<Act> getActs() {
+    public Iterable<FinancialAct> getActs() {
         return acts;
     }
 

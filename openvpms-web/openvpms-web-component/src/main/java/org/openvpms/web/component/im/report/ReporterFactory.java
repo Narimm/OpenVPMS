@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.report;
@@ -172,7 +172,7 @@ public class ReporterFactory {
      * @return a new reporter
      */
     @SuppressWarnings("unchecked")
-    public <T extends IMObject, R extends Reporter> R create(Iterable<T> objects, DocumentTemplateLocator locator,
+    public <T extends IMObject, R extends Reporter<T>> R create(Iterable<T> objects, DocumentTemplateLocator locator,
                                                              Class type) {
         R result = newInstance(locator.getShortName(), objects, locator, type);
         if (result == null) {

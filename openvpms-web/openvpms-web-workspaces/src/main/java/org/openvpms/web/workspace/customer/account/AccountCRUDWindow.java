@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.account;
@@ -30,11 +30,11 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.edit.FinancialActions;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
+import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -50,6 +50,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerActCRUDWindow;
+import org.openvpms.web.workspace.customer.CustomerMailContext;
 
 import java.math.BigDecimal;
 
@@ -69,17 +70,22 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     /**
      * Reverse button identifier.
      */
-    private static final String REVERSE_ID = "reverse";
+    private static final String REVERSE_ID = "button.reverse";
+
+    /**
+     * Reverse button identifier.
+     */
+    private static final String STATEMENT_ID = "button.statement";
 
     /**
      * Adjust button identifier.
      */
-    private static final String ADJUST_ID = "adjust";
+    private static final String ADJUST_ID = "button.adjust";
 
     /**
      * Check button identifier.
      */
-    private static final String CHECK_ID = "check";
+    private static final String CHECK_ID = "button.check";
 
     /**
      * Hide button identifier.
@@ -149,9 +155,9 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        Button reverse = ButtonFactory.create(REVERSE_ID, new ActionListener() {
+        Button statement = ButtonFactory.create(STATEMENT_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
-                onReverse();
+                onStatement();
             }
         });
 
@@ -161,6 +167,12 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
             }
         });
 
+        Button reverse = ButtonFactory.create(REVERSE_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onReverse();
+            }
+        });
+        buttons.add(statement);
         buttons.add(adjust);
         buttons.add(reverse);
         buttons.add(createPrintButton());
@@ -208,24 +220,35 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     }
 
     /**
+     * Prints a statement.
+     */
+    protected void onStatement() {
+        Context context = getContext();
+        Party customer = context.getCustomer();
+        if (customer != null) {
+            StatementPrinter printer = new StatementPrinter(context, ServiceHelper.getBean(CustomerAccountRules.class),
+                                                            ServiceHelper.getBean(ReporterFactory.class),
+                                                            ServiceHelper.getArchetypeService());
+            HelpContext help = getHelpContext().subtopic("statement");
+            InteractiveStatementPrinter interactive = new InteractiveStatementPrinter(printer, context, help);
+            interactive.setMailContext(new CustomerMailContext(context, help));
+            interactive.print();
+        }
+    }
+
+    /**
      * Invoked when the 'reverse' button is pressed.
      */
     protected void onReverse() {
         final FinancialAct act = IMObjectHelper.reload(getObject());
         if (act != null) {
             String status = act.getStatus();
-            if (TypeHelper.isA(act, CustomerAccountArchetypes.OPENING_BALANCE,
-                               CustomerAccountArchetypes.CLOSING_BALANCE)
-                || !FinancialActStatus.POSTED.equals(status)) {
+            if (act.isA(CustomerAccountArchetypes.OPENING_BALANCE, CustomerAccountArchetypes.CLOSING_BALANCE)
+                 || !FinancialActStatus.POSTED.equals(status)) {
                 showStatusError(act, "customer.account.noreverse.title", "customer.account.noreverse.message");
             } else {
                 Reverser reverser = new Reverser(getContext().getPractice(), getHelpContext().subtopic("reverse"));
-                reverser.reverse(act, new Reverser.Listener() {
-                    @Override
-                    public void completed() {
-                        onRefresh(act);
-                    }
-                });
+                reverser.reverse(act, () -> onRefresh(act));
             }
         }
     }

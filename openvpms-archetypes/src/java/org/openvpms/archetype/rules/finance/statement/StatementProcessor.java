@@ -19,7 +19,7 @@ package org.openvpms.archetype.rules.finance.statement;
 import org.openvpms.archetype.component.processor.AbstractProcessor;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -27,9 +27,7 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.ArchetypeQueryException;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -66,7 +64,7 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
     private final StatementActHelper actHelper;
 
     /**
-     * Determines if statements that have been printed should be procesed.
+     * Determines if statements that have been printed should be processed.
      */
     private boolean reprint;
 
@@ -112,62 +110,28 @@ public class StatementProcessor extends AbstractProcessor<Party, Statement> {
      * @throws OpenVPMSException for any error
      */
     public void process(Party customer) {
-        StatementPeriod period = new StatementPeriod(customer, statementDate,
-                                                     actHelper);
+        StatementPeriod period = new StatementPeriod(customer, statementDate, actHelper);
         if (!period.isPrinted() || reprint) {
-            Iterable<Act> acts;
+            Iterable<FinancialAct> acts;
             Date open = period.getOpeningBalanceTimestamp();
             Date close = period.getClosingBalanceTimestamp();
             if (!period.hasStatement()) {
-                acts = getPreviewActs(customer, period);
+                acts = rules.getStatementPreview(customer, open, statementDate, true, true);
             } else {
-                acts = actHelper.getPostedActs(customer, open, close, false);
+                acts = rules.getStatement(customer, open, close);
             }
             List<Contact> contacts = getContacts(customer);
-            Statement statement = new Statement(customer, contacts,
-                                                statementDate,
-                                                open, close, acts,
+            Statement statement = new Statement(customer, contacts, statementDate, open, close, acts,
                                                 period.isPrinted());
             notifyListeners(statement);
         }
     }
 
     /**
-     * Returns all POSTED statement acts and COMPLETED charge acts for a
-     * customer from the opening balance timestamp to the end of the statement
-     * date. <p/>
-     * This adds (but does not save) an accounting fee act if an accounting fee
-     * is required.
-     *
-     * @param customer the customer
-     * @param period   the statement period
-     * @return the statement acts
-     * @throws ArchetypeServiceException for any archetype service error
-     * @throws ArchetypeQueryException   for any archetype query error
-     */
-    private Iterable<Act> getPreviewActs(Party customer,
-                                         StatementPeriod period) {
-        Date openTimestamp = period.getOpeningBalanceTimestamp();
-        Iterable<Act> result = actHelper.getPostedAndCompletedActs(
-                customer, statementDate, openTimestamp);
-
-        BigDecimal fee = rules.getAccountFee(customer, statementDate);
-        if (fee.compareTo(BigDecimal.ZERO) != 0) {
-            Act feeAct = rules.createAccountingFeeAdjustment(
-                    customer, fee, period.getFeeTimestamp());
-            List<Act> toAdd = new ArrayList<>();
-            toAdd.add(feeAct);
-            result = new IterableChain<>(result, toAdd);
-        }
-        return result;
-    }
-
-    /**
      * Returns the preferred statement contacts for the customer.
      *
      * @param customer the customer
-     * @return the preferred contacts for {@code customer}, or an empty list
-     *         if the customer has no contacts
+     * @return the preferred contacts for {@code customer}, or an empty list if the customer has no contacts
      * @throws ArchetypeServiceException for any archetype service error
      */
     private List<Contact> getContacts(Party customer) {

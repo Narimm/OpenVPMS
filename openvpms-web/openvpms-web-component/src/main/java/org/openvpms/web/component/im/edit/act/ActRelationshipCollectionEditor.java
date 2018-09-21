@@ -404,7 +404,7 @@ public class ActRelationshipCollectionEditor extends MultipleRelationshipCollect
         List<Act> result = new ArrayList<>();
         ActRelationshipCollectionPropertyEditor collection = getEditor();
 
-        IMObjectCopier copier = new IMObjectCopier(new ActItemCopyHandler());
+        IMObjectCopier copier = new IMObjectCopier(new ActItemCopyHandler(), ServiceHelper.getArchetypeService());
         Collection<TemplateProduct> includes = getProductIncludes(template, editor.getPatient(), quantity);
         Act act = editor.getObject();
         Act copy = act; // replace the existing act with the first
