@@ -11,14 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.component.business.dao.hibernate.im.lookup;
 
-import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.query.NativeQuery;
+import org.hibernate.query.Query;
 import org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.act.ActRelationshipDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl;
@@ -261,9 +263,9 @@ public class LookupReplacer {
         Mapping mapping = getMapping(archetype, node);
         SQLQuery query = session.createSQLQuery(mapping.getIsUsedSQL());
         query.setMaxResults(1);
-        query.setString("archetype", archetype.getType().getShortName());
-        query.setString("name", node.getName());
-        query.setString("code", lookup.getCode());
+        query.setParameter("archetype", archetype.getType().getShortName());
+        query.setParameter("name", node.getName());
+        query.setParameter("code", lookup.getCode());
         return !query.list().isEmpty();
     }
 
@@ -281,8 +283,8 @@ public class LookupReplacer {
         String name = node.getPath().substring(1);
         Query query = session.createQuery("select id from " + mapping.getPersistentClass().getName()
                                           + " where archetypeId.shortName = :archetype and " + name + " = :code");
-        query.setString("archetype", archetype.getType().getShortName());
-        query.setString("code", lookup.getCode());
+        query.setParameter("archetype", archetype.getType().getShortName());
+        query.setParameter("code", lookup.getCode());
         query.setMaxResults(1);
         return !query.list().isEmpty();
     }
@@ -312,11 +314,11 @@ public class LookupReplacer {
     private void replaceCodeSQL(NodeDescriptor node, ArchetypeDescriptor archetype, Lookup source, Lookup target,
                                 Session session) {
         Mapping mapping = getMapping(archetype, node);
-        SQLQuery query = session.createSQLQuery(mapping.getUpdateSQL());
-        query.setString("archetype", archetype.getType().getShortName());
-        query.setString("name", node.getName());
-        query.setString("oldCode", source.getCode());
-        query.setString("newCode", target.getCode());
+        NativeQuery query = session.createSQLQuery(mapping.getUpdateSQL());
+        query.setParameter("archetype", archetype.getType().getShortName());
+        query.setParameter("name", node.getName());
+        query.setParameter("oldCode", source.getCode());
+        query.setParameter("newCode", target.getCode());
         executeUpdate(query, session, mapping.getPersistentClass());
     }
 
@@ -336,9 +338,9 @@ public class LookupReplacer {
         Query query = session.createQuery("update " + mapping.getPersistentClass().getName()
                                           + " set " + name + " = :newCode"
                                           + " where archetypeId.shortName = :archetype and " + name + " = :oldCode");
-        query.setString("archetype", archetype.getType().getShortName());
-        query.setString("oldCode", source.getCode());
-        query.setString("newCode", target.getCode());
+        query.setParameter("archetype", archetype.getType().getShortName());
+        query.setParameter("oldCode", source.getCode());
+        query.setParameter("newCode", target.getCode());
         executeUpdate(query, session, mapping.getPersistentClass());
     }
 
@@ -352,7 +354,7 @@ public class LookupReplacer {
      */
     private boolean isClassificationInUse(Lookup lookup, String sql, Session session) {
         Query query = session.createSQLQuery(sql);
-        query.setLong("id", lookup.getId());
+        query.setParameter("id", lookup.getId());
         query.setMaxResults(1);
         return !query.list().isEmpty();
     }
@@ -379,12 +381,12 @@ public class LookupReplacer {
     private void replaceClassifications(Lookup source, Lookup target, String updateSQL, String deleteSQL,
                                         Session session, Class... persistentClasses) {
         Query query = session.createSQLQuery(updateSQL);
-        query.setLong("oldId", source.getId());
-        query.setLong("newId", target.getId());
+        query.setParameter("oldId", source.getId());
+        query.setParameter("newId", target.getId());
         executeUpdate(query, session, persistentClasses);
 
         query = session.createSQLQuery(deleteSQL);
-        query.setLong("oldId", source.getId());
+        query.setParameter("oldId", source.getId());
         query.executeUpdate();
     }
 
@@ -422,14 +424,14 @@ public class LookupReplacer {
     }
 
     /**
-     * Clears the second level caches of the specified persisent classes.
+     * Clears the second level caches of the specified persistent classes.
      *
      * @param persistentClasses the persistent classes
      * @param factory           the session factory
      */
     private void clearCaches(Class[] persistentClasses, SessionFactory factory) {
         for (Class persistentClass : persistentClasses) {
-            factory.evict(persistentClass);
+            factory.getCache().evictEntityData(persistentClass);
         }
     }
 

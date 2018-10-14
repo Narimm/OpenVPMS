@@ -11,18 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
 
-import net.sf.ehcache.Ehcache;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.cache.EhcacheManager;
 import org.openvpms.component.business.service.lookup.ILookupService;
 
 
 /**
  * Implementation of the {@link ScheduleService} for tasks.
+ * <p>
+ * This uses the supplied {@link EhcacheManager} to create a cache named "taskCache".
  *
  * @author Tim Anderson
  */
@@ -31,11 +33,13 @@ public class TaskService extends AbstractScheduleService {
     /**
      * Constructs a {@link TaskService}.
      *
-     * @param service the archetype service
-     * @param cache   the cache
+     * @param service      the archetype service
+     * @param lookups      the lookup service
+     * @param cacheFactory the cache factory
      */
-    public TaskService(IArchetypeService service, ILookupService lookupService, Ehcache cache) {
-        super(new String[]{ScheduleArchetypes.TASK}, service, cache, new TaskFactory(service, lookupService));
+    public TaskService(IArchetypeService service, ILookupService lookups, EhcacheManager cacheFactory) {
+        super(new String[]{ScheduleArchetypes.TASK}, service, cacheFactory, "taskCache",
+              new TaskFactory(service, lookups));
     }
 
 }

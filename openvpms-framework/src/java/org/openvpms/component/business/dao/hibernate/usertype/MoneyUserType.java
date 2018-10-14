@@ -1,24 +1,24 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
 package org.openvpms.component.business.dao.hibernate.usertype;
 
 import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.usertype.UserType;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 
@@ -98,7 +98,7 @@ public class MoneyUserType implements UserType, Serializable {
      * @throws SQLException       for any SQL error
      */
     @Override
-    public Object nullSafeGet(ResultSet rs, String[] names, SessionImplementor session, Object owner)
+    public Object nullSafeGet(ResultSet rs, String[] names, SharedSessionContractImplementor session, Object owner)
             throws SQLException {
         BigDecimal value = rs.getBigDecimal(names[0]);
         return (value != null) ? new Money(value) : null;
@@ -117,7 +117,7 @@ public class MoneyUserType implements UserType, Serializable {
      * @throws SQLException
      */
     @Override
-    public void nullSafeSet(PreparedStatement st, Object value, int index, SessionImplementor session)
+    public void nullSafeSet(PreparedStatement st, Object value, int index, SharedSessionContractImplementor session)
             throws SQLException {
         if (value == null) {
             st.setNull(index, Types.NUMERIC);
@@ -127,8 +127,8 @@ public class MoneyUserType implements UserType, Serializable {
     }
 
     /* (non-Javadoc)
-     * @see org.hibernate.usertype.UserType#deepCopy(java.lang.Object)
-     */
+         * @see org.hibernate.usertype.UserType#deepCopy(java.lang.Object)
+         */
     @Override
     public Object deepCopy(Object obj) throws HibernateException {
         return obj;

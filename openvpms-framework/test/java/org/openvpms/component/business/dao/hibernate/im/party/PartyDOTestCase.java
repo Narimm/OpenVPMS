@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.party;
@@ -33,6 +33,7 @@ import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOHelper;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 
+import javax.persistence.PersistenceException;
 import java.util.Random;
 
 import static org.junit.Assert.assertEquals;
@@ -116,7 +117,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
 
         // reload
         session.evict(person);
-        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
+        person = session.load(PartyDOImpl.class, person.getId());
         assertEquals(size, person.getDetails().size());
 
         // check row count
@@ -156,7 +157,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         int identities = count(EntityIdentityDOImpl.class);
         int details = countDetails(EntityIdentityDOImpl.class);
 
-        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
+        person = session.load(PartyDOImpl.class, person.getId());
         EntityIdentityDO identity = createEntityIdentity();
         int size = identity.getDetails().size();
         assertTrue(size != 0);
@@ -206,7 +207,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
 
         // now retrieve the role and delete a single entity identity
         tx = session.beginTransaction();
-        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
+        person = session.load(PartyDOImpl.class, person.getId());
         assertEquals(toAdd, person.getIdentities().size());
 
         // delete the first identity
@@ -219,7 +220,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         assertEquals(initial + toAdd - 1, count(EntityIdentityDOImpl.class));
 
         // retrieve the PartyDO and check the entity identity count
-        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
+        person = session.load(PartyDOImpl.class, person.getId());
         assertEquals(toAdd - 1, person.getIdentities().size());
     }
 
@@ -241,8 +242,8 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
 
         // now retrieve the source and add an entity relationship
         tx = session.beginTransaction();
-        source = (PartyDO) session.load(PartyDOImpl.class, source.getId());
-        target = (PartyDO) session.load(PartyDOImpl.class, target.getId());
+        source = session.load(PartyDOImpl.class, source.getId());
+        target = session.load(PartyDOImpl.class, target.getId());
 
         EntityRelationshipDO rel = createEntityRelationship(source, target);
         source.addSourceEntityRelationship(rel);
@@ -324,7 +325,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
 
         // now retrieve the role and remove the relationship
         tx = session.beginTransaction();
-        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
+        person = session.load(PartyDOImpl.class, person.getId());
         rel = person.getSourceEntityRelationships().iterator().next();
         person.removeSourceEntityRelationship(rel);
         person.removeTargetEntityRelationship(rel);
@@ -335,8 +336,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         assertEquals(relationships, count(EntityRelationshipDOImpl.class));
 
         // check that the role now has zero entity relationships
-        session.flush();
-        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
+        person = session.load(PartyDOImpl.class, person.getId());
         assertEquals(0, person.getEntityRelationships().size());
     }
 
@@ -364,7 +364,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         assertEquals(lookups + 1, count(LookupDOImpl.class));
 
         // check the party
-        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
+        person = session.load(PartyDOImpl.class, person.getId());
         assertEquals(1, person.getClassifications().size());
         assertEquals(1, person.getEntityRelationships().size());
     }
@@ -384,7 +384,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         int count = 10; // no. of classifications to add
 
         tx = session.beginTransaction();
-        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
+        person = session.load(PartyDOImpl.class, person.getId());
         for (int index = 0; index < count; index++) {
             LookupDO class1 = createClassification();
             person.addClassification(class1);
@@ -395,7 +395,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
 
         assertEquals(lookups + count, count(LookupDOImpl.class));
 
-        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
+        person = session.load(PartyDOImpl.class, person.getId());
         assertEquals(count, person.getClassifications().size());
 
         tx = session.beginTransaction();
@@ -405,7 +405,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         tx.commit();
 
         assertEquals(lookups + count - 1, count(LookupDOImpl.class));
-        person = (PartyDO) session.load(PartyDOImpl.class, person.getId());
+        person = session.load(PartyDOImpl.class, person.getId());
         assertEquals(count - 1, person.getClassifications().size());
     }
 
@@ -425,8 +425,8 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
 
         // now add an entity link
         tx = session.beginTransaction();
-        source = (PartyDO) session.load(PartyDOImpl.class, source.getId());
-        target = (PartyDO) session.load(PartyDOImpl.class, target.getId());
+        source = session.load(PartyDOImpl.class, source.getId());
+        target = session.load(PartyDOImpl.class, target.getId());
 
         createEntityLink(source, target);
         session.saveOrUpdate(source);
@@ -434,7 +434,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
 
         assertEquals(links + 1, count(EntityLinkDOImpl.class));
 
-        source = (PartyDO) session.load(PartyDOImpl.class, source.getId());
+        source = session.load(PartyDOImpl.class, source.getId());
         assertEquals(1, source.getEntityLinks().size());
         EntityLinkDO link = source.getEntityLinks().iterator().next();
         assertEquals(source, link.getSource());
@@ -447,7 +447,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
 
         assertEquals(links, count(EntityLinkDOImpl.class));
 
-        source = (PartyDO) session.load(PartyDOImpl.class, source.getId());
+        source = session.load(PartyDOImpl.class, source.getId());
         assertEquals(0, source.getEntityLinks().size());
     }
 
@@ -468,7 +468,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         long version = target.getVersion();
 
         session.evict(source);
-        source = (PartyDO) session.load(PartyDOImpl.class, source.getId());
+        source = session.load(PartyDOImpl.class, source.getId());
         assertTrue(source.getEntityLinks().contains(link));
         assertNotNull(session.load(EntityLinkDOImpl.class, link.getId()));
 
@@ -480,7 +480,7 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
         assertNull(session.get(EntityLinkDOImpl.class, link.getId()));
 
         session.evict(target);
-        target = (PartyDO) session.load(PartyDOImpl.class, target.getId());
+        target = session.load(PartyDOImpl.class, target.getId());
         assertEquals(version, target.getVersion());   // verify the target hasn't changed
     }
 
@@ -504,8 +504,9 @@ public class PartyDOTestCase extends AbstractPartyDOTest {
             session.delete(target);
             tx.commit();
             fail("Expected delete to fail with a ConstraintViolationException");
-        } catch (ConstraintViolationException expected) {
+        } catch (PersistenceException expected) {
             // the expected error
+            assertTrue(expected.getCause() instanceof ConstraintViolationException);
         }
     }
 

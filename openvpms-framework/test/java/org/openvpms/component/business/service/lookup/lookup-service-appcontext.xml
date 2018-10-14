@@ -49,17 +49,6 @@
         <property name="dao" ref="imObjectDao"/>
     </bean>
 
-    <bean id="lookupCache"
-          class="org.springframework.cache.ehcache.EhCacheFactoryBean">
-        <property name="diskPersistent" value="false"/>
-        <property name="cacheName" value="lookupCache"/>
-        <property name="maxEntriesLocalHeap" value="40000"/>
-        <property name="overflowToDisk" value="false"/>
-        <property name="timeToIdleSeconds" value="0"/>
-        <property name="timeToLiveSeconds" value="0"/>
-        <property name="eternal" value="true"/>
-    </bean>
-
     <!--  Instantiate the archetype service helper bean and inject their dependencies -->
     <bean id="archetypeServiceHelper"
           class="org.openvpms.component.business.service.archetype.ArchetypeServiceHelper">

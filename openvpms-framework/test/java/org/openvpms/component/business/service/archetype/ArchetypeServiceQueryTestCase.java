@@ -16,12 +16,7 @@
 
 package org.openvpms.component.business.service.archetype;
 
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.openvpms.component.business.dao.hibernate.im.party.PartyDO;
 import org.openvpms.component.business.dao.hibernate.im.query.QueryBuilderException;
 import org.openvpms.component.business.dao.im.common.IMObjectDAOException;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;

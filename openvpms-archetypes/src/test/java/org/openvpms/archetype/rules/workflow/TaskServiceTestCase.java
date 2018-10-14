@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.cache.BasicEhcacheManager;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.system.common.util.PropertySet;
@@ -267,7 +268,7 @@ public class TaskServiceTestCase extends AbstractScheduleServiceTest {
     @Override
     protected TaskService createScheduleService(int scheduleCacheSize) {
         return new TaskService(getArchetypeService(), applicationContext.getBean(ILookupService.class),
-                               ScheduleTestHelper.createCache(scheduleCacheSize));
+                               new BasicEhcacheManager(scheduleCacheSize));
     }
 
     /**

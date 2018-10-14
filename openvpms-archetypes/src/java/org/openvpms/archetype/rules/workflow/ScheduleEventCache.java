@@ -16,16 +16,14 @@
 
 package org.openvpms.archetype.rules.workflow;
 
-import net.sf.ehcache.CacheException;
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Element;
-import net.sf.ehcache.constructs.blocking.BlockingCache;
-import net.sf.ehcache.constructs.blocking.LockTimeoutException;
-import net.sf.ehcache.pool.sizeof.annotations.IgnoreSizeOf;
 import org.apache.commons.collections.map.ReferenceMap;
 import org.apache.commons.lang.math.RandomUtils;
+import org.ehcache.Cache;
+import org.ehcache.sizeof.annotations.IgnoreSizeOf;
+import org.ehcache.spi.loaderwriter.CacheLoaderWriter;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.service.cache.EhcacheManager;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -64,7 +62,7 @@ class ScheduleEventCache {
     /**
      * The underlying cache. This is used to cache {@link ScheduleDay} instances.
      */
-    private final BlockingCache cache;
+    private final Cache<Key, ScheduleDay> cache;
 
     /**
      * The query factory.
@@ -90,11 +88,36 @@ class ScheduleEventCache {
     /**
      * Constructs a {@link ScheduleEventCache}.
      *
-     * @param cache   the underlying cache
-     * @param factory the event query factory
+     * @param cacheFactory the cache factory
+     * @param cacheName    the cache name
+     * @param factory      the event query factory
      */
-    public ScheduleEventCache(Ehcache cache, ScheduleEventFactory factory) {
-        this.cache = new BlockingCache(cache);
+    public ScheduleEventCache(EhcacheManager cacheFactory, String cacheName, ScheduleEventFactory factory) {
+        CacheLoaderWriter<Key, ScheduleDay> loaderWriter = new CacheLoaderWriter<Key, ScheduleDay>() {
+            @Override
+            public ScheduleDay load(Key key) throws Exception {
+                ScheduleDay result = new ScheduleDay(getSchedule(key.reference), key.day);
+                // NOTE: ScheduleDay can be now updated via addEvent and removeEvent
+
+                Entity schedule = key.schedule;
+                List<PropertySet> sets = (schedule != null) ? factory.getEvents(schedule, key.day)
+                                                            : factory.getEvents(key.reference, key.day);
+                List<Event> events = addEvents(sets);
+                result.setEvents(events);
+                return result;
+            }
+
+            @Override
+            public void write(Key key, ScheduleDay value) throws Exception {
+
+            }
+
+            @Override
+            public void delete(Key key) throws Exception {
+
+            }
+        };
+        this.cache = cacheFactory.create(cacheName, Key.class, ScheduleDay.class, loaderWriter);
         this.factory = factory;
     }
 
@@ -109,35 +132,9 @@ class ScheduleEventCache {
      * @return all events on the specified day for the schedule
      */
     public ScheduleEvents getEvents(Entity schedule, Date day) {
-        ScheduleDay result;
         day = DateRules.getDate(day);
-        Key key = new Key(schedule.getId(), day);
-        try {
-            // if null will lock here
-            Element element = cache.get(key);
-            if (element == null) {
-                // Value not cached, so query
-
-                result = new ScheduleDay(getSchedule(schedule.getId()), day);
-                // NOTE: ScheduleDay can be now updated via addEvent and removeEvent
-
-                List<PropertySet> sets = factory.getEvents(schedule, day);
-                List<Event> events = addEvents(sets);
-                result.setEvents(events);
-                element = new Element(key, result);
-                cache.put(element);
-            } else {
-                result = (ScheduleDay) element.getObjectValue();
-            }
-        } catch (LockTimeoutException exception) {
-            // do not release the lock, as it was not acquired
-            String message = "Timeout waiting on another thread to fetch object for cache entry \"" + key + "\".";
-            throw new LockTimeoutException(message, exception);
-        } catch (Throwable throwable) {
-            // Could not fetch - ditch the entry from the cache and rethrow.
-            cache.put(new Element(key, null));  // releases the lock
-            throw new CacheException("Could not fetch object for cache entry with key \"" + key + "\".", throwable);
-        }
+        Key key = new Key(schedule.getObjectReference(), day, schedule);
+        ScheduleDay result = cache.get(key);
         return result.getScheduleEvents();
     }
 
@@ -149,7 +146,7 @@ class ScheduleEventCache {
      * @return the modification hash, or {@code -1} if they are not present in the cache
      */
     public long getModHash(Entity schedule, Date day) {
-        ScheduleDay cached = getScheduleDay(schedule.getId(), day);
+        ScheduleDay cached = getScheduleDay(schedule.getObjectReference(), day, schedule);
         return cached != null ? cached.getModHash() : -1;
     }
 
@@ -161,7 +158,7 @@ class ScheduleEventCache {
      * @return the events, or {@code null} if they are not in the cache
      */
     public List<PropertySet> getCached(Reference schedule, Date day) {
-        ScheduleDay cached = getScheduleDay(schedule.getId(), day);
+        ScheduleDay cached = getScheduleDay(schedule, day, null);
         return (cached != null) ? cached.getEvents() : null;
     }
 
@@ -193,7 +190,7 @@ class ScheduleEventCache {
      * Clears the cache.
      */
     public void clear() {
-        cache.removeAll();
+        cache.clear();
         schedules.clear();
         synchronized (events) {
             events.clear();
@@ -205,22 +202,26 @@ class ScheduleEventCache {
      *
      * @return the cache
      */
-    public Ehcache getCache() {
+    public Cache getCache() {
         return cache;
     }
 
     /**
      * Returns the cached {@link ScheduleDay} for the given schedule and day.
      *
-     * @param id  the schedule identifier.
-     * @param day the day
+     * @param reference the schedule reference.
+     * @param day       the day
+     * @param schedule  the corresponding schedule. May be {@code null}
      * @return the corresponding {@link ScheduleDay} or {@code null} if it is not cached
      */
-    private ScheduleDay getScheduleDay(long id, Date day) {
+    private ScheduleDay getScheduleDay(Reference reference, Date day, Entity schedule) {
+        ScheduleDay result = null;
         day = DateRules.getDate(day);
-        Key key = new Key(id, day);
-        Element element = cache.getQuiet(key);
-        return (element != null) ? (ScheduleDay) element.getObjectValue() : null;
+        Key key = new Key(reference, day, schedule);
+        if (cache.containsKey(key)) {
+            result = cache.get(key); // small potential for the day to be discarded and then loaded back in here
+        }
+        return result;
     }
 
     /**
@@ -245,14 +246,15 @@ class ScheduleEventCache {
     }
 
     /**
-     * Returns a {@link Schedule} given its id, creating it if it doesn't exist.
+     * Returns a {@link Schedule} given its reference, creating it if it doesn't exist.
      *
-     * @param id the schedule identifier
+     * @param reference the schedule reference
      * @return the schedule
      */
-    private Schedule getSchedule(long id) {
+    private Schedule getSchedule(Reference reference) {
         Schedule result;
         synchronized (schedules) {
+            long id = reference.getId();
             result = schedules.get(id);
             if (result == null) {
                 result = new Schedule(id);
@@ -322,14 +324,19 @@ class ScheduleEventCache {
     private static class Key {
 
         /**
-         * The schedule identifier.
+         * The schedule reference.
          */
-        private final long scheduleId;
+        private final Reference reference;
 
         /**
          * The schedule day.
          */
         private final Date day;
+
+        /**
+         * The schedule. May be {@code null}
+         */
+        private final Entity schedule;
 
         /**
          * Cached hash code.
@@ -340,13 +347,16 @@ class ScheduleEventCache {
         /**
          * Constructs a {@link Key}.
          *
-         * @param scheduleId the schedule identifier
-         * @param day        the schedule day
+         * @param reference the schedule reference
+         * @param day       the schedule day
+         * @param schedule  the schedule. May be {@code null}
          */
-        public Key(long scheduleId, Date day) {
-            this.scheduleId = scheduleId;
+        public Key(Reference reference, Date day, Entity schedule) {
+            this.reference = reference;
             this.day = day;
-            hashCode = ((int) (scheduleId ^ (scheduleId >>> 32))) ^ day.hashCode();
+            this.schedule = schedule;
+            long id = reference.getId();
+            hashCode = ((int) (id ^ (id >>> 32))) ^ day.hashCode();
         }
 
         /**
@@ -359,7 +369,7 @@ class ScheduleEventCache {
         public boolean equals(Object obj) {
             if (obj instanceof Key) {
                 Key other = (Key) obj;
-                return (scheduleId == other.scheduleId && day.equals(other.day));
+                return (reference.getId() == other.reference.getId() && day.equals(other.day));
             }
             return false;
         }

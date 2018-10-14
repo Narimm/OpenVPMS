@@ -16,17 +16,19 @@
 
 package org.openvpms.archetype.rules.workflow;
 
-import net.sf.ehcache.Ehcache;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
+import org.openvpms.component.business.service.cache.EhcacheManager;
 import org.openvpms.component.business.service.lookup.ILookupService;
 
 
 /**
  * Implementation of the {@link ScheduleService} for appointments.
+ * <p>
+ * This uses the supplied {@link EhcacheManager} to create a cache named "appointmentCache".
  *
  * @author Tim Anderson
  */
@@ -47,10 +49,11 @@ public class AppointmentService extends AbstractCalendarService {
      *
      * @param service       the archetype service
      * @param lookupService the lookup service
-     * @param cache         the cache
+     * @param cacheManager  the cache manager
      */
-    public AppointmentService(IArchetypeService service, ILookupService lookupService, Ehcache cache) {
-        super(SHORT_NAMES, service, cache, new AppointmentFactory(service, lookupService));
+    public AppointmentService(IArchetypeService service, ILookupService lookupService,
+                              EhcacheManager cacheManager) {
+        super(SHORT_NAMES, service, cacheManager, "appointmentCache", new AppointmentFactory(service, lookupService));
 
         listener = new AbstractArchetypeServiceListener() {
             @Override

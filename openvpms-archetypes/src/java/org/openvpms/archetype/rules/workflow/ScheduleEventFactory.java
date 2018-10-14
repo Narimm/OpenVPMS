@@ -92,6 +92,21 @@ abstract class ScheduleEventFactory {
     /**
      * Returns all events for a schedule on the given day.
      *
+     * @param schedule the schedule reference
+     * @param day      the day
+     * @return all events on the specified day for the schedule
+     */
+    public List<PropertySet> getEvents(Reference schedule, Date day) {
+        Entity entity = (Entity) service.get(schedule);
+        if (entity == null) {
+            throw new IllegalStateException("Cannot locate schedule with reference=" + schedule);
+        }
+        return getEvents(entity, day);
+    }
+
+    /**
+     * Returns all events for a schedule on the given day.
+     *
      * @param schedule the schedule
      * @param day      the day
      * @return all events on the specified day for the schedule

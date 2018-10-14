@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.cache.BasicEhcacheManager;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.system.common.util.PropertySet;
 
@@ -546,7 +547,7 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     @Override
     protected AppointmentService createScheduleService(int scheduleCacheSize) {
         return new AppointmentService(getArchetypeService(), getLookupService(),
-                                      ScheduleTestHelper.createCache(scheduleCacheSize));
+                                      new BasicEhcacheManager(scheduleCacheSize));
     }
 
     /**

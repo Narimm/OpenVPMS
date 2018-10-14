@@ -180,7 +180,6 @@
                 <configuration>
                     <dir>target/archetypes/org/openvpms</dir>
                     <assertionTypes>target/archetypes/org/openvpms/archetype/assertionTypes.xml</assertionTypes>
-                    <dialect>${build.hibernate.dialect}</dialect>
                     <driver>${build.jdbc.driverClassName}</driver>
                     <url>${build.jdbc.url}</url>
                     <username>${build.jdbc.username}</username>

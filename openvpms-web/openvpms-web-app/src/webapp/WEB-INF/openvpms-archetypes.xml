@@ -26,11 +26,7 @@
     <bean id="appointmentService" class="org.openvpms.archetype.rules.workflow.AppointmentService">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
-        <constructor-arg>
-            <bean class="net.sf.ehcache.Ehcache" factory-bean="cacheFactory" factory-method="create">
-                <constructor-arg value="appointmentCache"/>
-            </bean>
-        </constructor-arg>
+        <constructor-arg ref="cacheFactory"/>
     </bean>
 
     <!-- ================================================================== -->
@@ -40,11 +36,7 @@
     <bean id="taskService" class="org.openvpms.archetype.rules.workflow.TaskService">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>
-        <constructor-arg>
-            <bean class="net.sf.ehcache.Ehcache" factory-bean="cacheFactory" factory-method="create">
-                <constructor-arg value="taskCache"/>
-            </bean>
-        </constructor-arg>
+        <constructor-arg ref="cacheFactory"/>
     </bean>
 
     <!-- ================================================================== -->
@@ -53,11 +45,7 @@
 
     <bean id="calendarService" class="org.openvpms.archetype.rules.workflow.CalendarService">
         <constructor-arg ref="archetypeService"/>
-        <constructor-arg>
-            <bean class="net.sf.ehcache.Ehcache" factory-bean="cacheFactory" factory-method="create">
-                <constructor-arg value="calendarCache"/>
-            </bean>
-        </constructor-arg>
+        <constructor-arg ref="cacheFactory"/>
     </bean>
 
     <!-- ================================================================== -->

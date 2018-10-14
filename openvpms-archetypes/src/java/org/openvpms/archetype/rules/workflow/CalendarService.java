@@ -16,11 +16,13 @@
 
 package org.openvpms.archetype.rules.workflow;
 
-import net.sf.ehcache.Ehcache;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.cache.EhcacheManager;
 
 /**
  * Implementation of the {@link ScheduleService} for calendar events.
+ * <p>
+ * This uses the supplied {@link EhcacheManager} to create a cache named "calendarCache".
  *
  * @author Tim Anderson
  */
@@ -29,10 +31,11 @@ public class CalendarService extends AbstractCalendarService {
     /**
      * Constructs a {@link CalendarService}.
      *
-     * @param service the archetype service
-     * @param cache   the event cache
+     * @param service      the archetype service
+     * @param cacheManager the cache manager
      */
-    public CalendarService(IArchetypeService service, Ehcache cache) {
-        super(new String[]{ScheduleArchetypes.CALENDAR_EVENT}, service, cache, new CalendarEventFactory(service));
+    public CalendarService(IArchetypeService service, EhcacheManager cacheManager) {
+        super(new String[]{ScheduleArchetypes.CALENDAR_EVENT}, service, cacheManager, "calendarCache",
+              new CalendarEventFactory(service));
     }
 }

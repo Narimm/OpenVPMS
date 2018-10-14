@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.jobs.recordlocking;
@@ -39,6 +39,7 @@ import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
 import org.quartz.StatefulJob;
 import org.quartz.Trigger;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import java.util.Date;
 import java.util.Set;
@@ -103,20 +104,22 @@ public class MedicalRecordLockerJob implements InterruptableJob, StatefulJob {
     /**
      * Constructs a {@link MedicalRecordLockerJob}.
      *
-     * @param configuration   the job configuration
-     * @param service         the archetype service
-     * @param practiceService the practice service
-     * @param factory         the Hibernate session factory
-     * @param recordRules     the medical record rules
+     * @param configuration      the job configuration
+     * @param service            the archetype service
+     * @param practiceService    the practice service
+     * @param factory            the Hibernate session factory
+     * @param recordRules        the medical record rules
+     * @param transactionManager the transaction manager
      */
     public MedicalRecordLockerJob(Entity configuration, IArchetypeRuleService service, PracticeService practiceService,
-                                  SessionFactory factory, MedicalRecordRules recordRules) {
+                                  SessionFactory factory, MedicalRecordRules recordRules,
+                                  PlatformTransactionManager transactionManager) {
         this.configuration = configuration;
         this.service = service;
         this.practiceService = practiceService;
         shortNames = recordRules.getLockableRecords();
         notifier = new JobCompletionNotifier(service);
-        locker = new MedicalRecordLocker(factory);
+        locker = new MedicalRecordLocker(factory, transactionManager);
     }
 
     /**
@@ -150,7 +153,7 @@ public class MedicalRecordLockerJob implements InterruptableJob, StatefulJob {
 
     /**
      * Locks records.
-     * <p/>
+     * <p>
      * This needs to read in records, update them, and then save them, as there is no support to run an HQL update.
      *
      * @return the no. of locked records

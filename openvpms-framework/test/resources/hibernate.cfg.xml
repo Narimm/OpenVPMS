@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <!DOCTYPE hibernate-configuration PUBLIC
@@ -20,7 +20,7 @@
         "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
     <session-factory>
-        <property name="hibernate.dialect">${build.hibernate.dialect}</property>
+        <property name="hibernate.dialect">${build.hibernate.dialect}</property> <!-- required by hibernate3-maven-plugin, optional otherwise -->
         <property name="connection.driver_class">${build.jdbc.driverClassName}</property>
         <property name="connection.url">${build.jdbc.url}</property>
         <property name="connection.username">${build.jdbc.username}</property>

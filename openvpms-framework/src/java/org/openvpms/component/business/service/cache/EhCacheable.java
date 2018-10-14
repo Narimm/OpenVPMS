@@ -16,7 +16,9 @@
 
 package org.openvpms.component.business.service.cache;
 
-import net.sf.ehcache.Ehcache;
+
+import org.ehcache.Cache;
+import org.ehcache.core.Ehcache;
 
 /**
  * Interface for services backed by an {@link Ehcache} that:
@@ -34,7 +36,7 @@ public interface EhCacheable {
      *
      * @return the underlying cache
      */
-    Ehcache getCache();
+    Cache getCache();
 
     /**
      * Clears cached data, including the underlying cache.

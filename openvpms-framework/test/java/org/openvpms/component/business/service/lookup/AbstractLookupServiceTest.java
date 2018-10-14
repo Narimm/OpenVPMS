@@ -464,6 +464,15 @@ public abstract class AbstractLookupServiceTest extends AbstractArchetypeService
     }
 
     /**
+     * Returns the lookup service.
+     *
+     * @return
+     */
+    protected ILookupService getLookupService() {
+        return lookupService;
+    }
+
+    /**
      * Verify the targets of a source lookup match that expected.
      *
      * @param source  the source lookup

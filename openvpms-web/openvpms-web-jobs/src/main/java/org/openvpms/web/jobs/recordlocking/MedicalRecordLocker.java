@@ -11,15 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.jobs.recordlocking;
 
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.springframework.orm.hibernate4.HibernateTemplate;
+import org.hibernate.query.Query;
+import org.springframework.orm.hibernate5.HibernateTemplate;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -40,12 +44,19 @@ class MedicalRecordLocker {
     private final HibernateTemplate template;
 
     /**
+     * The transaction manager.
+     */
+    private final PlatformTransactionManager transactionManager;
+
+    /**
      * Constructs a {@link MedicalRecordLocker}.
      *
-     * @param factory the Hibernate session factory
+     * @param factory            the Hibernate session factory
+     * @param transactionManager the transaction manager
      */
-    public MedicalRecordLocker(SessionFactory factory) {
+    public MedicalRecordLocker(SessionFactory factory, PlatformTransactionManager transactionManager) {
         template = new HibernateTemplate(factory);
+        this.transactionManager = transactionManager;
     }
 
     /**
@@ -57,13 +68,19 @@ class MedicalRecordLocker {
      * @return the no. of locked records
      */
     public int lock(final String[] shortNames, final Date startTime, final int batchSize) {
-        return template.execute(session -> {
-            int updated = 0;
-            List ids = getIds(session, shortNames, startTime, batchSize);
-            if (!ids.isEmpty()) {
-                updated = update(session, ids);
+        TransactionTemplate transaction = new TransactionTemplate(transactionManager);
+        return transaction.execute(new TransactionCallback<Integer>() {
+            @Override
+            public Integer doInTransaction(TransactionStatus transactionStatus) {
+                return template.execute(session -> {
+                    int updated = 0;
+                    List ids = getIds(session, shortNames, startTime, batchSize);
+                    if (!ids.isEmpty()) {
+                        updated = update(session, ids);
+                    }
+                    return updated;
+                });
             }
-            return updated;
         });
     }
 

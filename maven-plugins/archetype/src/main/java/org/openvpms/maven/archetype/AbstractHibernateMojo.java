@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.maven.archetype;
@@ -40,14 +40,6 @@ import java.util.Properties;
  * @author Tim Anderson
  */
 public abstract class AbstractHibernateMojo extends AbstractMojo {
-
-    /**
-     * The Hibernate dialect;
-     *
-     * @parameter
-     * @required
-     */
-    private String dialect;
 
     /**
      * The JDBC driver class name.
@@ -90,24 +82,6 @@ public abstract class AbstractHibernateMojo extends AbstractMojo {
      * The application context resource path.
      */
     protected final static String APPLICATION_CONTEXT = "mavenPluginApplicationContext.xml";
-
-    /**
-     * Returns the Hibernate dialect.
-     *
-     * @return the Hibernate dialect
-     */
-    public String getDialect() {
-        return dialect;
-    }
-
-    /**
-     * Sets the Hibernate dialect.
-     *
-     * @param dialect the hibernate dialect
-     */
-    public void setDialect(String dialect) {
-        this.dialect = dialect;
-    }
 
     /**
      * Returns the JDBC driver class name.
@@ -199,7 +173,6 @@ public abstract class AbstractHibernateMojo extends AbstractMojo {
      */
     public void execute() throws MojoExecutionException, MojoFailureException {
         properties = new Properties();
-        properties.setProperty("hibernate.dialect", dialect);
         properties.setProperty("jdbc.driverClassName", driver);
         properties.setProperty("jdbc.url", url);
         properties.setProperty("jdbc.username", username);

@@ -16,16 +16,34 @@
 
 package org.openvpms.web.workspace.admin.system.cache;
 
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Statistics;
+import org.apache.commons.lang.reflect.FieldUtils;
+import org.ehcache.Cache;
+import org.ehcache.config.CacheRuntimeConfiguration;
+import org.ehcache.config.ResourceType;
+import org.ehcache.config.SizedResourcePool;
+import org.ehcache.core.spi.service.StatisticsService;
+import org.ehcache.core.statistics.CacheStatistics;
+import org.ehcache.core.statistics.TierStatistics;
+import org.ehcache.sizeof.SizeOf;
+import org.ehcache.sizeof.SizeOfFilterSource;
 import org.openvpms.component.business.service.cache.EhCacheable;
+import org.openvpms.web.component.util.ErrorHelper;
+
+import java.lang.reflect.Field;
 
 /**
  * Cache state.
+ * <p>
+ * This assumes that the cache is heap based, with an element size.
  *
  * @author Tim Anderson
  */
 class CacheState {
+
+    /**
+     * The cache name.
+     */
+    private final String name;
 
     /**
      * The cache display name.
@@ -38,9 +56,19 @@ class CacheState {
     private final EhCacheable cache;
 
     /**
-     * The current statistics.
+     * The statistics service.
      */
-    private Statistics statistics;
+    private final StatisticsService service;
+
+    /**
+     * The cache statistics.
+     */
+    private CacheStatistics statistics;
+
+    /**
+     * The heap statistics.
+     */
+    private TierStatistics tierStatistics;
 
     /**
      * The cache size, in bytes.
@@ -51,11 +79,15 @@ class CacheState {
      * Constructs a {@link CacheState}.
      *
      * @param cache       the cache
+     * @param name        the cache name
      * @param displayName the cache display name
+     * @param service     the statistics service
      */
-    public CacheState(EhCacheable cache, String displayName) {
+    public CacheState(EhCacheable cache, String name, String displayName, StatisticsService service) {
+        this.name = name;
         this.displayName = displayName;
         this.cache = cache;
+        this.service = service;
         refreshStatistics();
     }
 
@@ -65,7 +97,7 @@ class CacheState {
      * @return the name
      */
     public String getName() {
-        return cache.getCache().getName();
+        return name;
     }
 
     /**
@@ -83,7 +115,7 @@ class CacheState {
      * @return the number of objects in the cache
      */
     public long getCount() {
-        return statistics.getObjectCount();
+        return tierStatistics != null ? tierStatistics.getMappings() : 0;
     }
 
     /**
@@ -92,7 +124,9 @@ class CacheState {
      * @return the maximum number of objects that can be cached
      */
     public long getMaxCount() {
-        return cache.getCache().getCacheConfiguration().getMaxEntriesLocalHeap();
+        CacheRuntimeConfiguration configuration = cache.getCache().getRuntimeConfiguration();
+        SizedResourcePool pool = configuration.getResourcePools().getPoolForResource(ResourceType.Core.HEAP);
+        return pool != null ? pool.getSize() : 0;
     }
 
     /**
@@ -101,7 +135,7 @@ class CacheState {
      * @return the number of times a requested item was found in the cache
      */
     public long getHits() {
-        return statistics.getCacheHits();
+        return statistics != null ? statistics.getCacheHits() : 0;
     }
 
     /**
@@ -110,7 +144,7 @@ class CacheState {
      * @return the number of times a requested element was not found in the cache
      */
     public long getMisses() {
-        return statistics.getCacheMisses();
+        return statistics != null ? statistics.getCacheMisses() : 0;
     }
 
     /**
@@ -137,11 +171,32 @@ class CacheState {
      * Refreshes the cache statistics.
      */
     public void refreshStatistics() {
-        statistics = cache.getCache().getStatistics();
-        try {
-            size = cache.getCache().calculateInMemorySize();
-        } catch (Throwable exception) {
-            size = -1;
+        statistics = service.getCacheStatistics(name);
+        if (statistics != null) {
+            tierStatistics = statistics.getTierStatistics().get("OnHeap");
+        }
+        if (getCount() != 0) {
+            // only calculate the cache size if it is not empty
+            long newSize = -1;
+            try {
+                // hack to access the underlying store of the cache, in order to calculate its size.
+                // TODO - clean up when Ehcache provides a cleaner API
+                Cache cache = getCache();
+                Field field = FieldUtils.getField(cache.getClass(), "store", true);
+                if (field != null) {
+                    Object store = field.get(cache);
+                    if (store != null) {
+                        SizeOfFilterSource filters = new SizeOfFilterSource(true);
+                        SizeOf sizeOf = SizeOf.newInstance(filters.getFilters());
+                        newSize = sizeOf.deepSizeOf(store);
+                    }
+                }
+            } catch (Throwable exception) {
+                ErrorHelper.show(exception);
+            }
+            size = newSize;
+        } else {
+            size = 0;
         }
     }
 
@@ -149,7 +204,9 @@ class CacheState {
      * Resets the cache statistics.
      */
     public void resetStatistics() {
-        statistics.clearStatistics();
+        if (statistics != null) {
+            statistics.clear();
+        }
     }
 
     /**
@@ -164,7 +221,7 @@ class CacheState {
      *
      * @return the underlying cache
      */
-    public Ehcache getCache() {
+    public Cache getCache() {
         return cache.getCache();
     }
 }

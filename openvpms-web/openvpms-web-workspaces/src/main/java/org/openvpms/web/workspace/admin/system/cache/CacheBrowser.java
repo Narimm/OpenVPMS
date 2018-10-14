@@ -19,6 +19,7 @@ package org.openvpms.web.workspace.admin.system.cache;
 import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionListener;
+import org.ehcache.core.spi.service.StatisticsService;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.workflow.CalendarService;
@@ -80,6 +81,11 @@ class CacheBrowser {
     private final List<CacheState> caches;
 
     /**
+     * The statistics service.
+     */
+    private final StatisticsService statistics;
+
+    /**
      * The table of caches.
      */
     private final PagedIMTable<CacheState> table;
@@ -120,10 +126,12 @@ class CacheBrowser {
      */
     public CacheBrowser() {
         caches = new ArrayList<>();
-        addCache((EhCacheable) ServiceHelper.getAppointmentService(), "admin.system.cache.appointment", caches);
-        addCache((EhCacheable) ServiceHelper.getTaskService(), "admin.system.cache.task", caches);
-        addCache(ServiceHelper.getBean(CalendarService.class), "admin.system.cache.calendar", caches);
-        addCache((EhCacheable) ServiceHelper.getLookupService(), "admin.system.cache.lookup", caches);
+        statistics = ServiceHelper.getBean(StatisticsService.class);
+        addCache((EhCacheable) ServiceHelper.getAppointmentService(), "appointmentCache",
+                 "admin.system.cache.appointment", caches);
+        addCache((EhCacheable) ServiceHelper.getTaskService(), "taskCache", "admin.system.cache.task", caches);
+        addCache(ServiceHelper.getBean(CalendarService.class), "calendarCache", "admin.system.cache.calendar", caches);
+        addCache((EhCacheable) ServiceHelper.getLookupService(), "lookupCache", "admin.system.cache.lookup", caches);
 
         table = new PagedIMTable<>(new CacheTableModel());
         ListResultSet<CacheState> set = new ListResultSet<CacheState>(caches, 20) {
@@ -291,10 +299,11 @@ class CacheBrowser {
      * Adds a cache to the list of caches.
      *
      * @param cache  the cache
+     * @param name   the cache name
      * @param key    the localisation key for the cache display name
      * @param caches the list to add to
      */
-    private void addCache(EhCacheable cache, String key, List<CacheState> caches) {
-        caches.add(new CacheState(cache, Messages.get(key)));
+    private void addCache(EhCacheable cache, String name, String key, List<CacheState> caches) {
+        caches.add(new CacheState(cache, name, Messages.get(key), statistics));
     }
 }

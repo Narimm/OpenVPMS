@@ -17,7 +17,7 @@
 package org.openvpms.web.workspace.admin.system.cache;
 
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.component.business.service.cache.EhcacheFactory;
+import org.openvpms.component.business.service.cache.EhcacheManager;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ModalDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
@@ -41,9 +41,9 @@ public class CacheDialog extends ModalDialog {
     private final CacheBrowser browser;
 
     /**
-     * The cache factory.
+     * The cache manager.
      */
-    private final EhcacheFactory factory;
+    private final EhcacheManager manager;
 
     /**
      * Edit button identifier.
@@ -63,7 +63,7 @@ public class CacheDialog extends ModalDialog {
     public CacheDialog(HelpContext help) {
         super(Messages.get("admin.system.cache.title"), "MessageDialog", new String[0], help);
         browser = new CacheBrowser();
-        factory = ServiceHelper.getBean(EhcacheFactory.class);
+        manager = ServiceHelper.getBean(EhcacheManager.class);
         addButton(EDIT_ID, new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
@@ -145,7 +145,7 @@ public class CacheDialog extends ModalDialog {
                 public void onOK() {
                     long count = dialog.getCount();
                     if (count > 0) {
-                        factory.setMaxElements(cache.getCache(), count);
+                        manager.setMaxElements(cache.getCache(), cache.getName(), count);
                     }
                     refreshStatistics();
                 }

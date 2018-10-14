@@ -157,7 +157,6 @@
                 <version>${project.version}</version>
                 <configuration>
                     <dir>src/archetypes/org/openvpms/archetype</dir>
-                    <dialect>${build.hibernate.dialect}</dialect>
                     <driver>${build.jdbc.driverClassName}</driver>
                     <url>${build.jdbc.url}</url>
                     <username>${build.jdbc.username}</username>
@@ -186,7 +185,6 @@
                 <version>${project.version}</version>
                 <configuration>
                     <dir>src/data/org/openvpms/data/demo</dir>
-                    <dialect>${build.hibernate.dialect}</dialect>
                     <driver>${build.jdbc.driverClassName}</driver>
                     <url>${build.jdbc.url}</url>
                     <username>${build.jdbc.username}</username>
@@ -277,8 +275,8 @@
             <version>${commons.resources.version}</version>
         </dependency>
         <dependency>
-            <groupId>net.sf.ehcache</groupId>
-            <artifactId>ehcache-core</artifactId>
+            <groupId>org.ehcache</groupId>
+            <artifactId>ehcache</artifactId>
         </dependency>
         <dependency>
             <groupId>jsap</groupId>

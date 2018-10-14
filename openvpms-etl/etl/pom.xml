@@ -190,7 +190,7 @@
             <resource>
                 <directory>${basedir}/src/conf/ehcache</directory>
                 <includes>
-                    <include>ehcache.xml</include>
+                    <include>ehcache-etl.xml</include>
                 </includes>
             </resource>
         </resources>

@@ -174,7 +174,6 @@
                                 <pathelement path="${maven.test.dest}"/>
                                 <pathelement path="${maven.build.dir}/hibernate"/>
                             </classpath>
-                            <jvmarg value="-Dhibernate.dialect=${build.hibernate.dialect}"/>
                             <jvmarg value="-Djdbc.driverClassName=${build.jdbc.driverClassName}"/>
                             <jvmarg value="-Djdbc.url=${build.jdbc.url}"/>
                             <jvmarg value="-Djdbc.username=${build.jdbc.username}"/>
@@ -236,8 +235,8 @@
             <version>${commons.resources.version}</version>
         </dependency>
         <dependency>
-            <groupId>net.sf.ehcache</groupId>
-            <artifactId>ehcache-core</artifactId>
+            <groupId>org.ehcache</groupId>
+            <artifactId>ehcache</artifactId>
         </dependency>
         <dependency>
             <groupId>org.quartz-scheduler</groupId>
@@ -356,7 +355,7 @@
         </dependency>
         <dependency>
             <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-ehcache</artifactId>
+            <artifactId>hibernate-jcache</artifactId>
         </dependency>
         <dependency>
             <!-- NOTE: this is not really required, but if javax.validation:validation-api is on the classpath -->

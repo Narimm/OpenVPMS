@@ -16,13 +16,13 @@
 
 package org.openvpms.archetype.rules.workflow;
 
-import net.sf.ehcache.Ehcache;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.cache.EhcacheManager;
 import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.object.Reference;
@@ -64,12 +64,13 @@ public class AbstractCalendarService extends AbstractScheduleService {
      *
      * @param eventArchetypes the event act archetypes
      * @param service         the archetype service
-     * @param cache           the event cache
+     * @param cacheManager    the cache manager
+     * @param cacheName       the cache name
      * @param factory         the event factory
      */
-    public AbstractCalendarService(String[] eventArchetypes, IArchetypeService service, Ehcache cache,
-                                   ScheduleEventFactory factory) {
-        super(eventArchetypes, service, cache, factory);
+    public AbstractCalendarService(String[] eventArchetypes, IArchetypeService service, EhcacheManager cacheManager,
+                                   String cacheName, ScheduleEventFactory factory) {
+        super(eventArchetypes, service, cacheManager, cacheName, factory);
     }
 
     /**

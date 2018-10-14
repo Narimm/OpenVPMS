@@ -1,27 +1,25 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.load;
 
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
 import java.util.Collections;
 import java.util.List;
@@ -64,21 +62,12 @@ public class ETLLogDAOImpl implements ETLLogDAO {
      * @param logs the logs to save
      */
     public void save(Iterable<ETLLog> logs) {
-        Session session = factory.openSession();
-        Transaction tx = session.beginTransaction();
-        try {
+        try (Session session = factory.openSession()){
+            Transaction tx = session.beginTransaction();
             for (ETLLog log : logs) {
                 session.saveOrUpdate(log);
             }
             tx.commit();
-        } catch (RuntimeException exception) {
-            if (tx != null) {
-                tx.rollback();
-            }
-            throw exception;
-        } finally {
-            session.clear();
-            session.close();
         }
     }
 
@@ -97,17 +86,13 @@ public class ETLLogDAOImpl implements ETLLogDAO {
         queryString.append(ETLLog.class.getName());
         queryString.append(" as l where l.logId = :logId");
 
-        Session session = factory.openSession();
-        try {
+        try (Session session = factory.openSession()){
             Query query = session.createQuery(queryString.toString());
             query.setParameter("logId", logId);
             List set = query.list();
             if (!set.isEmpty()) {
                 result = (ETLLog) set.get(0);
             }
-        } finally {
-            session.clear();
-            session.close();
         }
         return result;
     }
@@ -143,8 +128,7 @@ public class ETLLogDAOImpl implements ETLLogDAO {
             }
         }
 
-        Session session = factory.openSession();
-        try {
+        try (Session session = factory.openSession()){
             Query query = session.createQuery(queryString.toString());
             query.setParameter("rowId", rowId);
             if (loader != null) {
@@ -155,9 +139,6 @@ public class ETLLogDAOImpl implements ETLLogDAO {
             }
 
             result = query.list();
-        } finally {
-            session.clear();
-            session.close();
         }
         return (List<ETLLog>) result;
     }
@@ -178,8 +159,7 @@ public class ETLLogDAOImpl implements ETLLogDAO {
         queryString.append(ETLLog.class.getName());
         queryString.append(" as l where l.rowId = :rowId and ");
         queryString.append("l.loader = :loader");
-        Session session = factory.openSession();
-        try {
+        try (Session session = factory.openSession()) {
             Query query = session.createQuery(queryString.toString());
             query.setParameter("rowId", rowId);
             query.setParameter("loader", loader);
@@ -193,9 +173,6 @@ public class ETLLogDAOImpl implements ETLLogDAO {
                 }
             }
             processed = (rows != 0 && !errors);
-        } finally {
-            session.clear();
-            session.close();
         }
         return processed;
     }
@@ -215,15 +192,13 @@ public class ETLLogDAOImpl implements ETLLogDAO {
         queryString.append(ETLLog.class.getName());
         queryString.append(" where loader = :loader and rowId = :rowId");
 
-        Session session = factory.openSession();
-        try {
+        try (Session session = factory.openSession()){
+            Transaction transaction = session.beginTransaction();
             Query query = session.createQuery(queryString.toString());
             query.setParameter("loader", loader);
             query.setParameter("rowId", rowId);
             query.executeUpdate();
-        } finally {
-            session.clear();
-            session.close();
+            transaction.commit();
         }
     }
 

@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -20,7 +20,7 @@ package org.openvpms.component.business.dao.hibernate.usertype;
 import com.thoughtworks.xstream.XStream;
 import org.apache.log4j.Logger;
 import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.usertype.UserType;
 import org.openvpms.component.business.domain.im.datatypes.basic.DynamicAttributeMap;
 
@@ -111,7 +111,7 @@ public class DynamicAttributeMapUserType implements UserType, Serializable {
      * @throws SQLException
      */
     @Override
-    public Object nullSafeGet(ResultSet rs, String[] names, SessionImplementor session, Object owner)
+    public Object nullSafeGet(ResultSet rs, String[] names, SharedSessionContractImplementor session, Object owner)
             throws HibernateException, SQLException {
         if (rs.getString(names[0]) == null) {
             return new DynamicAttributeMap();
@@ -129,12 +129,12 @@ public class DynamicAttributeMapUserType implements UserType, Serializable {
      * @param st      a JDBC prepared statement
      * @param value   the object to write
      * @param index   statement parameter index
-     * @param session the sewsion
+     * @param session the session
      * @throws HibernateException
      * @throws SQLException
      */
     @Override
-    public void nullSafeSet(PreparedStatement st, Object value, int index, SessionImplementor session)
+    public void nullSafeSet(PreparedStatement st, Object value, int index, SharedSessionContractImplementor session)
             throws HibernateException, SQLException {
         if (value == null || ((DynamicAttributeMap) value).getAttributes().isEmpty()) {
             st.setNull(index, Types.VARCHAR);

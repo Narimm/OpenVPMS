@@ -16,24 +16,23 @@
 
 package org.openvpms.component.business.service.cache;
 
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.config.CacheConfiguration;
-import net.sf.ehcache.config.SizeOfPolicyConfiguration;
+
+import org.ehcache.Cache;
+import org.ehcache.core.spi.service.StatisticsService;
+import org.ehcache.spi.loaderwriter.CacheLoaderWriter;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
-import org.springframework.cache.ehcache.EhCacheFactoryBean;
 
 /**
- * Implementation of the {@link EhcacheFactory} interface that makes cache configurations persistent.
+ * Implementation of the {@link EhcacheManager} interface that makes cache configurations persistent.
  *
  * @author Tim Anderson
  */
-public class ConfigurableEhcacheFactory implements EhcacheFactory {
+public class ConfigurableEhcacheManager extends AbstractEhcacheManager {
 
     /**
      * The archetype service.
@@ -45,14 +44,25 @@ public class ConfigurableEhcacheFactory implements EhcacheFactory {
      */
     private final String archetype;
 
-
     /**
-     * Constructs a {@link ConfigurableEhcacheFactory}.
+     * Constructs a {@link ConfigurableEhcacheManager}.
      *
      * @param service   the archetype service
      * @param archetype the singleton archetype, used to make cache configurations persistent
      */
-    public ConfigurableEhcacheFactory(IArchetypeRuleService service, String archetype) {
+    public ConfigurableEhcacheManager(IArchetypeService service, String archetype) {
+        this(null, service, archetype);
+    }
+
+    /**
+     * Constructs a {@link ConfigurableEhcacheManager}.
+     *
+     * @param statistics the statistics service, or {@code null} if statistics aren't being collected
+     * @param service    the archetype service
+     * @param archetype  the singleton archetype, used to make cache configurations persistent
+     */
+    public ConfigurableEhcacheManager(StatisticsService statistics, IArchetypeService service, String archetype) {
+        super(statistics);
         this.service = service;
         this.archetype = archetype;
     }
@@ -60,52 +70,33 @@ public class ConfigurableEhcacheFactory implements EhcacheFactory {
     /**
      * Creates an eternal cache.
      *
-     * @param name the cache name. Must be unique
+     * @param name         the cache name. Must be unique
+     * @param keyType      the key type
+     * @param valueType    the value type
+     * @param loaderWriter the loader writer
      * @return a new cache
      */
     @Override
-    public Ehcache create(String name) {
-        EhCacheFactoryBean factory = new EhCacheFactoryBean();
-        factory.setDiskPersistent(false);
-        factory.setCacheName(name);
-        long elements = getMaxElements(name);
-        if (elements <= 0) {
-            elements = 100;
-        }
-        factory.setMaxEntriesLocalHeap(elements);
-        factory.setOverflowToDisk(false);
-        factory.setTimeToIdle(0);
-        factory.setTimeToLive(0);
-        factory.setEternal(true);
-        factory.setStatisticsEnabled(true);
-        factory.afterPropertiesSet();
-        Ehcache cache = factory.getObject();
-        CacheConfiguration config = cache.getCacheConfiguration();
-        if (config.getSizeOfPolicyConfiguration() == null) {
-            // register a configuration to limit warnings.
-            SizeOfPolicyConfiguration policyConfiguration = new SizeOfPolicyConfiguration()
-                    .maxDepth(1000000)
-                    .maxDepthExceededBehavior(SizeOfPolicyConfiguration.MaxDepthExceededBehavior.CONTINUE);
-            config.sizeOfPolicy(policyConfiguration);
-        }
-        return cache;
+    public <K, V> Cache<K, V> create(String name, Class<K> keyType, Class<V> valueType, CacheLoaderWriter<K, V> loaderWriter) {
+        return super.create(name, keyType, valueType, loaderWriter);
     }
 
     /**
      * Sets the maximum number of elements that a cache may hold in memory.
-     * <p>
+     * <br/>
      * This will be made persistent for use when the cache is next constructed.
      * <br/>
      * This requires the configuration to exist, and have a Long node named {@code <cache name>MaxElements}.
      *
      * @param cache       the cache
+     * @param name        the cache name
      * @param maxElements the maximum number of elements
      */
     @Override
-    public void setMaxElements(Ehcache cache, long maxElements) {
-        cache.getCacheConfiguration().setMaxEntriesLocalHeap(maxElements);
+    public <K, V> void setMaxElements(Cache<K, V> cache, String name, long maxElements) {
+        super.setMaxElements(cache, name, maxElements);
         IMObjectBean config = getConfig();
-        String node = getMaxElementsNode(cache.getName());
+        String node = getMaxElementsNode(name);
         if (config != null && config.hasNode(node)) {
             config.setValue(node, maxElements);
             config.save();

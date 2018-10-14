@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.jobs.recordlocking;
@@ -39,6 +39,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.transaction.PlatformTransactionManager;
 
 import java.util.Date;
 
@@ -58,6 +59,12 @@ public class MedicalRecordLockerJobTestCase extends ArchetypeServiceTest {
      */
     @Autowired
     private SessionFactory factory;
+
+    /**
+     * The transaction manager.
+     */
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
     /**
      * The job.
@@ -84,7 +91,7 @@ public class MedicalRecordLockerJobTestCase extends ArchetypeServiceTest {
             }
         };
         job = new MedicalRecordLockerJob(configuration, (IArchetypeRuleService) service, practiceService, factory,
-                                         rules);
+                                         rules, transactionManager);
     }
 
     /**

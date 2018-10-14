@@ -16,19 +16,21 @@
 
 package org.openvpms.component.business.service.lookup;
 
-import net.sf.ehcache.Ehcache;
-import net.sf.ehcache.Element;
 import org.apache.commons.lang.ObjectUtils;
+import org.ehcache.Cache;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.cache.EhCacheable;
+import org.openvpms.component.business.service.cache.EhcacheManager;
 import org.openvpms.component.model.lookup.LookupRelationship;
 import org.openvpms.component.model.object.Reference;
+import org.springframework.beans.factory.DisposableBean;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -39,42 +41,63 @@ import java.util.Set;
 
 /**
  * Implementation of {@link ILookupService} that caches objects.
- * <p>
+ * <br/>
+ * This uses the supplied {@link EhcacheManager} to create a cache named "lookupCache".
+ * <br/>
  * Note that race conditions can occur if a lookup is updated while a collection of the same lookups are
  * being loaded - TODO.
  *
  * @author Tim Anderson
  */
-public class CachingLookupService extends AbstractLookupService implements EhCacheable {
+public class CachingLookupService extends AbstractLookupService implements DisposableBean, EhCacheable {
 
     /**
      * The cache.
      */
-    private final Ehcache cache;
+    private final Cache<Key, Object> cache;
 
     /**
-     * Creates a new {@code CachingLookupService}.
-     *
-     * @param service the archetype service
-     * @param dao     the data access object
-     * @param cache   the cache
+     * The listener for updates.
      */
-    public CachingLookupService(IArchetypeService service, IMObjectDAO dao, Ehcache cache) {
+    private final IArchetypeServiceListener listener;
+
+    /**
+     * The archetypes to monitor updates for.
+     */
+    private static final String ARCHETYPES = "lookup.*";
+
+    /**
+     * Constructs a {@link CachingLookupService}.
+     *
+     * @param service      the archetype service
+     * @param dao          the data access object
+     * @param cacheManager the cache manager
+     */
+    public CachingLookupService(IArchetypeService service, IMObjectDAO dao, EhcacheManager cacheManager) {
         super(service, dao);
-        this.cache = cache;
-        service.addListener(
-                "lookup.*", new AbstractArchetypeServiceListener() {
+        this.cache = cacheManager.create("lookupCache", Key.class, Object.class);
+        listener = new AbstractArchetypeServiceListener() {
 
-                    @Override
-                    public void saved(IMObject object) {
-                        addLookup((Lookup) object, true);
-                    }
+            @Override
+            public void saved(IMObject object) {
+                addLookup((Lookup) object, true);
+            }
 
-                    @Override
-                    public void removed(IMObject object) {
-                        removeLookup((Lookup) object, true);
-                    }
-                });
+            @Override
+            public void removed(IMObject object) {
+                removeLookup((Lookup) object, true);
+            }
+        };
+        service.addListener(ARCHETYPES, listener);
+    }
+
+    /**
+     * Invoked by a BeanFactory on destruction of a singleton.
+     */
+    @Override
+    public void destroy() {
+        getService().removeListener(ARCHETYPES, listener);
+        cache.clear();
     }
 
     /**
@@ -101,11 +124,9 @@ public class CachingLookupService extends AbstractLookupService implements EhCac
      */
     @Override
     public Lookup getLookup(String shortName, String code, boolean activeOnly) {
-        Lookup result;
-        Element element = cache.get(new Key(shortName, code));
-        if (element != null) {
-            result = (Lookup) element.getObjectValue();
-            if (result != null && activeOnly && !result.isActive()) {
+        Lookup result = (Lookup) cache.get(new Key(shortName, code));
+        if (result != null) {
+            if (activeOnly && !result.isActive()) {
                 result = null;
             }
         } else {
@@ -127,24 +148,25 @@ public class CachingLookupService extends AbstractLookupService implements EhCac
     public Collection<Lookup> getLookups(String shortName) {
         Collection<Lookup> result;
         Key key = new Key(shortName);
-        Element element = cache.get(key);
-        if (element != null) {
+        Set<Reference> references = (Set<Reference>) cache.get(key);
+        if (references != null) {
             result = new ArrayList<>();
-            Set<Reference> references = (Set<Reference>) element.getObjectValue();
-            for (Reference reference : references) {
-                Lookup lookup = getLookup(reference);
-                if (lookup != null && lookup.isActive()) {
-                    result.add(lookup);
+            synchronized (references) {
+                for (Reference reference : references) {
+                    Lookup lookup = getLookup(reference);
+                    if (lookup != null && lookup.isActive()) {
+                        result.add(lookup);
+                    }
                 }
             }
         } else {
             result = query(shortName);
-            Set<Reference> references = new HashSet<>();
+            references = new HashSet<>();
             for (Lookup lookup : result) {
                 references.add(lookup.getObjectReference());
                 addLookup(lookup, false);
             }
-            cache.put(new Element(key, references));
+            cache.put(key, references);
         }
         return result;
     }
@@ -169,7 +191,7 @@ public class CachingLookupService extends AbstractLookupService implements EhCac
      */
     @Override
     public void clear() {
-        cache.removeAll();
+        cache.clear();
     }
 
     /**
@@ -178,7 +200,7 @@ public class CachingLookupService extends AbstractLookupService implements EhCac
      * @return the underlying cache
      */
     @Override
-    public Ehcache getCache() {
+    public Cache getCache() {
         return cache;
     }
 
@@ -210,8 +232,7 @@ public class CachingLookupService extends AbstractLookupService implements EhCac
      * @return the cached lookup, or {@code null} if none is found
      */
     private Lookup getCached(Key key) {
-        Element element = cache.get(key);
-        return (element != null) ? (Lookup) element.getObjectValue() : null;
+        return (Lookup) cache.get(key);
     }
 
     /**
@@ -234,8 +255,8 @@ public class CachingLookupService extends AbstractLookupService implements EhCac
                 original = getCached(codeKey);
             }
         }
-        cache.put(new Element(refKey, lookup));
-        cache.put(new Element(codeKey, lookup));
+        cache.put(refKey, lookup);
+        cache.put(codeKey, lookup);
 
         if (lookup.isActive()) {
             addToCollection(reference);
@@ -286,17 +307,28 @@ public class CachingLookupService extends AbstractLookupService implements EhCac
     @SuppressWarnings("unchecked")
     private void addToCollection(Reference reference) {
         String archetype = reference.getArchetype();
-        for (Object key : cache.getKeys()) {
-            if (key instanceof Key && ((Key) key).matches(archetype)) {
-                Element element = cache.get(key);
-                if (element != null) {
-                    synchronized (element) {
-                        Set<Reference> lookups = (Set<Reference>) element.getObjectValue();
+        Set<Key> keys = getKeys();
+        for (Key key : keys) {
+            if (key.matches(archetype)) {
+                Set<Reference> lookups = (Set<Reference>) cache.get(key);
+                if (lookups != null) {
+                    synchronized (lookups) {
                         lookups.add(reference);
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Returns the cache keys.
+     *
+     * @return the cache keys
+     */
+    private Set<Key> getKeys() {
+        Set<Key> keys = new HashSet<>();
+        cache.forEach(entry -> keys.add(entry.getKey()));
+        return keys;
     }
 
     /**
@@ -327,12 +359,11 @@ public class CachingLookupService extends AbstractLookupService implements EhCac
     @SuppressWarnings("unchecked")
     private void removeFromCollection(Reference reference) {
         String archetype = reference.getArchetype();
-        for (Object key : cache.getKeys()) {
-            if (key instanceof Key && ((Key) key).matches(archetype)) {
-                Element element = cache.get(key);
-                if (element != null) {
-                    synchronized (element) {
-                        Set<Reference> lookups = (Set<Reference>) element.getObjectValue();
+        for (Key key : getKeys()) {
+            if (key.matches(archetype)) {
+                Set<Reference> lookups = (Set<Reference>) cache.get(key);
+                if (lookups != null) {
+                    synchronized (lookups) {
                         lookups.remove(reference);
                     }
                 }
@@ -387,7 +418,7 @@ public class CachingLookupService extends AbstractLookupService implements EhCac
         @Override
         public boolean equals(Object obj) {
             if (!(obj instanceof Key)) {
-                return false; // Can get a DummyPinnedKey
+                return false;
             }
             Key other = (Key) obj;
             return (ObjectUtils.equals(key, other.key) || ObjectUtils.equals(ref, other.ref));

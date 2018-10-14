@@ -14,100 +14,151 @@
   ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
-<ehcache updateCheck="false">
+<config xmlns='http://www.ehcache.org/v3'
+        xmlns:jsr107='http://www.ehcache.org/v3/jsr107'>
 
-    <!-- Sets the path to the directory where cache .data files are created.
+    <service>
+        <jsr107:defaults enable-management="true" enable-statistics="true" default-template="default"/>
+    </service>
 
-         If the path is a Java System Property it is replaced by
-         its value in the running VM.
+    <cache alias="default-query-results-region">
+        <expiry>
+            <tti unit="seconds">120</tti>
+        </expiry>
+        <heap>10000</heap>
+    </cache>
 
-         The following properties are translated:
-         user.home - User's home directory
-         user.dir - User's current working directory
-         java.io.tmpdir - Default temp file path
-    -->
-    <diskStore path="java.io.tmpdir"/>
+    <cache alias="default-update-timestamps-region">
+        <expiry>
+            <none/>
+        </expiry>
+        <heap>4096</heap>
+    </cache>
 
+    <cache-template name="default">
+        <expiry>
+            <tti unit="seconds">120</tti>
+        </expiry>
+        <heap>50000</heap>
+    </cache-template>
 
-    <!--Default Cache configuration. These will applied to caches programmatically created through
-      the CacheManager.
+    <cache alias="org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl">
+        <expiry>
+            <none/>
+        </expiry>
+        <heap>1000</heap>
+    </cache>
 
-      The following attributes are required for defaultCache:
+    <cache alias="org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl">
+        <expiry>
+            <none/>
+        </expiry>
+        <heap>1000</heap>
+    </cache>
 
-      maxInMemory       - Sets the maximum number of objects that will be created in memory
-      eternal           - Sets whether elements are eternal. If eternal,  timeouts are ignored and the element
-      is never expired.
-      timeToIdleSeconds - Sets the time to idle for an element before it expires.
-      i.e. The maximum amount of time between accesses before an element expires
-      Is only used if the element is not eternal.
-      Optional attribute. A value of 0 means that an Element can idle for infinity
-      timeToLiveSeconds - Sets the time to live for an element before it expires.
-      i.e. The maximum time between creation time and when an element expires.
-      Is only used if the element is not eternal.
-      overflowToDisk    - Sets whether elements can overflow to disk when the in-memory cache
-      has reached the maxInMemory limit.
-    -->
-    <defaultCache maxElementsInMemory="50000" eternal="false"
-                  timeToIdleSeconds="120" timeToLiveSeconds="120"
-                  overflowToDisk="false"/>
+    <cache alias="org.openvpms.component.business.dao.hibernate.im.party.PartyDOImpl">
+        <expiry>
+            <none/>
+        </expiry>
+        <heap>1000</heap>
+    </cache>
 
-    <cache name="org.hibernate.cache.spi.UpdateTimestampsCache"
-           maxElementsInMemory="10000" eternal="false" timeToIdleSeconds="120"
-           timeToLiveSeconds="120" overflowToDisk="false"/>
+    <cache alias="org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDOImpl">
+        <expiry>
+            <none/>
+        </expiry>
+        <heap>1000</heap>
+    </cache>
 
-    <cache name="org.hibernate.cache.internal.StandardQueryCache"
-           maxElementsInMemory="10000" eternal="false" timeToIdleSeconds="120"
-           timeToLiveSeconds="120" overflowToDisk="false"/>
+    <cache alias="org.openvpms.component.business.dao.hibernate.im.entity.EntityLinkDOImpl">
+        <expiry>
+            <none/>
+        </expiry>
+        <heap>1000</heap>
+    </cache>
 
-    <cache name="org.openvpms.component.business.dao.hibernate.im.lookup.LookupDOImpl"
-           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+    <cache alias="org.openvpms.component.business.dao.hibernate.im.lookup.LookupRelationshipDOImpl">
+        <expiry>
+            <none/>
+        </expiry>
+        <heap>20000</heap>
+    </cache>
 
-    <cache name="org.openvpms.component.business.dao.hibernate.im.product.ProductDOImpl"
-           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+    <cache alias="org.openvpms.component.business.dao.hibernate.im.product.ProductPriceDOImpl">
+        <expiry>
+            <none/>
+        </expiry>
+        <heap>1000</heap>
+    </cache>
 
-    <cache name="org.openvpms.component.business.dao.hibernate.im.party.PartyDOImpl"
-           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+    <cache alias="org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl">
+        <expiry>
+            <none/>
+        </expiry>
+        <heap>1000</heap>
+    </cache>
 
-    <cache name="org.openvpms.component.business.dao.hibernate.im.entity.EntityRelationshipDOImpl"
-           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+    <cache alias="org.openvpms.component.business.dao.hibernate.im.act.DocumentActDOImpl">
+        <expiry>
+            <none/>
+        </expiry>
+        <heap>1000</heap>
+    </cache>
 
-    <cache name="org.openvpms.component.business.dao.hibernate.im.entity.EntityLinkDOImpl"
-           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+    <cache alias="org.openvpms.component.business.dao.hibernate.im.act.FinancialActDOImpl">
+        <expiry>
+            <none/>
+        </expiry>
+        <heap>1000</heap>
+    </cache>
 
-    <cache name="org.openvpms.component.business.dao.hibernate.im.lookup.LookupRelationshipDOImpl"
-           maxElementsInMemory="20000" eternal="true" overflowToDisk="false"/>
+    <cache alias="org.openvpms.component.business.dao.hibernate.im.security.SecurityRoleDOImpl">
+        <expiry>
+            <none/>
+        </expiry>
+        <heap>1000</heap>
+    </cache>
 
-    <cache name="org.openvpms.component.business.dao.hibernate.im.product.ProductPriceDOImpl"
-           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+    <cache alias="org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl">
+        <expiry>
+            <none/>
+        </expiry>
+        <heap>1000</heap>
+    </cache>
 
-    <cache name="org.openvpms.component.business.dao.hibernate.im.act.ActDOImpl"
-           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+    <cache alias="org.openvpms.component.business.dao.hibernate.im.party.ContactDOImpl">
+        <expiry>
+            <none/>
+        </expiry>
+        <heap>1000</heap>
+    </cache>
 
-    <cache name="org.openvpms.component.business.dao.hibernate.im.act.DocumentActDOImpl"
-           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+    <cache alias="org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDOImpl">
+        <expiry>
+            <none/>
+        </expiry>
+        <heap>1000</heap>
+    </cache>
 
-    <cache name="org.openvpms.component.business.dao.hibernate.im.act.FinancialActDOImpl"
-           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+    <cache alias="org.openvpms.component.business.dao.hibernate.im.act.ActIdentityDOImpl">
+        <expiry>
+            <none/>
+        </expiry>
+        <heap>1000</heap>
+    </cache>
 
-    <cache name="org.openvpms.component.business.dao.hibernate.im.security.SecurityRoleDOImpl"
-           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+    <cache alias="org.openvpms.component.business.dao.hibernate.im.act.ActRelationshipDOImpl">
+        <expiry>
+            <none/>
+        </expiry>
+        <heap>1000</heap>
+    </cache>
 
-    <cache name="org.openvpms.component.business.dao.hibernate.im.entity.EntityDOImpl"
-           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
+    <cache alias="org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl">
+        <expiry>
+            <none/>
+        </expiry>
+        <heap>1000</heap>
+    </cache>
 
-    <cache name="org.openvpms.component.business.dao.hibernate.im.party.ContactDOImpl"
-           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
-
-    <cache name="org.openvpms.component.business.dao.hibernate.im.entity.EntityIdentityDOImpl"
-           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
-
-    <cache name="org.openvpms.component.business.dao.hibernate.im.act.ActIdentityDOImpl"
-           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
-
-    <cache name="org.openvpms.component.business.dao.hibernate.im.act.ActRelationshipDOImpl"
-           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
-
-    <cache name="org.openvpms.component.business.dao.hibernate.im.act.ParticipationDOImpl"
-           maxElementsInMemory="1000" eternal="true" overflowToDisk="false"/>
-
-</ehcache>
+</config>

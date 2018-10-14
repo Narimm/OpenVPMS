@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
 
-import net.sf.ehcache.Cache;
+import org.junit.After;
 import org.junit.Before;
+import org.openvpms.component.business.service.cache.BasicEhcacheManager;
 
 
 /**
@@ -28,14 +29,29 @@ import org.junit.Before;
 public class CachingLookupServiceTestCase extends AbstractLookupServiceTest {
 
     /**
+     * The cache manager.
+     */
+    private BasicEhcacheManager cacheManager;
+
+    /**
      * Sets up the test case.
      *
      * @throws Exception for any error
      */
     @Before
     public void setUp() throws Exception {
-        Cache cache = (Cache) applicationContext.getBean("lookupCache");
-        setLookupService(new CachingLookupService(getArchetypeService(), getDAO(), cache));
+        cacheManager = new BasicEhcacheManager(100);
+        CachingLookupService service = new CachingLookupService(getArchetypeService(), getDAO(), cacheManager);
+        setLookupService(service);
+    }
+
+    /**
+     * Cleans up after the test
+     */
+    @After
+    public void tearDown() {
+        ((CachingLookupService)getLookupService()).destroy();
+        cacheManager.destroy();
     }
 
 }

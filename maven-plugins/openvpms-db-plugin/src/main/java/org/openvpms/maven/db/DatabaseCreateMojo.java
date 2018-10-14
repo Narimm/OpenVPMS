@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.maven.db;
@@ -184,7 +184,6 @@ public class DatabaseCreateMojo extends AbstractHibernateMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         if (!skip) {
-            super.setDialect(""); // can't be null, but otherwise not required.
             super.execute();
         } else {
             getLog().info("Plugin is skipped");

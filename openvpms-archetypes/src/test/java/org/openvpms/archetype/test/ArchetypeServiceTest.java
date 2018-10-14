@@ -107,7 +107,8 @@ public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTe
      * @throws ArchetypeServiceException if the service cannot save the objects
      * @throws ValidationException       if the object cannot be validated
      */
-    protected <T extends IMObject> void save(T... objects) {
+    @SafeVarargs
+    protected final <T extends IMObject> void save(T... objects) {
         save(Arrays.asList(objects));
     }
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -20,7 +20,7 @@ package org.openvpms.component.business.dao.hibernate.usertype;
 import com.thoughtworks.xstream.XStream;
 import org.apache.commons.lang.ObjectUtils;
 import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.usertype.UserType;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 
@@ -97,7 +97,8 @@ public class PropertyMapUserType implements UserType, Serializable {
      * @throws SQLException for an SQL error
      */
     @Override
-    public Object nullSafeGet(ResultSet set, String[] names, SessionImplementor session, Object owner) throws SQLException {
+    public Object nullSafeGet(ResultSet set, String[] names, SharedSessionContractImplementor session, Object owner)
+            throws SQLException {
         String value = set.getString(names[0]);
         return (value != null) ? new XStream().fromXML(value) : null;
     }
@@ -114,8 +115,8 @@ public class PropertyMapUserType implements UserType, Serializable {
      * @throws SQLException for any SQL error
      */
     @Override
-    public void nullSafeSet(PreparedStatement statement, Object value, int index, SessionImplementor session)
-            throws SQLException {
+    public void nullSafeSet(PreparedStatement statement, Object value, int index,
+                            SharedSessionContractImplementor session) throws SQLException {
         if (value == null) {
             statement.setNull(index, Types.VARCHAR);
         } else {

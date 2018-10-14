@@ -183,7 +183,6 @@
                         <file>src/reports/documents-A4.xml</file>
                         <file>src/reports/reports-A4.xml</file>
                     </files>
-                    <dialect>${build.hibernate.dialect}</dialect>
                     <driver>${build.jdbc.driverClassName}</driver>
                     <url>${build.jdbc.url}</url>
                     <username>${build.jdbc.username}</username>

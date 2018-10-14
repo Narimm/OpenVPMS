@@ -11,12 +11,11 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
 
-import net.sf.ehcache.Ehcache;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
@@ -34,7 +33,6 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.springframework.cache.ehcache.EhCacheFactoryBean;
 
 import java.sql.Time;
 import java.util.ArrayList;
@@ -479,24 +477,6 @@ public class ScheduleTestHelper extends TestHelper {
             bean.setParticipant(UserArchetypes.AUTHOR_PARTICIPATION, author);
         }
         return act;
-    }
-
-    /**
-     * Helper to create an in-memory cache.
-     *
-     * @param maxElementsInMemory specifies the maximum number of cached objects in memory
-     * @return a new cache
-     */
-    public static Ehcache createCache(int maxElementsInMemory) {
-        EhCacheFactoryBean bean = new EhCacheFactoryBean();
-        bean.setCacheName("foo" + System.nanoTime());
-        bean.setMaxEntriesLocalHeap(maxElementsInMemory);
-        bean.setTimeToIdle(0);
-        bean.setTimeToLive(0);
-        bean.setEternal(true);
-        bean.setOverflowToDisk(false);
-        bean.afterPropertiesSet();
-        return bean.getObject();
     }
 
     /**

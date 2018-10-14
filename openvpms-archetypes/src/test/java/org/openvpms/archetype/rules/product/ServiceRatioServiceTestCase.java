@@ -22,12 +22,12 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.CalendarService;
-import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.cache.BasicEhcacheManager;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -131,7 +131,7 @@ public class ServiceRatioServiceTestCase extends ArchetypeServiceTest {
      */
     @Before
     public void setUp() {
-        calendarService = new CalendarService(getArchetypeService(), ScheduleTestHelper.createCache(10));
+        calendarService = new CalendarService(getArchetypeService(), new BasicEhcacheManager(30));
     }
 
     /**

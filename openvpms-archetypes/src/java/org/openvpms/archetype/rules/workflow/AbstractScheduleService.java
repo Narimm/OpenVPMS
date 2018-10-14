@@ -16,8 +16,8 @@
 
 package org.openvpms.archetype.rules.workflow;
 
-import net.sf.ehcache.Ehcache;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.ehcache.Cache;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -26,6 +26,7 @@ import org.openvpms.component.business.service.archetype.AbstractArchetypeServic
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
 import org.openvpms.component.business.service.cache.EhCacheable;
+import org.openvpms.component.business.service.cache.EhcacheManager;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.util.PropertySet;
@@ -74,14 +75,15 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
      *
      * @param eventArchetypes the event act archetype short names
      * @param service         the archetype service
-     * @param cache           the event cache
+     * @param cacheManager    the cache manager
+     * @param cacheName       the cache name
      * @param factory         the event factory
      */
-    public AbstractScheduleService(String[] eventArchetypes, IArchetypeService service, Ehcache cache,
-                                   ScheduleEventFactory factory) {
+    public AbstractScheduleService(String[] eventArchetypes, IArchetypeService service, EhcacheManager cacheManager,
+                                   String cacheName, ScheduleEventFactory factory) {
         this.service = service;
         this.factory = factory;
-        this.cache = new ScheduleEventCache(cache, factory);
+        this.cache = new ScheduleEventCache(cacheManager, cacheName, factory);
 
         this.eventArchetypes = eventArchetypes;
 
@@ -109,7 +111,7 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
      * @return the underlying cache
      */
     @Override
-    public Ehcache getCache() {
+    public Cache getCache() {
         return cache.getCache();
     }
 
