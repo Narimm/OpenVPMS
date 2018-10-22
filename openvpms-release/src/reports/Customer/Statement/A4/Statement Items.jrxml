@@ -68,7 +68,7 @@
 	<field name="target.template.entity.printAggregate" class="java.lang.Boolean"/>
 	<field name="target.print" class="java.lang.Boolean"/>
 	<field name="target.shortName" class="java.lang.String"/>
-	<field name="target.product.entity.sellingUnits,printedName" class="java.lang.String"/>
+	<field name="target.product.entity.sellingUnits.printedName" class="java.lang.String"/>
 	<field name="target.credit" class="java.lang.Boolean"/>
 	<sortField name="target.patient.entity.name"/>
 	<sortField name="showTemplate" order="Descending" type="Variable"/>
@@ -111,7 +111,7 @@ $F{target.template.entity.printAggregate}.booleanValue()]]></variableExpression>
 		<initialValueExpression><![CDATA[0]]></initialValueExpression>
 	</variable>
 	<variable name="units" class="java.lang.String">
-		<variableExpression><![CDATA[$F{target.product.entity.sellingUnits,printedName}==null?" ":$F{target.product.entity.sellingUnits,printedName}]]></variableExpression>
+		<variableExpression><![CDATA[$F{target.product.entity.sellingUnits.printedName}==null?" ":$F{target.product.entity.sellingUnits.printedName}]]></variableExpression>
 	</variable>
 	<group name="patientGroup" minHeightToStartNewPage="50">
 		<groupExpression><![CDATA[$F{target.patient.entity.name}]]></groupExpression>
