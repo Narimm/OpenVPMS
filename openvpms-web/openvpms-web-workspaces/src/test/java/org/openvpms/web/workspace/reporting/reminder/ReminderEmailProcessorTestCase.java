@@ -33,6 +33,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.report.ReportFactory;
 import org.openvpms.report.openoffice.Converter;
 import org.openvpms.web.component.im.report.ReporterFactory;
@@ -42,7 +43,6 @@ import org.openvpms.web.component.mail.MailException;
 import org.openvpms.web.component.mail.Mailer;
 import org.openvpms.web.component.mail.MailerFactory;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
-import org.openvpms.web.workspace.reporting.ReportingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 
@@ -166,11 +166,26 @@ public class ReminderEmailProcessorTestCase extends AbstractPatientReminderProce
         try {
             processor.process(reminders);
             fail("Expected exception to be thrown");
-        } catch (ReportingException expected) {
+        } catch (OpenVPMSException expected) {
             assertTrue(processor.failed(reminders, expected));
-            checkItem(get(item), ReminderItemStatus.ERROR,
-                      "Failed to process reminder: Failed to send email to x@test.com: some error");
+            checkItem(get(item), ReminderItemStatus.ERROR, "Failed to send email to x@test.com: some error");
         }
+    }
+
+    /**
+     * Verifies that the reminder item status is set to ERROR when the reminder type has no reminder count.
+     */
+    @Test
+    public void testMissingReminderCount() {
+        checkMissingReminderCount(TestHelper.createEmailContact("x@test.com", true, "REMINDER"));
+    }
+
+    /**
+     * Verifies that the reminder item status is set to ERROR when the reminder count has no template.
+     */
+    @Test
+    public void testMissingReminderCountTemplate() {
+        checkMissingReminderCountTemplate(TestHelper.createEmailContact("x@test.com", true, "REMINDER"));
     }
 
     /**

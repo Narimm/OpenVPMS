@@ -45,6 +45,7 @@ public class ReportingException extends OpenVPMSException {
         NoCustomerGroupedReminderTemplate,
         NoPatientGroupedReminderTemplate,
         NoReminderCount,
+        RemindersNotConfigured,
         NoMailServer
     }
 

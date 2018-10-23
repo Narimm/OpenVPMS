@@ -35,6 +35,7 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -184,6 +185,52 @@ public abstract class AbstractPatientReminderProcessorTest extends ArchetypeServ
     }
 
     /**
+     * Verifies that the reminder item status is set to ERROR when the reminder type has no reminder count.
+     * <p/.
+     * This only applies when reminders are being sent, not listed or exported.
+     *
+     * @param contact the customer contact
+     */
+    protected void checkMissingReminderCount(Contact contact) {
+        customer.addContact(contact);
+        Date tomorrow = DateRules.getTomorrow();
+        Act item = createReminderItem(DateRules.getToday(), tomorrow);
+        Entity invalidReminderType = ReminderTestHelper.createReminderType(1, DateUnits.MONTHS, 1, DateUnits.DAYS);
+        Act reminder = ReminderTestHelper.createReminder(tomorrow, patient, invalidReminderType, item);
+        PatientReminders reminders = prepare(item, reminder, null);
+        assertEquals(1, reminders.getErrors().size());
+        assertEquals(ActStatus.IN_PROGRESS, reminder.getStatus());
+        checkItem(item, ReminderItemStatus.ERROR, "The Reminder Type 'Xremindertype' has no Reminder Count 0");
+    }
+
+    /**
+     * Verifies that the reminder item status is set to ERROR when the reminder count has no template.
+     * <p/.
+     * This only applies when reminders are being sent, not listed or exported.
+     *
+     * @param contact the customer contact
+     */
+    protected void checkMissingReminderCountTemplate(Contact contact) {
+        customer.addContact(contact);
+        Date tomorrow = DateRules.getTomorrow();
+        Act item = createReminderItem(DateRules.getToday(), tomorrow);
+        IMObjectBean bean = new IMObjectBean(reminderType);
+        for (Entity count : bean.getTargets("counts", Entity.class)) {
+            IMObjectBean countBean = new IMObjectBean(count);
+            EntityLink template = countBean.getObject("template", EntityLink.class);
+            if (template != null) {
+                countBean.removeValue("template", template);
+                countBean.save();
+            }
+        }
+        Act reminder = ReminderTestHelper.createReminder(tomorrow, patient, reminderType, item);
+        PatientReminders reminders = prepare(item, reminder, null);
+        assertEquals(1, reminders.getErrors().size());
+        assertEquals(ActStatus.IN_PROGRESS, reminder.getStatus());
+        checkItem(item, ReminderItemStatus.ERROR, "Cannot print reminder. It does not have a document template");
+    }
+
+    /**
      * Returns the reminder processor.
      *
      * @return the reminder processor
@@ -198,7 +245,6 @@ public abstract class AbstractPatientReminderProcessorTest extends ArchetypeServ
      * @return a new reminder item
      */
     protected abstract Act createReminderItem(Date send, Date dueDate);
-
 
     /**
      * Verifies that a reminder item is cancelled.

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -396,17 +396,15 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
                 generator.setResend(resend);
                 generator.setListener(new BatchProcessorListener() {
                     public void completed() {
-                        if (generator.getProcessed() == 0) {
-                            // the reminder failed to be sent
+                        onRefresh(item);
+                        if (ReminderItemStatus.CANCELLED.equals(item.getStatus())) {
                             String error = new ActBean(item).getString("error");
-                            if (ReminderItemStatus.CANCELLED.equals(item.getStatus())) {
-                                String message = !StringUtils.isEmpty(error)
-                                                 ? error : Messages.get("reporting.reminder.send.cancelled");
-                                ErrorDialog.show(Messages.get("reporting.reminder.send.title"), message);
-                            } else if (ReminderItemStatus.ERROR.equals(item.getStatus())) {
-                                ErrorDialog.show(Messages.get("reporting.reminder.send.title"), error);
-                            }
-                            onRefresh(getObject());
+                            String message = !StringUtils.isEmpty(error)
+                                             ? error : Messages.get("reporting.reminder.send.cancelled");
+                            ErrorDialog.show(Messages.get("reporting.reminder.send.title"), message);
+                        } else if (ReminderItemStatus.ERROR.equals(item.getStatus())) {
+                            String error = new ActBean(item).getString("error");
+                            ErrorDialog.show(Messages.get("reporting.reminder.send.title"), error);
                         }
                     }
 
@@ -562,6 +560,31 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
         }
     }
 
+    private class CompleteAllProgressBarProcessor extends ReminderItemProgressBarProcessor {
+
+        /**
+         * Constructs a {@code CompleteAllProgressBarProcessor}.
+         */
+        public CompleteAllProgressBarProcessor(ReminderItemQueryFactory factory) {
+            super(factory);
+        }
+
+        /**
+         * Processes a reminder item.
+         *
+         * @param item     the reminder item
+         * @param reminder the reminder
+         */
+        @Override
+        protected void process(Act item, Act reminder) {
+            String status = item.getStatus();
+            if (ReminderItemStatus.PENDING.equals(status) || ReminderItemStatus.ERROR.equals(status)) {
+                complete(item, reminder);
+                updated();
+            }
+        }
+    }
+
     private static final class Actions extends ActActions<Act> {
 
         public static final Actions INSTANCE = new Actions();
@@ -589,31 +612,6 @@ class ReminderItemCRUDWindow extends AbstractViewCRUDWindow<Act> {
 
         public boolean canEdit(Act act) {
             return true;
-        }
-    }
-
-    private class CompleteAllProgressBarProcessor extends ReminderItemProgressBarProcessor {
-
-        /**
-         * Constructs a {@code CompleteAllProgressBarProcessor}.
-         */
-        public CompleteAllProgressBarProcessor(ReminderItemQueryFactory factory) {
-            super(factory);
-        }
-
-        /**
-         * Processes a reminder item.
-         *
-         * @param item     the reminder item
-         * @param reminder the reminder
-         */
-        @Override
-        protected void process(Act item, Act reminder) {
-            String status = item.getStatus();
-            if (ReminderItemStatus.PENDING.equals(status) || ReminderItemStatus.ERROR.equals(status)) {
-                complete(item, reminder);
-                updated();
-            }
         }
     }
 
