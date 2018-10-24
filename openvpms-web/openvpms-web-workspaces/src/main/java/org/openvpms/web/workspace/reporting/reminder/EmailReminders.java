@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -146,7 +146,7 @@ public class EmailReminders extends GroupedReminders {
             }
         }
         if (body == null) {
-            body = evaluator.getMessage(emailTemplate, getCustomer(), context);
+            body = evaluator.getMessage(emailTemplate, reminders.get(0).getReminder(), context);
         }
         if (StringUtils.isEmpty(body)) {
             throw new ReportingException(TemplateMissingEmailText, getTemplate().getName());
