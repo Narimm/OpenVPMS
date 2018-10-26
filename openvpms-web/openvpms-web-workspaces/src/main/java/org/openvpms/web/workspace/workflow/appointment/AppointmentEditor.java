@@ -19,7 +19,6 @@ package org.openvpms.web.workspace.workflow.appointment;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import org.joda.time.Period;
-import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
@@ -30,7 +29,8 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.model.entity.Entity;
-import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.alert.Alert;
+import org.openvpms.web.component.alert.AlertManager;
 import org.openvpms.web.component.bound.BoundCheckBox;
 import org.openvpms.web.component.bound.BoundDateTimeField;
 import org.openvpms.web.component.bound.BoundDateTimeFieldFactory;
@@ -50,16 +50,14 @@ import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
-import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.alert.AlertSummary;
-import org.openvpms.web.workspace.customer.CustomerSummary;
-import org.openvpms.web.workspace.patient.summary.CustomerPatientSummaryFactory;
 import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeries;
 import org.openvpms.web.workspace.workflow.appointment.repeat.ScheduleEventSeries;
 
 import java.util.Date;
+import java.util.List;
 
 import static org.openvpms.archetype.rules.workflow.ScheduleEvent.REMINDER_ERROR;
 import static org.openvpms.archetype.rules.workflow.ScheduleEvent.REMINDER_SENT;
@@ -396,10 +394,7 @@ public class AppointmentEditor extends AbstractCalendarEventEditor {
      */
     private Component getCustomerAlerts(Party customer) {
         Component result = null;
-        LayoutContext context = getLayoutContext();
-        CustomerSummary summary = new CustomerSummary(context.getContext(), context.getHelpContext(),
-                                                      context.getPreferences());
-        AlertSummary alerts = summary.getAlertSummary(customer);
+        AlertSummary alerts = getAlertSummary(customer);
         if (alerts != null) {
             result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.customer", BOLD),
                                           alerts.getComponent());
@@ -415,17 +410,24 @@ public class AppointmentEditor extends AbstractCalendarEventEditor {
      */
     private Component getPatientAlerts(Party patient) {
         Component result = null;
-        LayoutContext layout = getLayoutContext();
-        Context context = layout.getContext();
-        HelpContext help = layout.getHelpContext();
-        Preferences preferences = layout.getPreferences();
-        CustomerPatientSummaryFactory factory = ServiceHelper.getBean(CustomerPatientSummaryFactory.class);
-        AlertSummary alerts = factory.createPatientSummary(context, help, preferences).getAlertSummary(patient);
+        AlertSummary alerts = getAlertSummary(patient);
         if (alerts != null) {
             result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.patient", BOLD),
                                           alerts.getComponent());
         }
         return result;
+    }
+
+    /**
+     * Returns the alert summary for a party.
+     *
+     * @param party the party. A customer or patient
+     * @return the alert summary, or {@code null} if the party has no alerts
+     */
+    private AlertSummary getAlertSummary(Party party) {
+        LayoutContext context = getLayoutContext();
+        List<Alert> alerts = ServiceHelper.getBean(AlertManager.class).getAlerts(party);
+        return (!alerts.isEmpty()) ? new AlertSummary(alerts, context.getContext(), context.getHelpContext()) : null;
     }
 
     /**

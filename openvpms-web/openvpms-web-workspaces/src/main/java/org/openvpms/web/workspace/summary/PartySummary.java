@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.summary;
@@ -19,17 +19,15 @@ package org.openvpms.web.workspace.summary;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.openvpms.archetype.rules.prefs.Preferences;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.component.alert.Alert;
+import org.openvpms.web.component.alert.AlertManager;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.workspace.alert.Alert;
-import org.openvpms.web.workspace.alert.AlertSummary;
+import org.openvpms.web.system.ServiceHelper;
 
-import java.util.Collections;
 import java.util.List;
 
 
@@ -70,7 +68,7 @@ public abstract class PartySummary {
 
     /**
      * Returns summary information for a party.
-     * <p/>
+     * <p>
      * The summary includes any alerts.
      *
      * @param party the party. May be {@code null}
@@ -79,7 +77,8 @@ public abstract class PartySummary {
     public Component getSummary(Party party) {
         Component result = null;
         if (party != null) {
-            result = createSummary(party);
+            List<Alert> alerts = ServiceHelper.getBean(AlertManager.class).getAlerts(party);
+            result = createSummary(party, alerts);
         }
         return result;
     }
@@ -113,46 +112,14 @@ public abstract class PartySummary {
 
     /**
      * Returns summary information for a party.
-     * <p/>
+     * <p>
      * The summary includes any alerts.
      *
-     * @param party the party
+     * @param party  the party
+     * @param alerts the alerts
      * @return a summary component
      */
-    protected abstract Component createSummary(Party party);
-
-    /**
-     * Creates an alert summary for the specified party.
-     *
-     * @param party the party
-     * @return the party's alerts, or {@code null} if the party has no alerts
-     */
-    public AlertSummary getAlertSummary(Party party) {
-        AlertSummary result = null;
-        List<Alert> alerts = getAlerts(party);
-        if (!alerts.isEmpty()) {
-            Collections.sort(alerts);
-            result = new AlertSummary(alerts, context, help);
-        }
-        return result;
-    }
-
-    /**
-     * Returns the alerts for a party.
-     *
-     * @param party the party
-     * @return the party's alerts
-     */
-    protected abstract List<Alert> getAlerts(Party party);
-
-    /**
-     * Returns outstanding alerts for a party.
-     *
-     * @param party    the party
-     * @param pageSize the no. of alerts to return per page
-     * @return the set of outstanding alerts for the party
-     */
-    protected abstract ResultSet<Act> createAlertsResultSet(Party party, int pageSize);
+    protected abstract Component createSummary(Party party, List<Alert> alerts);
 
     /**
      * Helper to create a formatted label.

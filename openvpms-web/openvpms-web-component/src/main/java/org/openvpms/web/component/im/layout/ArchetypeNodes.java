@@ -769,10 +769,17 @@ public class ArchetypeNodes {
             this.object = object;
         }
 
-        protected boolean include(NodeDescriptor descriptor) {
+        /**
+         * Determines if a node is included.
+         *
+         * @param descriptor   the node descriptor
+         * @param ignoreHidden if {@code true}, include the node even if it is hidden and {@code hidden==false}
+         * @return {@code true} if the node is included
+         */
+        protected boolean include(NodeDescriptor descriptor, boolean ignoreHidden) {
             boolean result = false;
             String name = descriptor.getName();
-            if ((hidden || !descriptor.isHidden()) && !exclude.contains(name)) {
+            if ((hidden || ignoreHidden || !descriptor.isHidden()) && !exclude.contains(name)) {
                 result = !excludeIfEmpty(descriptor) && (!descriptor.isString() || includeString(descriptor))
                          && (!excludePassword || !descriptor.containsAssertionType("password"));
             }
@@ -808,9 +815,10 @@ public class ArchetypeNodes {
             boolean include = false;
             String name = descriptor.getName();
             boolean simple = !descriptor.isComplexNode();
-            if (((allSimpleNodes && simple) || includeSimpleNodes.contains(name))
-                && !includeComplexNodes.contains(name)) {
-                include = include(descriptor);
+            boolean named = includeSimpleNodes.contains(name);
+            // nodes that are explicitly named ignore hidden=false flag
+            if (((allSimpleNodes && simple) || named) && !includeComplexNodes.contains(name)) {
+                include = include(descriptor, named);
             }
             return include;
         }
@@ -836,9 +844,10 @@ public class ArchetypeNodes {
             boolean include = false;
             String name = descriptor.getName();
             boolean complex = descriptor.isComplexNode();
-            if (((allComplexNodes && complex) || includeComplexNodes.contains(name))
-                && !includeSimpleNodes.contains(name)) {
-                include = include(descriptor);
+            boolean named = includeComplexNodes.contains(name);
+            // nodes that are explicitly named ignore hidden=false flag
+            if (((allComplexNodes && complex) || named) && !includeSimpleNodes.contains(name)) {
+                include = include(descriptor, named);
             }
             return include;
         }

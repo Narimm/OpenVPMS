@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -19,21 +19,17 @@ package org.openvpms.archetype.rules.finance.account;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 
 
 /**
- * Wrapper around an <em>lookup.accountType</tt>.
+ * Wrapper around an <em>lookup.accountType}.
  *
  * @author Tim Anderson
  */
@@ -53,34 +49,13 @@ public class AccountType {
     private final IMObjectBean bean;
 
     /**
-     * The archetype service.
-     */
-    private final IArchetypeService service;
-
-    /**
-     * Helper for % divisions.
-     */
-    private static final BigDecimal HUNDRED = BigDecimal.valueOf(100);
-
-
-    /**
-     * Constructs an <tt>AccountType</tt>.
-     *
-     * @param lookup the lookup
-     */
-    public AccountType(Lookup lookup) {
-        this(lookup, ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Creates a new <tt>AccountType</tt>.
+     * Constructs an {@link AccountType}.
      *
      * @param lookup  the lookup
      * @param service the archetype service
      */
     public AccountType(Lookup lookup, IArchetypeService service) {
-        bean = new IMObjectBean(lookup, service);
-        this.service = service;
+        bean = service.getBean(lookup);
     }
 
     /**
@@ -104,8 +79,7 @@ public class AccountType {
     /**
      * The payment unit of measure.
      *
-     * @return the payment unit of measure, or <tt>null</tt> if none is
-     *         specified
+     * @return the payment unit of measure, or {@code null} if none is specified
      */
     public DateUnits getPaymentUOM() {
         String value = bean.getString("paymentUom");
@@ -114,7 +88,7 @@ public class AccountType {
 
     /**
      * Calculates the overdue payment date based on the specified date.
-     * This is <tt>date - paymentTerms * paymentUOM</tt>
+     * This is {@code date - paymentTerms * paymentUOM}
      *
      * @param date the date
      * @return the overdue date
@@ -201,11 +175,10 @@ public class AccountType {
     /**
      * Calculates an account fee on an overdue amount.
      * <br/>
-     * If the fee type is <tt>FIXED</tt>, returns
-     * {@link #getAccountFeeAmount()}.
+     * If the fee type is {@code FIXED}, returns {@link #getAccountFeeAmount()}.
      * <br/>
-     * If the fee type is <tt>PERCENTAGE</tt>, returns
-     * ({@link #getAccountFeeAmount()} * <tt>overdue</tt>)/100
+     * If the fee type is {@code PERCENTAGE}, returns
+     * ({@link #getAccountFeeAmount()} * {@code overdue})/100
      *
      * @param overdue the overdue amount
      * @return the account fee
@@ -215,24 +188,16 @@ public class AccountType {
         if (getFeeType() == FeeType.FIXED) {
             return amount;
         }
-        return MathRules.divide(amount.multiply(overdue), HUNDRED, 2); // TODO - should use currency scale
+        return MathRules.divide(amount.multiply(overdue), MathRules.ONE_HUNDRED, 2); // TODO - should use currency scale
     }
 
     /**
      * Returns the alert associated with this account type.
      *
-     * @return the alert lookup, or <tt>null</tt> if this account type has no alert
+     * @return the alert lookup, or {@code null} if this account type has no alert
      */
     public Lookup getAlert() {
-        Lookup result = null;
-        List<LookupRelationship> relationships = bean.getValues("alert", LookupRelationship.class);
-        if (!relationships.isEmpty()) {
-            IMObjectReference ref = relationships.get(0).getTarget();
-            if (ref != null) {
-                result = (Lookup) service.get(ref);
-            }
-        }
-        return result;
+        return bean.getTarget("alert", Lookup.class);
     }
 
 }

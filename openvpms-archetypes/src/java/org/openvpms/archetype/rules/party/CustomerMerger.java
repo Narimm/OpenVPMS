@@ -141,9 +141,9 @@ class CustomerMerger extends PartyMerger {
                 to.addClassification(lookup);
             }
         }
-        Lookup accountType = rules.getAccountType(to);
+        Lookup accountType = rules.getAccountTypeLookup(to);
         if (accountType == null) {
-            accountType = rules.getAccountType(from);
+            accountType = rules.getAccountTypeLookup(from);
             if (accountType != null) {
                 to.addClassification(accountType);
             }

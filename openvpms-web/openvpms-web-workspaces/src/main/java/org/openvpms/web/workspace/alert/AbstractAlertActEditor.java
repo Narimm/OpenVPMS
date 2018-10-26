@@ -11,52 +11,26 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.alert;
 
-import nextapp.echo2.app.Color;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.SelectField;
-import nextapp.echo2.app.list.AbstractListComponent;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.web.component.alert.Alert;
+import org.openvpms.web.component.alert.AlertManager;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
-import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.list.LookupListCellRenderer;
-import org.openvpms.web.component.im.list.LookupListModel;
-import org.openvpms.web.component.im.list.StyledListCell;
-import org.openvpms.web.component.im.lookup.LookupFieldFactory;
-import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.property.Modifiable;
-import org.openvpms.web.component.property.ModifiableListener;
-import org.openvpms.web.component.property.Property;
-import org.openvpms.web.echo.factory.TextComponentFactory;
-import org.openvpms.web.echo.text.TextField;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
  * An editor for <em>act.customerAlert</em> and <em>act.patientAlert</em> acts.
- * <p/>
- * This includes a field to display the selected alert type's priority and colour.
  *
  * @author Tim Anderson
  */
 public abstract class AbstractAlertActEditor extends AbstractActEditor {
-
-    /**
-     * The alert type selector.
-     */
-    private SelectField alertType;
-
-    /**
-     * The field to display the alert type priority.
-     */
-    private final TextField priority;
-
 
     /**
      * Constructs an {@link AbstractAlertActEditor}.
@@ -67,71 +41,28 @@ public abstract class AbstractAlertActEditor extends AbstractActEditor {
      */
     public AbstractAlertActEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
-        priority = TextComponentFactory.create();
-        Property property = getProperty("alertType");
-        alertType = LookupFieldFactory.create(property, act);
-        alertType.setCellRenderer(new AlertTypeCellRenderer());
-        refreshAlertType();
-        property.addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                refreshAlertType();
-            }
-        });
     }
 
     /**
-     * Creates the layout strategy.
+     * Returns the alert type.
      *
-     * @return a new layout strategy
+     * @return the alert type. May be {@code null}
      */
-    @Override
-    protected IMObjectLayoutStrategy createLayoutStrategy() {
-        AlertLayoutStrategy strategy = new AlertLayoutStrategy(priority);
-        strategy.addComponent(new ComponentState(alertType, getProperty("alertType")));
-        return strategy;
-    }
+    public abstract IMObject getAlertType();
 
     /**
-     * Updates the alert type and priority fields.
+     * Acknowledges the alert if it is mandatory.
+     * <p>
+     * This prevents the user from having to deal with a mandatory alert popup after editing the alert
      */
-    private void refreshAlertType() {
-        LookupListModel model = (LookupListModel) alertType.getModel();
-        int index = alertType.getSelectedIndex();
-        Lookup lookup = (index != -1) ? model.getLookup(index) : null;
-        if (lookup != null) {
-            Alert alert = new Alert(lookup);
-            Color background = alert.getColour();
-            Color foreground = alert.getTextColour();
-            alertType.setBackground(background);
-            alertType.setForeground(foreground);
-            priority.setText(alert.getPriority().getName());
-        } else {
-            priority.setText("");
-        }
-    }
-
-    /**
-     * Renders the alert types cell background with that from the <em>lookup.*AlertType</em>.
-     */
-    private static class AlertTypeCellRenderer extends LookupListCellRenderer {
-
-        /**
-         * Renders an object.
-         *
-         * @param list   the list component
-         * @param object the object to render
-         * @param index  the object index
-         * @return the rendered object
-         */
-        @Override
-        protected Object getComponent(Component list, String object, int index) {
-            AbstractListComponent l = (AbstractListComponent) list;
-            LookupListModel model = (LookupListModel) l.getModel();
-            Lookup lookup = model.getLookup(index);
-            Alert alert = new Alert(lookup);
-            Color background = alert.getColour();
-            Color foreground = alert.getTextColour();
-            return new StyledListCell(lookup.getName(), background, foreground);
+    protected void acknowledgeAlert() {
+        IMObject alertType = getAlertType();
+        if (alertType != null) {
+            Alert alert = new Alert(alertType, getObject());
+            if (alert.isMandatory()) {
+                AlertManager manager = ServiceHelper.getBean(AlertManager.class);
+                manager.acknowledge(alert);
+            }
         }
     }
 }

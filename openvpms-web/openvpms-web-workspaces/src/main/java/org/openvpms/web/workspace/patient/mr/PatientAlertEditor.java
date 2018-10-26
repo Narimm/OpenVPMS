@@ -26,12 +26,12 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.edit.Editor;
-import org.openvpms.web.component.im.edit.act.AbstractActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.alert.AbstractAlertActEditor;
 
 import java.util.Date;
 
@@ -41,17 +41,17 @@ import java.util.Date;
  *
  * @author Tim Anderson
  */
-public class PatientAlertEditor extends AbstractActEditor {
-
-    /**
-     * Determines if matching alerts should be marked completed on save.
-     */
-    private boolean markCompleted = true;
+public class PatientAlertEditor extends AbstractAlertActEditor {
 
     /**
      * The reminder rules.
      */
     private final ReminderRules rules;
+
+    /**
+     * Determines if matching alerts should be marked completed on save.
+     */
+    private boolean markCompleted = true;
 
 
     /**
@@ -118,6 +118,7 @@ public class PatientAlertEditor extends AbstractActEditor {
      *
      * @return the alert type
      */
+    @Override
     public Entity getAlertType() {
         return (Entity) getParticipant("alertType");
     }
@@ -125,7 +126,7 @@ public class PatientAlertEditor extends AbstractActEditor {
     /**
      * Determines if matching alerts should be marked completed, if the reminder is new and IN_PROGRESS when it is
      * saved.
-     * <p/>
+     * <p>
      * Defaults to {@code true}.
      *
      * @param markCompleted if {@code true}, mark matching reminders as completed
@@ -146,6 +147,8 @@ public class PatientAlertEditor extends AbstractActEditor {
         if (markCompleted && isNew) {
             rules.markMatchingAlertsCompleted(getObject());
         }
+
+        acknowledgeAlert();
     }
 
     /**

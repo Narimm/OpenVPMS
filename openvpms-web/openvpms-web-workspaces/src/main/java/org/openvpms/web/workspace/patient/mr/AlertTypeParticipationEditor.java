@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
+import org.openvpms.web.component.alert.Alert;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.SelectFieldIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
@@ -33,7 +34,6 @@ import org.openvpms.web.component.im.list.AllNoneListCellRenderer;
 import org.openvpms.web.component.im.list.StyledListCell;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.alert.Alert;
 
 import java.util.List;
 

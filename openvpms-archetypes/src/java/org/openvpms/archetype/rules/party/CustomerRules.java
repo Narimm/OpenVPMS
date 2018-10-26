@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
 
 import org.openvpms.archetype.rules.contact.AddressFormatter;
 import org.openvpms.archetype.rules.contact.BasicAddressFormatter;
+import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.patient.reminder.ReminderQuery;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -26,8 +27,8 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.bean.IMObjectBean;
 
 import java.util.Date;
 import java.util.List;
@@ -43,8 +44,8 @@ public class CustomerRules extends PartyRules {
     /**
      * Constructs a {@link CustomerRules}.
      *
-     * @param service          the archetype service
-     * @param lookups          the lookup service
+     * @param service the archetype service
+     * @param lookups the lookup service
      */
     public CustomerRules(IArchetypeService service, ILookupService lookups) {
         this(service, lookups, new BasicAddressFormatter(service, lookups));
@@ -64,17 +65,28 @@ public class CustomerRules extends PartyRules {
     /**
      * Returns the <em>lookup.customerAccountType</em> for a customer.
      *
-     * @param party the party
-     * @return the account type, or {@code null} if one doesn't exist
+     * @param customer the customer
+     * @return the account type lookup, or {@code null} if one doesn't exist
      */
-    public Lookup getAccountType(Party party) {
+    public Lookup getAccountTypeLookup(org.openvpms.component.model.party.Party customer) {
         Lookup result = null;
-        IMObjectBean bean = new IMObjectBean(party, getArchetypeService());
+        IMObjectBean bean = getArchetypeService().getBean(customer);
         if (bean.hasNode("type")) {
             List<Lookup> types = bean.getValues("type", Lookup.class);
             result = (types.isEmpty()) ? null : types.get(0);
         }
         return result;
+    }
+
+    /**
+     * Returns the account type for a customer.
+     *
+     * @param customer the customer
+     * @return the account type, or {@code null} if one doesn't exist
+     */
+    public AccountType getAccountType(org.openvpms.component.model.party.Party customer) {
+        Lookup lookup = getAccountTypeLookup(customer);
+        return lookup != null ? new AccountType(lookup, getArchetypeService()) : null;
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.alert;
@@ -25,6 +25,8 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.RowLayoutData;
+import org.openvpms.web.component.alert.Alert;
+import org.openvpms.web.component.alert.AlertDialog;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
@@ -51,11 +53,6 @@ public class AlertSummary {
     private final List<Alert> alerts;
 
     /**
-     * The no. of alerts to show.
-     */
-    private int showCount = 4;
-
-    /**
      * The context.
      */
     private final Context context;
@@ -64,6 +61,11 @@ public class AlertSummary {
      * The help context.
      */
     private final HelpContext help;
+
+    /**
+     * The no. of alerts to show.
+     */
+    private int showCount = 4;
 
     /**
      * Constructs an {@link AlertSummary}.
@@ -148,8 +150,8 @@ public class AlertSummary {
 
         result.addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
-                AlertsViewer viewer = new AlertsViewer(alert, context, help);
-                viewer.show();
+                AlertDialog dialog = new AlertDialog(alert, context, help);
+                dialog.show();
             }
         });
         return result;

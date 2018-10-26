@@ -33,6 +33,7 @@ import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -472,11 +473,17 @@ class PreferencesImpl implements Preferences {
         if (!ObjectUtils.equals(current, value)) {
             group.set(name, value);
             if (save) {
+                TransactionTemplate template = new TransactionTemplate(transactionManager);
+                template.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
                 try {
-                    group.save();
+                    template.execute(new TransactionCallbackWithoutResult() {
+                        @Override
+                        protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                            group.save();
+                        }
+                    });
                 } catch (Throwable exception) {
                     // This can occur if the group has been updated in a different browser session.
-                    // NOTE that this will cause any outer transaction to roll back. See OVPMS-2046
                     log.error("Failed to save preference=" + group.getEntity().getObjectReference()
                               + ", name=" + name + ", value=" + value, exception);
                     reload();

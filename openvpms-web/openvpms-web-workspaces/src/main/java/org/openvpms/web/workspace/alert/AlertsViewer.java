@@ -11,45 +11,34 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.web.workspace.alert;
 
-import nextapp.echo2.app.Alignment;
+import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Color;
 import nextapp.echo2.app.Column;
-import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
+import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
-import nextapp.echo2.app.layout.ColumnLayoutData;
-import nextapp.echo2.app.layout.TableLayoutData;
-import nextapp.echo2.app.table.DefaultTableColumnModel;
-import nextapp.echo2.app.table.TableColumn;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.archetype.rules.finance.account.AccountType;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.web.component.alert.AccountTypeAlert;
+import org.openvpms.web.component.alert.ActiveAlertLayoutStrategy;
+import org.openvpms.web.component.alert.Alert;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.query.ListResultSet;
-import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.table.AbstractIMTableModel;
-import org.openvpms.web.component.im.table.PagedIMTable;
-import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.IMObjectViewer;
-import org.openvpms.web.echo.dialog.PopupDialog;
+import org.openvpms.web.echo.dialog.ModalDialog;
 import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
-import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 
 /**
@@ -57,7 +46,7 @@ import java.util.Map;
  *
  * @author Tim Anderson
  */
-public class AlertsViewer extends PopupDialog {
+public class AlertsViewer extends ModalDialog {
 
     /**
      * The alerts to display.
@@ -70,38 +59,7 @@ public class AlertsViewer extends PopupDialog {
     private final Context context;
 
     /**
-     * The alerts table.
-     */
-    private PagedIMTable<Alert> table;
-
-    /**
-     * The column containing the alerts table and optional viewer.
-     */
-    private Column column;
-
-    /**
-     * The alert viewer.
-     */
-    private Component viewer;
-
-    /**
-     * Constructs an {@code AlertsViewer} to display alerts for a single alert type.
-     *
-     * @param alert   the alerts
-     * @param context the context
-     * @param help    the help context
-     */
-    public AlertsViewer(Alert alert, Context context, HelpContext help) {
-        this(Collections.singletonList(alert), context, help);
-        if (alert.getAlert() != null) {
-            setTitle(DescriptorHelper.getDisplayName(alert.getAlert()));
-        } else {
-            setTitle(alert.getAlertType().getName());
-        }
-    }
-
-    /**
-     * Constructs an {@code AlertsViewer} to display alerts for multiple alert types.
+     * Constructs an {@link AlertsViewer} to display alerts for multiple alert types.
      *
      * @param alerts  the alerts
      * @param context the context
@@ -111,7 +69,6 @@ public class AlertsViewer extends PopupDialog {
         super(Messages.get("alerts.title"), "AlertsViewer", CLOSE, help);
         this.context = context;
         this.alerts = alerts;
-        setModal(true);
     }
 
     /**
@@ -119,193 +76,47 @@ public class AlertsViewer extends PopupDialog {
      */
     @Override
     protected void doLayout() {
-        Column column = ColumnFactory.create(Styles.INSET, getComponent());
-        getLayout().add(column);
-    }
+        Column left = ColumnFactory.create(Styles.INSET);
+        Column right = ColumnFactory.create(Styles.INSET);
+        for (Alert alert : alerts) {
+            Button button = ButtonFactory.create(null, "small");
+            button.setText(alert.getName());
+            Color colour = alert.getColour();
+            if (colour != null) {
+                button.setBackground(colour);
+                button.setForeground(alert.getTextColour());
+            }
 
-    /**
-     * Renders the component.
-     *
-     * @return the component
-     */
-    private Component getComponent() {
-        ResultSet<Alert> set = new ListResultSet<>(alerts, 20);
-        Model model = new Model();
-        table = new PagedIMTable<>(model, set);
-
-        table.getTable().setStyleName("AlertsViewerTable");
-        // this style disables the selection blur style used in other tables, as it hides white text
-
-        column = ColumnFactory.create(Styles.CELL_SPACING, table.getComponent());
-
-        if (alerts.size() == 1) {
-            show(alerts.get(0));
-        } else {
-            table.getTable().addActionListener(new ActionListener() {
-                public void onAction(ActionEvent e) {
-                    showSelected();
+            button.addActionListener(new ActionListener() {
+                public void onAction(ActionEvent event) {
+                    show(alert, right);
                 }
             });
+            left.add(button);
         }
-        return column;
-    }
+        if (!alerts.isEmpty()) {
+            show(alerts.get(0), right);
+        }
 
-    /**
-     * Displays the selected alert.
-     */
-    private void showSelected() {
-        Alert alert = table.getSelected();
-        show(alert);
+        SplitPane pane = SplitPaneFactory.create(SplitPane.ORIENTATION_HORIZONTAL_LEFT_RIGHT, "AlertsViewer.Layout",
+                                                 left, right);
+        getLayout().add(pane);
     }
 
     /**
      * Shows an alert.
      *
-     * @param alert the alert to show. May be {@code null}
+     * @param alert     the alert
+     * @param container the container
      */
-    private void show(Alert alert) {
-        if (alert != null) {
-            if (viewer != null) {
-                column.remove(viewer);
-            }
-            if (alert.getAlert() != null) {
-                DefaultLayoutContext layout = new DefaultLayoutContext(context, getHelpContext());
-                viewer = new IMObjectViewer(alert.getAlert(), layout).getComponent();
-            } else {
-                viewer = LabelFactory.create("alert.nodetail", "bold");
-                ColumnLayoutData layout = new ColumnLayoutData();
-                layout.setAlignment(Alignment.ALIGN_CENTER);
-                viewer.setLayoutData(layout);
-            }
-            column.add(viewer);
-        }
+    private void show(Alert alert, Column container) {
+        container.removeAll();
+        DefaultLayoutContext layout = new DefaultLayoutContext(AlertsViewer.this.context, getHelpContext());
+        AccountType accountType = (alert instanceof AccountTypeAlert)
+                                  ? ((AccountTypeAlert) alert).getAccountType() : null;
+        IMObjectViewer viewer = new IMObjectViewer((IMObject) alert.getAlert(), null,
+                                                   new ActiveAlertLayoutStrategy(accountType), layout);
+        container.add(viewer.getComponent());
     }
 
-    private static class Model extends AbstractIMTableModel<Alert> {
-
-        /**
-         * Priority column index.
-         */
-        private static final int PRIORITY = 0;
-
-        /**
-         * Alert column index.
-         */
-        private static final int ALERT = 1;
-
-        /**
-         * Reason column index.
-         */
-        private static final int REASON = 3;
-
-        /**
-         * Cache of priority lookup names, keyed on code.
-         */
-        private Map<String, String> priorities;
-
-        /**
-         * Constructs a new {@code Model}.
-         */
-        public Model() {
-            DefaultTableColumnModel model = new DefaultTableColumnModel();
-            model.addColumn(createTableColumn(PRIORITY, "alert.priority"));
-            model.addColumn(createTableColumn(ALERT, "alert.name"));
-            model.addColumn(createTableColumn(REASON, "alert.reason"));
-            setTableColumnModel(model);
-        }
-
-        /**
-         * Returns the sort criteria.
-         *
-         * @param column    the primary sort column
-         * @param ascending if {@code true} sort in ascending order; otherwise
-         *                  sort in {@code descending} order
-         * @return the sort criteria, or {@code null} if the column isn't
-         * sortable
-         */
-        public SortConstraint[] getSortConstraints(int column, boolean ascending) {
-            return null;
-        }
-
-        /**
-         * Returns the value found at the given coordinate within the table.
-         *
-         * @param object the object
-         * @param column the column
-         * @param row    the row
-         * @return the value at the given coordinate.
-         */
-        protected Object getValue(Alert object, TableColumn column, int row) {
-            int index = column.getModelIndex();
-            Object result = null;
-            switch (index) {
-                case PRIORITY:
-                    result = getPriority(object);
-                    break;
-                case ALERT:
-                    result = getAlertType(object);
-                    break;
-                case REASON:
-                    Act act = object.getAlert();
-                    if (act != null) {
-                        ActBean bean = new ActBean(act);
-                        result = bean.getString("reason");
-                    }
-                    break;
-                default:
-                    throw new IllegalArgumentException("Illegal column=" + index);
-            }
-            return result;
-        }
-
-        /**
-         * Returns a label representing the alert prioity.
-         *
-         * @param alert the alert
-         * @return a label for the priority
-         */
-        private Label getPriority(Alert alert) {
-            Label result = LabelFactory.create();
-            IMObjectBean bean = new IMObjectBean(alert.getAlertType());
-            result.setText(getPriorityName(bean.getString("priority")));
-            return result;
-        }
-
-        /**
-         * Returns a label representing the alert type.
-         *
-         * @param alert the alert
-         * @return a label for the alert type
-         */
-        private Label getAlertType(Alert alert) {
-            Label result = LabelFactory.create();
-            result.setText(alert.getAlertType().getName());
-            Color colour = alert.getColour();
-            if (colour != null) {
-                TableLayoutData layout = new TableLayoutData();
-                layout.setBackground(colour);
-                result.setForeground(alert.getTextColour());
-                result.setLayoutData(layout);
-            }
-            return result;
-        }
-
-        /**
-         * Returns a priority name given its code.
-         *
-         * @param code the priority code.
-         * @return the priority name, or {@code code} if none is found
-         */
-        private String getPriorityName(String code) {
-            if (priorities == null) {
-                priorities = LookupNameHelper.getLookupNames(PatientArchetypes.ALERT_TYPE, "priority");
-            }
-            String name = priorities.get(code);
-            if (name == null) {
-                name = code;
-            }
-            return name;
-        }
-
-    }
 }

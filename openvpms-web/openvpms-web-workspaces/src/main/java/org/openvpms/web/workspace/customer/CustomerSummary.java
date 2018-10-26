@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -26,24 +26,19 @@ import nextapp.echo2.app.Row;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
 import nextapp.echo2.app.layout.RowLayoutData;
-import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.finance.account.AccountType;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
 import org.openvpms.archetype.rules.prefs.Preferences;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.component.alert.Alert;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.contact.ContactHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.im.query.ResultSetIterator;
 import org.openvpms.web.component.im.sms.SMSDialog;
 import org.openvpms.web.component.im.sms.SMSHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
@@ -60,14 +55,11 @@ import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.alert.Alert;
 import org.openvpms.web.workspace.alert.AlertSummary;
 import org.openvpms.web.workspace.customer.communication.CommunicationArchetypes;
-import org.openvpms.web.workspace.customer.communication.CustomerAlertQuery;
 import org.openvpms.web.workspace.summary.PartySummary;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -105,14 +97,13 @@ public class CustomerSummary extends PartySummary {
 
     /**
      * Returns summary information for a party.
-     * <p>
-     * The summary includes any alerts.
      *
-     * @param party the party
+     * @param party  the party
+     * @param alerts the alerts
      * @return a summary component
      */
     @Override
-    protected Component createSummary(Party party) {
+    protected Component createSummary(Party party, List<Alert> alerts) {
         Component column = ColumnFactory.create();
         Component customerName = getCustomerName(party);
         column.add(ColumnFactory.create(Styles.SMALL_INSET, customerName));
@@ -152,9 +143,9 @@ public class CustomerSummary extends PartySummary {
                                            effectiveTitle, effectiveValue);
             column.add(grid);
         }
-        AlertSummary alerts = getAlertSummary(party);
-        if (alerts != null) {
-            column.add(ColumnFactory.create(Styles.SMALL_INSET, alerts.getComponent()));
+        if (!alerts.isEmpty()) {
+            AlertSummary alertSummary = new AlertSummary(alerts, context, getHelpContext());
+            column.add(ColumnFactory.create(Styles.SMALL_INSET, alertSummary.getComponent()));
         }
         Column result = ColumnFactory.create("PartySummary", column);
         if (SMSHelper.isSMSEnabled(context.getPractice())) {
@@ -226,61 +217,8 @@ public class CustomerSummary extends PartySummary {
     }
 
     /**
-     * Returns the alerts for a party.
-     *
-     * @param party the party
-     * @return the party's alerts
-     */
-    @Override
-    protected List<Alert> getAlerts(Party party) {
-        List<Alert> result = queryAlerts(party);
-        Lookup accountTypeLookup = partyRules.getAccountType(party);
-        if (accountTypeLookup != null) {
-            AccountType accountType = new AccountType(accountTypeLookup);
-            Lookup alertLookup = accountType.getAlert();
-            if (alertLookup != null) {
-                result.add(new Alert(alertLookup));
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns the alerts for a party.
-     *
-     * @param party the party
-     * @return the party's alerts
-     */
-    protected List<Alert> queryAlerts(Party party) {
-        List<Alert> result = new ArrayList<>();
-        ResultSet<Act> set = createAlertsResultSet(party, 20);
-        ResultSetIterator<Act> iterator = new ResultSetIterator<>(set);
-        while (iterator.hasNext()) {
-            Act act = iterator.next();
-            Lookup lookup = ServiceHelper.getLookupService().getLookup(act, "alertType");
-            if (lookup != null) {
-                result.add(new Alert(lookup, act));
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Returns outstanding alerts for a party.
-     *
-     * @param party    the party
-     * @param pageSize the no. of alerts to return per page
-     * @return the set of outstanding alerts for the party
-     */
-    protected ResultSet<Act> createAlertsResultSet(Party party, int pageSize) {
-        CustomerAlertQuery query = new CustomerAlertQuery(party, true);
-        query.setStatus(ActStatus.IN_PROGRESS);
-        return query.query();
-    }
-
-    /**
      * Returns a button to launch an {@link MailDialog} for a customer.
-     * <p/>
+     * <p>
      * If the customer has no email address, displays 'No email', but still allows emails to be sent.
      *
      * @param email the preferred email. May be {@code null}

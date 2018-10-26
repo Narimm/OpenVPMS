@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
+import org.openvpms.web.component.alert.MandatoryAlerts;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.im.query.ActQuery;
@@ -69,6 +70,11 @@ public class PatientRecordWorkspace extends QueryBrowserCRUDWorkspace<Party, Act
     private final PreferenceMonitor monitor;
 
     /**
+     * Patient alerts.
+     */
+    private final MandatoryAlerts alerts;
+
+    /**
      * The current help context.
      */
     private HelpContext currentHelp;
@@ -88,6 +94,7 @@ public class PatientRecordWorkspace extends QueryBrowserCRUDWorkspace<Party, Act
         this.preferences = preferences;
         monitor = new PreferenceMonitor(preferences);
         monitor.add(PreferenceArchetypes.HISTORY);
+        alerts = new MandatoryAlerts(context, getHelpContext());
     }
 
     /**
@@ -122,6 +129,7 @@ public class PatientRecordWorkspace extends QueryBrowserCRUDWorkspace<Party, Act
     public void show() {
         super.show();
         checkPreferences();
+        alerts.show(getObject());
     }
 
     /**
@@ -166,11 +174,21 @@ public class PatientRecordWorkspace extends QueryBrowserCRUDWorkspace<Party, Act
     }
 
     /**
+     * Invoked when an object is selected.
+     *
+     * @param object the selected object
+     */
+    @Override
+    protected void onSelected(Party object) {
+        super.onSelected(object);
+        alerts.show(getObject());
+    }
+
+    /**
      * Create a new query.
      *
      * @return a new query
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     @Override
     protected Query<Party> createSelectQuery() {

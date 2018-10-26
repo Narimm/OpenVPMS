@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -59,6 +59,12 @@
         <node name="customerHistory" path="/details/customerHistory" type="java.lang.String" hidden="true"
               minCardinality="0" maxLength="5000"/>
         <node name="patientHistory" path="/details/patientHistory" type="java.lang.String" hidden="true"
+              minCardinality="0" maxLength="5000"/>
+        <node name="customerAlerts" path="/details/customerAlerts" type="java.lang.String" hidden="true"
+              minCardinality="0" maxLength="5000"/>
+        <node name="accountTypeAlerts" path="/details/accountTypeAlerts" type="java.lang.String" hidden="true"
+              minCardinality="0" maxLength="5000"/>
+        <node name="patientAlerts" path="/details/patientAlerts" type="java.lang.String" hidden="true"
               minCardinality="0" maxLength="5000"/>
     </archetype>
 </archetypes>

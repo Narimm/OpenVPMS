@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.layout;
 
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.Grid;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
@@ -35,6 +36,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.text.TextArea;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -128,7 +130,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
 
     /**
      * Pre-registers a component for inclusion in the layout.
-     * <p/>
+     * <p>
      * The component must be associated with a property.
      *
      * @param state the component state
@@ -144,7 +146,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
 
     /**
      * Apply the layout strategy.
-     * <p/>
+     * <p>
      * This renders an object in a {@code Component}, using a factory to create the child components.
      *
      * @param object     the object to apply
@@ -531,7 +533,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
 
     /**
      * Creates a component for a property.
-     * <p/>
+     * <p>
      * If there is a pre-existing component, registered via {@link #addComponent}, this will be returned.
      *
      * @param property the property
@@ -570,7 +572,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
 
     /**
      * Returns the default focus component.
-     * <p/>
+     * <p>
      * Delegates to {@link #getDefaultFocus(ComponentSet)}.
      *
      * @return the default focus component, or {@code null} if none is found
@@ -581,7 +583,7 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
 
     /**
      * Returns the default focus component.
-     * <p/>
+     * <p>
      * This implementation returns the first focusable component.
      *
      * @param components the components
@@ -649,6 +651,34 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         group.add(state2.getComponent());
         return new ComponentState(RowFactory.create(Styles.CELL_SPACING, state1.getComponent(),
                                                     state2.getComponent()), state1.getProperty(), group);
+    }
+
+    /**
+     * Creates a component for a property, optionally setting its width and height if it is a {@code TextArea}.
+     * <p>
+     * If there is a pre-existing component, registered via {@link #addComponent}, this will be used.
+     *
+     * @param property the property
+     * @param width    the width, or {@code null} to use the default width
+     * @param height   the height, or {@code null} to use the default height
+     * @param parent   the parent object
+     * @param context  the layout context
+     * @return a component to display {@code property}
+     */
+    protected ComponentState createComponent(Property property, Extent width, Extent height, IMObject parent,
+                                             LayoutContext context) {
+        ComponentState state = createComponent(property, parent, context);
+        Component component = state.getComponent();
+        if (component instanceof TextArea) {
+            TextArea textArea = (TextArea) component;
+            if (width != null) {
+                textArea.setWidth(width);
+            }
+            if (height != null) {
+                textArea.setHeight(height);
+            }
+        }
+        return state;
     }
 
     /**

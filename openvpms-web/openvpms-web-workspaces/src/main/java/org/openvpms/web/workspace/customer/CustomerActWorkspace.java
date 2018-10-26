@@ -20,6 +20,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.web.component.alert.MandatoryAlerts;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.im.archetype.Archetypes;
@@ -41,6 +42,11 @@ public abstract class CustomerActWorkspace<T extends Act> extends QueryBrowserCR
      * User preferences.
      */
     private final Preferences preferences;
+
+    /**
+     * Customer alerts.
+     */
+    private MandatoryAlerts alerts;
 
     /**
      * Constructs a {@link CustomerActWorkspace}.
@@ -66,6 +72,7 @@ public abstract class CustomerActWorkspace<T extends Act> extends QueryBrowserCR
         setArchetypes(Party.class, "party.customer*");
         setMailContext(new CustomerMailContext(context, getHelpContext()));
         this.preferences = preferences;
+        alerts = new MandatoryAlerts(context, getHelpContext());
     }
 
     /**
@@ -78,6 +85,15 @@ public abstract class CustomerActWorkspace<T extends Act> extends QueryBrowserCR
         super.setObject(object);
         ContextHelper.setCustomer(getContext(), object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
+    }
+
+    /**
+     * Invoked when the workspace is displayed.
+     */
+    @Override
+    public void show() {
+        super.show();
+        alerts.show(getObject());
     }
 
     /**
@@ -121,4 +137,16 @@ public abstract class CustomerActWorkspace<T extends Act> extends QueryBrowserCR
             }
         }
     }
+
+    /**
+     * Invoked when an object is selected.
+     *
+     * @param object the selected object
+     */
+    @Override
+    protected void onSelected(Party object) {
+        super.onSelected(object);
+        alerts.show(getObject());
+    }
+
 }

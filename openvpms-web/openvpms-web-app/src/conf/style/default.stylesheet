@@ -213,6 +213,13 @@
         </properties>
     </style>
 
+    <style name="AlertDialog" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${AlertDialog.width}"/>
+            <property name="height" value="${AlertDialog.height}"/>
+        </properties>
+    </style>
+
     <style name="button.communication" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon" type="nextapp.echo2.app.HttpImageReference">
@@ -530,16 +537,15 @@
     <style name="AlertsViewer" base-name="PopupWindow"
            type="nextapp.echo2.app.WindowPane">
         <properties>
-            <property name="width" value="${dialog.large.width}"/>
-            <property name="height" value="${dialog.large.height}"/>
+            <property name="width" value="${dialog.medium.width}"/>
+            <property name="height" value="${dialog.medium.height}"/>
         </properties>
     </style>
 
-    <style name="AlertsViewerTable" base-name="default" type="org.openvpms.web.echo.table.KeyTable">
+    <style name="AlertsViewer.Layout" type="nextapp.echo2.app.SplitPane">
         <properties>
-            <!-- make the blur background the same as the selection background to avoid white-foreground text
-                 becoming hard to read -->
-            <property name="selectionBlurBackground" value="${theme.selection.colour}"/>
+            <property name="resizable" value="true"/>
+            <property name="separatorPosition" value="${MainPane.separatorPosition}"/>
         </properties>
     </style>
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.info;
@@ -20,6 +20,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
+import org.openvpms.web.component.alert.MandatoryAlerts;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.im.query.PatientQuery;
@@ -45,6 +46,11 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
     private final Preferences preferences;
 
     /**
+     * Patient alerts.
+     */
+    private final MandatoryAlerts alerts;
+
+    /**
      * Constructs an {@link InformationWorkspace}.
      *
      * @param context     the context
@@ -55,6 +61,7 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
         setArchetypes(Party.class, "party.patient*");
         setMailContext(new CustomerMailContext(context, getHelpContext()));
         this.preferences = preferences;
+        alerts = new MandatoryAlerts(context, getHelpContext());
     }
 
     /**
@@ -67,6 +74,15 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
         super.setObject(object);
         ContextHelper.setPatient(getContext(), object);
         firePropertyChange(SUMMARY_PROPERTY, null, null);
+    }
+
+    /**
+     * Invoked when the workspace is displayed.
+     */
+    @Override
+    public void show() {
+        super.show();
+        alerts.show(getObject());
     }
 
     /**
@@ -90,6 +106,17 @@ public class InformationWorkspace extends BasicCRUDWorkspace<Party> {
     @Override
     protected Party getLatest() {
         return getLatest(getContext().getPatient());
+    }
+
+    /**
+     * Invoked when an object is selected.
+     *
+     * @param object the selected object
+     */
+    @Override
+    protected void onSelected(Party object) {
+        super.onSelected(object);
+        alerts.show(getObject());
     }
 
     /**

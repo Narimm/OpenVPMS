@@ -77,6 +77,8 @@ import org.openvpms.web.workspace.customer.charge.UndispensedOrderChecker;
 import org.openvpms.web.workspace.customer.charge.UndispensedOrderDialog;
 import org.openvpms.web.workspace.workflow.GetClinicalEventTask;
 import org.openvpms.web.workspace.workflow.GetInvoiceTask;
+import org.openvpms.web.workspace.workflow.MandatoryCustomerAlertTask;
+import org.openvpms.web.workspace.workflow.MandatoryPatientAlertTask;
 import org.openvpms.web.workspace.workflow.payment.PaymentWorkflow;
 
 import java.math.BigDecimal;
@@ -233,6 +235,9 @@ public class CheckOutWorkflow extends WorkflowImpl {
         initial.setUser(external.getUser());
         initial.setPractice(external.getPractice());
         initial.setLocation(external.getLocation());
+
+        addTask(new MandatoryCustomerAlertTask());
+        addTask(new MandatoryPatientAlertTask());
 
         final Act appointment = getAppointment(act, patient);
         if (appointment != null && appointmentRules.isBoardingAppointment(appointment)) {

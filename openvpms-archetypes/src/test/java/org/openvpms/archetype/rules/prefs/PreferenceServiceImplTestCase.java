@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.prefs;
@@ -23,9 +23,12 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
 
@@ -139,14 +142,91 @@ public class PreferenceServiceImplTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Verifies that preference updates aren't rolled back if an outer transaction rolls back.
+     */
+    @Test
+    public void testTransactionIsolation() {
+        TransactionTemplate template = new TransactionTemplate(transactionManager);
+        Preferences preferences = service.getPreferences(user, null, true);
+        assertEquals("customer.information", preferences.getString(PreferenceArchetypes.GENERAL, "homePage", null));
+
+        Party customer = TestHelper.createCustomer();
+        long version = customer.getVersion();
+        String name = customer.getName();
+        try {
+            template.execute(new TransactionCallbackWithoutResult() {
+                @Override
+                protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                    IMObjectBean bean = getBean(customer);
+                    bean.setValue("lastName", "Foo");
+                    bean.save();
+                    preferences.setPreference(PreferenceArchetypes.GENERAL, "homePage", "workflow.scheduling");
+                    throw new IllegalStateException("Forcing rollback of outer transaction");
+                }
+            });
+        } catch (IllegalStateException expected) {
+            // do nothing
+        }
+
+        // verify the preference was updated
+        Preferences preferences2 = service.getPreferences(user, null, true);
+        assertEquals("workflow.scheduling", preferences2.getString(PreferenceArchetypes.GENERAL, "homePage", null));
+
+        // verify the customer was not updated
+        Party customer2 = get(customer);
+        assertEquals(version, customer2.getVersion());
+        assertEquals(name, customer2.getName());
+    }
+
+    /**
+     * Verifies that if a preference update fails, the outer transaction doesn't roll back.
+     */
+    @Test
+    public void testPreferenceRollbackDoesntAffectOuterTransaction() {
+        TransactionTemplate template = new TransactionTemplate(transactionManager);
+
+        // get 2 copies of the same preferences
+        Preferences preferences1 = service.getPreferences(user, null, true);
+        Preferences preferences2 = service.getPreferences(user, null, true);
+        assertEquals("customer.information", preferences1.getString(PreferenceArchetypes.GENERAL, "homePage", null));
+        assertEquals("customer.information", preferences2.getString(PreferenceArchetypes.GENERAL, "homePage", null));
+
+        // update preferences1, and verify the update is not reflected in preferences2
+        preferences1.setPreference(PreferenceArchetypes.GENERAL, "homePage", "customer.communication");
+        assertEquals("customer.information", preferences2.getString(PreferenceArchetypes.GENERAL, "homePage", null));
+
+        // update the customer and preferences within a transaction. The preferences2 update should roll back,
+        // but the customer should update
+        Party customer = TestHelper.createCustomer();
+        template.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                IMObjectBean bean = getBean(customer);
+                bean.setValue("lastName", "Foo");
+                bean.save();
+                preferences2.setPreference(PreferenceArchetypes.GENERAL, "homePage", "workflow.scheduling");
+            }
+        });
+
+        // verify the preference3 reflects the value set by preference1
+        Preferences preferences3 = service.getPreferences(user, null, true);
+        assertEquals("customer.communication", preferences3.getString(PreferenceArchetypes.GENERAL, "homePage", null));
+
+        // verify the customer was updated
+        Party customer2 = get(customer);
+        assertEquals(1, customer2.getVersion());
+        assertEquals("Foo", getBean(customer2).getString("lastName"));
+    }
+
+    /**
      * Returns the preference groups.
      *
      * @param prefs the preferences
      * @return the associated groups
      */
     private List<Entity> getGroups(Entity prefs) {
-        IMObjectBean bean = new IMObjectBean(prefs);
-        return bean.getNodeTargetObjects("groups", Entity.class);
+        IMObjectBean bean = getBean(prefs);
+        return bean.getTargets("groups", Entity.class);
     }
 
 }

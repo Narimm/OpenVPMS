@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -30,6 +30,8 @@
                 </propertyList>
             </assertion>
         </node>
+        <node name="mandatoryAlert" path="/details/mandatoryAlert" type="java.lang.Boolean" defaultValue="false()"
+              minCardinality="0"/>
         <node name="colour" path="/details/colour" type="java.lang.String" minCardinality="1" maxLength="8"
               defaultValue="'0xFF0000'"/>
         <node name="duration" path="/details/duration" type="java.lang.Integer" minCardinality="0"/>

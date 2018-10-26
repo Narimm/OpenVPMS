@@ -20,8 +20,7 @@ package org.openvpms.archetype.rules.customer;
 /**
  * Customer archetypes.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CustomerArchetypes {
 
@@ -45,6 +44,15 @@ public class CustomerArchetypes {
      */
     public static final String ALERT = "act.customerAlert";
 
+    /**
+     * The customer alert type archetype.
+     */
+    public static final String ALERT_TYPE = "lookup.customerAlertType";
+
+    /**
+     * The customer account type archetype.
+     */
+    public static final String ACCOUNT_TYPE = "lookup.customerAccountType";
 
     /**
      * Customer document attachment act short name.

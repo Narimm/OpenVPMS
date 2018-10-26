@@ -11,8 +11,9 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="lookup.customerAlertType.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.lookup.Lookup"
@@ -36,6 +37,8 @@
                 </propertyList>
             </assertion>
         </node>
+        <node name="mandatoryAlert" path="/details/mandatoryAlert" type="java.lang.Boolean" defaultValue="false()"
+              minCardinality="0"/>
         <node name="colour" path="/details/colour" type="java.lang.String" minCardinality="1" maxLength="8"
               defaultValue="'0xFF0000'"/>
         <node displayName="Default" name="defaultLookup" type="java.lang.Boolean" path="/defaultLookup"

@@ -11,16 +11,18 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.customer;
 
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.web.component.alert.MandatoryAlerts;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
@@ -41,6 +43,11 @@ import org.openvpms.web.component.property.Property;
 public class CustomerParticipationEditor extends ParticipationEditor<Party> {
 
     /**
+     * Displays mandatory alerts when the customer is selected.
+     */
+    private final MandatoryAlerts alerts;
+
+    /**
      * The associated patient participation editor. May be {@code null}.
      */
     private PatientParticipationEditor patientEditor;
@@ -55,11 +62,12 @@ public class CustomerParticipationEditor extends ParticipationEditor<Party> {
      */
     public CustomerParticipationEditor(Participation participation, Act parent, LayoutContext layout) {
         super(participation, parent, layout);
-        if (!TypeHelper.isA(participation, "participation.customer")) {
+        if (!TypeHelper.isA(participation, CustomerArchetypes.CUSTOMER_PARTICIPATION)) {
             throw new IllegalArgumentException("Invalid participation type:"
                                                + participation.getArchetypeId().getShortName());
         }
         Context context = getLayoutContext().getContext();
+        alerts = new MandatoryAlerts(context, layout.getHelpContext());
         IMObjectReference customerRef = participation.getEntity();
         if (customerRef == null && parent.isNew()) {
             Party customer = context.getCustomer();
@@ -92,6 +100,13 @@ public class CustomerParticipationEditor extends ParticipationEditor<Party> {
     }
 
     /**
+     * Displays any unacknowledged alerts for the patient.
+     */
+    public void showAlerts() {
+        alerts.show(getEntity());
+    }
+
+    /**
      * Creates a new object reference editor.
      *
      * @param property the reference property
@@ -105,7 +120,22 @@ public class CustomerParticipationEditor extends ParticipationEditor<Party> {
         return new CustomerReferenceEditor(property, getParent(), subContext, true) {
 
             /**
+             * Invoked when an object is selected.
+             * <p/>
+             * Any mandatory alerts will be displayed.
+             *
+             * @param object the selected object. May be {@code null}
+             */
+            @Override
+            protected void onSelected(Party object) {
+                super.onSelected(object);
+                alerts.show(object);
+            }
+
+            /**
              * Invoked when an object is selected from a browser.
+             * <p/>
+             * Any mandatory alerts will be displayed.
              *
              * @param object  the selected object. May be {@code null}
              * @param browser the browser
@@ -113,10 +143,12 @@ public class CustomerParticipationEditor extends ParticipationEditor<Party> {
             @Override
             protected void onSelected(Party object, Browser<Party> browser) {
                 super.onSelected(object, browser);
+                alerts.show(object);
                 if (patientEditor != null && browser instanceof CustomerBrowser) {
                     Party patient = ((CustomerBrowser) browser).getPatient();
                     if (patient != null) {
                         patientEditor.setEntity(patient);
+                        patientEditor.showAlerts();
                     }
                 }
             }

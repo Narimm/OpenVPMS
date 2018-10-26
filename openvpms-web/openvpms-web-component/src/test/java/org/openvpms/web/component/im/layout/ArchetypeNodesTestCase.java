@@ -20,6 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
@@ -38,6 +39,7 @@ import java.util.List;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests the {@link ArchetypeNodes} class.
@@ -249,6 +251,22 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
         checkNodeNames(ArchetypeNodes.allSimple().excludePassword(true), user, "id", "username", "name",
                        "description", "active", "title", "firstName", "lastName", "qualifications", "userLevel",
                        "editPreferences", "colour");
+    }
+
+    /**
+     * Verifies that if a node is specified as a simple or complex node, it is included regardless of whether it
+     * is hidden or not.
+     */
+    @Test
+    public void testSimpleComplexOverrideHidden() {
+        ArchetypeDescriptor event = getArchetypeService().getArchetypeDescriptor(PatientArchetypes.CLINICAL_EVENT);
+        assertTrue(event.getNodeDescriptor("id").isHidden());
+        assertTrue(event.getNodeDescriptor("appointment").isHidden());
+        ArchetypeNodes nodes1 = ArchetypeNodes.onlySimple("id");
+        checkSimple(event, nodes1, "id");
+
+        ArchetypeNodes nodes2 = ArchetypeNodes.none().complex("appointment");
+        checkComplex(event, nodes2, "appointment");
     }
 
     /**

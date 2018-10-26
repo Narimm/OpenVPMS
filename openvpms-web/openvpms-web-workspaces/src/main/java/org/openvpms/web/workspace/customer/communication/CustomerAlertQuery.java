@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.communication;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -102,9 +103,10 @@ public class CustomerAlertQuery extends DateRangeActQuery<Act> {
      * @param activeNow if {@code true}, limit to alerts active now
      */
     public CustomerAlertQuery(Party customer, boolean activeNow) {
-        super(customer, "customer", "participation.customer", new String[]{ALERT}, STATUSES, Act.class);
+        super(customer, "customer", CustomerArchetypes.CUSTOMER_PARTICIPATION,
+              new String[]{ALERT}, STATUSES, Act.class);
         setDefaultSortConstraint(DEFAULT_SORT);
-        LookupQuery source = new ArchetypeLookupQuery("lookup.customerAlertType");
+        LookupQuery source = new ArchetypeLookupQuery(CustomerArchetypes.ALERT_TYPE);
         alertTypes = LookupFieldFactory.create(source, true);
         alertTypes.setSelected((String) null); // default to all
         alertTypes.addActionListener(new ActionListener() {

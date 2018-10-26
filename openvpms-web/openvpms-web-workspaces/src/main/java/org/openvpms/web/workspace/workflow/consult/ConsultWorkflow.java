@@ -45,6 +45,8 @@ import org.openvpms.web.component.workflow.WorkflowImpl;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.workflow.EditVisitTask;
 import org.openvpms.web.workspace.workflow.GetClinicalEventTask;
+import org.openvpms.web.workspace.workflow.MandatoryCustomerAlertTask;
+import org.openvpms.web.workspace.workflow.MandatoryPatientAlertTask;
 
 import java.util.Date;
 
@@ -151,6 +153,9 @@ public class ConsultWorkflow extends WorkflowImpl {
         if (setClinician) {
             addTask(new UpdateClinicianTask(act.getArchetypeId().getShortName()));
         }
+
+        addTask(new MandatoryCustomerAlertTask());
+        addTask(new MandatoryPatientAlertTask());
 
         Act appointment = TypeHelper.isA(act, ScheduleArchetypes.APPOINTMENT) ? act : null;
         addTask(new GetClinicalEventTask(act.getActivityStartTime(), appointment));

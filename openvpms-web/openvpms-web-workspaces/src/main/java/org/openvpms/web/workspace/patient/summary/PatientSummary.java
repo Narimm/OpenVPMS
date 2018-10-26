@@ -40,11 +40,10 @@ import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.alert.Alert;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextHelper;
@@ -56,7 +55,6 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ActResultSet;
 import org.openvpms.web.component.im.query.ParticipantConstraint;
-import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.query.ResultSetIterator;
 import org.openvpms.web.component.im.table.PagedIMTable;
@@ -79,7 +77,6 @@ import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.alert.Alert;
 import org.openvpms.web.workspace.alert.AlertSummary;
 import org.openvpms.web.workspace.customer.CustomerMailContext;
 import org.openvpms.web.workspace.customer.estimate.CustomerEstimates;
@@ -151,9 +148,10 @@ public class PatientSummary extends PartySummary {
      * The summary includes any alerts.
      *
      * @param patient the patient
+     * @param alerts  the alerts
      * @return a summary component
      */
-    protected Component createSummary(Party patient) {
+    protected Component createSummary(Party patient, List<Alert> alerts) {
         Component column = ColumnFactory.create();
 
         List<Component> components = getSummaryComponents(patient);
@@ -165,9 +163,9 @@ public class PatientSummary extends PartySummary {
                 column.add(component);
             }
         }
-        AlertSummary alerts = getAlertSummary(patient);
-        if (alerts != null) {
-            column.add(ColumnFactory.create(Styles.SMALL_INSET, alerts.getComponent()));
+        if (!alerts.isEmpty()) {
+            AlertSummary alertSummary = new AlertSummary(alerts, getContext(), getHelpContext());
+            column.add(ColumnFactory.create(Styles.SMALL_INSET, alertSummary.getComponent()));
         }
         return ColumnFactory.create("PartySummary", column);
     }
@@ -531,28 +529,6 @@ public class PatientSummary extends PartySummary {
     }
 
     /**
-     * Returns the alerts for a party.
-     *
-     * @param party the party
-     * @return the party's alerts
-     */
-    @Override
-    protected List<Alert> getAlerts(Party party) {
-        List<Alert> result = new ArrayList<>();
-        ResultSet<Act> set = createAlertsResultSet(party, 20);
-        ResultSetIterator<Act> iterator = new ResultSetIterator<>(set);
-        while (iterator.hasNext()) {
-            Act act = iterator.next();
-            ActBean bean = new ActBean(act);
-            Entity alertType = bean.getNodeParticipant("alertType");
-            if (alertType != null) {
-                result.add(new Alert(alertType, act));
-            }
-        }
-        return result;
-    }
-
-    /**
      * Invoked when the 'Follow-up' button is pressed.
      */
     protected void onFollowUp() {
@@ -596,24 +572,6 @@ public class PatientSummary extends PartySummary {
             );
             dialog.show();
         }
-    }
-
-    /**
-     * Returns outstanding alerts for a patient.
-     *
-     * @param patient  the patient
-     * @param pageSize the no. of alerts to return per page
-     * @return the set of outstanding alerts for the patient
-     */
-    protected ActResultSet<Act> createAlertsResultSet(Party patient, int pageSize) {
-        String[] statuses = {ActStatus.IN_PROGRESS};
-        ShortNameConstraint archetypes = new ShortNameConstraint(PatientArchetypes.ALERT, true, true);
-        ParticipantConstraint[] participants = {new ParticipantConstraint("patient", PATIENT_PARTICIPATION, patient)};
-
-        IConstraint dateRange = QueryHelper.createDateRangeConstraint(new Date());
-        // constrain to alerts that intersect today
-
-        return new ActResultSet<>(archetypes, participants, dateRange, statuses, false, null, pageSize, null);
     }
 
     /**

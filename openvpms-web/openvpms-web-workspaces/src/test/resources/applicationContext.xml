@@ -353,6 +353,12 @@
         <constructor-arg ref="practiceService"/>
     </bean>
 
+    <bean id="alertManager" class="org.openvpms.web.component.alert.AlertManager">
+        <constructor-arg ref="preferences"/>
+        <constructor-arg ref="lookupService"/>
+        <constructor-arg ref="customerRules"/>
+    </bean>
+
     <bean id="customerRules" class="org.openvpms.archetype.rules.party.CustomerRules">
         <constructor-arg ref="archetypeService"/>
         <constructor-arg ref="lookupService"/>

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.layout;
@@ -77,6 +77,20 @@ public class ComponentGrid {
             row.add(new Cell(component));
         }
         addRow(row);
+    }
+
+    /**
+     * Inserts components before the specified row, one component per grid column.
+     *
+     * @param row        the where the components are to be inserted.
+     * @param components the components
+     */
+    public void add(int row, Component... components) {
+        List<Cell> cells = new ArrayList<>();
+        for (Component component : components) {
+            cells.add(new Cell(component));
+        }
+        addRow(row, cells);
     }
 
     /**
@@ -258,14 +272,6 @@ public class ComponentGrid {
         }
     }
 
-    private Label getLabel(ComponentState state) {
-        Label label = state.getLabel();
-        if (label != null && (label.getStyleName() == null || Styles.DEFAULT.equals(label.getStyleName()))) {
-            label.setStyleName("default.grid");
-        }
-        return label;
-    }
-
     /**
      * Sets the width of a column.
      *
@@ -277,45 +283,6 @@ public class ComponentGrid {
             columnWidths.add(null);
         }
         columnWidths.set(column, width);
-    }
-
-    /**
-     * Helper to create a layout for a grid cell.
-     *
-     * @param rowSpan    the row span
-     * @param columnSpan the column span
-     * @return a new layout
-     */
-    public static GridLayoutData layout(int rowSpan, int columnSpan) {
-        return layout(rowSpan, columnSpan, null);
-    }
-
-    /**
-     * Helper to create a layout for a grid cell.
-     *
-     * @param rowSpan    the row span
-     * @param columnSpan the column span
-     * @param alignment  the cell alignment. May be {@code null}
-     * @return a new layout
-     */
-    public static GridLayoutData layout(int rowSpan, int columnSpan, Alignment alignment) {
-        GridLayoutData layoutData = new GridLayoutData();
-        layoutData.setRowSpan(rowSpan);
-        layoutData.setColumnSpan(columnSpan);
-        layoutData.setAlignment(alignment);
-        return layoutData;
-    }
-
-    /**
-     * Helper to create a layout for a grid cell.
-     *
-     * @param alignment the cell alignment. May be {@code null}
-     * @return a new layout
-     */
-    public static GridLayoutData layout(Alignment alignment) {
-        GridLayoutData layoutData = new GridLayoutData();
-        layoutData.setAlignment(alignment);
-        return layoutData;
     }
 
     /**
@@ -405,6 +372,45 @@ public class ComponentGrid {
     }
 
     /**
+     * Helper to create a layout for a grid cell.
+     *
+     * @param rowSpan    the row span
+     * @param columnSpan the column span
+     * @return a new layout
+     */
+    public static GridLayoutData layout(int rowSpan, int columnSpan) {
+        return layout(rowSpan, columnSpan, null);
+    }
+
+    /**
+     * Helper to create a layout for a grid cell.
+     *
+     * @param rowSpan    the row span
+     * @param columnSpan the column span
+     * @param alignment  the cell alignment. May be {@code null}
+     * @return a new layout
+     */
+    public static GridLayoutData layout(int rowSpan, int columnSpan, Alignment alignment) {
+        GridLayoutData layoutData = new GridLayoutData();
+        layoutData.setRowSpan(rowSpan);
+        layoutData.setColumnSpan(columnSpan);
+        layoutData.setAlignment(alignment);
+        return layoutData;
+    }
+
+    /**
+     * Helper to create a layout for a grid cell.
+     *
+     * @param alignment the cell alignment. May be {@code null}
+     * @return a new layout
+     */
+    public static GridLayoutData layout(Alignment alignment) {
+        GridLayoutData layoutData = new GridLayoutData();
+        layoutData.setAlignment(alignment);
+        return layoutData;
+    }
+
+    /**
      * Adds a set of components to the end of the grid.
      *
      * @param states          the component states to add
@@ -439,6 +445,14 @@ public class ComponentGrid {
                 set(row, col * 2, columnGroupSpan, states[index++]);
             }
         }
+    }
+
+    private Label getLabel(ComponentState state) {
+        Label label = state.getLabel();
+        if (label != null && (label.getStyleName() == null || Styles.DEFAULT.equals(label.getStyleName()))) {
+            label.setStyleName("default.grid");
+        }
+        return label;
     }
 
     /**
@@ -481,6 +495,18 @@ public class ComponentGrid {
      */
     private void addRow(List<Cell> row) {
         cells.add(row);
+        if (columns < row.size()) {
+            columns = row.size();
+        }
+    }
+
+    /**
+     * Adds a row of cells before the specified row.
+     *
+     * @param row the row to add
+     */
+    private void addRow(int index, List<Cell> row) {
+        cells.add(index, row);
         if (columns < row.size()) {
             columns = row.size();
         }

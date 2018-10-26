@@ -64,6 +64,8 @@ import org.openvpms.web.workspace.patient.visit.FlowSheetEditDialog;
 import org.openvpms.web.workspace.workflow.EditVisitTask;
 import org.openvpms.web.workspace.workflow.GetClinicalEventTask;
 import org.openvpms.web.workspace.workflow.GetInvoiceTask;
+import org.openvpms.web.workspace.workflow.MandatoryCustomerAlertTask;
+import org.openvpms.web.workspace.workflow.MandatoryPatientAlertTask;
 
 import java.util.Date;
 
@@ -203,12 +205,14 @@ public class CheckInWorkflow extends WorkflowImpl {
 
         Date arrivalTime = getArrivalTime();
 
+        addTask(new MandatoryCustomerAlertTask());
         if (patient == null) {
             // select/create a patient
             EditIMObjectTask patientEditor = new EditIMObjectTask(PatientArchetypes.PATIENT, true);
             addTask(createSelectPatientTask(initial, patientEditor));
             addTask(new UpdateIMObjectTask(PatientArchetypes.PATIENT, new TaskProperties(), true));
         }
+        addTask(new MandatoryPatientAlertTask());
 
         // get the act.patientClinicalEvent.
         TaskProperties eventProps = new TaskProperties();
@@ -589,4 +593,5 @@ public class CheckInWorkflow extends WorkflowImpl {
             service.admissionCancelled(pc, context.getUser());
         }
     }
+
 }
