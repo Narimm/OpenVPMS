@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -112,6 +112,22 @@ public class ReminderPrintProcessorTestCase extends AbstractPatientReminderProce
         customer.addContact(location2);
 
         checkSend(location2, location2);
+    }
+
+    /**
+     * Verifies that the reminder item status is set to ERROR when the reminder type has no reminder count.
+     */
+    @Test
+    public void testMissingReminderCount() {
+        checkMissingReminderCount(createLocation("1 St Georges Rd", true, "REMINDER"));
+    }
+
+    /**
+     * Verifies that the reminder item status is set to ERROR when the reminder count has no template.
+     */
+    @Test
+    public void testMissingReminderCountTemplate() {
+        checkMissingReminderCountTemplate(createLocation("1 St Georges Rd", true, "REMINDER"));
     }
 
     /**

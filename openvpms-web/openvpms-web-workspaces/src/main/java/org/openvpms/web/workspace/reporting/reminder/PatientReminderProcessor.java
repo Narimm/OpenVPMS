@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -222,8 +222,8 @@ public abstract class PatientReminderProcessor {
      * Invoked when processing fails due to exception.
      * For reminders that are not being resent and are not in error cancelled, this sets the:
      * <ul>
-     *     <li>status of each reminder to be sent to {@link ReminderItemStatus#ERROR}</li>
-     *     <li>error node to the formatted message from the exception</li>
+     * <li>status of each reminder to be sent to {@link ReminderItemStatus#ERROR}</li>
+     * <li>error node to the formatted message from the exception</li>
      * </ul>
      *
      * @param reminders the reminders
@@ -426,17 +426,10 @@ public abstract class PatientReminderProcessor {
      */
     protected boolean setError(Act item, Throwable exception) {
         boolean result = false;
-        String message = null;
+        String message = ErrorFormatter.format(exception);
         try {
-            item.setStatus(ReminderItemStatus.ERROR);
-            IMObjectBean bean = new IMObjectBean(item, service);
-            message = ErrorFormatter.format(exception);
-            if (message != null) {
-                int maxLength = bean.getDescriptor("error").getMaxLength();
-                message = StringUtils.abbreviate(message, maxLength);
-            }
-            bean.setValue("error", message);
-            bean.save();
+            updateItem(item, ReminderItemStatus.ERROR, message);
+            service.save(item);
             result = true;
         } catch (Throwable error) {
             log.error("Failed to update reminder item=" + item.getId() + " with error=" + message + ": "
@@ -661,6 +654,11 @@ public abstract class PatientReminderProcessor {
         item.setStatus(status);
         ActBean bean = new ActBean(item, service);
         bean.setValue("processed", new Date());
+        if (message != null) {
+            // truncate the error if it is too long
+            int maxLength = bean.getDescriptor("error").getMaxLength();
+            message = StringUtils.abbreviate(message, maxLength);
+        }
         bean.setValue("error", message);
     }
 

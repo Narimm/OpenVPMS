@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -31,6 +31,7 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.web.component.error.ErrorFormatter;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 import org.openvpms.web.workspace.reporting.ReportingException;
@@ -83,7 +84,6 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
      * @param updated   acts that need to be saved on completion
      * @param resend    if {@code true}, reminders are being resent
      * @return the reminders to process
-     * @throws ReportingException if the reminders cannot be prepared
      */
     @Override
     protected PatientReminders prepare(List<ReminderEvent> reminders, ReminderType.GroupBy groupBy,
@@ -100,9 +100,14 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
             contact = getContact(customer, createContactMatcher(), event.getContact());
             if (contact != null) {
                 location = getLocation(customer);
-                toProcess.addAll(reminders);
                 populate(reminders, contact, location);
-                template = getTemplate(toProcess, groupBy);
+                try {
+                    template = getTemplate(reminders, groupBy);
+                    toProcess.addAll(reminders);
+                } catch (ReportingException exception) {
+                    error(reminders, updated, exception);
+                    errors.addAll(reminders);
+                }
             } else {
                 noContact(reminders, updated);
                 errors.addAll(reminders);
@@ -145,10 +150,7 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
     protected void noContact(List<ReminderEvent> reminders, List<Act> toSave) {
         String message = Messages.format("reporting.reminder.nocontact",
                                          DescriptorHelper.getDisplayName(getContactArchetype(), getService()));
-        for (ReminderEvent event : reminders) {
-            Act item = updateItem(event, ReminderItemStatus.ERROR, message);
-            toSave.add(item);
-        }
+        error(reminders, toSave, message);
     }
 
     /**
@@ -210,5 +212,34 @@ public abstract class GroupedReminderProcessor extends PatientReminderProcessor 
      * @return the contact archetype
      */
     protected abstract String getContactArchetype();
+
+    /**
+     * Flags each reminder item as being in error due to exception.
+     *
+     * @param reminders the reminders
+     * @param toSave    the updated reminder items
+     * @param exception the exception
+     */
+    private void error(List<ReminderEvent> reminders, List<Act> toSave, Throwable exception) {
+        String message = ErrorFormatter.format(exception);
+        for (ReminderEvent event : reminders) {
+            Act item = updateItem(event, ReminderItemStatus.ERROR, message);
+            toSave.add(item);
+        }
+    }
+
+    /**
+     * Flags each reminder item as being in error.
+     *
+     * @param reminders the reminders
+     * @param toSave    the updated reminder items
+     * @param message   the error message
+     */
+    private void error(List<ReminderEvent> reminders, List<Act> toSave, String message) {
+        for (ReminderEvent event : reminders) {
+            Act item = updateItem(event, ReminderItemStatus.ERROR, message);
+            toSave.add(item);
+        }
+    }
 
 }

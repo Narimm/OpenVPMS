@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -34,6 +34,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.sms.Connection;
 import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.sms.util.SMSLengthCalculator;
@@ -138,7 +139,7 @@ public class ReminderSMSProcessor extends GroupedReminderProcessor {
             } finally {
                 connection.close();
             }
-        } catch (ReportingException exception) {
+        } catch (OpenVPMSException exception) {
             throw exception;
         } catch (Throwable exception) {
             throw new ReportingException(FailedToProcessReminder, exception, exception.getMessage());

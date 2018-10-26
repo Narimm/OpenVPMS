@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -32,13 +32,13 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.sms.Connection;
 import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.sms.SMSException;
 import org.openvpms.sms.i18n.SMSMessages;
 import org.openvpms.web.component.im.sms.SMSTemplateEvaluator;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
-import org.openvpms.web.workspace.reporting.ReportingException;
 
 import java.util.Date;
 
@@ -168,10 +168,26 @@ public class ReminderSMSProcessorTestCase extends AbstractPatientReminderProcess
         try {
             processor.process(reminders);
             fail("Expected exception to be thrown");
-        } catch (ReportingException expected) {
+        } catch (OpenVPMSException expected) {
             assertTrue(processor.failed(reminders, expected));
-            checkItem(get(item), ReminderItemStatus.ERROR, "Failed to process reminder: SMS-0304: Message has no text");
+            checkItem(get(item), ReminderItemStatus.ERROR, "SMS-0304: Message has no text");
         }
+    }
+
+    /**
+     * Verifies that the reminder item status is set to ERROR when the reminder type has no reminder count.
+     */
+    @Test
+    public void testMissingReminderCount() {
+        checkMissingReminderCount(TestHelper.createPhoneContact(null, "1", true, true, "REMINDER"));
+    }
+
+    /**
+     * Verifies that the reminder item status is set to ERROR when the reminder count has no template.
+     */
+    @Test
+    public void testMissingReminderCountTemplate() {
+        checkMissingReminderCountTemplate(TestHelper.createPhoneContact(null, "1", true, true, "REMINDER"));
     }
 
     /**

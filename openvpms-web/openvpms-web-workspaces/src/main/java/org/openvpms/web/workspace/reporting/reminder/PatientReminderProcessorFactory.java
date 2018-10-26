@@ -40,6 +40,7 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.communication.CommunicationHelper;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 import org.openvpms.web.workspace.customer.communication.LoggingMailerFactory;
+import org.openvpms.web.workspace.reporting.ReportingException;
 
 /**
  * Factory for {@link PatientReminderProcessor} instances.
@@ -303,8 +304,9 @@ public class PatientReminderProcessorFactory {
      * @return a new processor
      */
     protected ReminderPrintProcessor createPrintProcessor() {
-        ReminderPrintProcessor processor = new ReminderPrintProcessor(help, reminderTypes, reminderRules, patientRules, practice,
-                                                                      service, config, getPrinterFactory(), logger);
+        ReminderPrintProcessor processor = new ReminderPrintProcessor(help, reminderTypes, reminderRules, patientRules,
+                                                                      practice, service, config, getPrinterFactory(),
+                                                                      logger);
         processor.setInteractiveAlways(true);
         return processor;
     }
@@ -315,7 +317,8 @@ public class PatientReminderProcessorFactory {
      * @return a new processor
      */
     protected ReminderExportProcessor createExportProcessor() {
-        return new ReminderExportProcessor(reminderTypes, reminderRules, patientRules, location, practice, service, config, logger);
+        return new ReminderExportProcessor(reminderTypes, reminderRules, patientRules, location, practice, service,
+                                           config, logger);
     }
 
     /**
@@ -418,7 +421,7 @@ public class PatientReminderProcessorFactory {
         IMObjectBean bean = new IMObjectBean(practice, service);
         IMObject config = bean.getNodeTargetObject("reminderConfiguration");
         if (config == null) {
-            throw new IllegalStateException("Patient reminders have not been configured");
+            throw new ReportingException(ReportingException.ErrorCode.RemindersNotConfigured);
         }
         return new ReminderConfiguration(config, service);
     }

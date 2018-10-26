@@ -248,11 +248,17 @@ abstract class ReminderProgressBarProcessor extends ProgressBarProcessor<Reminde
         if (currentState != null) {
             currentError = true;
             processor.failed(currentState, exception);
-            statistics.addErrors(currentState.getReminders().size());
-            statistics.addErrors(currentState.getErrors().size());
+            if (statistics != null) {
+                statistics.addErrors(currentState.getReminders().size());
+                statistics.addErrors(currentState.getErrors().size());
+            }
             notifyError(exception);
         } else {
-            log.error("ReminderProgressBarProcess.processError() invoked with no current reminders", exception);
+            // no current state, so the exception occuured during the preparation phase
+            if (currentReminders != null && statistics != null) {
+                statistics.addErrors(currentReminders.getReminders().size());
+            }
+            notifyError(exception);
         }
     }
 

@@ -22,7 +22,6 @@ import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
-import org.openvpms.archetype.rules.patient.reminder.ReminderProcessorException;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderType;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
@@ -32,8 +31,8 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.mail.EmailTemplateEvaluator;
@@ -129,7 +128,7 @@ public class ReminderEmailProcessor extends GroupedReminderProcessor {
 
         try {
             mailer = send(reminderState);
-        } catch (ArchetypeServiceException | ReportingException | ReminderProcessorException exception) {
+        } catch (OpenVPMSException exception) {
             throw exception;
         } catch (Throwable exception) {
             throw new ReportingException(FailedToProcessReminder, exception, exception.getMessage());
