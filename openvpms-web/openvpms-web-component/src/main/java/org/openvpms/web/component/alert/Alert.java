@@ -26,6 +26,8 @@ import org.openvpms.component.model.object.IMObject;
 import org.openvpms.web.echo.colour.ColourHelper;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.HashMap;
+
 
 /**
  * Associates an alert type with an optional alert act.
@@ -254,6 +256,48 @@ public class Alert implements Comparable<Alert> {
             }
         }
         return result;
+    }
+
+    /**
+     * Returns the alert reason.
+     *
+     * @return the reason for the alert. May be {@code null}
+     */
+    public String getReason() {
+        return (alert != null) ? alert.getReason() : null;
+    }
+
+    /**
+     * Indicates whether some other object is "equal to" this one.
+     *
+     * @param obj the reference object with which to compare.
+     * @return {@code true} if this object is the same as the obj
+     * argument; {@code false} otherwise.
+     * @see #hashCode()
+     * @see HashMap
+     */
+    @Override
+    public boolean equals(Object obj) {
+        boolean result = super.equals(obj);
+        if (!result && obj instanceof Alert) {
+            Alert other = (Alert) obj;
+            if (alert != null) {
+                result = ObjectUtils.equals(alert, other.getAlert());
+            } else {
+                result = other.getAlert() == null && ObjectUtils.equals(alertType, other.getAlertType());
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns a hash code value for the object.
+     *
+     * @return a hash code value for this object
+     */
+    @Override
+    public int hashCode() {
+        return alert != null ? alert.hashCode() : alertType.hashCode();
     }
 
     /**

@@ -136,7 +136,7 @@ public class PatientSummary extends PartySummary {
      * @param preferences user preferences
      */
     public PatientSummary(Context context, HelpContext help, Preferences preferences) {
-        super(context, help, preferences);
+        super(context, help.topic("patient/summary"), preferences);
         rules = ServiceHelper.getBean(PatientRules.class);
         reminderRules = ServiceHelper.getBean(ReminderRules.class);
         insuranceRules = ServiceHelper.getBean(InsuranceRules.class);
@@ -164,7 +164,7 @@ public class PatientSummary extends PartySummary {
             }
         }
         if (!alerts.isEmpty()) {
-            AlertSummary alertSummary = new AlertSummary(alerts, getContext(), getHelpContext());
+            AlertSummary alertSummary = new AlertSummary(patient, alerts, getContext(), getHelpContext());
             column.add(ColumnFactory.create(Styles.SMALL_INSET, alertSummary.getComponent()));
         }
         return ColumnFactory.create("PartySummary", column);

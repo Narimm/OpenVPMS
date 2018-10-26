@@ -47,8 +47,6 @@ import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.echo.factory.ColumnFactory;
-import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.system.ServiceHelper;
@@ -62,7 +60,6 @@ import java.util.List;
 import static org.openvpms.archetype.rules.workflow.ScheduleEvent.REMINDER_ERROR;
 import static org.openvpms.archetype.rules.workflow.ScheduleEvent.REMINDER_SENT;
 import static org.openvpms.archetype.rules.workflow.ScheduleEvent.SEND_REMINDER;
-import static org.openvpms.web.echo.style.Styles.BOLD;
 import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
 import static org.openvpms.web.echo.style.Styles.INSET;
 
@@ -393,13 +390,8 @@ public class AppointmentEditor extends AbstractCalendarEventEditor {
      * @return any alerts associated with the customer, or {@code null} if the customer has no alerts
      */
     private Component getCustomerAlerts(Party customer) {
-        Component result = null;
-        AlertSummary alerts = getAlertSummary(customer);
-        if (alerts != null) {
-            result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.customer", BOLD),
-                                          alerts.getComponent());
-        }
-        return result;
+        AlertSummary alerts = getAlertSummary(customer, "alerts.customer");
+        return (alerts != null) ? alerts.getComponent() : null;
     }
 
     /**
@@ -409,25 +401,25 @@ public class AppointmentEditor extends AbstractCalendarEventEditor {
      * @return any alerts associated with the patient, or {@code null} if the patient has no alerts
      */
     private Component getPatientAlerts(Party patient) {
-        Component result = null;
-        AlertSummary alerts = getAlertSummary(patient);
-        if (alerts != null) {
-            result = ColumnFactory.create("AppointmentActEditor.Alerts", LabelFactory.create("alerts.patient", BOLD),
-                                          alerts.getComponent());
-        }
-        return result;
+        AlertSummary alerts = getAlertSummary(patient, "alerts.patient");
+        return (alerts != null) ? alerts.getComponent() : null;
     }
 
     /**
      * Returns the alert summary for a party.
      *
      * @param party the party. A customer or patient
+     * @param key   the resource bundle key
      * @return the alert summary, or {@code null} if the party has no alerts
      */
-    private AlertSummary getAlertSummary(Party party) {
+    private AlertSummary getAlertSummary(Party party, String key) {
+        AlertSummary result = null;
         LayoutContext context = getLayoutContext();
         List<Alert> alerts = ServiceHelper.getBean(AlertManager.class).getAlerts(party);
-        return (!alerts.isEmpty()) ? new AlertSummary(alerts, context.getContext(), context.getHelpContext()) : null;
+        if (!alerts.isEmpty()) {
+            result = new AppointmentAlertSummary(party, alerts, key, context.getContext(), context.getHelpContext());
+        }
+        return result;
     }
 
     /**

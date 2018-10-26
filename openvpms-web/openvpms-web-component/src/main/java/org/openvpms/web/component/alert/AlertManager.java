@@ -19,8 +19,8 @@ package org.openvpms.web.component.alert;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.party.Party;
 import org.openvpms.web.component.prefs.UserPreferences;
 
 import java.util.Collections;

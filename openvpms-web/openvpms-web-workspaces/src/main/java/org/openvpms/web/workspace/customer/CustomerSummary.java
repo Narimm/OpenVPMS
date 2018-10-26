@@ -144,7 +144,7 @@ public class CustomerSummary extends PartySummary {
             column.add(grid);
         }
         if (!alerts.isEmpty()) {
-            AlertSummary alertSummary = new AlertSummary(alerts, context, getHelpContext());
+            AlertSummary alertSummary = new AlertSummary(party, alerts, context, getHelpContext());
             column.add(ColumnFactory.create(Styles.SMALL_INSET, alertSummary.getComponent()));
         }
         Column result = ColumnFactory.create("PartySummary", column);
