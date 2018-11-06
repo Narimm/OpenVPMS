@@ -51,6 +51,7 @@
                 <prop key="hibernate.max_fetch_depth">3</prop>
                 <prop key="hibernate.cache.use_second_level_cache">true</prop>
                 <prop key="hibernate.cache.region.factory_class">org.openvpms.component.business.dao.hibernate.cache.WorkaroundJCacheRegionFactory</prop>
+                <prop key="hibernate.criteria.literal_handling_mode">BIND</prop>
                 <prop key="hibernate.javax.cache.provider">org.ehcache.jsr107.EhcacheCachingProvider</prop>
                 <prop key="hibernate.javax.cache.uri">ehcache.xml</prop>
                 <prop key="hibernate.query.factory_class">org.hibernate.hql.internal.ast.ASTQueryTranslatorFactory</prop>

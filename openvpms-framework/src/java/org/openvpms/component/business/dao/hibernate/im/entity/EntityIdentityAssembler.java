@@ -1,46 +1,43 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
 
+import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.DOState;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectAssembler;
-import org.openvpms.component.business.dao.hibernate.im.common.Assembler;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 
 
 /**
- * An {@link Assembler} responsible for assembling {@link EntityIdentityDO}
- * instances from {@link EntityIdentity}s and vice-versa.
- *  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * An {@link Assembler} responsible for assembling {@link EntityIdentityDO} instances from {@link EntityIdentity}s and
+ * vice-versa.
+ *
+ * @author Tim Anderson
  */
 public class EntityIdentityAssembler
         extends IMObjectAssembler<EntityIdentity, EntityIdentityDO> {
 
     /**
-     * Creates a new <tt>EntityIdentityAssembler</tt>.
+     * Constructs an {@link EntityIdentityAssembler}.
      */
     public EntityIdentityAssembler() {
-        super(EntityIdentity.class, EntityIdentityDO.class,
+        super(org.openvpms.component.model.entity.EntityIdentity.class, EntityIdentity.class, EntityIdentityDO.class,
               EntityIdentityDOImpl.class);
     }
 
@@ -53,8 +50,7 @@ public class EntityIdentityAssembler
      * @param context the assembly context
      */
     @Override
-    protected void assembleDO(EntityIdentityDO target, EntityIdentity source,
-                              DOState state, Context context) {
+    protected void assembleDO(EntityIdentityDO target, EntityIdentity source, DOState state, Context context) {
         super.assembleDO(target, source, state, context);
         target.setIdentity(source.getIdentity());
 
@@ -75,8 +71,7 @@ public class EntityIdentityAssembler
      * @param context the assembly context
      */
     @Override
-    protected void assembleObject(EntityIdentity target,
-                                  EntityIdentityDO source, Context context) {
+    protected void assembleObject(EntityIdentity target, EntityIdentityDO source, Context context) {
         super.assembleObject(target, source, context);
         target.setIdentity(source.getIdentity());
         target.setEntity(getObject(source.getEntity(), Entity.class, context));

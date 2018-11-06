@@ -49,6 +49,13 @@ public interface ArchetypeDescriptor extends IMObject {
     void setClassName(String className);
 
     /**
+     * Returns the class for the class name.
+     *
+     * @return the class, or {@code null} if {@link #getClassName()} returns empty/null
+     */
+    Class getClassType();
+
+    /**
      * Determines if this is the latest version of the archetype.
      *
      * @return {@code true} if this is the latest version

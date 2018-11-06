@@ -19,7 +19,6 @@ package org.openvpms.component.business.service.archetype.helper;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
@@ -37,10 +36,8 @@ import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.RelationalOp;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 
 
 /**
@@ -272,29 +269,6 @@ public class ArchetypeQueryHelper {
                 .setMaxResults(maxResults)
                 .setCountResults(true);
         return service.get(query);
-    }
-
-    /**
-     * Returns a list of candidates for a node. This applies to
-     * collection nodes that aren't a parent/child relationship
-     * (i.e {@link NodeDescriptor#isParentChild()} returns <tt>false</tt>).
-     *
-     * @param service    the archetype service
-     * @param descriptor the node descriptor
-     * @return a list of candidates, or an empty list if the node doesn't have
-     * a parent/child relationship
-     */
-    public static List<IMObject> getCandidates(IArchetypeService service,
-                                               NodeDescriptor descriptor) {
-        if (!descriptor.isParentChild()) {
-            String[] shortNames = descriptor.getArchetypeRange();
-            if (shortNames.length > 0) {
-                IPage<IMObject> page = get(service, shortNames, true, 0,
-                                           ArchetypeQuery.ALL_RESULTS);
-                return page.getResults();
-            }
-        }
-        return Collections.emptyList();
     }
 
     /**

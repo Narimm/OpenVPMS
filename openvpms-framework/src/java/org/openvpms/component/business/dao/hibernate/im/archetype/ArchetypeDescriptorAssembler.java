@@ -28,29 +28,26 @@ import java.util.Map;
 
 
 /**
- * An {@link Assembler} responsible for assembling
- * {@link ArchetypeDescriptorDO} instances from {@link ArchetypeDescriptor}s
- * and vice-versa.
+ * An {@link Assembler} responsible for assembling {@link ArchetypeDescriptorDO} instances from
+ * {@link ArchetypeDescriptor}s and vice-versa.
  *
  * @author Tim Anderson
  */
-public class ArchetypeDescriptorAssembler
-        extends IMObjectAssembler<ArchetypeDescriptor,
-        ArchetypeDescriptorDO> {
+public class ArchetypeDescriptorAssembler extends IMObjectAssembler<ArchetypeDescriptor, ArchetypeDescriptorDO> {
 
     /**
      * Assembles sets of node descriptors.
      */
-    private static final MapAssembler<String, NodeDescriptor, NodeDescriptorDO>
-            NODES = MapAssembler.create(NodeDescriptor.class);
+    private static final MapAssembler<String, NodeDescriptor, NodeDescriptorDO> NODES
+            = MapAssembler.create(NodeDescriptor.class);
 
 
     /**
-     * Creates a new <tt>ArchetypeDescriptorAssembler</tt>.
+     * Constructs an {@link ArchetypeDescriptorAssembler}.
      */
     public ArchetypeDescriptorAssembler() {
-        super(ArchetypeDescriptor.class, ArchetypeDescriptorDO.class,
-              ArchetypeDescriptorDOImpl.class);
+        super(org.openvpms.component.model.archetype.ArchetypeDescriptor.class, ArchetypeDescriptor.class,
+              ArchetypeDescriptorDO.class, ArchetypeDescriptorDOImpl.class);
     }
 
     /**

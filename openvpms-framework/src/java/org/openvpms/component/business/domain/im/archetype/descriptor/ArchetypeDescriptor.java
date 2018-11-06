@@ -138,6 +138,16 @@ public class ArchetypeDescriptor extends Descriptor
     }
 
     /**
+     * Returns the class for the class name.
+     *
+     * @return the class, or {@code null} if {@link #getClassName()} returns empty/null
+     */
+    @Override
+    public Class getClassType() {
+        return getClazz();
+    }
+
+    /**
      * Returns the class for the specified type.
      *
      * @return the class, or <tt>null</tt> if {@link #getType()} returns

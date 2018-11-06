@@ -17,8 +17,8 @@
 package org.openvpms.component.business.dao.hibernate.im.common;
 
 import org.hibernate.Hibernate;
-import org.hibernate.Query;
 import org.hibernate.Session;
+import org.hibernate.query.Query;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -125,11 +125,11 @@ public class Context {
      * <p>
      * If one does not exist, it will be created.
      *
-     * @param assembler the assembler
      * @param session   the hibernate session
+     * @param assembler the assembler
      * @return the context
      */
-    public static Context getContext(Assembler assembler, Session session) {
+    public static Context getContext(Session session, Assembler assembler) {
         Context context;
         ResourceKey key = new ResourceKey(session);
         if (TransactionSynchronizationManager.isSynchronizationActive()) {

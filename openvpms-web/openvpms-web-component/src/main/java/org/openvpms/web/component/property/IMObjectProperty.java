@@ -190,7 +190,7 @@ public class IMObjectProperty extends AbstractProperty
      * @return the property type
      */
     public Class getType() {
-        return descriptor.getClazz();
+        return descriptor.getClassType();
     }
 
     /**

@@ -23,6 +23,9 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.query.TypedQuery;
+import org.openvpms.component.query.criteria.CriteriaBuilder;
+import org.openvpms.component.query.criteria.CriteriaQuery;
 import org.openvpms.component.service.archetype.ValidationError;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
@@ -339,6 +342,27 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
     @Override
     public IPage<NodeSet> getNodes(IArchetypeQuery query, Collection<String> nodes) {
         return service.getNodes(query, nodes);
+    }
+
+    /**
+     * Returns a builder to create queries.
+     *
+     * @return the criteria builder
+     */
+    @Override
+    public CriteriaBuilder getCriteriaBuilder() {
+        return service.getCriteriaBuilder();
+    }
+
+    /**
+     * Creates a {@link TypedQuery} for executing a criteria query.
+     *
+     * @param query the criteria query
+     * @return the new query instance
+     */
+    @Override
+    public <T> TypedQuery<T> createQuery(CriteriaQuery<T> query) {
+        return service.createQuery(query);
     }
 
     /**

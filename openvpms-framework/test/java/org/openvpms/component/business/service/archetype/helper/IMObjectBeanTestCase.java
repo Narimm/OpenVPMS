@@ -1154,7 +1154,7 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
     public void testGetDefaultValue() {
         Party patient = createPatient();
         IMObjectBean bean = new IMObjectBean(patient);
-        assertEquals(true, bean.getDefaultValue("Active"));
+        assertEquals(true, bean.getDefaultValue("active"));
         assertEquals(false, bean.getDefaultValue("deceased"));
         assertNull(bean.getDefaultValue("name"));
     }
@@ -1166,11 +1166,11 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
     public void testIsDefaultValue() {
         Party patient = createPatient();
         IMObjectBean bean = new IMObjectBean(patient);
-        assertTrue(bean.isDefaultValue("Active"));
+        assertTrue(bean.isDefaultValue("active"));
         assertTrue(bean.isDefaultValue("deceased"));
 
-        bean.setValue("Active", false);
-        assertFalse(bean.isDefaultValue("Active"));
+        bean.setValue("active", false);
+        assertFalse(bean.isDefaultValue("active"));
 
         assertFalse(bean.isDefaultValue("name")); // no default value
     }

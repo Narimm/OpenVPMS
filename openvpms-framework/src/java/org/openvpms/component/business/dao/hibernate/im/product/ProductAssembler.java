@@ -40,10 +40,10 @@ public class ProductAssembler extends EntityAssembler<Product, ProductDO> {
             = SetAssembler.create(ProductPrice.class, ProductPriceDO.class);
 
     /**
-     * Creates a new <tt>ProductAssembler</tt>.
+     * Constructs a {@link ProductAssembler}.
      */
     public ProductAssembler() {
-        super(Product.class, ProductDO.class, ProductDOImpl.class);
+        super(org.openvpms.component.model.product.Product.class, Product.class, ProductDO.class, ProductDOImpl.class);
     }
 
     /**

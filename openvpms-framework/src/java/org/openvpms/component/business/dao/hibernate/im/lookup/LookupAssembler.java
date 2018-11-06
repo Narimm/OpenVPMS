@@ -38,14 +38,13 @@ public class LookupAssembler extends IMObjectAssembler<Lookup, LookupDO> {
      * Assembles sets of lookup relationships.
      */
     private static final SetAssembler<LookupRelationship, LookupRelationshipDO>
-            RELATIONSHIPS = SetAssembler.create(LookupRelationship.class,
-                                                LookupRelationshipDO.class);
+            RELATIONSHIPS = SetAssembler.create(LookupRelationship.class, LookupRelationshipDO.class);
 
     /**
-     * Creates a new <tt>LookupAssembler</tt>.
+     * Constructs a {@link LookupAssembler}.
      */
     public LookupAssembler() {
-        super(Lookup.class, LookupDO.class, LookupDOImpl.class);
+        super(org.openvpms.component.model.lookup.Lookup.class, Lookup.class, LookupDO.class, LookupDOImpl.class);
     }
 
     /**

@@ -43,10 +43,11 @@ public class AssertionTypeDescriptorAssembler
             = SetAssembler.create(ActionTypeDescriptor.class, ActionTypeDescriptorDO.class);
 
     /**
-     * Creates a new <tt>AssertionTypeDescriptorAssembler</tt>.
+     * Constructs an {@link AssertionTypeDescriptorAssembler}.
      */
     public AssertionTypeDescriptorAssembler() {
-        super(AssertionTypeDescriptor.class, AssertionTypeDescriptorDO.class, AssertionTypeDescriptorDOImpl.class);
+        super(org.openvpms.component.model.archetype.AssertionTypeDescriptor.class, AssertionTypeDescriptor.class,
+              AssertionTypeDescriptorDO.class, AssertionTypeDescriptorDOImpl.class);
     }
 
     /**

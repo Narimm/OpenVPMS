@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
@@ -22,6 +22,7 @@ import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDO;
 import org.openvpms.component.business.dao.hibernate.im.common.IMObjectDOImpl;
 import org.openvpms.component.business.dao.hibernate.im.common.PeriodRelationshipAssembler;
 import org.openvpms.component.business.domain.im.common.SequencedRelationship;
+import org.openvpms.component.model.object.IMObject;
 
 
 /**
@@ -36,17 +37,18 @@ public abstract class SequencedRelationshipAssembler<T extends SequencedRelation
     /**
      * Constructs a {@link SequencedRelationshipAssembler}.
      *
-     * @param type        the relationship type
+     * @param type        the object type, or {@code null} if the implementation type has no corresponding interface
+     * @param typeImpl    the relationship implementation type
      * @param typeDO      the relationship data object interface type
-     * @param impl        the relationship data object implementation type
+     * @param typeDOImpl  the relationship data object implementation type
      * @param endType     the relationship source/target data object interface type
      * @param endTypeImpl relationship source/target data object implementation type
      */
-    public SequencedRelationshipAssembler(Class<T> type, Class<DO> typeDO,
-                                          Class<? extends IMObjectDOImpl> impl,
+    public SequencedRelationshipAssembler(Class<? extends IMObject> type, Class<T> typeImpl, Class<DO> typeDO,
+                                          Class<? extends IMObjectDOImpl> typeDOImpl,
                                           Class<? extends IMObjectDO> endType,
                                           Class<? extends IMObjectDOImpl> endTypeImpl) {
-        super(type, typeDO, impl, endType, endTypeImpl);
+        super(type, typeImpl, typeDO, typeDOImpl, endType, endTypeImpl);
     }
 
     /**

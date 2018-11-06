@@ -18,6 +18,7 @@ package org.openvpms.plugin.internal.service.archetype;
 
 import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.DelegatingArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -25,8 +26,12 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.business.service.security.RunAs;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.model.object.IMObject;
 import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.query.TypedQuery;
+import org.openvpms.component.query.criteria.CriteriaBuilder;
+import org.openvpms.component.query.criteria.CriteriaQuery;
 import org.openvpms.component.service.archetype.ArchetypeService;
 import org.openvpms.component.service.archetype.ValidationError;
 
@@ -178,6 +183,40 @@ public class PluginArchetypeService implements ArchetypeService {
     @Override
     public IMObject get(Reference reference) {
         return service.get(reference);
+    }
+
+    /**
+     * Returns an object given its archetype and identifier.
+     *
+     * @param archetype the object's archetype
+     * @param id        the object's identifier
+     * @return the object, or {@code null} if none is found
+     * @throws OpenVPMSException for any error
+     */
+    @Override
+    public IMObject get(String archetype, long id) {
+        return service.get(new IMObjectReference(archetype, id));
+    }
+
+    /**
+     * Returns a builder to create queries.
+     *
+     * @return the criteria builder
+     */
+    @Override
+    public CriteriaBuilder getCriteriaBuilder() {
+        return service.getCriteriaBuilder();
+    }
+
+    /**
+     * Creates a {@link TypedQuery} for executing a criteria query.
+     *
+     * @param query the criteria query
+     * @return the new query instance
+     */
+    @Override
+    public <T> TypedQuery<T> createQuery(CriteriaQuery<T> query) {
+        return service.createQuery(query);
     }
 
     private void run(Runnable runnable) {

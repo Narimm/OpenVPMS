@@ -31,11 +31,16 @@ import org.openvpms.component.business.service.archetype.descriptor.cache.IArche
 import org.openvpms.component.business.service.ruleengine.IRuleEngine;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.query.TypedQuery;
+import org.openvpms.component.query.criteria.CriteriaBuilder;
+import org.openvpms.component.query.criteria.CriteriaQuery;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSet;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.TypedQueryImpl;
+import org.openvpms.component.system.common.query.criteria.CriteriaBuilderImpl;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -72,7 +77,12 @@ public class ArchetypeService implements IArchetypeService {
     /**
      * A reference to the archetype descriptor cache
      */
-    private IArchetypeDescriptorCache dCache;
+    private final IArchetypeDescriptorCache dCache;
+
+    /**
+     * The criteria builder.
+     */
+    private final CriteriaBuilderImpl criteriaBuilder;
 
     /**
      * The DAO instance it will use.
@@ -92,7 +102,7 @@ public class ArchetypeService implements IArchetypeService {
 
 
     /**
-     * Creates a new <tt>ArchetypeService</tt>
+     * Constructs a {@link ArchetypeService}
      *
      * @param cache the archetype descriptor cache
      */
@@ -100,6 +110,7 @@ public class ArchetypeService implements IArchetypeService {
         dCache = cache;
         factory = new ObjectFactory();
         validator = new IMObjectValidator(cache);
+        criteriaBuilder = new CriteriaBuilderImpl(dCache);
     }
 
     /**
@@ -211,11 +222,11 @@ public class ArchetypeService implements IArchetypeService {
         return validator.validate(object);
     }
 
-    /*
-         * (non-Javadoc)
-         *
-         * @see org.openvpms.component.business.service.archetype.IArchetypeService#validateObject(org.openvpms.component.business.domain.im.common.IMObject)
-         */
+    /**
+     * (non-Javadoc)
+     *
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#validateObject(org.openvpms.component.business.domain.im.common.IMObject)
+     */
     public void validateObject(IMObject object) {
         List<org.openvpms.component.service.archetype.ValidationError> errors = validator.validate(object);
         if (!errors.isEmpty()) {
@@ -318,7 +329,7 @@ public class ArchetypeService implements IArchetypeService {
      * Retrieves an object given its reference.
      *
      * @param reference the object reference
-     * @return the corresponding object, or <tt>null</tt> if none is found
+     * @return the corresponding object, or {@code null} if none is found
      * @throws ArchetypeServiceException if the query fails
      */
     public IMObject get(Reference reference) {
@@ -427,7 +438,28 @@ public class ArchetypeService implements IArchetypeService {
         }
     }
 
-    /*
+    /**
+     * Returns a builder to create queries.
+     *
+     * @return the criteria builder
+     */
+    @Override
+    public CriteriaBuilder getCriteriaBuilder() {
+        return criteriaBuilder;
+    }
+
+    /**
+     * Creates a {@link TypedQuery} for executing a criteria query.
+     *
+     * @param query the criteria query
+     * @return the new query instance
+     */
+    @Override
+    public <T> TypedQuery<T> createQuery(CriteriaQuery<T> query) {
+        return new TypedQueryImpl<>(dao.createQuery(query), query.getResultType(), dao);
+    }
+
+    /**
      * (non-Javadoc)
      *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#remove(org.openvpms.component.business.domain.im.common.IMObject)
@@ -779,8 +811,7 @@ public class ArchetypeService implements IArchetypeService {
      * Notifies any listeners when an object is saved.
      *
      * @param object  the object
-     * @param preSave if <tt>true</tt> the object is about to be saved,
-     *                otherwise it has been saved
+     * @param preSave if {@code true} the object is about to be saved, otherwise it has been saved
      */
     private void notifySave(IMObject object, boolean preSave) {
         synchronized (listeners) {
@@ -792,7 +823,7 @@ public class ArchetypeService implements IArchetypeService {
      * Notifies any listeners when a collection of objects is saved.
      *
      * @param objects the objects
-     * @param preSave if <tt>true</tt> the objects are about to be saved,
+     * @param preSave if {@code true} the objects are about to be saved,
      *                otherwise they have been saved
      */
     private void notifySave(Collection<? extends IMObject> objects,
@@ -809,10 +840,8 @@ public class ArchetypeService implements IArchetypeService {
      * Notifies any listeners when an object is saved.
      *
      * @param object   the saved object
-     * @param notifier the notifier to use. If <tt>null</tt> indicates to create
-     *                 a new notifier
-     * @param preSave  if <tt>true</tt> the object is about to be saved,
-     *                 otherwise it has been saved
+     * @param notifier the notifier to use. If {@code null} indicates to create a new notifier
+     * @param preSave  if {@code true} the object is about to be saved, otherwise it has been saved
      * @return the notifier
      */
     private Notifier notifySave(IMObject object, Notifier notifier,
@@ -837,7 +866,7 @@ public class ArchetypeService implements IArchetypeService {
      * Notifies any listeners when an object is removed.
      *
      * @param object    removed saved object
-     * @param preRemove if <tt>true</tt> the object is about to be removed,
+     * @param preRemove if {@code true} the object is about to be removed,
      *                  otherwise it has been removed
      */
     private void notifyRemove(IMObject object, boolean preRemove) {

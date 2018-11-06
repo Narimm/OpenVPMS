@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.entity;
@@ -31,11 +31,11 @@ public class EntityRelationshipAssembler
         extends SequencedRelationshipAssembler<EntityRelationship, EntityRelationshipDO> {
 
     /**
-     * Creates a new <tt>EntityRelationshipAssembler</tt>.
+     * Constructs a {@link EntityRelationshipAssembler}.
      */
     public EntityRelationshipAssembler() {
-        super(EntityRelationship.class, EntityRelationshipDO.class, EntityRelationshipDOImpl.class, EntityDO.class,
-              EntityDOImpl.class);
+        super(org.openvpms.component.model.entity.EntityRelationship.class, EntityRelationship.class,
+              EntityRelationshipDO.class, EntityRelationshipDOImpl.class, EntityDO.class, EntityDOImpl.class);
     }
 
     /**
@@ -47,9 +47,7 @@ public class EntityRelationshipAssembler
      * @param context the assembly context
      */
     @Override
-    protected void assembleDO(EntityRelationshipDO target,
-                              EntityRelationship source, DOState state,
-                              Context context) {
+    protected void assembleDO(EntityRelationshipDO target, EntityRelationship source, DOState state, Context context) {
         super.assembleDO(target, source, state, context);
         EntityIdentityDO identity = null;
         DOState identityState = getDO(source.getIdentity(), context);

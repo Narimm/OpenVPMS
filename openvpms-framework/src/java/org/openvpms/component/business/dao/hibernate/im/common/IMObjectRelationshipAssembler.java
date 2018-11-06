@@ -19,17 +19,16 @@ package org.openvpms.component.business.dao.hibernate.im.common;
 import org.hibernate.Hibernate;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
+import org.openvpms.component.model.object.IMObject;
 import org.openvpms.component.model.object.Reference;
 
 
 /**
- * Assembles {@link IMObjectRelationship} from {@link IMObjectRelationshipDO}s
- * and vice-versa.
+ * Assembles {@link IMObjectRelationship} from {@link IMObjectRelationshipDO}s and vice-versa.
  *
  * @author Tim Anderson
  */
-public abstract class IMObjectRelationshipAssembler
-        <T extends IMObjectRelationship, DO extends IMObjectRelationshipDO>
+public abstract class IMObjectRelationshipAssembler<T extends IMObjectRelationship, DO extends IMObjectRelationshipDO>
         extends IMObjectAssembler<T, DO> {
 
     /**
@@ -44,22 +43,20 @@ public abstract class IMObjectRelationshipAssembler
 
 
     /**
-     * Creates a new <tt>IMObjectRelationshipAssembler</tt>.
+     * Constructs an {@link IMObjectRelationshipAssembler}.
      *
-     * @param type        the relationship type
+     * @param type        the object type, or {@code null} if the implementation type has no corresponding interface
+     * @param typeImpl    the relationship implementation type
      * @param typeDO      the relationship data object interface type
-     * @param impl        the relationship data object implementation type
-     * @param endType     the relationship source/target data object interface
-     *                    type
-     * @param endTypeImpl relationship source/target data object implementation
-     *                    type
+     * @param typeDOImpl  the relationship data object implementation type
+     * @param endType     the relationship source/target data object interface type
+     * @param endTypeImpl relationship source/target data object implementation type
      */
-    public IMObjectRelationshipAssembler(
-            Class<T> type, Class<DO> typeDO,
-            Class<? extends IMObjectDOImpl> impl,
-            Class<? extends IMObjectDO> endType,
-            Class<? extends IMObjectDOImpl> endTypeImpl) {
-        super(type, typeDO, impl);
+    public IMObjectRelationshipAssembler(Class<? extends IMObject> type, Class<T> typeImpl, Class<DO> typeDO,
+                                         Class<? extends IMObjectDOImpl> typeDOImpl,
+                                         Class<? extends IMObjectDO> endType,
+                                         Class<? extends IMObjectDOImpl> endTypeImpl) {
+        super(type, typeImpl, typeDO, typeDOImpl);
         this.endType = endType;
         this.endTypeImpl = endTypeImpl;
     }
@@ -73,8 +70,7 @@ public abstract class IMObjectRelationshipAssembler
      * @param context the assembly context
      */
     @Override
-    protected void assembleDO(DO target, T source, DOState state,
-                              Context context) {
+    protected void assembleDO(DO target, T source, DOState state, Context context) {
         super.assembleDO(target, source, state, context);
         assembleSource(target, source, state, context);
         assembleTarget(target, source, state, context);
@@ -113,8 +109,7 @@ public abstract class IMObjectRelationshipAssembler
             } else {
                 new DeferredAssembler(state, sourceRef) {
                     protected void doAssemble(Context context) {
-                        IMObjectDO source = load(sourceRef, endType,
-                                                 endTypeImpl, context);
+                        IMObjectDO source = load(sourceRef, endType, endTypeImpl, context);
                         result.setSource(source);
                     }
                 };
@@ -149,8 +144,7 @@ public abstract class IMObjectRelationshipAssembler
             } else {
                 new DeferredAssembler(state, targetRef) {
                     public void doAssemble(Context context) {
-                        IMObjectDO target = load(targetRef, endType,
-                                                 endTypeImpl, context);
+                        IMObjectDO target = load(targetRef, endType, endTypeImpl, context);
                         result.setTarget(target);
                     }
                 };

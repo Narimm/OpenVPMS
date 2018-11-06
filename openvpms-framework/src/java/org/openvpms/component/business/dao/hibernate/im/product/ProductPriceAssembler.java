@@ -34,8 +34,7 @@ import java.util.Set;
  *
  * @author Tim Anderson
  */
-public class ProductPriceAssembler
-        extends IMObjectAssembler<ProductPrice, ProductPriceDO> {
+public class ProductPriceAssembler extends IMObjectAssembler<ProductPrice, ProductPriceDO> {
 
     /**
      * Assembles sets of lookups.
@@ -45,10 +44,10 @@ public class ProductPriceAssembler
 
 
     /**
-     * Creates a new <tt>ProductPriceAssembler</tt>.
+     * Constructs a {@link ProductPriceAssembler}.
      */
     public ProductPriceAssembler() {
-        super(ProductPrice.class, ProductPriceDO.class,
+        super(org.openvpms.component.model.product.ProductPrice.class, ProductPrice.class, ProductPriceDO.class,
               ProductPriceDOImpl.class);
     }
 

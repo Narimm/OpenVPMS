@@ -16,7 +16,6 @@
 
 package org.openvpms.component.business.dao.hibernate.im.lookup;
 
-import org.hibernate.SQLQuery;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.query.NativeQuery;
@@ -261,7 +260,7 @@ public class LookupReplacer {
      */
     private boolean isUsedSQL(Lookup lookup, NodeDescriptor node, ArchetypeDescriptor archetype, Session session) {
         Mapping mapping = getMapping(archetype, node);
-        SQLQuery query = session.createSQLQuery(mapping.getIsUsedSQL());
+        NativeQuery query = session.createSQLQuery(mapping.getIsUsedSQL());
         query.setMaxResults(1);
         query.setParameter("archetype", archetype.getType().getShortName());
         query.setParameter("name", node.getName());

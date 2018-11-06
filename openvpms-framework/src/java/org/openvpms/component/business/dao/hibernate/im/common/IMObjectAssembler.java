@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.common;
@@ -25,16 +23,20 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 /**
  * Abstract implementation of the {@link Assembler} interface.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public abstract class IMObjectAssembler<T extends IMObject,
-        DO extends IMObjectDO> extends AbstractAssembler implements Assembler {
+public abstract class IMObjectAssembler<T extends IMObject, DO extends IMObjectDO>
+        extends AbstractAssembler implements Assembler {
 
     /**
-     * The object type.
+     * The object type, or {@code null} if the type has no corresponding interface.
      */
-    private final Class<T> type;
+    private final Class<? extends org.openvpms.component.model.object.IMObject> type;
+
+    /**
+     * The object type implementation.
+     */
+    private final Class<T> typeImpl;
 
     /**
      * The data object interface type.
@@ -44,7 +46,7 @@ public abstract class IMObjectAssembler<T extends IMObject,
     /**
      * The data object implementation type.
      */
-    private final Class<? extends IMObjectDOImpl> impl;
+    private final Class<? extends IMObjectDOImpl> implDO;
 
     /**
      * Converter for the {@link IMObject#getDetails()}  and
@@ -58,17 +60,19 @@ public abstract class IMObjectAssembler<T extends IMObject,
     };
 
     /**
-     * Creates a new <tt>IMObjectAssembler</tt>.
+     * Constructs an {@link IMObjectAssembler}.
      *
-     * @param type   the object type
-     * @param typeDO the data object interface type
-     * @param impl   the data object implementation type
+     * @param type     the object type, or {@code null} if the implementation type has no corresponding interface
+     * @param typeImpl the object type implementation
+     * @param typeDO   the data object interface type
+     * @param implDO   the data object implementation type
      */
-    public IMObjectAssembler(Class<T> type, Class<DO> typeDO,
-                             Class<? extends IMObjectDOImpl> impl) {
+    public IMObjectAssembler(Class<? extends org.openvpms.component.model.object.IMObject> type, Class<T> typeImpl,
+                             Class<DO> typeDO, Class<? extends IMObjectDOImpl> implDO) {
         this.type = type;
+        this.typeImpl = typeImpl;
         this.typeDO = typeDO;
-        this.impl = impl;
+        this.implDO = implDO;
     }
 
     /**
@@ -82,7 +86,7 @@ public abstract class IMObjectAssembler<T extends IMObject,
         DOState state;
         DO target = null;
         boolean assembling;
-        T object = type.cast(source);
+        T object = typeImpl.cast(source);
         state = context.getCached(source);
         if (state == null) {
             // target not yet assembled from the source
@@ -94,7 +98,7 @@ public abstract class IMObjectAssembler<T extends IMObject,
                 target.setLinkId(source.getLinkId());
                 target.setArchetypeId(source.getArchetypeId());
             } else {
-                target = load(source.getObjectReference(), typeDO, impl, context);
+                target = load(source.getObjectReference(), typeDO, implDO, context);
                 target = deproxy(target);
             }
             state = new DOState(target, source);
@@ -149,8 +153,7 @@ public abstract class IMObjectAssembler<T extends IMObject,
 
             try {
                 context.addAssembling(state);
-                assembleDO(typeDO.cast(target), type.cast(source), state,
-                           context);
+                assembleDO(typeDO.cast(target), typeImpl.cast(source), state, context);
             } finally {
                 context.removeAssembling(state);
             }
@@ -167,7 +170,7 @@ public abstract class IMObjectAssembler<T extends IMObject,
      */
     public IMObject assemble(IMObjectDO source, Context context) {
         DO object = typeDO.cast(source);
-        T target = type.cast(context.getCached(source));
+        T target = typeImpl.cast(context.getCached(source));
         if (target == null) {
             target = create(object);
             // pre-cache just in case the graph is cyclic
@@ -196,7 +199,7 @@ public abstract class IMObjectAssembler<T extends IMObject,
         if (!context.isAssembling(target)) {
             try {
                 context.addAssembling(target);
-                assembleObject(type.cast(target), typeDO.cast(source), context);
+                assembleObject(typeImpl.cast(target), typeDO.cast(source), context);
             } finally {
                 context.removeAssembling(target);
             }
@@ -207,10 +210,19 @@ public abstract class IMObjectAssembler<T extends IMObject,
     /**
      * Returns the object type.
      *
-     * @return the object type
+     * @return the object type, or {@code null} if the type has no corresponding interface
      */
-    public Class<? extends IMObject> getType() {
+    public Class<? extends org.openvpms.component.model.object.IMObject> getType() {
         return type;
+    }
+
+    /**
+     * Returns the object type implementation.
+     *
+     * @return the object type implementation
+     */
+    public Class<? extends IMObject> getTypeImpl() {
+        return typeImpl;
     }
 
     /**
@@ -227,8 +239,8 @@ public abstract class IMObjectAssembler<T extends IMObject,
      *
      * @return the data object implementation type
      */
-    public Class<? extends IMObjectDO> getDOImplType() {
-        return impl;
+    public Class<? extends IMObjectDOImpl> getDOImplType() {
+        return implDO;
     }
 
     /**

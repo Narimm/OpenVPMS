@@ -43,10 +43,10 @@ public class ContactAssembler extends IMObjectAssembler<Contact, ContactDO> {
 
 
     /**
-     * Creates a new <tt>ContactAssembler</tt>.
+     * Constructs a {@link ContactAssembler}.
      */
     public ContactAssembler() {
-        super(Contact.class, ContactDO.class, ContactDOImpl.class);
+        super(org.openvpms.component.model.party.Contact.class, Contact.class, ContactDO.class, ContactDOImpl.class);
     }
 
     /**
@@ -65,8 +65,7 @@ public class ContactAssembler extends IMObjectAssembler<Contact, ContactDO> {
         target.setActiveStartTime(source.getActiveStartTime());
         target.setActiveEndTime(source.getActiveEndTime());
         PartyDO party = null;
-        DOState partyState
-                = getDO(source.getParty(), context);
+        DOState partyState = getDO(source.getParty(), context);
         if (partyState != null) {
             party = (PartyDO) partyState.getObject();
             state.addState(partyState);

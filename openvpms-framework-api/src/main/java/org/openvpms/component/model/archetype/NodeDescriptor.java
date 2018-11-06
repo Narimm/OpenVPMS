@@ -310,10 +310,7 @@ public interface NodeDescriptor extends IMObject {
     /**
      * Return an array of short names or short name regular expression that are
      * associated with the archetypeRange assertion. If the node does not have
-     * such an assertion then return a zero length string array
-     * <p>
-     * TODO Should we more this into a utility class TODO Change return type to
-     * List
+     * such an assertion then return a zero length string array.
      *
      * @return String[] the array of short names
      */
@@ -324,7 +321,7 @@ public interface NodeDescriptor extends IMObject {
      *
      * @return the class, or {@code null} if {@link #getType()} returns empty/null
      */
-    Class getClazz();
+    Class getClassType();
 
     /**
      * Return the minimum value of the node. If no minimum defined for node then
@@ -341,7 +338,6 @@ public interface NodeDescriptor extends IMObject {
      * @return Number the minimum value
      */
     Number getMaxValue();
-
 
     /**
      * Return the regular expression associated with the node. Only valid for
@@ -423,5 +419,12 @@ public interface NodeDescriptor extends IMObject {
      * @return boolean
      */
     boolean isString();
+
+    /**
+     * Returns the archetype descriptor that this is a node of.
+     *
+     * @return the archetype descriptor that this is a node of
+     */
+    ArchetypeDescriptor getArchetypeDescriptor();
 
 }

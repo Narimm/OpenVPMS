@@ -20,12 +20,15 @@ import org.openvpms.component.business.dao.im.Page;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.query.criteria.CriteriaQuery;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSet;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.criteria.MappedCriteriaQuery;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 
@@ -107,6 +110,35 @@ public interface IMObjectDAO {
     IPage<NodeSet> getNodes(IArchetypeQuery query, Collection<String> nodes);
 
     /**
+     * Creates a JPA {@code CriteriaQuery} from an {@link CriteriaQuery}.
+     *
+     * @param query the query
+     * @return the corresponding JPA query
+     */
+    <X, Y> MappedCriteriaQuery<Y> createQuery(CriteriaQuery<X> query);
+
+    /**
+     * Executes a JPA {@code CriteriaQuery}, return the results.
+     *
+     * @param criteriaQuery the query to execute
+     * @param type          the result type
+     * @param firstResult   the position of the first result to retrieve
+     * @param maxResults    the maximum number of results, or {@code Integer.MAX_VALUE} for all results
+     * @return the results
+     */
+    <X, Y> List<Y> getResults(MappedCriteriaQuery<X> criteriaQuery, Class<Y> type,
+                              int firstResult, int maxResults);
+
+    /**
+     * Executes a JPA {@code CriteriaQuery}, returning a single result.
+     *
+     * @param criteriaQuery the query to execute
+     * @param type          the result type
+     * @return the result
+     */
+    <X, Y> Y getSingleResult(MappedCriteriaQuery<X> criteriaQuery, Class<Y> type);
+
+    /**
      * Retrieve the objects that matches the specified search criteria.
      * This is a very generic method that provides a mechanism to return
      * objects based on, one or more criteria.
@@ -180,5 +212,6 @@ public interface IMObjectDAO {
      * @param target the lookup to replace <tt>source</tt> it with
      */
     void replace(Lookup source, Lookup target);
+
 }
 

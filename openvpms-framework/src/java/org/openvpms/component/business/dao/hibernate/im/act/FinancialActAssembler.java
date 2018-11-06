@@ -31,14 +31,13 @@ import java.math.BigDecimal;
  *
  * @author Tim Anderson
  */
-public class FinancialActAssembler
-        extends AbstractActAssembler<FinancialAct, FinancialActDO> {
+public class FinancialActAssembler extends AbstractActAssembler<FinancialAct, FinancialActDO> {
 
     /**
-     * Creates a new <tt>FinancialActAssembler</tt>.
+     * Constructs a {@link FinancialActAssembler}.
      */
     public FinancialActAssembler() {
-        super(FinancialAct.class, FinancialActDO.class,
+        super(org.openvpms.component.model.act.FinancialAct.class, FinancialAct.class, FinancialActDO.class,
               FinancialActDOImpl.class);
     }
 
@@ -51,8 +50,7 @@ public class FinancialActAssembler
      * @param context the assembly context
      */
     @Override
-    protected void assembleDO(FinancialActDO target, FinancialAct source,
-                              DOState state, Context context) {
+    protected void assembleDO(FinancialActDO target, FinancialAct source, DOState state, Context context) {
         super.assembleDO(target, source, state, context);
         target.setAllocatedAmount(toMoney(source.getAllocatedAmount()));
         target.setCredit(source.isCredit());
@@ -74,8 +72,7 @@ public class FinancialActAssembler
      * @param context the assembly context
      */
     @Override
-    protected void assembleObject(FinancialAct target, FinancialActDO source,
-                                  Context context) {
+    protected void assembleObject(FinancialAct target, FinancialActDO source, Context context) {
         super.assembleObject(target, source, context);
         target.setAllocatedAmount(source.getAllocatedAmount());
         target.setCredit(source.isCredit());

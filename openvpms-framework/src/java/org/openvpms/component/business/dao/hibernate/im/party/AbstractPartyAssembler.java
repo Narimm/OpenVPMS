@@ -23,6 +23,7 @@ import org.openvpms.component.business.dao.hibernate.im.common.SetAssembler;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityAssembler;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.model.object.IMObject;
 
 import java.util.Set;
 
@@ -40,14 +41,16 @@ public abstract class AbstractPartyAssembler<T extends Party, DO extends PartyDO
     private SetAssembler<Contact, ContactDO> CONTACTS = SetAssembler.create(Contact.class, ContactDO.class);
 
     /**
-     * Constructs a {@link AbstractPartyAssembler}.
+     * Constructs an {@link AbstractPartyAssembler}.
      *
-     * @param type   the object type
-     * @param typeDO the data object interface type
-     * @param impl   the data object implementation type
+     * @param type     the object type, or {@code null} if the implementation type has no corresponding interface
+     * @param typeImpl the object type implementation
+     * @param typeDO   the data object interface type
+     * @param implDO   the data object implementation type
      */
-    public AbstractPartyAssembler(Class<T> type, Class<DO> typeDO, Class<? extends IMObjectDOImpl> impl) {
-        super(type, typeDO, impl);
+    public AbstractPartyAssembler(Class<? extends IMObject> type, Class<T> typeImpl, Class<DO> typeDO,
+                                  Class<? extends IMObjectDOImpl> implDO) {
+        super(type, typeImpl, typeDO, implDO);
     }
 
     /**

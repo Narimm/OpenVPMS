@@ -371,9 +371,9 @@ public class JXPathTestCase {
 
         IMObject object = service.create("productPrice.margin");
         assertTrue(ndesc.getValue(object).getClass().getName(),
-                   ndesc.getValue(object).getClass() == ndesc.getClazz());
+                   ndesc.getValue(object).getClass() == ndesc.getClassType());
         assertTrue(ondesc.getValue(object).getClass().getName(),
-                   ondesc.getValue(object).getClass() == ondesc.getClazz());
+                   ondesc.getValue(object).getClass() == ondesc.getClassType());
     }
 
     /**

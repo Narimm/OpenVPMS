@@ -80,7 +80,7 @@ public class NodeDescriptor extends Descriptor implements org.openvpms.component
     private String baseName;
 
     /**
-     * Cache the clazz. Do not access this directly. Use the {@link #getClazz()}
+     * Cache the clazz. Do not access this directly. Use the {@link #getClassType()}
      * method instead.
      */
     private transient Class clazz;
@@ -262,7 +262,7 @@ public class NodeDescriptor extends Descriptor implements org.openvpms.component
             if (StringUtils.isEmpty(baseName)) {
                 // no base name specified look at the type to determine
                 // what method to call
-                Class tClass = getClazz();
+                Class tClass = getClassType();
                 if (Collection.class.isAssignableFrom(tClass)) {
                     MethodUtils.invokeMethod(obj, "add", child);
                 } else if (Map.class.isAssignableFrom(tClass)) {
@@ -493,6 +493,16 @@ public class NodeDescriptor extends Descriptor implements org.openvpms.component
         }
 
         return children;
+    }
+
+    /**
+     * Returns the class for the specified type.
+     *
+     * @return the class, or {@code null} if {@link #getType()} returns empty/null
+     */
+    @Override
+    public Class getClassType() {
+        return getClazz();
     }
 
     /**
@@ -780,7 +790,7 @@ public class NodeDescriptor extends Descriptor implements org.openvpms.component
      * @return boolean
      */
     public boolean isBoolean() {
-        Class aclass = getClazz();
+        Class aclass = getClassType();
         return (Boolean.class == aclass) || (boolean.class == aclass);
     }
 
@@ -847,7 +857,7 @@ public class NodeDescriptor extends Descriptor implements org.openvpms.component
      * @return boolean
      */
     public boolean isDate() {
-        Class aclass = getClazz();
+        Class aclass = getClassType();
         return Date.class == aclass;
 
     }
@@ -916,7 +926,7 @@ public class NodeDescriptor extends Descriptor implements org.openvpms.component
      * @return boolean
      */
     public boolean isMoney() {
-        return getClazz() == Money.class;
+        return getClassType() == Money.class;
     }
 
     /**
@@ -926,7 +936,7 @@ public class NodeDescriptor extends Descriptor implements org.openvpms.component
      */
     public boolean isNumeric() {
 
-        Class aclass = getClazz();
+        Class aclass = getClassType();
         return (Number.class.isAssignableFrom(aclass)) || (byte.class == aclass)
                || (short.class == aclass) || (int.class == aclass)
                || (long.class == aclass) || (float.class == aclass)
@@ -940,7 +950,7 @@ public class NodeDescriptor extends Descriptor implements org.openvpms.component
      * @return boolean
      */
     public boolean isObjectReference() {
-        return IMObjectReference.class.isAssignableFrom(getClazz());
+        return IMObjectReference.class.isAssignableFrom(getClassType());
     }
 
     /**
@@ -978,7 +988,7 @@ public class NodeDescriptor extends Descriptor implements org.openvpms.component
      * @return boolean
      */
     public boolean isString() {
-        Class aclass = getClazz();
+        Class aclass = getClassType();
         return String.class == aclass;
     }
 
@@ -1054,7 +1064,7 @@ public class NodeDescriptor extends Descriptor implements org.openvpms.component
             if (StringUtils.isEmpty(baseName)) {
                 // no base name specified look at the type to determine
                 // what method to call
-                Class tClass = getClazz();
+                Class tClass = getClassType();
                 if (Collection.class.isAssignableFrom(tClass)) {
                     MethodUtils.invokeMethod(obj, "remove", child);
                 } else if (Map.class.isAssignableFrom(tClass)) {
@@ -1286,6 +1296,7 @@ public class NodeDescriptor extends Descriptor implements org.openvpms.component
      * @return the archetype descriptor that this is a node of. May be
      * <code>null</code>
      */
+    @Override
     public ArchetypeDescriptor getArchetypeDescriptor() {
         return archetype;
     }
@@ -1358,16 +1369,16 @@ public class NodeDescriptor extends Descriptor implements org.openvpms.component
     private Object transform(Object value) {
         if ((value == null) ||
             (this.isCollection()) ||
-            (value.getClass() == getClazz())) {
+            (value.getClass() == getClassType())) {
             return value;
         }
 
         try {
-            return CONVERTER.convert(value, getClazz());
+            return CONVERTER.convert(value, getClassType());
         } catch (JXPathTypeConversionException exception) {
             throw new DescriptorException(
                     DescriptorException.ErrorCode.FailedToCoerceValue,
-                    value.getClass().getName(), getClazz().getName());
+                    value.getClass().getName(), getClassType().getName());
         }
     }
 

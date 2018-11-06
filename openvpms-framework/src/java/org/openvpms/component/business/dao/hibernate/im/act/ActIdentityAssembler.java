@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.act;
@@ -36,7 +36,8 @@ public class ActIdentityAssembler extends IMObjectAssembler<ActIdentity, ActIden
      * Constructs an {@link ActIdentityAssembler}.
      */
     public ActIdentityAssembler() {
-        super(ActIdentity.class, ActIdentityDO.class, ActIdentityDOImpl.class);
+        super(org.openvpms.component.model.act.ActIdentity.class, ActIdentity.class, ActIdentityDO.class,
+              ActIdentityDOImpl.class);
     }
 
     /**

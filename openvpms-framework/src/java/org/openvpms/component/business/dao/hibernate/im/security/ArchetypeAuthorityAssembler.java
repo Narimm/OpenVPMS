@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.security;
@@ -23,8 +23,7 @@ import org.openvpms.component.business.domain.im.security.ArchetypeAwareGrantedA
 
 
 /**
- * Assembles {@link ArchetypeAwareGrantedAuthority}s from
- * {@link ArchetypeAuthorityDO}s and vice-versa.
+ * Assembles {@link ArchetypeAwareGrantedAuthority}s from {@link ArchetypeAuthorityDO}s and vice-versa.
  *
  * @author Tim Anderson
  */
@@ -32,12 +31,10 @@ public class ArchetypeAuthorityAssembler
         extends IMObjectAssembler<ArchetypeAwareGrantedAuthority, ArchetypeAuthorityDO> {
 
     /**
-     * Creates a new <tt>ArchetypeAuthorityAssembler</tt>.
+     * Constructs an {@link ArchetypeAuthorityAssembler}.
      */
     public ArchetypeAuthorityAssembler() {
-        super(ArchetypeAwareGrantedAuthority.class,
-              ArchetypeAuthorityDO.class,
-              ArchetypeAuthorityDOImpl.class);
+        super(null, ArchetypeAwareGrantedAuthority.class, ArchetypeAuthorityDO.class, ArchetypeAuthorityDOImpl.class);
     }
 
     /**

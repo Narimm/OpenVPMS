@@ -11,15 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
 package org.openvpms.component.business.dao.hibernate.im.security;
 
-import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.entity.EntityLinkAssembler;
@@ -115,13 +115,13 @@ public class UserDAOHibernate implements IUserDAO {
         Session session = factory.getCurrentSession();
         try {
             Query query = session.createQuery(userQuery);
-            query.setString("name", name);
+            query.setParameter("name", name);
             if (shortNames != null && shortNames.length > 0) {
                 for (int i = 0; i < shortNames.length; ++i) {
-                    query.setString("shortName" + i, shortNames[i]);
+                    query.setParameter("shortName" + i, shortNames[i]);
                 }
             }
-            Context context = Context.getContext(assembler, session);
+            Context context = Context.getContext(session, assembler);
             IMObjectResultCollector collector = new IMObjectResultCollector();
             collector.setContext(context);
             for (Object object : query.list()) {

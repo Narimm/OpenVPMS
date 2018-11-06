@@ -11,8 +11,9 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="party.patientpet.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.party.Party"
@@ -61,7 +62,7 @@
               type="java.util.Date" minCardinality="0"/>
         <node name="deceased" path="/details/deceased" type="java.lang.Boolean"
               defaultValue="false()"/>
-        <node name="Active" path="/active" type="java.lang.Boolean"
+        <node name="active" path="/active" type="java.lang.Boolean"
               defaultValue="true()"/>
         <node name="customers" path="/targetEntityRelationships"
               type="java.util.HashSet" baseName="EntityRelationship"

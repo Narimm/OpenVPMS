@@ -21,6 +21,9 @@ import org.openvpms.component.model.archetype.ArchetypeDescriptor;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.object.IMObject;
 import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.query.TypedQuery;
+import org.openvpms.component.query.criteria.CriteriaBuilder;
+import org.openvpms.component.query.criteria.CriteriaQuery;
 
 import java.util.Collection;
 import java.util.List;
@@ -100,4 +103,30 @@ public interface ArchetypeService {
      * @throws OpenVPMSException for any error
      */
     IMObject get(Reference reference);
+
+    /**
+     * Returns an object given its archetype and identifier.
+     *
+     * @param archetype the object's archetype
+     * @param id        the object's identifier
+     * @return the object, or {@code null} if none is found
+     * @throws OpenVPMSException for any error
+     */
+    IMObject get(String archetype, long id);
+
+    /**
+     * Returns a builder to create queries.
+     *
+     * @return the criteria builder
+     */
+    CriteriaBuilder getCriteriaBuilder();
+
+    /**
+     * Creates a {@link TypedQuery} for executing a criteria query.
+     *
+     * @param query the criteria query
+     * @return the new query instance
+     */
+    <T> TypedQuery<T> createQuery(CriteriaQuery<T> query);
+
 }

@@ -13,6 +13,7 @@
  *
  * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
+
 package org.openvpms.component.business.service;
 
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -83,8 +84,8 @@ public abstract class AbstractArchetypeServiceTest extends AbstractJUnit4SpringC
      *
      * @param object the object to save
      */
-    protected void save(IMObject object) {
-        service.save(object);
+    protected void save(org.openvpms.component.model.object.IMObject object) {
+        service.save((IMObject) object);
     }
 
     /**

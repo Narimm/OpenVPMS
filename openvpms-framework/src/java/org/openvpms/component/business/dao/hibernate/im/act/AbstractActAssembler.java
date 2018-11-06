@@ -26,6 +26,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.model.object.IMObject;
 
 import java.util.Set;
 
@@ -34,8 +35,7 @@ import java.util.Set;
  *
  * @author Tim Anderson
  */
-public abstract class AbstractActAssembler<T extends Act, DO extends ActDO>
-        extends IMObjectAssembler<T, DO> {
+public abstract class AbstractActAssembler<T extends Act, DO extends ActDO> extends IMObjectAssembler<T, DO> {
 
     /**
      * Assembles sets of identities.
@@ -58,12 +58,14 @@ public abstract class AbstractActAssembler<T extends Act, DO extends ActDO>
     /**
      * Constructs an {@link AbstractActAssembler}.
      *
-     * @param type   the object type
-     * @param typeDO the data object interface type
-     * @param impl   the data object implementation type
+     * @param type     the object type, or {@code null} if the implementation type has no corresponding interface
+     * @param typeImpl the object type implementation
+     * @param typeDO   the data object interface type
+     * @param implDO   the data object implementation type
      */
-    public AbstractActAssembler(Class<T> type, Class<DO> typeDO, Class<? extends IMObjectDOImpl> impl) {
-        super(type, typeDO, impl);
+    public AbstractActAssembler(Class<? extends IMObject> type, Class<T> typeImpl, Class<DO> typeDO,
+                                Class<? extends IMObjectDOImpl> implDO) {
+        super(type, typeImpl, typeDO, implDO);
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.security;
@@ -41,7 +41,7 @@ public class UserAssembler extends AbstractPartyAssembler<User, UserDO> {
      * Constructs a {@link UserAssembler}.
      */
     public UserAssembler() {
-        super(User.class, UserDO.class, UserDOImpl.class);
+        super(org.openvpms.component.model.user.User.class, User.class, UserDO.class, UserDOImpl.class);
     }
 
     /**

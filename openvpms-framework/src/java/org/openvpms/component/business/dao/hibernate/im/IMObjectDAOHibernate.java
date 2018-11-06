@@ -20,11 +20,11 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.hibernate.FlushMode;
-import org.hibernate.Query;
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
 import org.openvpms.component.business.dao.hibernate.im.common.CompoundAssembler;
 import org.openvpms.component.business.dao.hibernate.im.common.Context;
 import org.openvpms.component.business.dao.hibernate.im.common.ContextHandler;
@@ -39,6 +39,7 @@ import org.openvpms.component.business.dao.hibernate.im.entity.IMObjectResultCol
 import org.openvpms.component.business.dao.hibernate.im.entity.NodeSetResultCollector;
 import org.openvpms.component.business.dao.hibernate.im.entity.ObjectSetResultCollector;
 import org.openvpms.component.business.dao.hibernate.im.lookup.LookupReplacer;
+import org.openvpms.component.business.dao.hibernate.im.query.MappedCriteriaQueryFactory;
 import org.openvpms.component.business.dao.hibernate.im.query.QueryBuilder;
 import org.openvpms.component.business.dao.hibernate.im.query.QueryContext;
 import org.openvpms.component.business.dao.im.Page;
@@ -51,14 +52,20 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
 import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.query.criteria.CriteriaQuery;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NamedQuery;
 import org.openvpms.component.system.common.query.NodeSet;
 import org.openvpms.component.system.common.query.ObjectSet;
+import org.openvpms.component.system.common.query.TupleImpl;
+import org.openvpms.component.system.common.query.criteria.CriteriaQueryImpl;
+import org.openvpms.component.system.common.query.criteria.MappedCriteriaQuery;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.Tuple;
+import javax.persistence.TupleElement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -106,6 +113,11 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
     private IArchetypeDescriptorCache cache;
 
     /**
+     * The query factory.
+     */
+    private MappedCriteriaQueryFactory queryFactory;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(IMObjectDAOHibernate.class);
@@ -128,6 +140,7 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
     public void setArchetypeDescriptorCache(IArchetypeDescriptorCache cache) {
         this.cache = cache;
         assembler = new AssemblerImpl(cache);
+        queryFactory = new MappedCriteriaQueryFactory(factory.getCriteriaBuilder(), assembler);
         handlerFactory = new DeleteHandlerFactory(assembler, cache);
     }
 
@@ -237,6 +250,63 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
     @Transactional
     public IPage<NodeSet> getNodes(IArchetypeQuery query, Collection<String> nodes) {
         return getQueryDelegator(query).getNodes(query, nodes);
+    }
+
+    /**
+     * Creates a JPA {@code CriteriaQuery} from an {@link CriteriaQuery}.
+     *
+     * @param query the query
+     * @return the corresponding JPA query
+     */
+    @Override
+    public <X, Y> MappedCriteriaQuery<Y> createQuery(CriteriaQuery<X> query) {
+        CriteriaQueryImpl<X> impl = (CriteriaQueryImpl<X>) query;
+        return queryFactory.createCriteriaQuery(impl);
+    }
+
+    /**
+     * Executes a {@code CriteriaQuery}, return the results.
+     *
+     * @param criteriaQuery the query to execute
+     * @param type          the result type
+     * @param firstResult   the position of the first result to retrieve
+     * @param maxResults    the maximum number of results, or {@code Integer.MAX_VALUE} for all results
+     * @return the results
+     */
+    @Transactional
+    @Override
+    public <X, Y> List<Y> getResults(MappedCriteriaQuery<X> criteriaQuery, Class<Y> type, int firstResult,
+                                     int maxResults) {
+        List<Y> result = new ArrayList<>();
+        Session session = getSession();
+        javax.persistence.TypedQuery<X> typedQuery = session.createQuery(criteriaQuery.getQuery());
+        typedQuery.setFirstResult(firstResult);
+        if (maxResults != Integer.MAX_VALUE) {
+            typedQuery.setMaxResults(maxResults);
+        }
+        Context context = Context.getContext(session, assembler);
+        for (X source : typedQuery.getResultList()) {
+            Y target = adapt(source, type, criteriaQuery, context);
+            result.add(target);
+        }
+        return result;
+    }
+
+    /**
+     * Executes a JPA {@code CriteriaQuery}, returning a single result.
+     *
+     * @param criteriaQuery the query to execute
+     * @param type          the result type
+     * @return the result
+     */
+    @Override
+    @Transactional
+    public <X, Y> Y getSingleResult(MappedCriteriaQuery<X> criteriaQuery, Class<Y> type) {
+        Session session = getSession();
+        javax.persistence.TypedQuery<X> typedQuery = session.createQuery(criteriaQuery.getQuery());
+        Context context = Context.getContext(session, assembler);
+        X source = typedQuery.getSingleResult();
+        return adapt(source, type, criteriaQuery, context);
     }
 
     /**
@@ -455,7 +525,7 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
      */
     private Session getSession() {
         Session session = factory.getCurrentSession();
-        session.setFlushMode(FlushMode.COMMIT);
+        session.setHibernateFlushMode(FlushMode.COMMIT);
         return session;
     }
 
@@ -690,6 +760,51 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
     }
 
     /**
+     * Adapts an object to the target type.
+     * <p/>
+     * NOTE: this does not do type conversion, so there is a potential that the returned object is not of the requested
+     * type.
+     *
+     * @param object  the object to adapt
+     * @param type    the target type
+     * @param query   the source query
+     * @param context the context
+     * @return the adapted object
+     */
+    @SuppressWarnings("unchecked")
+    private <X, Y> Y adapt(X object, Class<Y> type, MappedCriteriaQuery<?> query, Context context) {
+        Y target;
+        if (object instanceof IMObjectDO) {
+            target = type.cast(assembler.assemble((IMObjectDO) object, context));
+        } else if (object instanceof Tuple) {
+            target = type.cast(adapt((Tuple) object, query, context));
+        } else {
+            target = (Y) object;
+        }
+        return target;
+    }
+
+    private Tuple adapt(javax.persistence.Tuple tuple, MappedCriteriaQuery<?> query, Context context) {
+        List<TupleElement<?>> sources = tuple.getElements();
+        List<TupleElement<?>> targets = new ArrayList<>(sources.size());
+        Object[] values = new Object[sources.size()];
+        int index = 0;
+        for (TupleElement<?> source : sources) {
+            TupleElement<?> target = query.getElement(source);
+            if (target == null) {
+                throw new IllegalStateException("No TupleElement found for: " + source);
+            }
+            Object object = tuple.get(source);
+            if (object != null) {
+                object = adapt(object, source.getJavaType(), query, context);
+            }
+            targets.add(target);
+            values[index++] = object;
+        }
+        return new TupleImpl(targets, values);
+    }
+
+    /**
      * Save a collection of objects.
      *
      * @param objects the objects to save
@@ -817,7 +932,7 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
      * @return the corresponding assembly context
      */
     private Context getContext(Session session) {
-        Context context = Context.getContext(assembler, session);
+        Context context = Context.getContext(session, assembler);
         context.setContextHandler(this);
         return context;
     }
@@ -835,49 +950,6 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
             return new NamedQueryDelegator();
         }
         throw new IllegalArgumentException("Unsupported query: " + query.getClass().getName());
-    }
-
-    /**
-     * Helper to map query parameters into a form used by hibernate.
-     */
-    private static class Params {
-
-        private String[] names;
-
-        private Object[] values;
-
-        public Params(List<String> names, List<Object> values) {
-            this.names = names.toArray(new String[names.size()]);
-            this.values = values.toArray();
-        }
-
-        public Params(Map<String, Object> params) {
-            names = params.keySet().toArray(new String[params.keySet().size()]);
-            values = new Object[names.length];
-            for (int i = 0; i < names.length; ++i) {
-                values[i] = params.get(names[i]);
-            }
-        }
-
-        public void setParameters(Query query) {
-            for (int i = 0; i < names.length; ++i) {
-                if (values[i] instanceof Collection) {
-                    query.setParameterList(names[i], (Collection) values[i]);
-                } else if (values[i] instanceof Object[]) {
-                    query.setParameterList(names[i], (Object[]) values[i]);
-                } else {
-                    query.setParameter(names[i], values[i]);
-                }
-            }
-        }
-
-        public String[] getNames() {
-            return names;
-        }
-
-        public Object[] getValues() {
-            return values;
-        }
     }
 
     abstract class QueryDelegator {
@@ -963,6 +1035,49 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
             getByNamedQuery(q.getQuery(), q.getParameters(), collector,
                             q.getFirstResult(), q.getMaxResults(),
                             q.countResults());
+        }
+    }
+
+    /**
+     * Helper to map query parameters into a form used by hibernate.
+     */
+    private static class Params {
+
+        private String[] names;
+
+        private Object[] values;
+
+        public Params(List<String> names, List<Object> values) {
+            this.names = names.toArray(new String[names.size()]);
+            this.values = values.toArray();
+        }
+
+        public Params(Map<String, Object> params) {
+            names = params.keySet().toArray(new String[params.keySet().size()]);
+            values = new Object[names.length];
+            for (int i = 0; i < names.length; ++i) {
+                values[i] = params.get(names[i]);
+            }
+        }
+
+        public void setParameters(Query query) {
+            for (int i = 0; i < names.length; ++i) {
+                if (values[i] instanceof Collection) {
+                    query.setParameterList(names[i], (Collection) values[i]);
+                } else if (values[i] instanceof Object[]) {
+                    query.setParameterList(names[i], (Object[]) values[i]);
+                } else {
+                    query.setParameter(names[i], values[i]);
+                }
+            }
+        }
+
+        public String[] getNames() {
+            return names;
+        }
+
+        public Object[] getValues() {
+            return values;
         }
     }
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -68,7 +68,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     private AppointmentRules rules;
 
     /**
-     * Tests the {@link AppointmentRules#getSlotSize(Entity)} method.
+     * Tests the {@link AppointmentRules#getSlotSize} method.
      */
     @Test
     public void testGetSlotSize() {
@@ -129,7 +129,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     /**
      * Verifies that the status of a task associated with an appointment
      * is updated when the appointment is saved.
-     * <p/>
+     * <p>
      * Note that this requires the
      * <em>archetypeService.save.act.customerAppointment.afer</em> rule.
      */
@@ -168,7 +168,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     /**
      * Verifies that the status of an appointment associated with an task
      * is updated when the task is saved.
-     * <p/>
+     * <p>
      * Note that this requires the
      * <em>archetypeService.save.act.customerTask.afer</em> rule.
      */
@@ -252,7 +252,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link AppointmentRules#getScheduleView(Party, Entity)} method.
+     * Tests the {@link AppointmentRules#getScheduleView} method.
      */
     @Test
     public void testGetScheduleView() {
@@ -282,7 +282,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link AppointmentRules#getLocation(Entity)} method.
+     * Tests the {@link AppointmentRules#getLocation} method.
      */
     @Test
     public void testGetLocation() {
@@ -301,7 +301,7 @@ public class AppointmentRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link AppointmentRules#isRemindersEnabled(Entity)}.
+     * Tests the {@link AppointmentRules#isRemindersEnabled} method.
      */
     @Test
     public void testIsRemindersEnabled() {

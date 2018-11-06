@@ -31,19 +31,19 @@ import org.openvpms.component.model.object.Reference;
 
 
 /**
- * An {@link Assembler} responsible for assembling {@link DocumentActDO}
- * instances from {@link DocumentAct}s and vice-versa.
+ * An {@link Assembler} responsible for assembling {@link DocumentActDO} instances from {@link DocumentAct}s and
+ * vice-versa.
  *
  * @author Tim Anderson
  */
-public class DocumentActAssembler
-        extends AbstractActAssembler<DocumentAct, DocumentActDO> {
+public class DocumentActAssembler extends AbstractActAssembler<DocumentAct, DocumentActDO> {
 
     /**
-     * Creates a new <tt>DocumentActAssembler</tt>.
+     * Constructs a {@link DocumentActAssembler}.
      */
     public DocumentActAssembler() {
-        super(DocumentAct.class, DocumentActDO.class, DocumentActDOImpl.class);
+        super(org.openvpms.component.model.act.DocumentAct.class, DocumentAct.class, DocumentActDO.class,
+              DocumentActDOImpl.class);
     }
 
     /**
@@ -55,8 +55,7 @@ public class DocumentActAssembler
      * @param context the assembly context
      */
     @Override
-    protected void assembleDO(DocumentActDO target, DocumentAct source,
-                              DOState state, Context context) {
+    protected void assembleDO(DocumentActDO target, DocumentAct source, DOState state, Context context) {
         super.assembleDO(target, source, state, context);
         target.setDocVersion(source.getDocVersion());
         target.setFileName(source.getFileName());
@@ -73,8 +72,7 @@ public class DocumentActAssembler
      * @param context the assembly context
      */
     @Override
-    protected void assembleObject(DocumentAct target, DocumentActDO source,
-                                  Context context) {
+    protected void assembleObject(DocumentAct target, DocumentActDO source, Context context) {
         super.assembleObject(target, source, context);
         target.setDocVersion(source.getDocVersion());
         target.setFileName(source.getFileName());
@@ -116,17 +114,14 @@ public class DocumentActAssembler
                              DOState state, Context context) {
         final Reference ref = source.getDocument();
         if (ref != null) {
-            DOState docDO = get(ref, DocumentDO.class, DocumentDOImpl.class,
-                                context);
+            DOState docDO = get(ref, DocumentDO.class, DocumentDOImpl.class, context);
             if (docDO != null) {
                 target.setDocument((DocumentDO) docDO.getObject());
                 state.addState(docDO);
             } else {
                 new DeferredAssembler(state, ref) {
                     protected void doAssemble(Context context) {
-                        target.setDocument(
-                                load(ref, DocumentDO.class,
-                                     DocumentDOImpl.class, context));
+                        target.setDocument(load(ref, DocumentDO.class, DocumentDOImpl.class, context));
                     }
                 };
             }
@@ -149,13 +144,11 @@ public class DocumentActAssembler
      * @param source  the source act
      * @param context the assembly context
      */
-    private void assembleDocRef(final DocumentAct target, DocumentActDO source,
-                                Context context) {
+    private void assembleDocRef(final DocumentAct target, DocumentActDO source, Context context) {
         DocumentDO document = source.getDocument();
         if (document != null) {
             if (Hibernate.isInitialized(document)) {
-                target.setDocument(context.getReference(document,
-                                                        DocumentDOImpl.class));
+                target.setDocument(context.getReference(document, DocumentDOImpl.class));
             } else {
                 context.addDeferredReference(
                         new DeferredReference(document, DocumentDOImpl.class) {

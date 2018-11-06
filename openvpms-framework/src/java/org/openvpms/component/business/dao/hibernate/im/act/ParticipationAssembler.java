@@ -41,10 +41,10 @@ public class ParticipationAssembler
         extends IMObjectAssembler<Participation, ParticipationDO> {
 
     /**
-     * Creates a new <tt>ParticipationAssembler</tt>.
+     * Constructs a {@link ParticipationAssembler}.
      */
     public ParticipationAssembler() {
-        super(Participation.class, ParticipationDO.class,
+        super(org.openvpms.component.model.act.Participation.class, Participation.class, ParticipationDO.class,
               ParticipationDOImpl.class);
     }
 
@@ -57,8 +57,7 @@ public class ParticipationAssembler
      * @param context the assembly context
      */
     @Override
-    protected void assembleDO(ParticipationDO target, Participation source,
-                              DOState state, Context context) {
+    protected void assembleDO(ParticipationDO target, Participation source, DOState state, Context context) {
         super.assembleDO(target, source, state, context);
         assembleEntity(target, source, state, context);
         assembleAct(target, source, state, context);
@@ -120,8 +119,7 @@ public class ParticipationAssembler
             } else {
                 new DeferredAssembler(state, entityRef) {
                     public void doAssemble(Context context) {
-                        target.setEntity(load(entityRef, EntityDO.class,
-                                              EntityDOImpl.class, context));
+                        target.setEntity(load(entityRef, EntityDO.class, EntityDOImpl.class, context));
                     }
                 };
             }
@@ -145,9 +143,7 @@ public class ParticipationAssembler
      * @param state   the target state
      * @param context the assembly context
      */
-    private void assembleAct(final ParticipationDO target,
-                             final Participation source,
-                             DOState state, Context context) {
+    private void assembleAct(final ParticipationDO target, final Participation source, DOState state, Context context) {
         Reference actRef = source.getAct();
         if (actRef != null) {
             DOState actDO = get(actRef, ActDO.class, ActDOImpl.class, context);
@@ -157,8 +153,7 @@ public class ParticipationAssembler
             } else {
                 new DeferredAssembler(state, actRef) {
                     public void doAssemble(Context context) {
-                        target.setAct(load(actRef, ActDO.class, ActDOImpl.class,
-                                           context));
+                        target.setAct(load(actRef, ActDO.class, ActDOImpl.class, context));
                     }
                 };
             }
@@ -181,13 +176,11 @@ public class ParticipationAssembler
      * @param source  the source participation
      * @param context the assembly context
      */
-    private void assembleEntityRef(final Participation result,
-                                   ParticipationDO source, Context context) {
+    private void assembleEntityRef(final Participation result, ParticipationDO source, Context context) {
         EntityDO entity = source.getEntity();
         if (entity != null) {
             if (Hibernate.isInitialized(entity)) {
-                result.setEntity(context.getReference(entity,
-                                                      EntityDOImpl.class));
+                result.setEntity(context.getReference(entity, EntityDOImpl.class));
             } else {
                 context.addDeferredReference(
                         new DeferredReference(entity, EntityDOImpl.class) {
@@ -208,8 +201,7 @@ public class ParticipationAssembler
      * @param source  the source participation
      * @param context the assembly context
      */
-    private void assembleActRef(final Participation result,
-                                ParticipationDO source, Context context) {
+    private void assembleActRef(final Participation result, ParticipationDO source, Context context) {
         ActDO act = source.getAct();
         if (act != null) {
             if (Hibernate.isInitialized(act)) {

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.archetype;
@@ -26,24 +24,19 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.ActionType
 
 
 /**
- * An {@link Assembler} responsible for assembling
- * {@link ActionTypeDescriptorDO} instances from {@link ActionTypeDescriptor}s
- * and vice-versa.
+ * An {@link Assembler} responsible for assembling {@link ActionTypeDescriptorDO} instances from
+ * {@link ActionTypeDescriptor}s and vice-versa.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class ActionTypeDescriptorAssembler
-        extends IMObjectAssembler<ActionTypeDescriptor,
-        ActionTypeDescriptorDO> {
-
+public class ActionTypeDescriptorAssembler extends IMObjectAssembler<ActionTypeDescriptor, ActionTypeDescriptorDO> {
 
     /**
-     * Creates a new <tt>ActionTypeDescriptorAssembler</tt>.
+     * Constructs an {@link ActionTypeDescriptor}.
      */
     public ActionTypeDescriptorAssembler() {
-        super(ActionTypeDescriptor.class, ActionTypeDescriptorDO.class,
-              ActionTypeDescriptorDOImpl.class);
+        super(org.openvpms.component.model.archetype.ActionTypeDescriptor.class, ActionTypeDescriptor.class,
+              ActionTypeDescriptorDO.class, ActionTypeDescriptorDOImpl.class);
     }
 
     /**
@@ -55,8 +48,7 @@ public class ActionTypeDescriptorAssembler
      * @param context the assembly context
      */
     @Override
-    protected void assembleDO(ActionTypeDescriptorDO target,
-                              ActionTypeDescriptor source, DOState state,
+    protected void assembleDO(ActionTypeDescriptorDO target, ActionTypeDescriptor source, DOState state,
                               Context context) {
         super.assembleDO(target, source, state, context);
         target.setClassName(source.getClassName());
@@ -71,9 +63,7 @@ public class ActionTypeDescriptorAssembler
      * @param context the assembly context
      */
     @Override
-    protected void assembleObject(ActionTypeDescriptor target,
-                                  ActionTypeDescriptorDO source,
-                                  Context context) {
+    protected void assembleObject(ActionTypeDescriptor target, ActionTypeDescriptorDO source, Context context) {
         super.assembleObject(target, source, context);
         target.setClassName(source.getClassName());
         target.setMethodName(source.getMethodName());

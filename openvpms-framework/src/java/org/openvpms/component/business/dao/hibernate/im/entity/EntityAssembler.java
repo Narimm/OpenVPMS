@@ -28,6 +28,7 @@ import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.model.object.IMObject;
 
 import java.util.Set;
 
@@ -68,12 +69,14 @@ public abstract class EntityAssembler<T extends Entity, DO extends EntityDO> ext
     /**
      * Constructs an {@link EntityAssembler}.
      *
-     * @param type   the object type
-     * @param typeDO the data object interface type
-     * @param impl   the data object implementation type
+     * @param type     the object type, or {@code null} if the implementation type has no corresponding interface
+     * @param typeImpl the object type implementation
+     * @param typeDO   the data object interface type
+     * @param implDO   the data object implementation type
      */
-    public EntityAssembler(Class<T> type, Class<DO> typeDO, Class<? extends IMObjectDOImpl> impl) {
-        super(type, typeDO, impl);
+    public EntityAssembler(Class<? extends IMObject> type, Class<T> typeImpl, Class<DO> typeDO,
+                           Class<? extends IMObjectDOImpl> implDO) {
+        super(type, typeImpl, typeDO, implDO);
     }
 
     /**

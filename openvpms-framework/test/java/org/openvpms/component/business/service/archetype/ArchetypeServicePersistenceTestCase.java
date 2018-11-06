@@ -1,24 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2005 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
 
-import static org.junit.Assert.*;
 import org.junit.Test;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -33,7 +30,6 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.domain.im.security.SecurityRole;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
-import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.lookup.LookupUtil;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -45,6 +41,12 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.StringTokenizer;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 
 /**
@@ -383,52 +385,6 @@ public class ArchetypeServicePersistenceTestCase extends AbstractArchetypeServic
             ArchetypeDescriptor desc = service.getArchetypeDescriptor(shortName);
             ArchetypeId archId = desc.getType();
             assertTrue(archId.getEntityName().matches(".*arty"));
-        }
-    }
-
-    /**
-     * Test that we can retrieve all the object for a particular
-     * classification.
-     */
-    @Test
-    public void testGetCandidates() {
-        IArchetypeService service = getArchetypeService();
-        Lookup cf = LookupUtil.createLookup(service, "lookup.staff", "VET");
-        cf.setDescription("vet");
-        save(cf);
-
-        cf = LookupUtil.createLookup(service, "lookup.staff", "VET1");
-        cf.setDescription("vet1");
-        save(cf);
-
-        cf = LookupUtil.createLookup(service, "lookup.patient", "PREMIUM");
-        cf.setDescription("premium");
-        save(cf);
-
-        cf = LookupUtil.createLookup(service, "lookup.patient", "STANDARD");
-        cf.setDescription("standard");
-        save(cf);
-
-        Party person = (Party) create("party.person");
-        ArchetypeDescriptor adesc = getArchetypeService().getArchetypeDescriptor(person.getArchetypeId());
-        NodeDescriptor ndesc = adesc.getNodeDescriptor("classifications");
-        List<IMObject> candidates =
-                ArchetypeQueryHelper.getCandidates(service, ndesc);
-        assertTrue(candidates.size() > 0);
-        for (IMObject candidate : candidates) {
-            boolean matchFound = false;
-            for (String shortName : ndesc.getArchetypeRange()) {
-                if (candidate.getArchetypeId().getShortName().equals(
-                        shortName)) {
-                    matchFound = true;
-                    break;
-                }
-            }
-
-            // if a match cannot be found then signal an error
-            if (!matchFound) {
-                fail(candidate.getArchetypeId() + " does not match archetype range");
-            }
         }
     }
 

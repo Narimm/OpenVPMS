@@ -23,6 +23,9 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.query.TypedQuery;
+import org.openvpms.component.query.criteria.CriteriaBuilder;
+import org.openvpms.component.query.criteria.CriteriaQuery;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSet;
@@ -255,6 +258,21 @@ public interface IArchetypeService {
      * @throws ArchetypeServiceException if the query fails
      */
     IPage<NodeSet> getNodes(IArchetypeQuery query, Collection<String> nodes);
+
+    /**
+     * Returns a builder to create queries.
+     *
+     * @return the criteria builder
+     */
+    CriteriaBuilder getCriteriaBuilder();
+
+    /**
+     * Creates a {@link TypedQuery} for executing a criteria query.
+     *
+     * @param query the criteria query
+     * @return the new query instance
+     */
+    <T> TypedQuery<T> createQuery(CriteriaQuery<T> query);
 
     /**
      * Return a list of archetype short names given the specified criteria.

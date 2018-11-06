@@ -34,28 +34,27 @@ import java.util.Map;
  *
  * @author Tim Anderson
  */
-public class NodeDescriptorAssembler
-        extends IMObjectAssembler<NodeDescriptor, NodeDescriptorDO> {
+public class NodeDescriptorAssembler extends IMObjectAssembler<NodeDescriptor, NodeDescriptorDO> {
 
     /**
      * Assembles node descriptors.
      */
-    private static final MapAssembler<String, NodeDescriptor, NodeDescriptorDO>
-            NODES = MapAssembler.create(NodeDescriptor.class);
+    private static final MapAssembler<String, NodeDescriptor, NodeDescriptorDO> NODES
+            = MapAssembler.create(NodeDescriptor.class);
 
     /**
      * Assembles assertion descriptors.
      */
     private static final
-    MapAssembler<String, AssertionDescriptor, AssertionDescriptorDO>
-            ASSERTION = MapAssembler.create(AssertionDescriptor.class);
+    MapAssembler<String, AssertionDescriptor, AssertionDescriptorDO> ASSERTION
+            = MapAssembler.create(AssertionDescriptor.class);
 
 
     /**
-     * Creates a new <tt>NodeDescriptorAssembler</tt>.
+     * Constructs a {@link NodeDescriptorAssembler}.
      */
     public NodeDescriptorAssembler() {
-        super(NodeDescriptor.class, NodeDescriptorDO.class,
+        super(org.openvpms.component.model.archetype.NodeDescriptor.class, NodeDescriptor.class, NodeDescriptorDO.class,
               NodeDescriptorDOImpl.class);
     }
 
@@ -73,8 +72,7 @@ public class NodeDescriptorAssembler
         super.assembleDO(target, source, state, context);
 
         ArchetypeDescriptorDO archetype = null;
-        DOState descState = getDO(source.getArchetypeDescriptor(),
-                                  context);
+        DOState descState = getDO(source.getArchetypeDescriptor(), context);
         if (descState != null) {
             archetype = (ArchetypeDescriptorDO) descState.getObject();
             state.addState(descState);
@@ -106,9 +104,7 @@ public class NodeDescriptorAssembler
         target.setReadOnly(source.isReadOnly());
         target.setType(source.getType());
 
-        NODES.assembleDO(target.getNodeDescriptors(),
-                         source.getNodeDescriptors(),
-                         state, context);
+        NODES.assembleDO(target.getNodeDescriptors(), source.getNodeDescriptors(), state, context);
 
         Map descriptors = source.getAssertionDescriptors();
         ASSERTION.assembleDO(target.getAssertionDescriptors(), (Map<String, AssertionDescriptor>) descriptors, state,
@@ -127,9 +123,7 @@ public class NodeDescriptorAssembler
     protected void assembleObject(NodeDescriptor target, NodeDescriptorDO source, Context context) {
         super.assembleObject(target, source, context);
 
-        target.setArchetypeDescriptor(getObject(source.getArchetypeDescriptor(),
-                                                ArchetypeDescriptor.class,
-                                                context));
+        target.setArchetypeDescriptor(getObject(source.getArchetypeDescriptor(), ArchetypeDescriptor.class, context));
         target.setBaseName(source.getBaseName());
         target.setDefaultValue(source.getDefaultValue());
         target.setDerived(source.isDerived());

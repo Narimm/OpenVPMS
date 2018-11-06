@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.party;
@@ -30,7 +30,7 @@ public class PartyAssembler extends AbstractPartyAssembler<Party, PartyDO> {
      * Constructs a {@link PartyAssembler}.
      */
     public PartyAssembler() {
-        super(Party.class, PartyDO.class, PartyDOImpl.class);
+        super(org.openvpms.component.model.party.Party.class, Party.class, PartyDO.class, PartyDOImpl.class);
     }
 
     /**
