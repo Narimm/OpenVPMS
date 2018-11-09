@@ -280,6 +280,7 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
         List<Y> result = new ArrayList<>();
         Session session = getSession();
         javax.persistence.TypedQuery<X> typedQuery = session.createQuery(criteriaQuery.getQuery());
+        typedQuery.setHint("org.hibernate.cacheable", true);
         typedQuery.setFirstResult(firstResult);
         if (maxResults != Integer.MAX_VALUE) {
             typedQuery.setMaxResults(maxResults);

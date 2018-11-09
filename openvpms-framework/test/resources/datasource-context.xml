@@ -61,6 +61,8 @@
                 <prop key="hibernate.javax.cache.uri">ehcache.xml</prop>
                 <prop key="hibernate.query.factory_class">org.hibernate.hql.internal.ast.ASTQueryTranslatorFactory</prop>
                 <prop key="hibernate.show_sql">false</prop>
+                <!--prop key="hibernate.generate_statistics">true</prop-->
+                <prop key="hibernate.cache.use_query_cache">true</prop>
             </props>
         </property>
         <property name="mappingLocations">
