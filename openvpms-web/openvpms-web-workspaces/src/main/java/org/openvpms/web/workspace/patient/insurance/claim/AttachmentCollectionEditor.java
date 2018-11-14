@@ -16,6 +16,10 @@
 
 package org.openvpms.web.workspace.patient.insurance.claim;
 
+import net.sf.jasperreports.engine.util.ObjectUtils;
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
@@ -40,6 +44,8 @@ import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.document.CustomerPatientDocumentBrowser;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -84,44 +90,98 @@ class AttachmentCollectionEditor extends ActRelationshipCollectionEditor impleme
      * Adds a document.
      *
      * @param document the document
+     * @return the attachment
      */
-    public void addDocument(DocumentAct document) {
-        if (!exists(document)) {
-            Act attachment = createDocument(document);
+    public DocumentAct addDocument(DocumentAct document) {
+        DocumentAct attachment = getAttachment(document);
+        if (attachment == null) {
+            attachment = createDocument(document);
             add(attachment);
             refresh();
         }
+        return attachment;
     }
 
     /**
      * Adds an invoice attachment, if it doesn't already exist.
      *
      * @param invoice the invoice
+     * @return the attachment
      */
-    public void addInvoice(FinancialAct invoice) {
-        if (!exists(invoice)) {
-            Act attachment = createInvoice(invoice);
+    public DocumentAct addInvoice(FinancialAct invoice) {
+        DocumentAct attachment = getAttachment(invoice);
+        if (attachment == null) {
+            attachment = createInvoice(invoice);
             add(attachment);
             refresh();
         }
+        return attachment;
     }
 
     /**
-     * Determines if an attachment is already present.
+     * Returns the attachment for patient history.
      *
-     * @param attachment the attachment
-     * @return {@code true} if it already present
+     * @return the attachment for patient history, or {@code null} if none exists
      */
-    public boolean exists(Act attachment) {
-        boolean result = false;
-        for (Act act : getCurrentActs()) {
-            ActBean bean = new ActBean(act);
-            if (bean.getRelationship(attachment) != null) {
-                result = true;
+    public DocumentAct getHistory() {
+        DocumentAct result = null;
+        for (Act attachment : getCurrentActs()) {
+            if (isHistory(attachment)) {
+                result = (DocumentAct) attachment;
                 break;
             }
         }
         return result;
+    }
+
+    /**
+     * Creates an attachment for patient history.
+     *
+     * @return a new attachment
+     */
+    public DocumentAct createHistory() {
+        DocumentAct act = (DocumentAct) IMObjectCreator.create(InsuranceArchetypes.ATTACHMENT);
+        ActBean bean = new ActBean(act);
+        bean.setValue("name", "Patient History");
+        bean.setValue("type", PatientArchetypes.CLINICAL_EVENT);
+        return act;
+    }
+
+    /**
+     * Deletes documents associated with existing attachments that have been generated.
+     * <p>
+     * This can be used to force regeneration of attachments, e.g. if the location changes.
+     */
+    public void deleteGeneratedDocuments() {
+        List<Act> acts = getCurrentActs();
+        boolean needsRefresh = false;
+        if (!acts.isEmpty()) {
+            PlatformTransactionManager transactionManager = ServiceHelper.getBean(PlatformTransactionManager.class);
+            IArchetypeRuleService service = ServiceHelper.getArchetypeService();
+            TransactionTemplate template = new TransactionTemplate(transactionManager);
+            for (Act act : acts) {
+                ActBean bean = new ActBean(act);
+                if (isGenerated(bean)) {
+                    boolean removed = template.execute(transactionStatus -> {
+                        Document document = bean.getObject("document", Document.class);
+                        if (document != null) {
+                            bean.setValue("document", null);
+                            bean.save();
+                            service.remove(document);
+                            return true;
+                        }
+                        return false;
+                    });
+                    if (removed) {
+                        needsRefresh = true;
+                        refresh((DocumentAct) act);
+                    }
+                }
+            }
+            if (needsRefresh) {
+                refresh();
+            }
+        }
     }
 
     /**
@@ -208,16 +268,49 @@ class AttachmentCollectionEditor extends ActRelationshipCollectionEditor impleme
     }
 
     /**
+     * Returns the attachment that is related to the specified act.
+     *
+     * @param act the original act
+     * @return {@code true}
+     */
+    private DocumentAct getAttachment(Act act) {
+        DocumentAct result = null;
+        IMObjectReference reference = act.getObjectReference();
+        for (Act attachment : getCurrentActs()) {
+            ActBean bean = new ActBean(attachment);
+            if (ObjectUtils.equals(reference, bean.getTargetRef("original"))) {
+                result = (DocumentAct) attachment;
+                break;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Determines if an attachment document is generated.
+     *
+     * @param bean the attachment
+     * @return {@code true} if the document is generated, or {@code false} if it is copied
+     */
+    private boolean isGenerated(IMObjectBean bean) {
+        String type = bean.getString("type");
+        return (type != null && (type.equals(PatientArchetypes.CLINICAL_EVENT)
+                                 || type.equals(CustomerAccountArchetypes.INVOICE)
+                                 || type.equals(PatientArchetypes.DOCUMENT_FORM)
+                                 || type.equals(CustomerArchetypes.DOCUMENT_FORM)));
+    }
+
+    /**
      * Creates an attachment for a document.
      *
      * @param original the original document
      * @return a new attachment
      */
-    private Act createDocument(DocumentAct original) {
+    private DocumentAct createDocument(DocumentAct original) {
         ActBean bean = create(original, original.getName());
         bean.setValue("fileName", original.getFileName());
         bean.setValue("mimeType", original.getMimeType());
-        return bean.getAct();
+        return (DocumentAct) bean.getAct();
     }
 
     /**
@@ -226,9 +319,9 @@ class AttachmentCollectionEditor extends ActRelationshipCollectionEditor impleme
      * @param original the original invoice
      * @return a new attachment
      */
-    private Act createInvoice(FinancialAct original) {
+    private DocumentAct createInvoice(FinancialAct original) {
         ActBean bean = create(original, original.getName() + "  " + original.getId());
-        return bean.getAct();
+        return (DocumentAct) bean.getAct();
     }
 
     /**
@@ -246,6 +339,16 @@ class AttachmentCollectionEditor extends ActRelationshipCollectionEditor impleme
         bean.setValue("type", original.getArchetypeId().getShortName());
         bean.addNodeRelationship("original", original);
         return bean;
+    }
+
+    /**
+     * Determines if an attachment is a history attachment.
+     *
+     * @param attachment the attachment
+     * @return {@code true} if the attachment is a history attachment
+     */
+    private boolean isHistory(Act attachment) {
+        return PatientArchetypes.CLINICAL_EVENT.equals(new ActBean(attachment).getString("type"));
     }
 
 }
