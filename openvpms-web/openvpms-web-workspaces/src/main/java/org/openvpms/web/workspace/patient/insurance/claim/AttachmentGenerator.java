@@ -22,7 +22,6 @@ import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -46,13 +45,16 @@ import org.openvpms.web.component.im.report.ReportContextFactory;
 import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.report.TemplatedReporter;
-import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.history.PatientHistoryFilter;
 import org.openvpms.web.workspace.patient.history.PatientHistoryIterator;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallbackWithoutResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.io.InputStream;
 import java.util.Set;
@@ -95,11 +97,6 @@ class AttachmentGenerator {
         LocalContext local = new LocalContext(context);
         local.setCustomer(customer);
         local.setPatient(patient);
-        IMObjectBean customerBean = new IMObjectBean(customer);
-        Party location = (Party) customerBean.getNodeTargetObject("practice");
-        if (location != null) {
-            local.setLocation(location);
-        }
         this.context = local;
         factory = ServiceHelper.getBean(ReporterFactory.class);
     }
@@ -109,10 +106,13 @@ class AttachmentGenerator {
      *
      * @param claim       the claim
      * @param attachments the attachments editor
+     * @param location    the location to use
      * @return {@code true} if all attachments were successfully generated
      */
-    public boolean generate(Act claim, AttachmentCollectionEditor attachments) {
+    public boolean generate(Act claim, AttachmentCollectionEditor attachments, Party location) {
         boolean result = true;
+
+        context.setLocation(location);
         addMissingHistory(attachments);
         addMissingInvoices(attachments);
 
@@ -135,15 +135,9 @@ class AttachmentGenerator {
      * @param attachments the attachments editor
      */
     private void addMissingHistory(AttachmentCollectionEditor attachments) {
-        Act history = null;
-        for (Act attachment : attachments.getCurrentActs()) {
-            if (isHistory(attachment)) {
-                history = attachment;
-                break;
-            }
-        }
+        Act history = attachments.getHistory();
         if (history == null) {
-            attachments.add(createHistory());
+            attachments.add(attachments.createHistory());
         }
     }
 
@@ -310,29 +304,6 @@ class AttachmentGenerator {
     }
 
     /**
-     * Determines if an attachment is a history attachment.
-     *
-     * @param attachment the attachment
-     * @return {@code true} if the attachment is a history attachment
-     */
-    private boolean isHistory(Act attachment) {
-        return PatientArchetypes.CLINICAL_EVENT.equals(new ActBean(attachment).getString("type"));
-    }
-
-    /**
-     * Creates an attachment for patient history.
-     *
-     * @return a new attachment
-     */
-    private Act createHistory() {
-        Act act = (Act) IMObjectCreator.create(InsuranceArchetypes.ATTACHMENT);
-        ActBean bean = new ActBean(act);
-        bean.setValue("name", "Patient History");
-        bean.setValue("type", PatientArchetypes.CLINICAL_EVENT);
-        return act;
-    }
-
-    /**
      * Generates a document, storing it in an attachment.
      *
      * @param bean     the attachment
@@ -367,13 +338,28 @@ class AttachmentGenerator {
      */
     private boolean save(IMObjectBean bean, Document document) {
         boolean result = false;
+        PlatformTransactionManager transactionManager = ServiceHelper.getBean(PlatformTransactionManager.class);
+        TransactionTemplate template = new TransactionTemplate(transactionManager);
+        IArchetypeRuleService service = ServiceHelper.getArchetypeService();
         try {
-            bean.setValue("status", Attachment.Status.PENDING.name());
-            bean.setValue("error", null);
-            bean.setValue("document", document.getObjectReference());
-            bean.setValue("fileName", document.getName());
-            bean.setValue("mimeType", document.getMimeType());
-            bean.save(document);
+            template.execute(new TransactionCallbackWithoutResult() {
+                @Override
+                protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
+                    // need to remove any existing document
+                    Document existing = bean.getObject("document", Document.class);
+                    if (existing != null) {
+                        bean.setValue("document", null);
+                        bean.save();
+                        service.remove(existing);
+                    }
+                    bean.setValue("status", Attachment.Status.PENDING.name());
+                    bean.setValue("error", null);
+                    bean.setValue("document", document.getObjectReference());
+                    bean.setValue("fileName", document.getName());
+                    bean.setValue("mimeType", document.getMimeType());
+                    bean.save(document);
+                }
+            });
             result = true;
         } catch (Throwable exception) {
             setStatus(bean, Attachment.Status.ERROR, exception.getMessage());

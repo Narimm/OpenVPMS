@@ -29,6 +29,8 @@ import org.openvpms.web.component.edit.Editors;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.property.DefaultValidator;
+import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.resource.i18n.Messages;
 
@@ -149,7 +151,16 @@ public class ClaimEditor extends AbstractClaimEditor {
      * @return {@code true} if all attachments were successfully generated
      */
     public boolean generateAttachments() {
-        return generator.generate(getObject(), attachments);
+        boolean result = false;
+        DefaultValidator validator = new DefaultValidator();
+        if (!validate(validator)) {
+            // can only generate attachments for valid claims
+            ValidationHelper.showError(validator);
+        } else {
+            Party location = (Party) getParticipant("location");
+            result = generator.generate(getObject(), attachments, location);
+        }
+        return result;
     }
 
     /**
@@ -223,6 +234,7 @@ public class ClaimEditor extends AbstractClaimEditor {
     protected void onLayoutCompleted() {
         super.onLayoutCompleted();
         attachments.getComponent();  // force rendering of the component so deletion works
+        getParticipationEditor("location", false).addModifiableListener(modifiable -> onLocationChanged());
     }
 
     /**
@@ -245,4 +257,13 @@ public class ClaimEditor extends AbstractClaimEditor {
         return items.getActs();
     }
 
+    /**
+     * Invoked when the location changes.
+     * <br/>
+     * This deletes any generated documents associated with attachments, to ensure they are regenerated with the correct
+     * location.
+     */
+    private void onLocationChanged() {
+        attachments.deleteGeneratedDocuments();
+    }
 }
