@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -110,17 +110,19 @@ public class ReminderTestHelper extends TestHelper {
      * Creates and saves a reminder count, optionally associated with a template and rules.
      *
      * @param count    the reminder count
+     * @param interval the interval
+     * @param units    the interval units
      * @param template the document template. May be {@code null}
      * @param rules    the rules
      * @return a new reminder count
      */
-    public static Entity createReminderCount(int count, int overdueInterval, DateUnits overdueUnits, Entity template,
+    public static Entity createReminderCount(int count, int interval, DateUnits units, Entity template,
                                              Entity... rules) {
         Entity entity = (Entity) create(ReminderArchetypes.REMINDER_COUNT);
         IMObjectBean bean = new IMObjectBean(entity);
         bean.setValue("count", count);
-        bean.setValue("interval", overdueInterval);
-        bean.setValue("units", overdueUnits);
+        bean.setValue("interval", interval);
+        bean.setValue("units", units);
         if (template != null) {
             bean.addNodeTarget("template", template);
         }
@@ -138,17 +140,17 @@ public class ReminderTestHelper extends TestHelper {
     /**
      * Adds a reminder count to a reminder type.
      *
-     * @param reminderType    the reminder type
-     * @param count           the reminder count
-     * @param overdueInterval the overdue interval
-     * @param overdueUnits    the overdue interval units
-     * @param template        the document template. May be {@code null}
-     * @param rules           the rules
+     * @param reminderType the reminder type
+     * @param count        the reminder count
+     * @param interval     the interval
+     * @param units        the interval units
+     * @param template     the document template. May be {@code null}
+     * @param rules        the rules
      * @return the reminder count
      */
-    public static Entity addReminderCount(Entity reminderType, int count, int overdueInterval, DateUnits overdueUnits,
+    public static Entity addReminderCount(Entity reminderType, int count, int interval, DateUnits units,
                                           Entity template, Entity... rules) {
-        Entity reminderCount = createReminderCount(count, overdueInterval, overdueUnits, template, rules);
+        Entity reminderCount = createReminderCount(count, interval, units, template, rules);
         IMObjectBean bean = new IMObjectBean(reminderType);
         bean.addNodeTarget("counts", reminderCount);
         bean.save();

@@ -181,45 +181,20 @@ public class ReminderEditor extends PatientActEditor {
     }
 
     /**
-     * Validates that the start and end times are valid.
-     * <p/>
-     * This ensures that the start time (i.e. Next Due Date) is &gt;= the end time (First Due Date).
-     *
-     * @param validator the validator
-     * @return {@code true} if the start and end times are valid
-     */
-    @Override
-    protected boolean validateStartEndTimes(Validator validator) {
-        boolean result = true;
-        Date start = getStartTime();
-        Date end = getEndTime();
-        if (start != null && end != null && start.getTime() < end.getTime()) {
-            validator.add(this, new ValidatorError(Messages.get("patient.reminder.firstDueGreaterThanNextDue")));
-            result = false;
-        }
-        return result;
-    }
-
-    /**
      * Invoked when the start time changes.
      * <p>
-     * For reminders, the start time represents the next due date. It must be the same as or greater than the original
-     * due date (endTime).
+     * For reminders, the start time represents the next reminder date.
      */
     @Override
     protected void onStartTimeChanged() {
-        Date start = getStartTime();
-        Date end = getEndTime();
-        if (start != null && end != null) {
-            if (start.compareTo(end) < 0) {
-                setStartTime(end, true);
-            }
-        }
         updateReminderItemSendDates();
     }
 
+    /**
+     * Propagates the next reminder date to each of the reminder items with the same reminder count.
+     */
     private void updateReminderItemSendDates() {
-        Date start;// propagate the next due date to each of the reminder items with the same reminder count.
+        Date start;
         ActRelationshipCollectionEditor items = getItems();
         if (items != null) {
             start = getStartTime();
@@ -239,15 +214,17 @@ public class ReminderEditor extends PatientActEditor {
     /**
      * Invoked when the end time changes. For reminders, the end represents the original due date.
      * <p>
-     * This populates the start time if with the same value, if it is unset.
+     * This recalculates the next reminder date.
      */
     @Override
     protected void onEndTimeChanged() {
-        Date end = getEndTime();
-        if (end != null || getReminderCount() == 0) {
-            setStartTime(end, true);
-
-            updateReminderItemSendDates();
+        Date dueDate = getEndTime();
+        if (dueDate != null) {
+            Entity reminderType =getReminderType();
+            if (reminderType != null) {
+                Date nextReminderDate = getNextReminderDate(reminderType, dueDate);
+                setStartTime(nextReminderDate);
+            }
         }
     }
 
@@ -328,12 +305,26 @@ public class ReminderEditor extends PatientActEditor {
             Entity reminderType = getReminderType();
             if (created != null && reminderType != null) {
                 Date dueDate = rules.calculateReminderDueDate(created, reminderType);
-                setStartTime(dueDate);
                 setEndTime(dueDate);
             }
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
+    }
+
+    /**
+     * Determines the next reminder date, based on the due date and current reminder count.
+     *
+     * @param reminderType the reminder type
+     * @param dueDate      the due date
+     * @return the next reminder date
+     */
+    private Date getNextReminderDate(Entity reminderType, Date dueDate) {
+        Date next = rules.getNextReminderDate(dueDate, reminderType, getReminderCount());
+        if (next == null) {
+            next = dueDate;
+        }
+        return next;
     }
 
     /**

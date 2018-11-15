@@ -22,12 +22,14 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -38,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.Date;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -72,6 +75,56 @@ public class ReminderEditorTestCase extends AbstractAppTest {
         super.setUp();
         patient = TestHelper.createPatient();
         author = TestHelper.createUser();
+    }
+
+    /**
+     * Verifies that the next reminder date is calculated from the due date.
+     */
+    @Test
+    public void testDates() {
+        Date today = DateRules.getToday();
+
+        Entity reminderType = ReminderTestHelper.createReminderType(1, DateUnits.YEARS);
+        ReminderTestHelper.addReminderCount(reminderType, 0, -2, DateUnits.WEEKS, null);
+        ReminderTestHelper.addReminderCount(reminderType, 1, -1, DateUnits.WEEKS, null);
+
+
+        Act reminder = (Act) create(ReminderArchetypes.REMINDER);
+
+        ReminderEditor editor1 = createEditor(reminder, null);
+        assertNull(editor1.getStartTime()); // next reminder
+        assertNull(editor1.getEndTime());   // due date
+
+        editor1.setEndTime(new Date());
+        assertNull(editor1.getStartTime()); // not updated, as no reminder type
+
+        editor1.setReminderType(reminderType);
+        Date due1 = DateRules.getDate(today, 1, DateUnits.YEARS);
+        Date next1 = DateRules.getDate(due1, -2, DateUnits.WEEKS);
+
+        assertEquals(due1, DateRules.getDate(editor1.getEndTime()));
+        assertEquals(next1, DateRules.getDate(editor1.getStartTime()));
+
+        // adjust the due date to 1 month from today
+        Date due2 = DateRules.getDate(today, 1, DateUnits.MONTHS);
+        editor1.setEndTime(due2);
+        Date next2 = DateRules.getDate(due2, -2, DateUnits.WEEKS);
+        assertEquals(next2, DateRules.getDate(editor1.getStartTime()));
+
+        assertTrue(SaveHelper.save(editor1));
+
+        // now change the due date after the reminder has been sent.
+        IMObjectBean bean = new IMObjectBean(reminder);
+        bean.setValue("reminderCount", 1);
+
+        Date due3 = DateRules.getDate(today, 2, DateUnits.MONTHS);
+        Date next3 = DateRules.getDate(due3, -1, DateUnits.WEEKS);
+        DefaultLayoutContext layout = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
+        ReminderEditor editor2 = new ReminderEditor(reminder, null, layout);
+        editor2.getComponent();
+
+        editor2.setEndTime(due3);
+        assertEquals(next3, DateRules.getDate(editor2.getStartTime()));
     }
 
     /**
@@ -148,7 +201,7 @@ public class ReminderEditorTestCase extends AbstractAppTest {
      * Creates a new reminder editor.
      *
      * @param reminder     the reminder to edit
-     * @param reminderType the reminder type
+     * @param reminderType the reminder type. May be {@code null}
      * @return a new reminder editor
      */
     protected ReminderEditor createEditor(Act reminder, Entity reminderType) {

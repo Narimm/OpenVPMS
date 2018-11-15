@@ -1,27 +1,21 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.sms.mail.provider;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -31,12 +25,16 @@ import org.openvpms.sms.mail.MailMessageFactory;
 import org.openvpms.sms.mail.template.MailTemplateFactory;
 import org.openvpms.sms.mail.template.TemplatedMailMessageFactory;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 
 /**
  * Tests the {@link TemplatedMailMessageFactory} when configured with an <em>entity.SMSConfigEmailSMSGlobal</em>.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class SMSGlobalMessageFactoryTestCase extends ArchetypeServiceTest {
 
@@ -60,8 +58,8 @@ public class SMSGlobalMessageFactoryTestCase extends ArchetypeServiceTest {
         assertEquals("concat($phone, \"@email.smsglobal.com\")", bean.getString("toExpression"));
         assertFalse(bean.hasNode("replyTo"));
         assertFalse(bean.hasNode("replyToExpression"));
-        assertFalse(bean.hasNode("subject"));
-        assertFalse(bean.hasNode("subjectExpression"));
+        assertTrue(bean.hasNode("subject"));
+        assertTrue(bean.hasNode("subjectExpression"));
         assertFalse(bean.hasNode("text"));
         assertEquals("$message", bean.getString("textExpression"));
     }
@@ -83,7 +81,7 @@ public class SMSGlobalMessageFactoryTestCase extends ArchetypeServiceTest {
         MailMessage message = factory.createMessage(phone, text);
         assertEquals(from, message.getFrom());
         assertEquals(phone + "@email.smsglobal.com", message.getTo());
-        assertEquals(null, message.getSubject());
+        assertEquals("SMS Global Message", message.getSubject());
         assertEquals(text, message.getText());
     }
 
