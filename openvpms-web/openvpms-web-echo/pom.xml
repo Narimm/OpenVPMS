@@ -55,10 +55,6 @@
                 <!-- stax only required by StaxArchetypeDataLoader -->
                 <exclusion>
                     <groupId>stax</groupId>
-                    <artifactId>stax-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>stax</groupId>
                     <artifactId>stax</artifactId>
                 </exclusion>
             </exclusions>
@@ -161,7 +157,7 @@
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
+            <artifactId>mockito-core</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
