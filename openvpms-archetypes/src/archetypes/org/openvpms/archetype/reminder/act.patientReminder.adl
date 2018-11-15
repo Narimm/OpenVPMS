@@ -13,6 +13,7 @@
   ~
   ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
+
 <archetypes>
     <archetype name="act.patientReminder.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.act.Act" displayName="Reminder">
@@ -25,9 +26,9 @@
               defaultValue="java.util.Date.new()" readOnly="true"/>
         <node name="reminderType" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.reminderType"/>
-        <node displayName="First Due Date" name="endTime" path="/activityEndTime" type="java.util.Date"
+        <node displayName="Due Date" name="endTime" path="/activityEndTime" type="java.util.Date"
               minCardinality="1"/>
-        <node displayName="Next Due Date" name="startTime" path="/activityStartTime" type="java.util.Date"
+        <node displayName="Next Reminder" name="startTime" path="/activityStartTime" type="java.util.Date"
               minCardinality="1"/>
         <node name="status" path="/status" type="java.lang.String" minCardinality="1" defaultValue="'IN_PROGRESS'">
             <assertion name="lookup.local">

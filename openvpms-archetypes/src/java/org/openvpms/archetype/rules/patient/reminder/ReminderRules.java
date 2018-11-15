@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -65,6 +65,15 @@ import static org.openvpms.component.system.common.query.Constraints.join;
 public class ReminderRules {
 
     /**
+     * Reminder due indicator.
+     */
+    public enum DueState {
+        NOT_DUE,      // indicates the reminder is in the future, outside the sensitivity period
+        DUE,          // indicates the reminder is inside the sensitivity period
+        OVERDUE       // indicates the reminder is overdue
+    }
+
+    /**
      * The archetype service.
      */
     private final IArchetypeService service;
@@ -78,15 +87,6 @@ public class ReminderRules {
      * The reminder type cache. May be {@code null}.
      */
     private final ReminderTypes reminderTypes;
-
-    /**
-     * Reminder due indicator.
-     */
-    public enum DueState {
-        NOT_DUE,      // indicates the reminder is in the future, outside the sensitivity period
-        DUE,          // indicates the reminder is inside the sensitivity period
-        OVERDUE       // indicates the reminder is overdue
-    }
 
     /**
      * Constructs a {@link ReminderRules}.
@@ -255,6 +255,19 @@ public class ReminderRules {
     public Date calculateReminderDueDate(Date date, Entity reminderType) {
         ReminderType type = new ReminderType(reminderType, service);
         return type.getDueDate(date);
+    }
+
+    /**
+     * Calculates the next reminder date.
+     *
+     * @param due           the reminder due date
+     * @param reminderType  the reminder type
+     * @param reminderCount the reminder count
+     * @return the next reminder date, or {@code null} if no more reminders are required
+     */
+    public Date getNextReminderDate(Date due, Entity reminderType, int reminderCount) {
+        ReminderType type = new ReminderType(reminderType, service);
+        return type.getNextDueDate(due, reminderCount);
     }
 
     /**

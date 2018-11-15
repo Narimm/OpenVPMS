@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 <archetypes>
     <archetype name="entity.reminderCount.1.0" latest="true"
@@ -23,9 +23,8 @@
               path="/description" hidden="true" derived="true"
               derivedValue="concat('Reminder Count: ',/details/reminderCount,', Overdue Interval: ',/details/interval, ' ',openvpms:lookup(., 'units'))"/>
         <node name="count" path="/details/count" type="java.lang.Integer" minCardinality="1" readOnly="true"/>
-        <node name="interval" displayName="Overdue Interval" path="/details/interval" type="java.lang.Integer"
-              minCardinality="0"/>
-        <node name="units" displayName="Overdue Units" path="/details/units" type="java.lang.String" minCardinality="0"
+        <node name="interval" path="/details/interval" type="java.lang.Integer" minCardinality="0"/>
+        <node name="units" path="/details/units" type="java.lang.String" minCardinality="0"
               defaultValue="'DAYS'">
             <assertion name="lookup.local">
                 <propertyList name="entries">

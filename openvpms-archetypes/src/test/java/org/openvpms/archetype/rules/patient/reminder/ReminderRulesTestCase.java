@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient.reminder;
@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
@@ -41,8 +42,6 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
@@ -181,12 +180,10 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         final List<Act> reminders = Arrays.asList(reminder2, reminder3, reminder3dup);
         PlatformTransactionManager mgr = (PlatformTransactionManager) applicationContext.getBean("txnManager");
         TransactionTemplate template = new TransactionTemplate(mgr);
-        template.execute(new TransactionCallback<Object>() {
-            public Object doInTransaction(TransactionStatus status) {
-                save(reminders);
-                rules.markMatchingRemindersCompleted(reminders);
-                return null;
-            }
+        template.execute(status -> {
+            save(reminders);
+            rules.markMatchingRemindersCompleted(reminders);
+            return null;
         });
 
         checkReminder(reminder0, COMPLETED);
@@ -217,6 +214,31 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         checkCalculateProductReminderDueDate(2, DateUnits.WEEKS, "2007-01-01", "2007-01-15");
         checkCalculateProductReminderDueDate(2, DateUnits.MONTHS, "2007-01-01", "2007-03-01");
         checkCalculateProductReminderDueDate(5, DateUnits.YEARS, "2007-01-01", "2012-01-01");
+    }
+
+    /**
+     * Tests the {@link ReminderRules#getNextReminderDate(Date, Entity, int)} method.
+     */
+    @Test
+    public void testGetNextReminderDate() {
+        Entity reminderType = ReminderTestHelper.createReminderType(1, DateUnits.YEARS);
+        addReminderCount(reminderType, 0, -1, DateUnits.MONTHS, null);
+        addReminderCount(reminderType, 1, -2, DateUnits.WEEKS, null);
+        addReminderCount(reminderType, 2, 0, DateUnits.DAYS, null);
+        addReminderCount(reminderType, 3, 1, DateUnits.MONTHS, null);
+
+        Date today = DateRules.getToday();
+        Date due = DateRules.getDate(today, 1, DateUnits.YEARS);
+        Date next0 = DateRules.getDate(due, -1, DateUnits.MONTHS);
+        Date next1 = DateRules.getDate(due, -2, DateUnits.WEEKS);
+        Date next2 = DateRules.getDate(due, 0, DateUnits.DAYS);
+        Date next3 = DateRules.getDate(due, 1, DateUnits.MONTHS);
+
+        assertEquals(next0, rules.getNextReminderDate(due, reminderType, 0));
+        assertEquals(next1, rules.getNextReminderDate(due, reminderType, 1));
+        assertEquals(next2, rules.getNextReminderDate(due, reminderType, 2));
+        assertEquals(next3, rules.getNextReminderDate(due, reminderType, 3));
+        assertNull(rules.getNextReminderDate(due, reminderType, 4));
     }
 
     /**
@@ -577,11 +599,9 @@ public class ReminderRulesTestCase extends ArchetypeServiceTest {
         final List<Act> alerts = Arrays.asList(alert2, alert3, alert3dup);
         PlatformTransactionManager mgr = (PlatformTransactionManager) applicationContext.getBean("txnManager");
         TransactionTemplate template = new TransactionTemplate(mgr);
-        template.execute(new TransactionCallback<Object>() {
-            public Object doInTransaction(TransactionStatus status) {
-                rules.markMatchingAlertsCompleted(alerts);
-                return null;
-            }
+        template.execute(status -> {
+            rules.markMatchingAlertsCompleted(alerts);
+            return null;
         });
 
         checkAlert(alert0, COMPLETED);
