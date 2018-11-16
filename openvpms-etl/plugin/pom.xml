@@ -151,10 +151,6 @@
                     <groupId>springmodules</groupId>
                     <artifactId>springmodules</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>stax</groupId>
-                    <artifactId>stax-api</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
