@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -59,7 +59,7 @@ public class ProductIncludesLayoutStrategy extends AbstractLayoutStrategy {
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         boolean useLocationProducts = ProductHelper.useLocationProducts(context.getContext());
         ArchetypeNodes nodes = new ArchetypeNodes();
-        nodes.exclude("source");
+        nodes.exclude("source", MAX_WEIGHT, WEIGHT_UNITS);
         nodes.simple("target");
         nodes.first("target");
         if (!useLocationProducts) {
