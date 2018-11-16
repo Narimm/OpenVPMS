@@ -260,6 +260,19 @@ public class ReminderEditor extends PatientActEditor {
     }
 
     /**
+     * Validates that the start and end times are valid.
+     * <p/>
+     * This implementation always returns {@code true}
+     *
+     * @param validator the validator
+     * @return {@code true}
+     */
+    @Override
+    protected boolean validateStartEndTimes(Validator validator) {
+        return true;
+    }
+
+    /**
      * Ensures that reminder item counts aren't duplicated.
      *
      * @param validator the validator
