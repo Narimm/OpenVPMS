@@ -11,24 +11,23 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
 
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.web.component.im.edit.act.ActEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.property.Modifiable;
-import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 
 import java.util.Date;
 
 /**
  * An editor for <em>act.patientClinicalEvent</em> and <em>act.patientClinicalProblem</em> acts.
- * <p/>
+ * <p>
  * This disables editing of "items" nodes.
  *
  * @author Tim Anderson
@@ -56,11 +55,16 @@ public abstract class AbstractPatientClinicalActEditor extends ActEditor {
 
         addStartEndTimeListeners();
 
-        getProperty("status").addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                onStatusChanged();
-            }
-        });
+        getProperty("status").addModifiableListener(modifiable -> onStatusChanged());
+    }
+
+    /**
+     * Returns the patient.
+     *
+     * @return the patient. May be {@code null}
+     */
+    public Party getPatient() {
+        return (Party) getParticipant("patient");
     }
 
     /**

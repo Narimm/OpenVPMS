@@ -511,6 +511,20 @@
         </properties>
     </style>
 
+    <style name="PatientClinicalNote.layout" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="true"/>
+            <property name="separatorPosition" value="${PatientClinicalNote.separatorPosition}"/>
+        </properties>
+    </style>
+
+    <style name="PatientVisitNote.layout" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="true"/>
+            <property name="separatorPosition" value="${PatientVisitNote.separatorPosition}"/>
+        </properties>
+    </style>
+
     <style name="VisitEditor.TabbedPane" type="echopointng.TabbedPane">
         <properties>
             <property name="height" value="${VisitEditor.TabbedPane.height}"/>

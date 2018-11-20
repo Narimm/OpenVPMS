@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -40,7 +40,6 @@ public class PatientClinicalEventActEditor extends AbstractPatientClinicalActEdi
      */
     public PatientClinicalEventActEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, ActStatus.COMPLETED, context);
-        initParticipant("customer", context.getContext().getCustomer());
         initParticipant("location", context.getContext().getLocation());
     }
 

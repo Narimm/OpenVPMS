@@ -234,6 +234,17 @@ public abstract class AbstractPatientHistoryTableModel extends AbstractIMObjectT
     }
 
     /**
+     * Sets the objects to display.
+     *
+     * @param objects the objects to display
+     */
+    @Override
+    public void setObjects(List<Act> objects) {
+        selectedParent = -1;
+        super.setObjects(objects);
+    }
+
+    /**
      * Returns the parent act short name.
      *
      * @return the parent act short name

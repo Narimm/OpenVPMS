@@ -30,9 +30,9 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
 import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.im.query.PageLocator;
@@ -125,12 +125,12 @@ public class PatientHistoryQuery extends AbstractPatientHistoryQuery {
      */
     public int getPage(Act object) {
         int page = 0;
-        ActBean bean = new ActBean(object);
-        IMObjectReference patient = bean.getNodeParticipantRef("patient");
+        IMObjectBean bean = new IMObjectBean(object);
+        Reference patient = bean.getTargetRef("patient");
         if (patient != null && ObjectUtils.equals(patient, getEntityId())) {
             ArchetypeQuery query = new ArchetypeQuery(PatientArchetypes.CLINICAL_EVENT);
             query.add(new ParticipantConstraint("patient", PatientArchetypes.PATIENT_PARTICIPATION, patient));
-            page = QueryHelper.getPage(object, query, getMaxResults(), "startTime", isSortAscending(),
+            page = QueryHelper.getPage(object, query, getMaxResults(), "startTime", sortHistoryAscending,
                                        PageLocator.DATE_COMPARATOR);
         }
         return page;

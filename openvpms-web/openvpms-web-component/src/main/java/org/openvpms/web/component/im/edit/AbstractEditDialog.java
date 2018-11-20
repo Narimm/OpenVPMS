@@ -28,6 +28,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.macro.MacroDialog;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.error.ErrorHandler;
@@ -36,11 +37,13 @@ import org.openvpms.web.echo.event.VetoListener;
 import org.openvpms.web.echo.event.Vetoable;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.i18n.Messages;
 import org.springframework.transaction.TransactionStatus;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
+import java.util.function.Consumer;
 
 
 /**
@@ -51,9 +54,9 @@ import java.util.List;
 public abstract class AbstractEditDialog extends PopupDialog {
 
     /**
-     * The editor.
+     * Edit dialog style name.
      */
-    private IMObjectEditor editor;
+    protected static final String STYLE = "EditDialog";
 
     /**
      * The alert manager.
@@ -66,14 +69,19 @@ public abstract class AbstractEditDialog extends PopupDialog {
     private final boolean save;
 
     /**
-     * Determines if saves are disabled.
-     */
-    private boolean savedDisabled;
-
-    /**
      * The context.
      */
     private final Context context;
+
+    /**
+     * The editor.
+     */
+    private IMObjectEditor editor;
+
+    /**
+     * Determines if saves are disabled.
+     */
+    private boolean savedDisabled;
 
     /**
      * The current component.
@@ -91,9 +99,9 @@ public abstract class AbstractEditDialog extends PopupDialog {
     private HelpContext helpContext;
 
     /**
-     * Edit dialog style name.
+     * Callback to be invoked after the editor is successfully saved.
      */
-    protected static final String STYLE = "EditDialog";
+    private Consumer<IMObjectEditor> postSaveCallback;
 
     /**
      * The logger.
@@ -165,8 +173,19 @@ public abstract class AbstractEditDialog extends PopupDialog {
     }
 
     /**
+     * Registers a callback to be invoked each time the editor is successfully saved.
+     * <p>
+     * This is invoked after the save transaction has completed.
+     *
+     * @param callback the callback. May be {@code null}
+     */
+    public void setPostSaveCallback(Consumer<IMObjectEditor> callback) {
+        postSaveCallback = callback;
+    }
+
+    /**
      * Saves the current object, if saving is enabled.
-     * <p/>
+     * <p>
      * If it is, and the object is valid, then {@link #doSave(IMObjectEditor)} is called.
      * If {@link #doSave(IMObjectEditor)} fails (i.e returns {@code false}), then {@link #saveFailed()} is called.
      *
@@ -198,13 +217,16 @@ public abstract class AbstractEditDialog extends PopupDialog {
                 }
             };
             result = saver.save(editor);
+            if (result) {
+                result = postSave();
+            }
         }
         return result;
     }
 
     /**
      * Saves the editor, optionally closing the dialog.
-     * <p/>
+     * <p>
      * If the the save fails, the dialog will remain open.
      *
      * @param close if {@code true} close the dialog
@@ -304,7 +326,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
     /**
      * Sets the editor.
-     * <p/>
+     * <p>
      * If there is an existing editor, its selection path will be set on the editor.
      *
      * @param editor the editor. May be {@code null}
@@ -357,6 +379,31 @@ public abstract class AbstractEditDialog extends PopupDialog {
     }
 
     /**
+     * Performs tasks after {@link #save()} has returned successfully.
+     * <p/>
+     * This implementation invokes the {@link #setPostSaveCallback(Consumer) postSaveCallback}, if any is registered.
+     *
+     * @return {@code true} if there is no callback, or the callback completed successfully
+     */
+    protected boolean postSave() {
+        boolean result = false;
+        if (postSaveCallback == null) {
+            result = true;
+        } else {
+            try {
+                postSaveCallback.accept(editor);
+                result = true;
+            } catch (Throwable exception) {
+                String displayName = editor.getDisplayName();
+                String title = Messages.format("imobject.save.failed", displayName);
+                ErrorHelper.show(title, displayName, editor.getObject(), exception);
+                saveFailed();
+            }
+        }
+        return result;
+    }
+
+    /**
      * Invoked to reload the object being edited when save fails.
      *
      * @param editor the editor
@@ -387,7 +434,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
     /**
      * Invoked by {@link #save} when saving fails.
-     * <p/>
+     * <p>
      * This implementation disables saves.
      * TODO - this is a workaround for OVPMS-855
      */
