@@ -668,7 +668,7 @@ public class EntityBeanTestCase extends AbstractIMObjectBeanTestCase {
      * {@link EntityBean#getNodeTargetEntityRefs(String, Date)} methods for active/inactive relationships and entities.
      */
     @Test
-    public void testGetNodeEntitiesByTimeAndActive() {
+    public void testGetNodeEntitiesByTimeAndActive() throws Exception {
         EntityBean pet1Bean = createPet();
         EntityBean pet2Bean = createPet();
         EntityBean personBean = createPerson();
@@ -703,6 +703,8 @@ public class EntityBeanTestCase extends AbstractIMObjectBeanTestCase {
 
         assertEquals(1, relationshipRefs.size());
         assertTrue(relationshipRefs.contains(person.getObjectReference()));
+
+        Thread.sleep(1000);
 
         // deactivate the relationships
         deactivateRelationship(r1);
