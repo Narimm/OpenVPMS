@@ -417,6 +417,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         context.setPractice(getPractice());
         context.setClinician(clinician);
         LayoutContext layoutContext = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        layoutContext.setEdit(true);
 
         TestChargeEditor editor = new TestChargeEditor(charge, layoutContext, false);
         editor.getComponent();

@@ -71,6 +71,11 @@ import static org.openvpms.archetype.rules.product.ProductArchetypes.MERCHANDISE
 public abstract class PriceActItemEditor extends ActItemEditor {
 
     /**
+     * Minimum quantity node name.
+     */
+    public static final String MINIMUM_QUANTITY = "minQuantity";
+
+    /**
      * The service ratio node name.
      */
     protected static final String SERVICE_RATIO = "serviceRatio";
@@ -104,11 +109,6 @@ public abstract class PriceActItemEditor extends ActItemEditor {
      * The unit price.
      */
     private ProductPrice unitProductPrice;
-
-    /**
-     * Minimum quantity node name.
-     */
-    private static final String MINIMUM_QUANTITY = "minQuantity";
 
 
     /**

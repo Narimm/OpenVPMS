@@ -277,6 +277,7 @@ public class PrescriptionDispenserTestCase extends AbstractCustomerChargeActEdit
     @Test
     public void testDispenseToChargeEditor() {
         DefaultLayoutContext layout = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        layout.setEdit(true);
 
         List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(customer, clinician, IN_PROGRESS);
 

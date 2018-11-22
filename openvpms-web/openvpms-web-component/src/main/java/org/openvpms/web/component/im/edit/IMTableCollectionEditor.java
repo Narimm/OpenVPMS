@@ -303,6 +303,16 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
     protected abstract IMTableModel<T> createTableModel(LayoutContext context);
 
     /**
+     * Creates a new paged table.
+     *
+     * @param model the table model
+     * @return a new paged table
+     */
+    protected PagedIMTable<T> createTable(IMTableModel<T> model) {
+        return new PagedIMTable<>(model);
+    }
+
+    /**
      * Refreshes the collection display.
      *
      * @param preserveSelection if {@code true}, preserve the current selection
@@ -381,7 +391,7 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
         container.setStyleName(Styles.CELL_SPACING);
         focusGroup = new FocusGroup(ClassUtils.getShortClassName(getClass()));
 
-        table = new PagedIMTable<>(createTableModel(context));
+        table = createTable(createTableModel(context));
         table.getTable().addActionListener(new ActionListener() {
             public void onAction(ActionEvent event) {
                 onSelected();
@@ -784,7 +794,6 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
      */
     protected void enableNavigation(ButtonSet buttons, boolean enable, boolean enableAdd) {
         boolean add = enableAdd;
-        boolean delete = getCurrentEditor() != null || getSelected() != null;
         boolean previous = enable;
         boolean next = enable;
         if (enable) {
@@ -798,9 +807,35 @@ public abstract class IMTableCollectionEditor<T> extends AbstractEditableIMObjec
             add = (maxSize == -1 || property.size() < maxSize);
         }
         buttons.setEnabled(ADD_ID, add);
-        buttons.setEnabled(DELETE_ID, delete);
         buttons.setEnabled(PREVIOUS_ID, previous);
         buttons.setEnabled(NEXT_ID, next);
+        enableDelete();
+    }
+
+    /**
+     * Enables/disables the delete button.
+     */
+    protected void enableDelete() {
+        if (buttons != null) {
+            buttons.getButtons().setEnabled(DELETE_ID, getEnableDelete());
+        }
+    }
+
+    /**
+     * Determines if the delete button should be enabled.
+     * @return {@code true} if the delete button should be enabled, {@code false} if it should be disabled
+     */
+    protected boolean getEnableDelete() {
+        return getCurrentEditor() != null || getSelected() != null;
+    }
+
+    /**
+     * Returns the buttons.
+     *
+     * @return the buttons. May be {@code null}
+     */
+    protected ButtonSet getButtons() {
+        return buttons.getButtons();
     }
 
     /**

@@ -16,6 +16,7 @@
 
 package org.openvpms.web.workspace.customer.charge;
 
+import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
@@ -37,11 +38,15 @@ import org.openvpms.component.system.common.cache.IMObjectCache;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.table.DefaultListMarkModel;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.web.component.im.util.VirtualNodeSortConstraint;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.prefs.UserPreferences;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
+import org.openvpms.web.echo.dialog.ErrorDialog;
+import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
@@ -65,6 +70,11 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
     private final StockOnHand stock;
 
     /**
+     * Determines if the user is allowed to delete items with minimum quantities.
+     */
+    private final boolean overrideMinimumQuantities;
+
+    /**
      * Determines if the template column should be shown.
      */
     private boolean showTemplate;
@@ -78,6 +88,11 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
      * Determines if the batch column should be shown.
      */
     private boolean showBatch;
+
+    /**
+     * Callback invoked when an item is marked/unmarked.
+     */
+    private Runnable markedCallback;
 
     /**
      * The product column index.
@@ -173,24 +188,33 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
      * @param context    the layout context
      */
     public ChargeItemTableModel(String[] shortNames, LayoutContext context) {
-        this(shortNames, null, context);
+        this(shortNames, null, false, context);
     }
 
     /**
      * Constructs a {@link ChargeItemTableModel}.
      *
-     * @param shortNames the archetype short names
-     * @param stock      if non-null, used to display a stock-on-hand column
-     * @param context    the layout context
+     * @param shortNames                the archetype short names
+     * @param stock                     if non-null, used to display a stock-on-hand column
+     * @param overrideMinimumQuantities determines if the user is allowed to delete items with minimum quantities
+     * @param context                   the layout context
      */
-    public ChargeItemTableModel(String[] shortNames, StockOnHand stock, LayoutContext context) {
+    public ChargeItemTableModel(String[] shortNames, StockOnHand stock, boolean overrideMinimumQuantities,
+                                LayoutContext context) {
         super(context);
         this.stock = stock;
+        this.overrideMinimumQuantities = overrideMinimumQuantities;
         Preferences preferences = context.getPreferences();
         showTemplate = preferences.getBoolean(PreferenceArchetypes.CHARGE, "showTemplate", false);
         showProductType = preferences.getBoolean(PreferenceArchetypes.CHARGE, "showProductType", false);
         showBatch = preferences.getBoolean(PreferenceArchetypes.CHARGE, "showBatch", false);
-        setTableColumnModel(createColumnModel(shortNames, context));
+        TableColumnModel model = createColumnModel(shortNames, context);
+        if (context.isEdit()) {
+            // add support to mark rows for deletion
+            addMarkColumn(model);
+            setRowMarkModel(new DefaultListMarkModel());
+        }
+        setTableColumnModel(model);
         if (showTemplate) {
             setDefaultSortColumn(templateIndex);
         } else if (showProductType) {
@@ -289,9 +313,10 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
      */
     @Override
     protected Object getValue(T object, TableColumn column, int row) {
-        if (column.getModelIndex() == productTypeIndex) {
+        int index = column.getModelIndex();
+        if (index == productTypeIndex) {
             return getProductType(object);
-        } else if (column.getModelIndex() == onHandIndex) {
+        } else if (index == onHandIndex) {
             return getOnHand(object);
         }
         return super.getValue(object, column, row);
@@ -345,6 +370,59 @@ public class ChargeItemTableModel<T extends IMObject> extends DescriptorTableMod
             doShowBatch(false, model);
         }
         return model;
+    }
+
+    /**
+     * Marks/unmarks a row.
+     *
+     * @param row      the row
+     * @param checkBox if selected, mark the row, otherwise unmark it
+     */
+    @Override
+    protected void markRow(int row, CheckBox checkBox) {
+        T object = getObject(row);
+        if (object != null) {
+            boolean selected = checkBox.isSelected();
+            IMObjectBean bean = new IMObjectBean(object);
+            BigDecimal quantity = getMinimumQuantity(bean);
+            if (selected && quantity.compareTo(BigDecimal.ZERO) > 0) {
+                String name = getProductName(bean);
+                if (overrideMinimumQuantities) {
+                    ConfirmationDialog.show(
+                            Messages.format("customer.charge.minquantity.select.title", name),
+                            Messages.format("customer.charge.minquantity.select.message", name, quantity),
+                            ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                                @Override
+                                public void onYes() {
+                                    ChargeItemTableModel.super.markRow(row, checkBox);
+                                }
+
+                                @Override
+                                public void onNo() {
+                                    checkBox.setSelected(false); // unmark the row
+                                    ChargeItemTableModel.super.markRow(row, checkBox);
+                                }
+                            });
+                } else {
+                    ErrorDialog.show(Messages.format("customer.charge.minquantity.selectforbidden.title", name),
+                                     Messages.format("customer.charge.minquantity.selectforbidden.message", name,
+                                                     quantity));
+                    checkBox.setSelected(false); // unmark the row
+                    ChargeItemTableModel.super.markRow(row, checkBox);
+                }
+            } else {
+                super.markRow(row, checkBox);
+            }
+        }
+    }
+
+    private String getProductName(IMObjectBean bean) {
+        IMObject product = getLayoutContext().getCache().get(bean.getTargetRef("product"));
+        return (product != null) ? product.getName() : Messages.get("imobject.none");
+    }
+
+    private BigDecimal getMinimumQuantity(IMObjectBean bean) {
+        return bean.getBigDecimal("minQuantity", BigDecimal.ZERO);
     }
 
     /**

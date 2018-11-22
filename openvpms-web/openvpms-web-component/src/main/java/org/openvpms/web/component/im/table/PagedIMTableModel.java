@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -62,7 +62,7 @@ public class PagedIMTableModel<T, K> extends DelegatingIMTableModel<T, K>
     private boolean defaultSortAscending;
 
     /**
-     * Connstructs a {@link PagedIMTableModel}.
+     * Constructs a {@link PagedIMTableModel}.
      *
      * @param model the underlying model
      */

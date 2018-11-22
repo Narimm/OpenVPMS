@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -70,14 +70,31 @@ public abstract class AbstractRemoveConfirmationHandler implements RemoveConfirm
         String displayName = getDisplayName(object, collection);
         String title = Messages.format("imobject.collection.delete.title", displayName);
         String message = Messages.format("imobject.collection.delete.message", displayName);
-        final ConfirmationDialog dialog = new ConfirmationDialog(title, message, ConfirmationDialog.YES_NO);
+        ConfirmationDialog dialog = new ConfirmationDialog(title, message, ConfirmationDialog.YES_NO);
         dialog.addWindowPaneListener(new PopupDialogListener() {
             @Override
             public void onYes() {
                 apply(object, collection);
             }
+
+            @Override
+            public void onNo() {
+                cancelRemove(collection);
+                super.onNo();
+            }
         });
         dialog.show();
+    }
+
+    /**
+     * Invoked when removal is cancelled.
+     * <p/>
+     * This implementation is a no-op.
+     *
+     * @param collection the collection
+     */
+    protected void cancelRemove(IMObjectCollectionEditor collection) {
+
     }
 
     /**

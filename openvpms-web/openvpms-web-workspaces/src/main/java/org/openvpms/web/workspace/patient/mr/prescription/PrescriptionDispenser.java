@@ -107,6 +107,7 @@ public class PrescriptionDispenser {
             }
             if (checkDispense(state.getProduct(), location)) {
                 DefaultLayoutContext layout = new DefaultLayoutContext(new LocalContext(context), help);
+                layout.setEdit(true);
                 CustomerChargeActEditor editor = new DefaultCustomerChargeActEditor(invoice, null, layout, false);
                 editor.getComponent();
                 dispense(state, editor, completionListener);

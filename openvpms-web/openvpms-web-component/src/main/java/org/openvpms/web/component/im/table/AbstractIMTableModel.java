@@ -82,6 +82,15 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel impleme
      */
     private boolean enableSelection = true;
 
+    /**
+     * Tracks row marking.
+     */
+    private ListMarkModel rowMarkModel;
+
+    /**
+     * Listener for row mark events.
+     */
+    private ListMarkModel.Listener rowMarkListener;
 
     /**
      * Constructs an {@link AbstractIMTableModel}.
@@ -114,6 +123,9 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel impleme
      */
     public void setObjects(List<T> objects) {
         this.objects = objects;
+        if (rowMarkModel != null) {
+            rowMarkModel.clear();
+        }
         fireTableDataChanged();
     }
 
@@ -229,6 +241,62 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel impleme
     }
 
     /**
+     * Sets the model to track row marking.
+     *
+     * @param model the model
+     */
+    @Override
+    public void setRowMarkModel(ListMarkModel model) {
+        if (rowMarkListener == null) {
+            rowMarkListener = new ListMarkModel.Listener() {
+                @Override
+                public void changed(int index, boolean marked) {
+                    markRow(index, marked);
+                }
+
+                @Override
+                public void cleared() {
+                    unmarkRows();
+                }
+            };
+        } else if (rowMarkModel != null) {
+            rowMarkModel.removeListener(rowMarkListener);
+        }
+        rowMarkModel = model;
+        if (rowMarkModel != null) {
+            rowMarkModel.addListener(rowMarkListener);
+        }
+    }
+
+    /**
+     * Returns the model to track row marking.
+     *
+     * @return the model, or {@code null} if none is registered
+     */
+    @Override
+    public ListMarkModel getRowMarkModel() {
+        return rowMarkModel;
+    }
+
+    /**
+     * Returns the objects associated with the marked rows.
+     *
+     * @return the objects
+     */
+    @Override
+    public List<T> getMarkedRows() {
+        List<T> result = new ArrayList<>();
+        if (rowMarkModel != null && !rowMarkModel.isEmpty()) {
+            for (int i = 0; i < getRowCount(); ++i) {
+                if (rowMarkModel.isMarked(i)) {
+                    result.add(objects.get(i));
+                }
+            }
+        }
+        return result;
+    }
+
+    /**
      * Notifies the table to refresh.
      * <p>
      * This can be used to refresh the table if properties of objects held by the model have changed.
@@ -260,6 +328,25 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel impleme
      * @return the value at the given coordinate.
      */
     protected abstract Object getValue(T object, TableColumn column, int row);
+
+    /**
+     * Invoked when a row is marked or unmarked.
+     * <p/>
+     * This implementation is a no-op.
+     *
+     * @param row    the row
+     * @param marked if {@code true}, row has been marked, otherwise it has been unmarked
+     */
+    protected void markRow(int row, boolean marked) {
+    }
+
+    /**
+     * Invoked when all rows are unmarked.
+     * <p/>
+     * This implementation is a no-op.
+     */
+    protected void unmarkRows() {
+    }
 
     /**
      * Returns a column offset given its model index.
