@@ -90,6 +90,7 @@ public class PatientPrescriptionCRUDWindow extends ActCRUDWindow<Act> {
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
         buttons.add(createPrintButton());
+        buttons.add(createMailButton());
         buttons.add(ButtonFactory.create(DISPENSE_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onDispense();

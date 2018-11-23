@@ -98,14 +98,14 @@ import static org.openvpms.archetype.rules.finance.till.TillBalanceStatus.UNCLEA
 public class TillCRUDWindow extends FinancialActCRUDWindow {
 
     /**
-     * The selected child act.
-     */
-    private FinancialAct childAct;
-
-    /**
      * The till rules.
      */
     private final TillRules rules;
+
+    /**
+     * The selected child act.
+     */
+    private FinancialAct childAct;
 
     /**
      * Start clear button identifier.
@@ -232,6 +232,7 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
         buttons.add(startClear);
         buttons.add(clear);
         buttons.add(createPrintButton());
+        buttons.add(createMailButton());
         buttons.add(adjust);
         buttons.add(reverse);
         buttons.add(create);
@@ -395,20 +396,15 @@ public class TillCRUDWindow extends FinancialActCRUDWindow {
     }
 
     /**
-     * Invoked to preview the current object.
+     * Previews an object.
+     *
+     * @param object the object to preview
      */
     @Override
-    protected void onPreview() {
-        final FinancialAct object = IMObjectHelper.reload(getObject());
-        if (object != null) {
-            try {
-                IMPrinter<ObjectSet> printer = createTillBalanceReport(object);
-                Document document = printer.getDocument();
-                DownloadServlet.startDownload(document);
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
-        }
+    protected void preview(FinancialAct object) {
+        IMPrinter<ObjectSet> printer = createTillBalanceReport(object);
+        Document document = printer.getDocument();
+        DownloadServlet.startDownload(document);
     }
 
     /**

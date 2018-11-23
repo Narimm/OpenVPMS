@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -113,6 +113,7 @@ public class EditDialogFactoryTestCase extends AbstractAppTest {
         local.setLocation(TestHelper.createLocation());
         local.setCustomer(TestHelper.createCustomer());
         LayoutContext context = new DefaultLayoutContext(local, help);
+        context.setEdit(true);
         IMObject object = service.create(shortName);
         assertNotNull("Failed to create object with shortname=" + shortName, object);
         IMObjectEditor editor = ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, context);

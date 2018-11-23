@@ -109,6 +109,7 @@ public class OrderCRUDWindow extends ESCISupplierCRUDWindow {
         super.layoutButtons(buttons);
         buttons.add(createPostButton());
         buttons.add(createPrintButton());
+        buttons.add(createMailButton());
         buttons.add(copy);
         buttons.add(generate);
         buttons.add(createCheckInboxButton());

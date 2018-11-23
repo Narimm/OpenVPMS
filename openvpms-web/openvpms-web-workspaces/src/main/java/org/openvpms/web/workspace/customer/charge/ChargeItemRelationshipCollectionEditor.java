@@ -31,13 +31,9 @@ import org.openvpms.web.component.im.edit.ActCollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActItemEditor;
-import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -224,12 +220,9 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
         if (editor != null && listener != null) {
             EditorQueue queue = getEditorQueue();
             if (!queue.isComplete()) {
-                queue.queue(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (listener != null) {
-                            listener.run();
-                        }
+                queue.queue(() -> {
+                    if (listener != null) {
+                        listener.run();
                     }
                 });
             } else {
@@ -261,11 +254,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
         }
 
         // add a listener to store the last used item starttime.
-        ModifiableListener startTimeListener = new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                lastItemDate = (Date) editor.getProperty(START_TIME).getValue();
-            }
-        };
+        ModifiableListener startTimeListener = modifiable -> lastItemDate = editor.getProperty(START_TIME).getDate();
         editor.getProperty(START_TIME).addModifiableListener(startTimeListener);
         editor.setProductListener(getProductListener()); // register the listener to expand templates
         return editor;
@@ -322,12 +311,7 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
         if (!acts.isEmpty() && !queue.isComplete()) {
             // the collection is considered invalid while there are popups, so force a validation check when
             // popups have all closed.
-            queue.queue(new Runnable() {
-                @Override
-                public void run() {
-                    isValid(); //
-                }
-            });
+            queue.queue(this::isValid);
         }
         return acts;
     }
@@ -352,19 +336,16 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     }
 
     /**
-     * Create a new table model.
+     * Creates a new {@link ChargeItemTableModel}.
      *
      * @param context the layout context
      * @return a new table model
      */
     @Override
-    @SuppressWarnings("unchecked")
-    protected IMTableModel<IMObject> createTableModel(LayoutContext context) {
-        context = new DefaultLayoutContext(context);
-        context.setComponentFactory(new TableComponentFactory(context));
-        ChargeItemTableModel model = new ChargeItemTableModel(getCollectionPropertyEditor().getArchetypeRange(),
-                                                              getEditContext().getStock(), context);
-        return (IMTableModel) model;
+    protected ChargeItemTableModel createChargeItemTableModel(LayoutContext context) {
+        CustomerChargeEditContext editContext = getEditContext();
+        return new ChargeItemTableModel(getCollectionPropertyEditor().getArchetypeRange(), editContext.getStock(),
+                                        editContext.overrideMinimumQuantities(), context);
     }
 
     /**

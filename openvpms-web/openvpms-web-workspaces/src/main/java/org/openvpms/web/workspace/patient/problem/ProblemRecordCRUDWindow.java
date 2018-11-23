@@ -29,7 +29,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.model.object.Relationship;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -37,6 +36,8 @@ import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
@@ -45,7 +46,6 @@ import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.retry.Retryer;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialog;
@@ -164,17 +164,13 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     @Override
     protected void onPrint() {
         if (query != null) {
-            try {
-                Context context = getContext();
-                IMObjectReportPrinter<Act> printer = createPrinter(context);
-                String title = Messages.get("patient.record.problem.print");
-                HelpContext help = getHelpContext().topic(PatientArchetypes.CLINICAL_PROBLEM + "/print");
-                InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<>(title, printer, context, help);
-                iPrinter.setMailContext(getMailContext());
-                iPrinter.print();
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
+            Context context = getContext();
+            IMObjectReportPrinter<Act> printer = createPrinter(context);
+            String title = Messages.get("patient.record.problem.print");
+            HelpContext help = getHelpContext().topic(PatientArchetypes.CLINICAL_PROBLEM + "/print");
+            InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<>(title, printer, context, help);
+            iPrinter.setMailContext(getMailContext());
+            iPrinter.print();
         }
     }
 
@@ -184,14 +180,22 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     @Override
     protected void onPreview() {
         if (query != null) {
-            try {
-                Context context = getContext();
-                IMObjectReportPrinter<Act> printer = createPrinter(context);
-                Document document = printer.getDocument();
-                DownloadServlet.startDownload(document);
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
+            Context context = getContext();
+            IMObjectReportPrinter<Act> printer = createPrinter(context);
+            Document document = printer.getDocument();
+            DownloadServlet.startDownload(document);
+        }
+    }
+
+    /**
+     * Invoked when the 'mail' button is pressed.
+     */
+    @Override
+    protected void onMail() {
+        if (query != null) {
+            Context context = getContext();
+            IMObjectReportPrinter<Act> printer = createPrinter(context);
+            mail(printer);
         }
     }
 
@@ -204,6 +208,7 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
         buttons.add(createPrintButton());
+        buttons.add(createMailButton());
         buttons.add(createExternalEditButton());
     }
 
@@ -247,19 +252,19 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
 
     /**
      * Invoked when a new object has been created.
-     * <p/>
+     * <p>
      * If the object is an <em>act.patientClinicalProblem</em>, a dialog will be displayed prompting for the visit
      * to link it to.
      *
      * @param object the new object
      */
     @Override
-    protected void onCreated(final Act object) {
-        if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_PROBLEM)) {
-            final Act event = getLatestEvent(getContext().getPatient());
+    protected void onCreated(Act object) {
+        if (object.isA(PatientArchetypes.CLINICAL_PROBLEM)) {
+            Act event = getLatestEvent(getContext().getPatient());
             if (event != null) {
                 // there is an existing event for the patient. Prompt to add the problem to this visit, or a new one.
-                final VisitSelectionDialog dialog = new VisitSelectionDialog(event, getHelpContext());
+                VisitSelectionDialog dialog = new VisitSelectionDialog(event, getHelpContext());
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
                     public void onOK() {
@@ -292,16 +297,31 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     }
 
     /**
-     * Invoked when the object has been saved.
+     * Creates a new edit dialog.
+     * <p>
+     * This implementation registers a post save callback to link the act into the patient history on save.<br/>
+     * This is needed for dialogs that show patient history, in order for new records to be displayed when Apply is
+     * pressed.
      *
-     * @param act   the act
-     * @param isNew determines if the object is a new instance
+     * @param editor the editor
+     * @return a new edit dialog
      */
     @Override
-    protected void onSaved(Act act, boolean isNew) {
+    protected EditDialog createEditDialog(IMObjectEditor editor) {
+        EditDialog dialog = super.createEditDialog(editor);
+        dialog.setPostSaveCallback(e -> linkRecords((Act) e.getObject()));
+        return dialog;
+    }
+
+    /**
+     * Links patient records, once they have been saved.
+     *
+     * @param act the act
+     */
+    protected void linkRecords(Act act) {
         Act problem;
-        if (!TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) {
-            if (!TypeHelper.isA(act, PatientArchetypes.CLINICAL_PROBLEM)) {
+        if (!act.isA(PatientArchetypes.CLINICAL_EVENT)) {
+            if (!act.isA(PatientArchetypes.CLINICAL_PROBLEM)) {
                 problem = getProblem(act);
             } else {
                 problem = act;
@@ -321,7 +341,6 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
             }
             Retryer.run(linker);
         }
-        super.onSaved(act, isNew);
     }
 
     /**
@@ -377,7 +396,7 @@ public class ProblemRecordCRUDWindow extends AbstractPatientHistoryCRUDWindow {
 
     /**
      * Returns the problem associated with an act.
-     * <p/>
+     * <p>
      * If the act has an associated problem, this will be returned, otherwise the current {@link #problem} will
      * be returned.
      *

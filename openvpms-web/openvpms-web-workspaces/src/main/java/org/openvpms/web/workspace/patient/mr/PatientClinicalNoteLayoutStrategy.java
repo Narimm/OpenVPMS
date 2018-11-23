@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -39,7 +39,7 @@ import java.util.List;
 
 
 /**
- * Layout strategy for <em>act.patientClinicalNote</em>.
+ * Layout strategy for <em>act.patientClinicalNote</em> and <em>act.patientClinicalAddendum</em>.
  *
  * @author Tim Anderson
  */

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -24,11 +24,16 @@ import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.edit.CollectionResultSetFactory;
 import org.openvpms.web.component.im.edit.DefaultCollectionResultSetFactory;
+import org.openvpms.web.component.im.edit.DefaultRemoveConfirmationHandler;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.ProductTemplateExpander;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.table.IMObjectTableModel;
 import org.openvpms.web.component.im.table.IMTableModel;
+import org.openvpms.web.component.im.table.ListMarkModel;
+import org.openvpms.web.component.im.table.MarkablePagedIMObjectTableModel;
+import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.view.TableComponentFactory;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.echo.button.ButtonRow;
@@ -38,6 +43,8 @@ import org.openvpms.web.echo.factory.CheckBoxFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.workspace.customer.DoseManager;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
+
+import java.util.List;
 
 /**
  * Editor for collections of {@link ActRelationship}s belonging to charges and estimates.
@@ -82,12 +89,32 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
     }
 
     /**
+     * Unmarks all charge items.
+     */
+    public void unmarkAll() {
+        MarkablePagedIMObjectTableModel<IMObject> model
+                = (MarkablePagedIMObjectTableModel<IMObject>) getTable().getModel();
+        model.unmarkAll();
+    }
+
+    /**
      * Returns the edit context.
      *
      * @return the edit context
      */
     protected PriceActEditContext getEditContext() {
         return editContext;
+    }
+
+    /**
+     * Creates a new paged table.
+     *
+     * @param model the table model
+     * @return a new paged table
+     */
+    @Override
+    protected PagedIMTable<IMObject> createTable(IMTableModel<IMObject> model) {
+        return new PagedIMTable<>(new MarkablePagedIMObjectTableModel<>((IMObjectTableModel<IMObject>) model));
     }
 
     /**
@@ -101,9 +128,30 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
     protected IMTableModel<IMObject> createTableModel(LayoutContext context) {
         context = new DefaultLayoutContext(context);
         context.setComponentFactory(new TableComponentFactory(context));
-        ChargeItemTableModel model = new ChargeItemTableModel(getCollectionPropertyEditor().getArchetypeRange(),
-                                                              context);
+        ChargeItemTableModel model = createChargeItemTableModel(context);
+        model.getRowMarkModel().addListener(new ListMarkModel.Listener() {
+            @Override
+            public void changed(int index, boolean marked) {
+                enableDelete();
+            }
+
+            @Override
+            public void cleared() {
+                enableDelete();
+            }
+        });
         return (IMTableModel) model;
+    }
+
+    /**
+     * Creates a new {@link ChargeItemTableModel}.
+     *
+     * @param context the layout context
+     * @return a new table model
+     */
+    protected ChargeItemTableModel createChargeItemTableModel(LayoutContext context) {
+        return new ChargeItemTableModel(getCollectionPropertyEditor().getArchetypeRange(),
+                                        context);
     }
 
     /**
@@ -136,8 +184,8 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
             controls.add(batch);
         }
 
-        final CheckBox template = CheckBoxFactory.create("customer.charge.show.template", showTemplate);
-        final CheckBox productType = CheckBoxFactory.create("customer.charge.show.productType", showProductType);
+        CheckBox template = CheckBoxFactory.create("customer.charge.show.template", showTemplate);
+        CheckBox productType = CheckBoxFactory.create("customer.charge.show.productType", showProductType);
         template.addActionListener(new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
@@ -160,6 +208,16 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
     }
 
     /**
+     * Determines if the delete button should be enabled.
+     *
+     * @return {@code true} if the delete button should be enabled, {@code false} if it should be disabled
+     */
+    @Override
+    protected boolean getEnableDelete() {
+        return super.getEnableDelete() || !getModel().getRowMarkModel().isEmpty();
+    }
+
+    /**
      * Creates a new product template expander.
      * <p/>
      * This implementation will restrict products to those of the location and stock location,
@@ -175,12 +233,30 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
     }
 
     /**
+     * Invoked when the 'delete' button is pressed.
+     * If the selected object has been saved, delegates to the registered
+     * {@link #getRemoveConfirmationHandler() RemoveConfirmationHandler},
+     * or uses {@link DefaultRemoveConfirmationHandler} if none is registered.
+     */
+    protected void onDelete() {
+        MarkablePagedIMObjectTableModel<IMObject> model
+                = (MarkablePagedIMObjectTableModel<IMObject>) getTable().getModel();
+        List<IMObject> items = model.getMarked(getCurrentObjects());
+        if (!items.isEmpty()) {
+            ChargeRemoveConfirmationHandler handler = (ChargeRemoveConfirmationHandler) getRemoveConfirmationHandler();
+            handler.remove(items, this);
+        } else {
+            super.onDelete();
+        }
+    }
+
+    /**
      * Returns the underlying table model.
      *
      * @return the model
      */
-    private ChargeItemTableModel getModel() {
+    private ChargeItemTableModel<Act> getModel() {
         IMTableModel model = getTable().getModel().getModel();
-        return (ChargeItemTableModel) model;
+        return (ChargeItemTableModel<Act>) model;
     }
 }

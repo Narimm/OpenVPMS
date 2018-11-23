@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.stock;
@@ -90,6 +90,7 @@ public class StockCRUDWindow extends ActCRUDWindow<Act> {
         super.layoutButtons(buttons);
         buttons.add(createPostButton());
         buttons.add(createPrintButton());
+        buttons.add(createMailButton());
         boolean admin = UserHelper.isAdmin(getContext().getUser());
         if (admin) {
             buttons.add(ButtonFactory.create(EXPORT_ID, new ActionListener() {

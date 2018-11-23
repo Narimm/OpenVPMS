@@ -209,26 +209,48 @@ public abstract class ActCRUDWindow<T extends Act> extends AbstractViewCRUDWindo
     }
 
     /**
-     * Invoked when the 'print' button is pressed.
+     * Print an object.
+     *
+     * @param object the object to print
      */
     @Override
-    protected void onPrint() {
-        final T object = IMObjectHelper.reload(getObject());
+    protected void print(T object) {
         ActActions<T> actions = getActions();
-        if (object == null) {
-            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
-        } else if (actions.isUnfinalised(object) && actions.warnWhenPrintingUnfinalisedAct()) {
+        if (actions.isUnfinalised(object) && actions.warnWhenPrintingUnfinalisedAct()) {
             String displayName = DescriptorHelper.getDisplayName(object);
             String title = Messages.format("print.unfinalised.title", displayName);
             String message = Messages.format("print.unfinalised.message", displayName);
             ConfirmationDialog.show(title, message, ConfirmationDialog.YES_NO, new PopupDialogListener() {
                 @Override
                 public void onYes() {
-                    print(object);
+                    ActCRUDWindow.super.print(object);
                 }
             });
         } else {
-            print(object);
+            super.print(object);
+        }
+    }
+
+    /**
+     * Mail an object.
+     *
+     * @param object the object to mail
+     */
+    @Override
+    protected void mail(T object) {
+        ActActions<T> actions = getActions();
+        if (actions.isUnfinalised(object) && actions.warnWhenPrintingUnfinalisedAct()) {
+            String displayName = DescriptorHelper.getDisplayName(object);
+            String title = Messages.format("mail.unfinalised.title", displayName);
+            String message = Messages.format("mail.unfinalised.message", displayName);
+            ConfirmationDialog.show(title, message, ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                @Override
+                public void onYes() {
+                    ActCRUDWindow.super.mail(object);
+                }
+            });
+        } else {
+            super.mail(object);
         }
     }
 

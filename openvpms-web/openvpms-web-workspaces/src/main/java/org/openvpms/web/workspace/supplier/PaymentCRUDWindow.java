@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier;
@@ -52,6 +52,7 @@ public class PaymentCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
         super.layoutButtons(buttons);
         buttons.add(createPostButton());
         buttons.add(createPrintButton());
+        buttons.add(createMailButton());
     }
 
     /**

@@ -79,6 +79,7 @@ public class AccountCRUDWindow extends SupplierActCRUDWindow<FinancialAct> {
         });
         buttons.add(reverse);
         buttons.add(createPrintButton());
+        buttons.add(createMailButton());
     }
 
     /**

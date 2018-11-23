@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -199,6 +199,36 @@ public class DelegatingIMTableModel<T, K> extends AbstractTableModel implements 
     }
 
     /**
+     * Sets the model to track row marking.
+     *
+     * @param model the model
+     */
+    @Override
+    public void setRowMarkModel(ListMarkModel model) {
+        this.model.setRowMarkModel(model);
+    }
+
+    /**
+     * Returns the model to track row marking.
+     *
+     * @return the model, or {@code null} if none is registered
+     */
+    @Override
+    public ListMarkModel getRowMarkModel() {
+        return model.getRowMarkModel();
+    }
+
+    /**
+     * Returns the objects associated with the marked rows.
+     *
+     * @return the objects
+     */
+    @Override
+    public List<T> getMarkedRows() {
+        return convertFrom(model.getMarkedRows());
+    }
+
+    /**
      * Notifies the table to refresh.
      * <p/>
      * This can be used to refresh the table if properties of objects held by the model have changed.
@@ -239,11 +269,7 @@ public class DelegatingIMTableModel<T, K> extends AbstractTableModel implements 
      */
     protected void setModel(IMTableModel<K> model) {
         this.model = model;
-        this.model.addTableModelListener(new TableModelListener() {
-            public void tableChanged(TableModelEvent event) {
-                notifyListeners(event);
-            }
-        });
+        this.model.addTableModelListener(this::notifyListeners);
     }
 
     /**

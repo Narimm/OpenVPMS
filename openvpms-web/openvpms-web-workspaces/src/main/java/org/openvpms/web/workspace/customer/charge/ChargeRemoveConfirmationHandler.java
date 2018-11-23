@@ -11,11 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
@@ -30,6 +32,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * Implementation if {@link RemoveConfirmationHandler} for {@link AbstractChargeItemRelationshipCollectionEditor}.
@@ -42,6 +45,11 @@ import java.math.BigDecimal;
 public abstract class ChargeRemoveConfirmationHandler extends AbstractRemoveConfirmationHandler {
 
     /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(ChargeRemoveConfirmationHandler.class);
+
+    /**
      * Confirms removal of an object from a collection.
      * <p/>
      * If approved, it performs the removal.
@@ -50,7 +58,7 @@ public abstract class ChargeRemoveConfirmationHandler extends AbstractRemoveConf
      * @param collection the collection to remove the object from, if approved
      */
     @Override
-    public void remove(final IMObject object, final IMObjectCollectionEditor collection) {
+    public void remove(IMObject object, IMObjectCollectionEditor collection) {
         AbstractChargeItemRelationshipCollectionEditor chargeCollection
                 = (AbstractChargeItemRelationshipCollectionEditor) collection;
         PriceActEditContext editContext = chargeCollection.getEditContext();
@@ -71,6 +79,59 @@ public abstract class ChargeRemoveConfirmationHandler extends AbstractRemoveConf
         } else {
             super.remove(object, collection);
         }
+    }
+
+    /**
+     * Removes a collection of items.
+     *
+     * @param objects    the objects to remove
+     * @param collection the collection the objects belong to
+     */
+    public void remove(List<IMObject> objects, AbstractChargeItemRelationshipCollectionEditor collection) {
+        if (objects.size() == 1) {
+            remove(objects.get(0), collection);
+        } else if (objects.size() > 1) {
+            confirmRemove(objects, collection);
+        }
+    }
+
+    /**
+     * Displays a confirmation dialog to confirm removal of multiple objects from a collection.
+     * <p>
+     * If approved, it performs the removal.
+     *
+     * @param objects    the objects to remove
+     * @param collection the collection to remove the objects from, if approved
+     */
+    protected void confirmRemove(List<IMObject> objects, AbstractChargeItemRelationshipCollectionEditor collection) {
+        String displayName = collection.getProperty().getDisplayName();
+        String title = Messages.format("imobject.collection.deletes.title", displayName);
+        String message = Messages.format("imobject.collection.deletes.message", objects.size(), displayName);
+        ConfirmationDialog dialog = new ConfirmationDialog(title, message, ConfirmationDialog.YES_NO);
+        dialog.addWindowPaneListener(new PopupDialogListener() {
+            @Override
+            public void onYes() {
+                removeAll(objects, collection);
+            }
+
+            @Override
+            public void onNo() {
+                cancelRemove(collection);
+            }
+        });
+        dialog.show();
+    }
+
+    /**
+     * Invoked when removal is cancelled.
+     * <p/>
+     * This unmarks all marked objects,
+     *
+     * @param collection the collection
+     */
+    @Override
+    protected void cancelRemove(IMObjectCollectionEditor collection) {
+        ((AbstractChargeItemRelationshipCollectionEditor) collection).unmarkAll();
     }
 
     /**
@@ -108,9 +169,8 @@ public abstract class ChargeRemoveConfirmationHandler extends AbstractRemoveConf
      * @param quantity   the minimum quantity
      * @param override   determines if the user can override minimum quantities
      */
-    protected void removeMinimumQuantity(final IMObject object, final IMObjectCollectionEditor collection,
-                                         PriceActItemEditor editor, BigDecimal quantity,
-                                         boolean override) {
+    protected void removeMinimumQuantity(IMObject object, IMObjectCollectionEditor collection,
+                                         PriceActItemEditor editor, BigDecimal quantity, boolean override) {
         String name = getDisplayName(editor);
         if (override) {
             ConfirmationDialog.show(
@@ -125,6 +185,38 @@ public abstract class ChargeRemoveConfirmationHandler extends AbstractRemoveConf
         } else {
             ErrorDialog.show(Messages.format("customer.charge.minquantity.deleteforbidden.title", name),
                              Messages.format("customer.charge.minquantity.deleteforbidden.message", name, quantity));
+        }
+    }
+
+    /**
+     * Removes a collection of items.
+     *
+     * @param objects    the objects to remove
+     * @param collection the collection the objects belong to
+     */
+    private void removeAll(List<IMObject> objects, AbstractChargeItemRelationshipCollectionEditor collection) {
+        PriceActEditContext editContext = collection.getEditContext();
+        boolean useMinimumQuantities = editContext.useMinimumQuantities();
+        boolean override = editContext.overrideMinimumQuantities();
+        for (IMObject object : objects) {
+            boolean remove = true;
+            if (useMinimumQuantities && !override) {
+                // Sanity check to make sure the user can delete objects. Objects shouldn't be selectable for deletion
+                // in this case.
+                IMObjectEditor chargeEditor = collection.getEditor(object);
+                if (chargeEditor instanceof PriceActItemEditor) {
+                    PriceActItemEditor editor = (PriceActItemEditor) chargeEditor;
+                    BigDecimal quantity = editor.getMinimumQuantity();
+                    if (quantity.compareTo(BigDecimal.ZERO) > 0) {
+                        log.error("Ignoring attempt to remove object=" + object.getId() + " with minimum quantity="
+                                  + quantity);
+                        remove = false;
+                    }
+                }
+            }
+            if (remove) {
+                apply(object, collection);
+            }
         }
     }
 

@@ -187,6 +187,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
 
         Date now = new Date();
         DefaultLayoutContext layoutContext = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        layoutContext.setEdit(true);
         CustomerChargeActEditDialog dialog = charger.charge(null, null, layoutContext);
         TestChargeEditor editor = (TestChargeEditor) dialog.getEditor();
         CustomerChargeTestHelper.checkSavePopup(editor.getQueue(), PatientArchetypes.PATIENT_MEDICATION, false);
@@ -222,6 +223,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
 
         Date now = new Date();
         DefaultLayoutContext layoutContext = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        layoutContext.setEdit(true);
         CustomerChargeActEditDialog dialog = charger.charge(null, null, layoutContext);
         TestChargeEditor editor = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor));
@@ -258,6 +260,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         assertFalse(charger.canCredit());
 
         DefaultLayoutContext layoutContext = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        layoutContext.setEdit(true);
         CustomerChargeActEditDialog dialog = charger.charge(invoice, null, layoutContext);
         TestChargeEditor editor2 = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor2));
@@ -295,6 +298,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         assertFalse(charger.canCredit());
 
         DefaultLayoutContext layoutContext = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        layoutContext.setEdit(true);
         CustomerChargeActEditDialog dialog = charger.charge(invoice, null, layoutContext);
         TestChargeEditor editor2 = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor2));
@@ -333,6 +337,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         assertFalse(charger.canCredit());
 
         DefaultLayoutContext layoutContext = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        layoutContext.setEdit(true);
         CustomerChargeActEditDialog dialog = charger.charge(null, null, layoutContext);
         TestChargeEditor editor = (TestChargeEditor) dialog.getEditor();
         CustomerChargeTestHelper.checkSavePopup(editor.getQueue(), PatientArchetypes.PATIENT_MEDICATION, false);
@@ -375,6 +380,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         assertTrue(charger.canCredit());
 
         DefaultLayoutContext layoutContext = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        layoutContext.setEdit(true);
         CustomerChargeActEditDialog dialog = charger.charge(invoice, null, layoutContext);
         TestChargeEditor editor2 = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor2));
@@ -412,6 +418,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         assertTrue(charger.canCredit());
 
         DefaultLayoutContext layoutContext = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        layoutContext.setEdit(true);
         CustomerChargeActEditDialog dialog = charger.charge(null, null, layoutContext);
         TestChargeEditor editor2 = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor2));
@@ -563,6 +570,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
         PharmacyOrderInvoicer charger2 = new TestPharmacyOrderInvoicer(orderReturn, rules);
         assertFalse(charger2.canCharge(editor1));
         DefaultLayoutContext layoutContext = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        layoutContext.setEdit(true);
         CustomerChargeActEditDialog dialog = charger2.charge(null, null, layoutContext);
         TestChargeEditor editor2 = (TestChargeEditor) dialog.getEditor();
         assertTrue(SaveHelper.save(editor2));
@@ -795,6 +803,7 @@ public class PharmacyOrderInvoicerTestCase extends AbstractCustomerChargeActEdit
     private TestChargeEditor createEditor() {
         FinancialAct charge = (FinancialAct) create(CustomerAccountArchetypes.INVOICE);
         LayoutContext layoutContext = new DefaultLayoutContext(context, new HelpContext("foo", null));
+        layoutContext.setEdit(true);
         TestChargeEditor editor = new TestChargeEditor(charge, layoutContext, false);
         editor.getComponent();
         return editor;

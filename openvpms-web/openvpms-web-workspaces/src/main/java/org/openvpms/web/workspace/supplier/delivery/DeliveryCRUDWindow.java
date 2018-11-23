@@ -147,6 +147,7 @@ public class DeliveryCRUDWindow extends ESCISupplierCRUDWindow {
         });
         buttons.add(createPostButton());
         buttons.add(createPrintButton());
+        buttons.add(createMailButton());
         buttons.add(invoice);
         buttons.add(reverse);
         buttons.add(createCheckInboxButton());

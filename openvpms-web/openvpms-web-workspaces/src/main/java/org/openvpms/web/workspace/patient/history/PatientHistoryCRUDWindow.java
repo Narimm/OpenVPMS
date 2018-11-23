@@ -28,7 +28,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientInformationService;
@@ -36,6 +35,8 @@ import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.HospitalizationService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
+import org.openvpms.web.component.im.edit.EditDialog;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.print.IMObjectReportPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
@@ -45,7 +46,6 @@ import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.retry.Retryer;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.event.ActionListener;
@@ -57,6 +57,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.PatientMedicalRecordLinker;
 import org.openvpms.web.workspace.patient.info.PatientContextHelper;
+import org.openvpms.web.workspace.patient.mr.PatientVisitNoteEditDialog;
 import org.openvpms.web.workspace.patient.mr.PatientVisitNoteEditor;
 
 
@@ -159,6 +160,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
         buttons.add(createPrintButton());
+        buttons.add(createMailButton());
         buttons.add(createAddNoteButton());
         buttons.add(createExternalEditButton());
         buttons.add(createImportFlowSheetButton());
@@ -215,30 +217,10 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      */
     @Override
     protected void onSaved(Act act, boolean isNew) {
-        if (!TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) {
-            Act event = getEvent();
-            if (event == null) {
-                event = createEvent();
-            }
-            // link the item to its parent event, if required. As there might be multiple user's accessing the event,
-            // use a Retryer to retry if the linking fails initially
-            PatientMedicalRecordLinker linker;
-            Act selected = getObject();
-            if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_ADDENDUM)) {
-                if (!TypeHelper.isA(selected, PatientArchetypes.CLINICAL_ADDENDUM)) {
-                    linker = createMedicalRecordLinker(event, null, selected, act);
-                } else {
-                    linker = createMedicalRecordLinker(event, null, null, act);
-                }
-            } else {
-                linker = createMedicalRecordLinker(event, act);
-            }
-            Retryer.run(linker);
-            if (TypeHelper.isA(act, PatientArchetypes.PATIENT_WEIGHT)) {
-                onWeightChanged(act);
-            }
-        } else {
+        if (act.isA(PatientArchetypes.CLINICAL_EVENT)) {
             setEvent(act);
+        } else if (act.isA(PatientArchetypes.PATIENT_WEIGHT)) {
+            onWeightChanged(act);
         }
         super.onSaved(act, isNew);
     }
@@ -251,11 +233,11 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      */
     @Override
     protected void onDeleted(Act object) {
-        if (TypeHelper.isA(object, PatientArchetypes.CLINICAL_EVENT)) {
+        if (object.isA(PatientArchetypes.CLINICAL_EVENT)) {
             setEvent(null);
         }
         super.onDeleted(object);
-        if (TypeHelper.isA(object, PatientArchetypes.PATIENT_WEIGHT)) {
+        if (object.isA(PatientArchetypes.PATIENT_WEIGHT)) {
             onWeightChanged(object);
         }
     }
@@ -268,17 +250,13 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     @Override
     protected void onPrint() {
         if (query != null) {
-            try {
-                Context context = getContext();
-                IMObjectReportPrinter<Act> printer = createPrinter(context);
-                String title = Messages.get("patient.record.summary.print");
-                HelpContext help = getHelpContext().topic(PatientArchetypes.CLINICAL_EVENT + "/print");
-                InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<>(title, printer, context, help);
-                iPrinter.setMailContext(getMailContext());
-                iPrinter.print();
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
+            Context context = getContext();
+            IMObjectReportPrinter<Act> printer = createPrinter(context);
+            String title = Messages.get("patient.record.summary.print");
+            HelpContext help = getHelpContext().topic(PatientArchetypes.CLINICAL_EVENT + "/print");
+            InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<>(title, printer, context, help);
+            iPrinter.setMailContext(getMailContext());
+            iPrinter.print();
         }
     }
 
@@ -287,14 +265,22 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      */
     protected void onPreview() {
         if (query != null) {
-            try {
-                Context context = getContext();
-                IMObjectReportPrinter<Act> printer = createPrinter(context);
-                Document document = printer.getDocument();
-                DownloadServlet.startDownload(document);
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
+            Context context = getContext();
+            IMObjectReportPrinter<Act> printer = createPrinter(context);
+            Document document = printer.getDocument();
+            DownloadServlet.startDownload(document);
+        }
+    }
+
+    /**
+     * Invoked when the 'mail' button is pressed.
+     */
+    @Override
+    protected void onMail() {
+        if (query != null) {
+            Context context = getContext();
+            IMObjectReportPrinter<Act> printer = createPrinter(context);
+            mail(printer);
         }
     }
 
@@ -307,6 +293,56 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
         LayoutContext layoutContext = createLayoutContext(help);
         PatientVisitNoteEditor editor = new PatientVisitNoteEditor(event, layoutContext);
         edit(editor, null);
+    }
+
+    /**
+     * Creates a new edit dialog.
+     * <p>
+     * This implementation registers a post save callback to link the act into the patient history on save.<br/>
+     * This is needed for dialogs that show patient history, in order for new records to be displayed when Apply is
+     * pressed.
+     *
+     * @param editor the editor
+     * @return a new edit dialog
+     */
+    @Override
+    protected EditDialog createEditDialog(IMObjectEditor editor) {
+        EditDialog dialog;
+        if (editor instanceof PatientVisitNoteEditor) {
+            dialog = new PatientVisitNoteEditDialog((PatientVisitNoteEditor) editor, getContext());
+        } else {
+            dialog = super.createEditDialog(editor);
+        }
+        dialog.setPostSaveCallback(e -> linkRecords((Act) e.getObject()));
+        return dialog;
+    }
+
+    /**
+     * Links patient records, once they have been saved.
+     *
+     * @param act the record act
+     */
+    protected void linkRecords(Act act) {
+        if (!act.isA(PatientArchetypes.CLINICAL_EVENT)) {
+            Act event = getEvent();
+            if (event == null) {
+                event = createEvent();
+            }
+            // link the item to its parent event, if required. As there might be multiple user's accessing the event,
+            // use a Retryer to retry if the linking fails initially
+            PatientMedicalRecordLinker linker;
+            Act selected = getObject();
+            if (act.isA(PatientArchetypes.CLINICAL_ADDENDUM)) {
+                if (selected != null && !selected.isA(PatientArchetypes.CLINICAL_ADDENDUM)) {
+                    linker = createMedicalRecordLinker(event, null, selected, act);
+                } else {
+                    linker = createMedicalRecordLinker(event, null, null, act);
+                }
+            } else {
+                linker = createMedicalRecordLinker(event, act);
+            }
+            Retryer.run(linker);
+        }
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -87,6 +87,27 @@ public interface IMTableModel<T> extends RenderTableModel {
      * @param enable if {@code true} selection should be enabled; otherwise it should be disabled
      */
     void setEnableSelection(boolean enable);
+
+    /**
+     * Sets the model to track row marking.
+     *
+     * @param model the model
+     */
+    void setRowMarkModel(ListMarkModel model);
+
+    /**
+     * Returns the model to track row marking.
+     *
+     * @return the model, or {@code null} if none is registered
+     */
+    ListMarkModel getRowMarkModel();
+
+    /**
+     * Returns the objects associated with the marked rows.
+     *
+     * @return the objects
+     */
+    List<T> getMarkedRows();
 
     /**
      * Notifies the table to refresh.

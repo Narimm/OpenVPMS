@@ -144,6 +144,7 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         location = TestHelper.createLocation();
 
         layoutContext = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
+        layoutContext.setEdit(true);
         layoutContext.getContext().setPractice(getPractice());
         layoutContext.getContext().setCustomer(customer);
         layoutContext.getContext().setUser(author);
