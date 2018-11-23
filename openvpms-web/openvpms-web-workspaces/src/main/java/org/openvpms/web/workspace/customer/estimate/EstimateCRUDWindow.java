@@ -118,6 +118,7 @@ public class EstimateCRUDWindow extends CustomerActCRUDWindow<Act> {
         });
         buttons.add(createPostButton());
         buttons.add(createPrintButton());
+        buttons.add(createMailButton());
         buttons.add(copy);
         buttons.add(invoice);
     }

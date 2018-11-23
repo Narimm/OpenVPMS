@@ -89,6 +89,7 @@ public class CustomerOrderCRUDWindow extends ResultSetCRUDWindow<FinancialAct> {
             }
         });
         buttons.add(createPrintButton());
+        buttons.add(createMailButton());
     }
 
     /**
@@ -106,6 +107,7 @@ public class CustomerOrderCRUDWindow extends ResultSetCRUDWindow<FinancialAct> {
         buttons.setEnabled(DELETE_ID, enable && actions.canDelete(order));
         buttons.setEnabled(INVOICE_ID, enable && actions.canInvoice(order));
         buttons.setEnabled(PRINT_ID, enable);
+        buttons.setEnabled(MAIL_ID, enable);
     }
 
     /**

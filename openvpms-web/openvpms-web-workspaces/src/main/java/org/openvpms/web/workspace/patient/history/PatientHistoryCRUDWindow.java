@@ -28,7 +28,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
-import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientInformationService;
@@ -47,7 +46,6 @@ import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.retry.Retryer;
-import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.event.ActionListener;
@@ -162,6 +160,7 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
         buttons.add(createPrintButton());
+        buttons.add(createMailButton());
         buttons.add(createAddNoteButton());
         buttons.add(createExternalEditButton());
         buttons.add(createImportFlowSheetButton());
@@ -251,17 +250,13 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
     @Override
     protected void onPrint() {
         if (query != null) {
-            try {
-                Context context = getContext();
-                IMObjectReportPrinter<Act> printer = createPrinter(context);
-                String title = Messages.get("patient.record.summary.print");
-                HelpContext help = getHelpContext().topic(PatientArchetypes.CLINICAL_EVENT + "/print");
-                InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<>(title, printer, context, help);
-                iPrinter.setMailContext(getMailContext());
-                iPrinter.print();
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
+            Context context = getContext();
+            IMObjectReportPrinter<Act> printer = createPrinter(context);
+            String title = Messages.get("patient.record.summary.print");
+            HelpContext help = getHelpContext().topic(PatientArchetypes.CLINICAL_EVENT + "/print");
+            InteractiveIMPrinter<Act> iPrinter = new InteractiveIMPrinter<>(title, printer, context, help);
+            iPrinter.setMailContext(getMailContext());
+            iPrinter.print();
         }
     }
 
@@ -270,14 +265,22 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      */
     protected void onPreview() {
         if (query != null) {
-            try {
-                Context context = getContext();
-                IMObjectReportPrinter<Act> printer = createPrinter(context);
-                Document document = printer.getDocument();
-                DownloadServlet.startDownload(document);
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
+            Context context = getContext();
+            IMObjectReportPrinter<Act> printer = createPrinter(context);
+            Document document = printer.getDocument();
+            DownloadServlet.startDownload(document);
+        }
+    }
+
+    /**
+     * Invoked when the 'mail' button is pressed.
+     */
+    @Override
+    protected void onMail() {
+        if (query != null) {
+            Context context = getContext();
+            IMObjectReportPrinter<Act> printer = createPrinter(context);
+            mail(printer);
         }
     }
 

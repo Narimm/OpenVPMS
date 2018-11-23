@@ -155,7 +155,7 @@ public class MailDialog extends PopupDialog {
      */
     public MailDialog(MailContext mailContext, Contact preferred, MultiSelectBrowser<Act> documents,
                       LayoutContext context) {
-        this(Messages.get("mail.write"), mailContext, preferred, documents, context);
+        this(Messages.get("mail.title"), mailContext, preferred, documents, context);
     }
 
     /**
@@ -180,7 +180,7 @@ public class MailDialog extends PopupDialog {
      * @param context   the layout context
      */
     public MailDialog(MailEditor editor, MultiSelectBrowser<Act> documents, LayoutContext context) {
-        this(Messages.get("mail.write"), editor, documents, context);
+        this(Messages.get("mail.title"), editor, documents, context);
     }
 
     /**

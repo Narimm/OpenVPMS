@@ -68,6 +68,7 @@ public class PaymentCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         super.layoutButtons(buttons);
         buttons.add(createPostButton());
         buttons.add(createPrintButton());
+        buttons.add(createMailButton());
     }
 
     /**

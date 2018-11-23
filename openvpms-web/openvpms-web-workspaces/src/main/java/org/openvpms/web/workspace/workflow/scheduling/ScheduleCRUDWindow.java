@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.scheduling;
@@ -134,6 +134,7 @@ public abstract class ScheduleCRUDWindow extends AbstractCRUDWindow<Act> {
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
         buttons.add(createPrintButton());
+        buttons.add(createMailButton());
     }
 
     /**

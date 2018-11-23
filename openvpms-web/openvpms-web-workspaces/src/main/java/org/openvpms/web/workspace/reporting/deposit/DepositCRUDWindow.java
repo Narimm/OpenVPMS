@@ -17,12 +17,10 @@
 package org.openvpms.web.workspace.reporting.deposit;
 
 import nextapp.echo2.app.Button;
-import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.finance.deposit.DepositQuery;
 import org.openvpms.archetype.rules.finance.deposit.DepositRules;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -32,12 +30,10 @@ import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.print.ObjectSetReportPrinter;
 import org.openvpms.web.component.im.report.ReporterFactory;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
-import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.servlet.DownloadServlet;
@@ -80,14 +76,10 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        Button deposit = ButtonFactory.create(DepositCRUDWindow.DEPOSIT_ID,
-                                              new ActionListener() {
-                                                  public void onAction(ActionEvent event) {
-                                                      onDeposit();
-                                                  }
-                                              });
+        Button deposit = ButtonFactory.create(DEPOSIT_ID, action(this::deposit, "deposit.deposit.title"));
         buttons.add(deposit);
         buttons.add(createPrintButton());
+        buttons.add(createMailButton());
     }
 
     /**
@@ -109,19 +101,57 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
 
     /**
      * Invoked when the 'deposit' button is pressed.
+     *
+     * @param object the deposit
      */
-    protected void onDeposit() {
-        final FinancialAct act = getObject();
-        String title = Messages.get("deposit.deposit.title");
-        String message = Messages.get("deposit.deposit.message");
-        final ConfirmationDialog dialog = new ConfirmationDialog(title, message, getHelpContext().subtopic("deposit"));
-        dialog.addWindowPaneListener(new PopupDialogListener() {
-            @Override
-            public void onOK() {
-                doDeposit(act);
-            }
-        });
-        dialog.show();
+    protected void deposit(FinancialAct object) {
+        if (UNDEPOSITED.equals(object.getStatus())) {
+            String title = Messages.get("deposit.deposit.title");
+            String message = Messages.get("deposit.deposit.message");
+            ConfirmationDialog dialog = new ConfirmationDialog(title, message, getHelpContext().subtopic("deposit"));
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onOK() {
+                    doDeposit(object);
+                }
+            });
+            dialog.show();
+        } else {
+            onRefresh(object);
+        }
+    }
+
+    /**
+     * Print an object.
+     *
+     * @param object the object to print
+     */
+    @Override
+    protected void print(FinancialAct object) {
+        IPage<ObjectSet> set = new DepositQuery(object).query();
+        Context context = getContext();
+        IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), BANK_DEPOSIT, context,
+                                                                  ServiceHelper.getBean(ReporterFactory.class));
+        String title = Messages.format("imobject.print.title", getArchetypes().getDisplayName());
+        InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<>(
+                title, printer, context, getHelpContext().subtopic("print"));
+        iPrinter.setMailContext(getMailContext());
+        iPrinter.print();
+    }
+
+    /**
+     * Previews an object.
+     *
+     * @param object the object to preview
+     */
+    @Override
+    protected void preview(FinancialAct object) {
+        IPage<ObjectSet> set = new DepositQuery(object).query();
+        Context context = getContext();
+        IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), BANK_DEPOSIT, context,
+                                                                  ServiceHelper.getBean(ReporterFactory.class));
+        Document document = printer.getDocument();
+        DownloadServlet.startDownload(document);
     }
 
     /**
@@ -131,53 +161,10 @@ public class DepositCRUDWindow extends FinancialActCRUDWindow {
      */
     private void doDeposit(FinancialAct act) {
         try {
-            DepositRules.deposit(act, ArchetypeServiceHelper.getArchetypeService());
+            DepositRules.deposit(act, ServiceHelper.getArchetypeService());
         } catch (OpenVPMSException exception) {
             ErrorHelper.show(exception);
         }
-        onRefresh(getObject());
-    }
-
-    /**
-     * Prints the deposit slip.
-     */
-    @Override
-    protected void onPrint() {
-        FinancialAct object = IMObjectHelper.reload(getObject());
-        if (object != null) {
-            try {
-                IPage<ObjectSet> set = new DepositQuery(object).query();
-                Context context = getContext();
-                IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), BANK_DEPOSIT, context,
-                                                                          ServiceHelper.getBean(ReporterFactory.class));
-                String title = Messages.format("imobject.print.title", getArchetypes().getDisplayName());
-                InteractiveIMPrinter<ObjectSet> iPrinter = new InteractiveIMPrinter<>(
-                        title, printer, context, getHelpContext().subtopic("print"));
-                iPrinter.setMailContext(getMailContext());
-                iPrinter.print();
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
-        }
-    }
-
-    /**
-     * Invoked to preview the current object.
-     */
-    @Override
-    protected void onPreview() {
-        FinancialAct object = IMObjectHelper.reload(getObject());
-        if (object != null) {
-            try {
-                IPage<ObjectSet> set = new DepositQuery(object).query();
-                Context context = getContext();
-                IMPrinter<ObjectSet> printer = new ObjectSetReportPrinter(set.getResults(), BANK_DEPOSIT, context,
-                                                                          ServiceHelper.getBean(ReporterFactory.class));
-                Document document = printer.getDocument();
-                DownloadServlet.startDownload(document);
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
-        }
+        onRefresh(act);
     }
 }

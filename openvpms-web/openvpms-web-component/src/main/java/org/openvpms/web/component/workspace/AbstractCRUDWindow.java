@@ -21,7 +21,9 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
+import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -47,11 +49,15 @@ import org.openvpms.web.component.im.print.IMPrinter;
 import org.openvpms.web.component.im.print.IMPrinterFactory;
 import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
+import org.openvpms.web.component.im.report.Reporter;
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.im.util.IMObjectCreatorListener;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.Selection;
 import org.openvpms.web.component.mail.MailContext;
+import org.openvpms.web.component.mail.MailDialog;
+import org.openvpms.web.component.mail.MailDialogFactory;
+import org.openvpms.web.component.mail.MailEditor;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.button.ButtonSet;
@@ -77,22 +83,27 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     /**
      * Edit button identifier.
      */
-    public static final String EDIT_ID = "edit";
+    public static final String EDIT_ID = "button.edit";
 
     /**
      * New button identifier.
      */
-    public static final String NEW_ID = "new";
+    public static final String NEW_ID = "button.new";
 
     /**
      * Delete button identifier.
      */
-    public static final String DELETE_ID = "delete";
+    public static final String DELETE_ID = "button.delete";
 
     /**
      * Print button identifier.
      */
-    public static final String PRINT_ID = "print";
+    public static final String PRINT_ID = "button.print";
+
+    /**
+     * Mail button identifier.
+     */
+    public static final String MAIL_ID = "button.mail";
 
     /**
      * The archetypes that this may create.
@@ -493,6 +504,19 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     }
 
     /**
+     * Helper to create a new button with id {@link #MAIL_ID} linked to {@link #onMail()}.
+     *
+     * @return a new button
+     */
+    protected Button createMailButton() {
+        return ButtonFactory.create(MAIL_ID, new ActionListener() {
+            public void onAction(ActionEvent event) {
+                onMail();
+            }
+        });
+    }
+
+    /**
      * Returns the button set.
      *
      * @return the button set
@@ -515,13 +539,14 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     }
 
     /**
-     * Enables/disables print and print-preview.
+     * Enables/disables print, mail and print-preview.
      *
      * @param buttons the buttons
      * @param enable  if {@code true}, enable print/print preview, else disable it
      */
     protected void enablePrintPreview(ButtonSet buttons, boolean enable) {
         buttons.setEnabled(PRINT_ID, enable);
+        buttons.setEnabled(MAIL_ID, enable);
         String tooltip = null;
         if (enable) {
             buttons.addKeyListener(KeyStrokes.ALT_MASK | KeyStrokes.VK_V, new ActionListener() {
@@ -695,12 +720,14 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * Invoked when the 'print' button is pressed.
      */
     protected void onPrint() {
-        T object = IMObjectHelper.reload(getObject());
-        if (object == null) {
-            ErrorHelper.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
-        } else {
-            print(object);
-        }
+        run(this::print, getObject(), "printdialog.title");
+    }
+
+    /**
+     * Invoked when the 'mail' button is pressed.
+     */
+    protected void onMail() {
+        run(this::mail, getObject(), "mail.title");
     }
 
     /**
@@ -802,21 +829,20 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * Invoked to preview the current object.
      */
     protected void onPreview() {
-        T previous = getObject();
-        final T object = IMObjectHelper.reload(previous);
-        if (object == null && previous != null) {
-            ErrorHelper.show(Messages.format("imobject.noexist", DescriptorHelper.getDisplayName(previous)));
-        } else {
-            try {
-                ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
-                IMPrinterFactory factory = ServiceHelper.getBean(IMPrinterFactory.class);
-                IMPrinter<T> printer = factory.create(object, locator, context);
-                Document document = printer.getDocument(DocFormats.PDF_TYPE, false);
-                DownloadServlet.startDownload(document);
-            } catch (OpenVPMSException exception) {
-                ErrorHelper.show(exception);
-            }
-        }
+        run(this::preview, getObject(), "preview.title");
+    }
+
+    /**
+     * Previews an object.
+     *
+     * @param object the object to preview
+     */
+    protected void preview(T object) {
+        ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(object, context);
+        IMPrinterFactory factory = ServiceHelper.getBean(IMPrinterFactory.class);
+        IMPrinter<T> printer = factory.create(object, locator, context);
+        Document document = printer.getDocument(DocFormats.PDF_TYPE, false);
+        DownloadServlet.startDownload(document);
     }
 
     /**
@@ -853,17 +879,51 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     }
 
     /**
-     * Print an object.
+     * Prints an object.
      *
      * @param object the object to print
      */
     protected void print(T object) {
-        try {
-            IMPrinter<T> printer = createPrinter(object);
-            printer.print();
-        } catch (OpenVPMSException exception) {
-            ErrorHelper.show(exception);
+        IMPrinter<T> printer = createPrinter(object);
+        printer.print();
+    }
+
+    /**
+     * Mail an object.
+     *
+     * @param object the object to mail
+     */
+    protected void mail(T object) {
+        IMPrinter<T> printer = createPrinter(object);
+        mail(printer);
+    }
+
+    /**
+     * Mails a document generated by the specified printer.
+     *
+     * @param printer the printer
+     */
+    protected void mail(IMPrinter<T> printer) {
+        Document document = printer.getDocument(DocFormats.PDF_TYPE, true);
+        MailDialogFactory factory = ServiceHelper.getBean(MailDialogFactory.class);
+        MailDialog dialog = factory.create(getMailContext(), createLayoutContext(getHelpContext()));
+        MailEditor editor = dialog.getMailEditor();
+        editor.setSubject(printer.getDisplayName());
+        editor.addAttachment(document);
+
+        Reporter<T> reporter = printer.getReporter();
+
+        //  make the object available to the editor for subsequent template expansion
+        editor.setObject(reporter.getObject());
+
+        DocumentTemplate template = reporter.getTemplate();
+        if (template != null) {
+            Entity emailTemplate = template.getEmailTemplate();
+            if (emailTemplate != null) {
+                editor.setContent(emailTemplate);
+            }
         }
+        dialog.show();
     }
 
     /**
@@ -891,28 +951,65 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @param title     the title resource bundle key, used when displaying an error dialog if the action fails
      * @return a new listener
      */
-    protected ActionListener action(final String archetype, final Consumer<T> action, final String title) {
+    protected ActionListener action(String archetype, Consumer<T> action, String title) {
         return new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
                 T object = getObject();
                 if (TypeHelper.isA(object, archetype)) {
-                    try {
-                        T latest = IMObjectHelper.reload(object);
-                        if (latest != null) {
-                            action.accept(latest);
-                        } else {
-                            String displayName = DescriptorHelper.getDisplayName(object);
-                            ErrorHelper.show(Messages.get(title), Messages.format("imobject.noexist", displayName));
-                            onRefresh(object);
-                        }
-                    } catch (Throwable exception) {
-                        String displayName = DescriptorHelper.getDisplayName(object);
-                        ErrorHelper.show(Messages.get(title), displayName, object, exception);
-                    }
+                    run(action, object, title);
                 }
             }
         };
+    }
+
+    /**
+     * Creates an action listener that runs an action against the selected object when clicked.
+     * <p>
+     * The action is run with the latest instance of the selected object.
+     *
+     * @param action the action to execute
+     * @param title  the title resource bundle key, used when displaying an error dialog if the action fails
+     * @return a new listener
+     */
+    protected ActionListener action(Consumer<T> action, String title) {
+        return new ActionListener() {
+            @Override
+            public void onAction(ActionEvent event) {
+                T object = getObject();
+                run(action, object, title);
+            }
+        };
+    }
+
+    /**
+     * Runs an action with the latest instance of an object.
+     *
+     * @param action the action
+     * @param object the object. May be {@code null}
+     * @param title  the title resource bundle key, used when displaying an error dialog if the action fails
+     */
+    private void run(Consumer<T> action, T object, String title) {
+        try {
+            T latest = IMObjectHelper.reload(object);
+            if (latest != null) {
+                action.accept(latest);
+            } else {
+                String displayName = object != null ? DescriptorHelper.getDisplayName(object)
+                                                    : getArchetypes().getDisplayName();
+                ErrorHelper.show(Messages.get(title), Messages.format("imobject.noexist", displayName));
+                if (object != null) {
+                    onRefresh(object);
+                }
+            }
+        } catch (Throwable exception) {
+            if (object != null) {
+                String displayName = DescriptorHelper.getDisplayName(object);
+                ErrorHelper.show(Messages.get(title), displayName, object, exception);
+            } else {
+                ErrorHelper.show(Messages.get(title), exception);
+            }
+        }
     }
 
     /**

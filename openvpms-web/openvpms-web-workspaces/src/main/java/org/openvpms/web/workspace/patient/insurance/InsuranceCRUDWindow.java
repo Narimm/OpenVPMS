@@ -115,6 +115,7 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
         buttons.add(SETTLE_CLAIM_ID, action(CLAIM, this::settleClaim, "patient.insurance.settle.title"));
         buttons.add(DECLINE_CLAIM_ID, action(CLAIM, this::declineClaim, "patient.insurance.decline.title"));
         buttons.add(createPrintButton());
+        buttons.add(createMailButton());
     }
 
     /**

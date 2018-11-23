@@ -40,7 +40,6 @@ import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
-import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
@@ -123,28 +122,48 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
     }
 
     /**
-     * Invoked when the 'print' button is pressed.
+     * Print an object.
+     *
+     * @param object the object to print
      */
     @Override
-    protected void onPrint() {
-        final FinancialAct object = IMObjectHelper.reload(getObject());
-        if (object == null) {
-            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
+    protected void print(FinancialAct object) {
+        IMObjectBean bean = new IMObjectBean(object);
+        if (bean.hasNode("hide") && bean.getBoolean("hide")) {
+            String displayName = DescriptorHelper.getDisplayName(object);
+            String title = Messages.format("customer.account.printhidden.title", displayName);
+            String message = Messages.format("customer.account.printhidden.message", displayName, object.getId());
+            ConfirmationDialog.show(title, message, ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                @Override
+                public void onYes() {
+                    AccountCRUDWindow.super.print(object);
+                }
+            });
         } else {
-            IMObjectBean bean = new IMObjectBean(object);
-            if (bean.hasNode("hide") && bean.getBoolean("hide")) {
-                String displayName = DescriptorHelper.getDisplayName(object);
-                String title = Messages.format("customer.account.printhidden.title", displayName);
-                String message = Messages.format("customer.account.printhidden.message", displayName, object.getId());
-                ConfirmationDialog.show(title, message, ConfirmationDialog.YES_NO, new PopupDialogListener() {
-                    @Override
-                    public void onYes() {
-                        print(object);
-                    }
-                });
-            } else {
-                print(object);
-            }
+            super.print(object);
+        }
+    }
+
+    /**
+     * Mail an object.
+     *
+     * @param object the object to mail
+     */
+    @Override
+    protected void mail(FinancialAct object) {
+        IMObjectBean bean = new IMObjectBean(object);
+        if (bean.hasNode("hide") && bean.getBoolean("hide")) {
+            String displayName = DescriptorHelper.getDisplayName(object);
+            String title = Messages.format("customer.account.mailhidden.title", displayName);
+            String message = Messages.format("customer.account.mailhidden.message", displayName, object.getId());
+            ConfirmationDialog.show(title, message, ConfirmationDialog.YES_NO, new PopupDialogListener() {
+                @Override
+                public void onYes() {
+                    AccountCRUDWindow.super.mail(object);
+                }
+            });
+        } else {
+            super.mail(object);
         }
     }
 
@@ -176,6 +195,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         buttons.add(adjust);
         buttons.add(reverse);
         buttons.add(createPrintButton());
+        buttons.add(createMailButton());
 
         if (UserHelper.isAdmin(getContext().getUser())) {
             // If the logged in user is an administrator, show the Check, Hide, Unhide buttons
@@ -244,7 +264,7 @@ public class AccountCRUDWindow extends CustomerActCRUDWindow<FinancialAct> {
         if (act != null) {
             String status = act.getStatus();
             if (act.isA(CustomerAccountArchetypes.OPENING_BALANCE, CustomerAccountArchetypes.CLOSING_BALANCE)
-                 || !FinancialActStatus.POSTED.equals(status)) {
+                || !FinancialActStatus.POSTED.equals(status)) {
                 showStatusError(act, "customer.account.noreverse.title", "customer.account.noreverse.message");
             } else {
                 Reverser reverser = new Reverser(getContext().getPractice(), getHelpContext().subtopic("reverse"));

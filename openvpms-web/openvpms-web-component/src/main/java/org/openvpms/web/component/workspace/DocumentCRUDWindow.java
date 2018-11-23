@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -26,6 +26,8 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.doc.DocumentGenerator;
@@ -35,6 +37,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.ErrorDialog;
+import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
@@ -109,6 +112,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     protected void layoutButtons(ButtonSet buttons) {
         super.layoutButtons(buttons);
         buttons.add(createPrintButton());
+        buttons.add(createMailButton());
         buttons.add(ButtonFactory.create(REFRESH_ID, new ActionListener() {
             public void onAction(ActionEvent event) {
                 onRefresh();
@@ -138,27 +142,60 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     }
 
     /**
-     * Invoked when the 'print' button is pressed.
+     * Prints an object.
+     *
+     * @param object the object to print
      */
     @Override
-    protected void onPrint() {
-        DocumentAct act = IMObjectHelper.reload(getObject());
-        if (act == null) {
-            ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
-        } else if (act.getDocument() == null) {
+    protected void print(DocumentAct object) {
+        if (object.getDocument() == null) {
             if (canRefresh()) {
                 // regenerate the document, and print
-                refresh(act, true, false);
+                refresh(object, false, () -> DocumentCRUDWindow.super.print(object));
+            } else if (isGenerated(object)) {
+                // document is generated on the fly
+                super.print(object);
             } else {
-                ActBean bean = new ActBean(act);
-                if (bean.hasNode("documentTemplate") || bean.hasNode("investigationType")) {
-                    // document is generated on the fly
-                    print(act);
-                }
+                InformationDialog.show(Messages.get("printdialog.title"),
+                                       Messages.format("document.print.none", DescriptorHelper.getDisplayName(object)));
             }
         } else {
-            print(act);
+            super.print(object);
         }
+    }
+
+    /**
+     * Mails an object.
+     *
+     * @param object the object to mail
+     */
+    @Override
+    protected void mail(DocumentAct object) {
+        if (object.getDocument() == null) {
+            if (canRefresh()) {
+                // regenerate the document, and mail
+                refresh(object, false, () -> DocumentCRUDWindow.super.mail(object));
+            } else if (isGenerated(object)) {
+                // document is generated on the fly
+                super.mail(object);
+            } else {
+                InformationDialog.show(Messages.get("mail.title"),
+                                       Messages.format("mail.document.none", DescriptorHelper.getDisplayName(object)));
+            }
+        } else {
+            super.mail(object);
+        }
+    }
+
+    /**
+     * Determines if a document is generated.
+     *
+     * @param object the act
+     * @return {@code true} if the document is generated
+     */
+    private boolean isGenerated(DocumentAct object) {
+        IMObjectBean bean = new IMObjectBean(object);
+        return bean.hasNode("documentTemplate") || bean.hasNode("investigationType");
     }
 
     /**
@@ -186,7 +223,7 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 public void onOK() {
-                    refresh(act, false, dialog.version());
+                    refresh(act, dialog.version(), null);
                 }
             });
             dialog.show();
@@ -194,20 +231,20 @@ public class DocumentCRUDWindow extends ActCRUDWindow<DocumentAct> {
     }
 
     /**
-     * Refreshes an act, optionally printing it.
+     * Refreshes an act.
      *
-     * @param act     the act to refresh
-     * @param print   if {@code true} print it
-     * @param version if {@code true} version the document
+     * @param act      the act to refresh
+     * @param version  if {@code true} version the document
+     * @param callback the callback to invoke on completion. May be {@code null}
      */
-    private void refresh(final DocumentAct act, final boolean print, boolean version) {
+    private void refresh(final DocumentAct act, boolean version, Runnable callback) {
         DocumentGeneratorFactory factory = ServiceHelper.getBean(DocumentGeneratorFactory.class);
         DocumentGenerator generator = factory.create(
                 act, getContext(), getHelpContext(), new DocumentGenerator.AbstractListener() {
                     public void generated(Document document) {
                         onSaved(act, false);
-                        if (print) {
-                            print(act);
+                        if (callback != null) {
+                            callback.run();
                         }
                     }
                 });

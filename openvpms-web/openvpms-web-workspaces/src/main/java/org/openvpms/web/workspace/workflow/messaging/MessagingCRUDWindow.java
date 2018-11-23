@@ -142,6 +142,7 @@ public class MessagingCRUDWindow extends AbstractViewCRUDWindow<Act> {
         buttons.add(createDeleteButton());
         buttons.add(completed);
         buttons.add(createPrintButton());
+        buttons.add(createMailButton());
     }
 
     /**
