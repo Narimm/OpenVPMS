@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.jobs.reminder;
@@ -43,6 +43,7 @@ import org.openvpms.web.component.im.report.ReporterFactory;
 import org.openvpms.web.component.mail.DefaultMailerFactory;
 import org.openvpms.web.component.mail.EmailTemplateEvaluator;
 import org.openvpms.web.component.mail.MailerFactory;
+import org.openvpms.web.component.service.MailService;
 import org.openvpms.web.component.service.PracticeMailService;
 import org.openvpms.web.jobs.JobCompletionNotifier;
 import org.openvpms.web.resource.i18n.Messages;
@@ -173,7 +174,7 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
         this.reminderRules = reminderRules;
         this.patientRules = patientRules;
         this.practiceRules = practiceRules;
-        this.mailerFactory = new DefaultMailerFactory(mailService, handlers);
+        this.mailerFactory = getMailerFactory(mailService, handlers);
         this.emailTemplateEvaluator = emailTemplateEvaluator;
         this.reporterFactory = reporterFactory;
         this.connectionFactory = connectionFactory;
@@ -213,9 +214,10 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
                 throw new IllegalStateException("Reminder Configuration does not specify a Location");
             }
             Date date = getSendDate();
-            total = sendEmailReminders(date, reminderTypes, practice, config, logger);
+            Date cancelDate = getCancelDate();
+            total = sendEmailReminders(date, cancelDate, reminderTypes, practice, config, logger);
             if (!stop) {
-                Stats stats = sendSMSReminders(date, reminderTypes, practice, config, logger);
+                Stats stats = sendSMSReminders(date, cancelDate, reminderTypes, practice, config, logger);
                 total = total.add(stats);
             }
             complete(null, begin, total);
@@ -229,13 +231,14 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
      * Sends email reminders.
      *
      * @param date          all email reminders with a startTime prior to this will be sent
+     * @param cancelDate    all email reminders with a startTime + cancel interval prior to this will be cancelled
      * @param reminderTypes the reminder types
      * @param practice      the practice
      * @param config        the reminder configuration
      * @param logger        the communication logger, or {@code null} if communication is not being logged
      * @return the statistics
      */
-    protected Stats sendEmailReminders(Date date, ReminderTypes reminderTypes, Party practice,
+    protected Stats sendEmailReminders(Date date, Date cancelDate, ReminderTypes reminderTypes, Party practice,
                                        ReminderConfiguration config, CommunicationLogger logger) {
         ReminderEmailProcessor processor = new ReminderEmailProcessor(mailerFactory, emailTemplateEvaluator,
                                                                       reporterFactory, reminderTypes, practice,
@@ -243,27 +246,28 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
                                                                       service, config, logger);
         GroupingReminderIterator iterator = createIterator(ReminderArchetypes.EMAIL_REMINDER, reminderTypes, date,
                                                            config);
-        return send(date, processor, iterator);
+        return send(cancelDate, processor, iterator);
     }
 
     /**
      * Sends SMS reminders.
      *
      * @param date          all SMS reminders with a startTime prior to this will be sent
+     * @param cancelDate    all SMS reminders with a startTime + cancel interval prior to this will be cancelled
      * @param reminderTypes the reminder types
      * @param practice      the practice
      * @param config        the reminder configuration
      * @param logger        the communication logger, or {@code null} if communication is not being logged
      * @return the statistics
      */
-    protected Stats sendSMSReminders(Date date, ReminderTypes reminderTypes, Party practice,
+    protected Stats sendSMSReminders(Date date, Date cancelDate, ReminderTypes reminderTypes, Party practice,
                                      ReminderConfiguration config, CommunicationLogger logger) {
         ReminderSMSProcessor sender = new ReminderSMSProcessor(connectionFactory, smsEvaluator, reminderTypes,
                                                                practice, reminderRules, patientRules, practiceRules,
                                                                service, config, logger);
         GroupingReminderIterator iterator = createIterator(ReminderArchetypes.SMS_REMINDER, reminderTypes, date,
                                                            config);
-        return send(date, sender, iterator);
+        return send(cancelDate, sender, iterator);
     }
 
     /**
@@ -279,8 +283,23 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
         return config;
     }
 
+    /**
+     * All reminder items with a startTime {@code <=} this date will be processed.
+     *
+     * @return the send date
+     */
     protected Date getSendDate() {
         return DateRules.getTomorrow();
+    }
+
+    /**
+     * Returns the date to determine if reminder items should be cancelled.
+     * A reminder item should be cancelled if its startTime + cancel interval is {@code <=} that returned.
+     *
+     * @return the cancel date
+     */
+    protected Date getCancelDate() {
+        return new Date();
     }
 
     /**
@@ -293,19 +312,30 @@ public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
     }
 
     /**
+     * Creates a mailer factory.
+     *
+     * @param mailService the mail service
+     * @param handlers    the document handlers
+     * @return a new mailer factory
+     */
+    MailerFactory getMailerFactory(MailService mailService, DocumentHandlers handlers) {
+        return new DefaultMailerFactory(mailService, handlers);
+    }
+
+    /**
      * Sends reminders.
      *
-     * @param date      the date to use when determining if a reminder item should be cancelled
-     * @param processor the processor to use
-     * @param iterator  the reminder iterator
+     * @param cancelDate all reminders with a startTime + cancel interval prior to this will be cancelled
+     * @param processor  the processor to use
+     * @param iterator   the reminder iterator
      * @return the statistics
      */
-    private Stats send(Date date, PatientReminderProcessor processor, GroupingReminderIterator iterator) {
+    private Stats send(Date cancelDate, PatientReminderProcessor processor, GroupingReminderIterator iterator) {
         Stats total = new Stats();
         while (!stop && iterator.hasNext()) {
             Reminders reminders = iterator.next();
             try {
-                PatientReminders state = processor.prepare(reminders.getReminders(), reminders.getGroupBy(), date,
+                PatientReminders state = processor.prepare(reminders.getReminders(), reminders.getGroupBy(), cancelDate,
                                                            false);
                 Stats stats = send(state, processor, iterator);
                 total = total.add(stats);
