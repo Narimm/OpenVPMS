@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -30,7 +30,7 @@
         <node name="emailInterval" path="/details/emailInterval" type="java.lang.Integer" minCardinality="1"
               displayName="Email Lead Time" defaultValue="3">
             <assertion name="nonNegative">
-                <errorMessage>Value must be >= 0</errorMessage>
+                <errorMessage>Value must be &gt;= 0</errorMessage>
             </assertion>
         </node>
         <node name="emailUnits" path="/details/emailUnits" type="java.lang.String"
@@ -45,8 +45,8 @@
         </node>
         <node name="emailCancelInterval" path="/details/emailCancelInterval" type="java.lang.Integer" minCardinality="1"
               displayName="Email Cancel Time" defaultValue="3">
-            <assertion name="nonNegative">
-                <errorMessage>Value must be >= 0</errorMessage>
+            <assertion name="positive">
+                <errorMessage>Value must be &gt; 0</errorMessage>
             </assertion>
         </node>
         <node name="emailCancelUnits" path="/details/emailCancelUnits" type="java.lang.String"
@@ -62,7 +62,7 @@
         <node name="smsInterval" displayName="SMS Lead Time" path="/details/smsInterval" type="java.lang.Integer"
               minCardinality="1" defaultValue="3">
             <assertion name="nonNegative">
-                <errorMessage>Value must be >= 0</errorMessage>
+                <errorMessage>Value must be &gt;= 0</errorMessage>
             </assertion>
         </node>
         <node name="smsUnits" displayName="SMS Lead Time Units" path="/details/smsUnits" type="java.lang.String"
@@ -77,8 +77,8 @@
         </node>
         <node name="smsCancelInterval" displayName="SMS Cancel Time" path="/details/smsCancelInterval"
               type="java.lang.Integer" minCardinality="1" defaultValue="3">
-            <assertion name="nonNegative">
-                <errorMessage>Value must be >= 0</errorMessage>
+            <assertion name="positive">
+                <errorMessage>Value must be &gt; 0</errorMessage>
             </assertion>
         </node>
         <node name="smsCancelUnits" displayName="SMS Cancel Time Units" path="/details/smsCancelUnits"
@@ -94,7 +94,7 @@
         <node name="printInterval" path="/details/printInterval" type="java.lang.Integer" minCardinality="1"
               displayName="Print Lead Time" defaultValue="2">
             <assertion name="nonNegative">
-                <errorMessage>Value must be >= 0</errorMessage>
+                <errorMessage>Value must be &gt;= 0</errorMessage>
             </assertion>
         </node>
         <node name="printUnits" path="/details/printUnits" type="java.lang.String"
@@ -109,8 +109,8 @@
         </node>
         <node name="printCancelInterval" path="/details/printCancelInterval" type="java.lang.Integer" minCardinality="1"
               displayName="Print Cancel Time" defaultValue="2">
-            <assertion name="nonNegative">
-                <errorMessage>Value must be >= 0</errorMessage>
+            <assertion name="positive">
+                <errorMessage>Value must be &gt; 0</errorMessage>
             </assertion>
         </node>
         <node name="printCancelUnits" path="/details/printCancelUnits" type="java.lang.String"
@@ -126,7 +126,7 @@
         <node name="exportInterval" path="/details/exportInterval" type="java.lang.Integer" minCardinality="1"
               displayName="Export Lead Time" defaultValue="2">
             <assertion name="nonNegative">
-                <errorMessage>Value must be >= 0</errorMessage>
+                <errorMessage>Value must be &gt;= 0</errorMessage>
             </assertion>
         </node>
         <node name="exportUnits" path="/details/exportUnits" type="java.lang.String"
@@ -141,8 +141,8 @@
         </node>
         <node name="exportCancelInterval" path="/details/exportCancelInterval" type="java.lang.Integer"
               displayName="Export Cancel Time" minCardinality="1" defaultValue="2">
-            <assertion name="nonNegative">
-                <errorMessage>Value must be >= 0</errorMessage>
+            <assertion name="positive">
+                <errorMessage>Value must be &gt; 0</errorMessage>
             </assertion>
         </node>
         <node name="exportCancelUnits" path="/details/exportCancelUnits" type="java.lang.String"
@@ -158,7 +158,7 @@
         <node name="listInterval" path="/details/listInterval" type="java.lang.Integer" minCardinality="1"
               displayName="List Lead Time" defaultValue="2">
             <assertion name="nonNegative">
-                <errorMessage>Value must be >= 0</errorMessage>
+                <errorMessage>Value must be &gt;= 0</errorMessage>
             </assertion>
         </node>
         <node name="listUnits" path="/details/listUnits" type="java.lang.String"
@@ -173,8 +173,8 @@
         </node>
         <node name="listCancelInterval" path="/details/listCancelInterval" type="java.lang.Integer" minCardinality="1"
               displayName="List Cancel Time" defaultValue="2">
-            <assertion name="nonNegative">
-                <errorMessage>Value must be >= 0</errorMessage>
+            <assertion name="positive">
+                <errorMessage>Value must be &gt; 0</errorMessage>
             </assertion>
         </node>
         <node name="listCancelUnits" path="/details/listCancelUnits" type="java.lang.String"

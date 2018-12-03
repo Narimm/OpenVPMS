@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.jobs.reminder;
@@ -100,12 +100,11 @@ public class PatientReminderQueueJobTestCase extends ArchetypeServiceTest {
     @Before
     public void setUp() {
         Entity configuration = (Entity) create(PatientReminderQueueJob.JOB_SHORT_NAME);
-        final IArchetypeRuleService service = (IArchetypeRuleService) getArchetypeService();
+        IArchetypeRuleService service = (IArchetypeRuleService) getArchetypeService();
 
         reminderType = createReminderType(1, DateUnits.YEARS, 2, DateUnits.YEARS);
         config = new ReminderConfiguration(create(ReminderArchetypes.CONFIGURATION), service);
 
-        // lock records after 36 hours
         PracticeService practiceService = new PracticeService(service, practiceRules, null);
         job = new PatientReminderQueueJob(configuration, service, practiceService, patientRules, transactionManager) {
             @Override
