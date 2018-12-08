@@ -14,22 +14,24 @@
  * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.im.customer;
+package org.openvpms.web.component.im.patient;
+
+import org.openvpms.web.component.im.customer.CustomerPatientTableModel;
+
 
 /**
- * Table model for rendering customer details as returned by {@link CustomerObjectSetQuery}.
+ * Table model for rendering patient details as returned by {@link PatientByCustomerObjectSetQuery}.
  *
  * @author Tim Anderson
  */
-public class CustomerTableModel extends CustomerPatientTableModel {
+public class PatientByCustomerTableModel extends CustomerPatientTableModel {
 
     /**
-     * Constructs a {@link CustomerTableModel}.
+     * Constructs a {@link PatientByCustomerTableModel}.
      */
-    public CustomerTableModel() {
-        super(true);
-        setTableColumnModel(createTableColumnModel(true, false, false, false, false));
+    public PatientByCustomerTableModel() {
+        super(false);
+        setTableColumnModel(createTableColumnModel(false, true, false, false, false));
     }
-
 
 }

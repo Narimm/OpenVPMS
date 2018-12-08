@@ -27,9 +27,11 @@ import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.alert.MandatoryAlerts;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextHelper;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.patient.PatientByCustomerBrowser;
+import org.openvpms.web.component.im.patient.PatientByCustomerQuery;
 import org.openvpms.web.component.im.query.ActQuery;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.PatientQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.workspace.CRUDWindow;
 import org.openvpms.web.component.workspace.QueryBrowserCRUDWorkspace;
@@ -185,6 +187,19 @@ public class PatientRecordWorkspace extends QueryBrowserCRUDWorkspace<Party, Act
     }
 
     /**
+     * Creates a new browser to select an object.
+     *
+     * @param help the help context
+     * @return a new browser
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
+     */
+    @Override
+    protected Browser<Party> createSelectBrowser(HelpContext help) {
+        return new PatientByCustomerBrowser((PatientByCustomerQuery) createSelectQuery(),
+                                            new DefaultLayoutContext(getContext(), help));
+    }
+
+    /**
      * Create a new query.
      *
      * @return a new query
@@ -192,11 +207,7 @@ public class PatientRecordWorkspace extends QueryBrowserCRUDWorkspace<Party, Act
      */
     @Override
     protected Query<Party> createSelectQuery() {
-        Query<Party> query = super.createSelectQuery();
-        if (query instanceof PatientQuery) {
-            ((PatientQuery) query).setShowAllPatients(true);
-        }
-        return query;
+        return new PatientByCustomerQuery(getArchetypes().getShortNames(), getContext());
     }
 
     /**

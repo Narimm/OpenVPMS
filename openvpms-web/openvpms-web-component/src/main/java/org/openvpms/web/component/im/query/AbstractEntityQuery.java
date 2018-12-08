@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -38,6 +38,11 @@ import org.openvpms.web.resource.i18n.Messages;
 public abstract class AbstractEntityQuery<T> extends AbstractArchetypeQuery<T> {
 
     /**
+     * Determines if the identity checkbox should be automatically ticked if the search field contains numerics.
+     */
+    private final boolean checkIdentity;
+
+    /**
      * The identity search check box. If selected, name searches will be
      * performed against the entities {@link EntityIdentity} instances.
      */
@@ -49,30 +54,40 @@ public abstract class AbstractEntityQuery<T> extends AbstractArchetypeQuery<T> {
     private static final String IDENTITY_SEARCH_ID = "entityquery.identity";
 
     /**
-     * Construct a new <tt>AbstractEntityQuery</tt> that queries Entity
-     * instances with the specified short names.
+     * Constructs an {@link AbstractEntityQuery}.
      *
      * @param shortNames the short names
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     public AbstractEntityQuery(String[] shortNames) {
         super(shortNames, true);
+        checkIdentity = true;
         setDefaultSortConstraint(NAME_SORT_CONSTRAINT);
         QueryFactory.initialise(this);
     }
 
     /**
-     * Construct a new <tt>AbstractEntityQuery</tt> that queries Entity
-     * instances with the specified short names.
+     * Constructs an {@link AbstractEntityQuery}.
      *
      * @param shortNames the short names
      * @param type       the type that this query returns
-     * @throws ArchetypeQueryException if the short names don't match any
-     *                                 archetypes
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     public AbstractEntityQuery(String[] shortNames, Class type) {
+        this(shortNames, true, type);
+    }
+
+    /**
+     * Constructs an {@link AbstractEntityQuery}.
+     *
+     * @param shortNames    the short names
+     * @param checkIdentity if {@code true}, automatically check the identity search box if the value contains numerics
+     * @param type          the type that this query returns
+     * @throws ArchetypeQueryException if the short names don't match any archetypes
+     */
+    public AbstractEntityQuery(String[] shortNames, boolean checkIdentity, Class type) {
         super(shortNames, type);
+        this.checkIdentity = checkIdentity;
         setDefaultSortConstraint(NAME_SORT_CONSTRAINT);
         QueryFactory.initialise(this);
     }
@@ -80,8 +95,8 @@ public abstract class AbstractEntityQuery<T> extends AbstractArchetypeQuery<T> {
     /**
      * Performs the query.
      *
-     * @param sort the sort constraint. May be <tt>null</tt>
-     * @return the query result set. May be <tt>null</tt>
+     * @param sort the sort constraint. May be {@code null}
+     * @return the query result set. May be {@code null}
      * @throws ArchetypeServiceException if the query fails
      */
     @Override
@@ -91,8 +106,7 @@ public abstract class AbstractEntityQuery<T> extends AbstractArchetypeQuery<T> {
         if (canQueryOnName()) {
             result = createResultSet(sort);
         } else {
-            ErrorHelper.show(Messages.format("entityquery.error.nameLength",
-                                             getValueMinLength()));
+            ErrorHelper.show(Messages.format("entityquery.error.nameLength", getValueMinLength()));
         }
         return result;
     }
@@ -100,12 +114,14 @@ public abstract class AbstractEntityQuery<T> extends AbstractArchetypeQuery<T> {
     /**
      * Sets the value to query on.
      *
-     * @param value the value. May contain wildcards, or be <tt>null</tt>
+     * @param value the value. May contain wildcards, or be {@code null}
      */
     @Override
     public void setValue(String value) {
         super.setValue(value);
-        checkIdentityName(value);
+        if (checkIdentity) {
+            checkIdentityName(value);
+        }
     }
 
     /**
@@ -113,7 +129,7 @@ public abstract class AbstractEntityQuery<T> extends AbstractArchetypeQuery<T> {
      * If an identity search, the name is used to search for entities
      * with a matching {@link EntityIdentity}.
      *
-     * @return <tt>true</tt> if the query should be an identity search
+     * @return {@code true} if the query should be an identity search
      */
     protected boolean isIdentitySearch() {
         return getIdentitySearch().isSelected();
@@ -161,12 +177,14 @@ public abstract class AbstractEntityQuery<T> extends AbstractArchetypeQuery<T> {
     /**
      * Invoked when the search field changes.
      * <p/>
-     * This sets the identity search checkbox if the field contains a number.
+     * This sets the identity search checkbox if {@link #checkIdentity} is {@code true} and the field contains a number.
      */
     @Override
     protected void onSearchFieldChanged() {
-        String value = getValue();
-        checkIdentityName(value);
+        if (checkIdentity) {
+            String value = getValue();
+            checkIdentityName(value);
+        }
         super.onSearchFieldChanged();
     }
 
@@ -174,9 +192,9 @@ public abstract class AbstractEntityQuery<T> extends AbstractArchetypeQuery<T> {
      * Determines if a value may be an identity (i.e contains numerics).
      * If so, selects the 'identity search' box.
      *
-     * @param value the name. May be <tt>null</tt>
+     * @param value the name. May be {@code null}
      */
-    private void checkIdentityName(String value) {
+    protected void checkIdentityName(String value) {
         if (value != null) {
             value = value.replaceAll("\\*", "");
             if (value.matches("\\d+")) {

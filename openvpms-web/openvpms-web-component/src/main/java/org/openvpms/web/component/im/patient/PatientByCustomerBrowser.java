@@ -30,24 +30,24 @@ import org.openvpms.web.system.ServiceHelper;
 
 
 /**
- * Patient browser.
+ * Patient browser that supports querying by customer and contact.
  *
  * @author Tim Anderson
  */
-public class PatientBrowser extends BrowserAdapter<ObjectSet, Party> {
+public class PatientByCustomerBrowser extends BrowserAdapter<ObjectSet, Party> {
 
     /**
-     * Constructs a {@code PatientBrowser}.
+     * Constructs a {@link PatientByCustomerBrowser}.
      *
      * @param query   the query
      * @param context the layout context
      */
-    public PatientBrowser(PatientQuery query, LayoutContext context) {
+    public PatientByCustomerBrowser(PatientByCustomerQuery query, LayoutContext context) {
         setBrowser(createBrowser(query, context));
     }
 
     /**
-     * Returns the customer associated with the selected patient.
+     * Returns the current customer associated with the selected patient.
      *
      * @return the customer, or {@code null} if no patient is selected or has no current owner
      */
@@ -79,8 +79,8 @@ public class PatientBrowser extends BrowserAdapter<ObjectSet, Party> {
      * @param context the layout context
      * @return a new browser
      */
-    private static Browser<ObjectSet> createBrowser(final PatientQuery query, LayoutContext context) {
-        final PatientTableModel model = new PatientTableModel(context.getContext());
+    private static Browser<ObjectSet> createBrowser(PatientByCustomerQuery query, LayoutContext context) {
+        PatientByCustomerTableModel model = new PatientByCustomerTableModel();
         Query<ObjectSet> delegate = query.getQuery();
         return new AbstractQueryBrowser<ObjectSet>(delegate, delegate.getDefaultSortConstraint(), model, context) {
             /**
@@ -94,7 +94,8 @@ public class PatientBrowser extends BrowserAdapter<ObjectSet, Party> {
                 if (result instanceof PatientResultSet) {
                     PatientResultSet set = (PatientResultSet) result;
                     boolean active = query.getActive() == BaseArchetypeConstraint.State.BOTH;
-                    model.showColumns(set.isSearchingAllPatients(), set.isSearchingIdentities(), active);
+                    model.showColumns(set.isSearchingAllPatients(), true, set.isSearchingByContact(),
+                                      set.isSearchingIdentities(), active);
                 }
                 return result;
             }

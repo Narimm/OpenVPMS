@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.customer;
@@ -24,9 +24,6 @@ import org.openvpms.web.component.im.query.AbstractBrowserState;
 import org.openvpms.web.component.im.query.AbstractQueryBrowser;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserState;
-import org.openvpms.web.component.im.query.CustomerQuery;
-import org.openvpms.web.component.im.query.CustomerResultSet;
-import org.openvpms.web.component.im.query.CustomerResultSetAdapter;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryBrowserAdapter;
 import org.openvpms.web.component.im.query.ResultSet;
@@ -144,7 +141,7 @@ public class CustomerBrowser extends QueryBrowserAdapter<ObjectSet, Party> {
                 if (result instanceof CustomerResultSet) {
                     CustomerResultSet set = (CustomerResultSet) result;
                     boolean active = getQuery().getActive() == BaseArchetypeConstraint.State.BOTH;
-                    model.showColumns(set.isSearchingOnPatient(), set.isSearchingOnContact(),
+                    model.showColumns(true, set.isSearchingOnPatient(), set.isSearchingOnContact(),
                                       set.isSearchingIdentities(), active);
                 }
                 return result;

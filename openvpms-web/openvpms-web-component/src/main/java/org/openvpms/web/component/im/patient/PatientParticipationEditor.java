@@ -33,7 +33,6 @@ import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.PatientObjectSetQuery;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryAdapter;
 import org.openvpms.web.component.property.Property;

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -25,7 +25,9 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.im.customer.CustomerQuery;
 import org.openvpms.web.component.im.doc.DocumentTemplateQuery;
+import org.openvpms.web.component.im.patient.PatientQuery;
 import org.openvpms.web.component.im.product.ProductQuery;
 import org.openvpms.web.test.AbstractAppTest;
 import org.openvpms.web.workspace.supplier.vet.VetQuery;
