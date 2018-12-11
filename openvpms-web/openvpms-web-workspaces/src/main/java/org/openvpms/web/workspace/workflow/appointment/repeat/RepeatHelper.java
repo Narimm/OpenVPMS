@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
@@ -19,7 +19,8 @@ package org.openvpms.web.workspace.workflow.appointment.repeat;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.openvpms.archetype.rules.util.DateUnits;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.Date;
@@ -37,7 +38,7 @@ class RepeatHelper {
      * @param series the series bean
      * @return the expression, or {@code null} if there is no repeat expression
      */
-    public static RepeatExpression getExpression(ActBean series) {
+    public static RepeatExpression getExpression(IMObjectBean series) {
         RepeatExpression result = null;
         int interval = series.getInt("interval", -1);
         DateUnits units = DateUnits.fromString(series.getString("units"));
@@ -59,10 +60,10 @@ class RepeatHelper {
      * @param count  the no. of appointments in the series prior to the current
      * @return the condition, or {@code null} if there is no repeat condition
      */
-    public static RepeatCondition getCondition(ActBean series, int count) {
+    public static RepeatCondition getCondition(IMObjectBean series, int count) {
         RepeatCondition result = null;
         int times = series.getInt("times", -1);
-        Date endTime = series.getAct().getActivityEndTime();
+        Date endTime = ((Act) series.getObject()).getActivityEndTime();
         if (times > 0) {
             if (count > 0) {
                 // if the series isn't being edited from the start, adjust the no. of repeats

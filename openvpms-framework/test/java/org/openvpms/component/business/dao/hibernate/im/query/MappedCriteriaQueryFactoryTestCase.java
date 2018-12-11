@@ -725,7 +725,7 @@ public class MappedCriteriaQueryFactoryTestCase extends AbstractArchetypeService
     /**
      * Tests selection of an object reference.
      *
-     * @throws Exception
+     * @throws Exception for any error
      */
     @Test
     public void testSelectReference() throws Exception {
@@ -739,6 +739,27 @@ public class MappedCriteriaQueryFactoryTestCase extends AbstractArchetypeService
         query.select(root.reference());
         query.orderBy(cb.asc(root.get("id")));
         checkQuery(query, expected, "party.customerperson");
+    }
+
+    /**
+     * Tests selection of an object reference in a join.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testSelectReferenceInJoin() throws Exception {
+        String expected = "select new " + IMObjectReference.class.getName()
+                          +"(patients.target.archetypeId, patients.target.id, patients.target.linkId) " +
+                          "from PartyDOImpl as customer " +
+                          "inner join customer.sourceEntityRelationships as patients " +
+                          "with patients.archetypeId.shortName=:param0 " +
+                          "where customer.archetypeId.shortName=:param1 order by customer.id asc";
+        CriteriaQuery<Reference> query = cb.createQuery(Reference.class);
+        Root<Party> root = query.from(Party.class, "party.customerperson").alias("customer");
+        Join<Party, IMObject> relationship = root.join("patients", "entityRelationship.patientOwner").alias("patients");
+        query.select(relationship.get("target").alias("patient"));
+        query.orderBy(cb.asc(root.get("id")));
+        checkQuery(query, expected, "entityRelationship.patientOwner", "party.customerperson");
     }
 
     /**

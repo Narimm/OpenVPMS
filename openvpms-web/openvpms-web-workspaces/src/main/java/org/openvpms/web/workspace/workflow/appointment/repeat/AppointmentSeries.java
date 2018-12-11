@@ -22,7 +22,6 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.Times;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.object.Reference;
 
@@ -78,7 +77,7 @@ public class AppointmentSeries extends ScheduleEventSeries {
      * @return a new state
      */
     @Override
-    protected State createState(ActBean bean) {
+    protected State createState(IMObjectBean bean) {
         return new AppointmentState(bean);
     }
 

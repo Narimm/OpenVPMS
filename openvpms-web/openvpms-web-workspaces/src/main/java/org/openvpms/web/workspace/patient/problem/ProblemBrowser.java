@@ -19,8 +19,7 @@ package org.openvpms.web.workspace.patient.problem;
 import nextapp.echo2.app.table.TableCellRenderer;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.im.act.ActHierarchyIterator;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
@@ -81,7 +80,7 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
             // ensure the table model has the selected child act short names prior to performing the query
             ProblemQuery query = getQuery();
             pagedModel.setShortNames(query.getSelectedItemShortNames());
-            pagedModel.setSearch(query.getValue());
+            pagedModel.setTextSearch(query.getValue());
             pagedModel.setSortAscending(query.isSortAscending());
         }
         super.query();
@@ -97,7 +96,7 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
     public Act getEvent(Act act) {
         Act result = null;
         if (act != null) {
-            if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_PROBLEM)) {
+            if (act.isA(PatientArchetypes.CLINICAL_PROBLEM)) {
                 // scan forward through the acts to find the event. It should be the first in the list, unless
                 // problem items have failed to be linked to an event
                 List<Act> acts = getObjects();
@@ -106,20 +105,20 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
                     index++;
                     for (; index < acts.size(); index++) {
                         Act a = acts.get(index);
-                        if (TypeHelper.isA(a, PatientArchetypes.CLINICAL_EVENT)) {
+                        if (a.isA(PatientArchetypes.CLINICAL_EVENT)) {
                             result = a;
                             break;
-                        } else if (TypeHelper.isA(a, PatientArchetypes.CLINICAL_PROBLEM)) {
+                        } else if (a.isA(PatientArchetypes.CLINICAL_PROBLEM)) {
                             // next problem, so problem not linked to an event
                             break;
                         }
                     }
                 }
-            } else if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT)) {
+            } else if (act.isA(PatientArchetypes.CLINICAL_EVENT)) {
                 result = act;
             } else {
-                ActBean bean = new ActBean(act);
-                if (bean.getNodeSourceObjectRef("event") != null) {
+                IMObjectBean bean = new IMObjectBean(act);
+                if (bean.getSourceRef("event") != null) {
                     result = getTableModel().getParent(act, PatientArchetypes.CLINICAL_EVENT);
                 }
             }
@@ -180,7 +179,7 @@ public class ProblemBrowser extends AbstractPatientHistoryBrowser {
          * @param model the underlying table model
          * @param query the problem query
          */
-        public PagedProblemTableModel(ProblemTableModel model, ProblemQuery query) {
+        PagedProblemTableModel(ProblemTableModel model, ProblemQuery query) {
             super(model, query.getSelectedItemShortNames());
         }
 

@@ -22,9 +22,9 @@ import org.openvpms.archetype.rules.workflow.WorkflowStatus;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IPage;
@@ -92,13 +92,13 @@ public class ScheduleEventSeriesState {
      * @param service the archetype service
      */
     public ScheduleEventSeriesState(Act event, IArchetypeService service) {
-        ActBean bean = new ActBean(event);
+        IMObjectBean bean = service.getBean(event);
         this.event = event;
         this.service = service;
-        series = (Act) bean.getNodeSourceObject("repeat");
+        series = bean.getSource("repeat", Act.class);
         if (series != null) {
-            ActBean seriesBean = new ActBean(series);
-            List<IMObjectReference> refs = seriesBean.getNodeTargetObjectRefs("items");
+            IMObjectBean seriesBean = service.getBean(series);
+            List<Reference> refs = seriesBean.getTargetRefs("items");
             ArchetypeQuery query = new ArchetypeQuery(event.getArchetypeId());
             query.getArchetypeConstraint().setAlias("act");
             query.add(new NodeSelectConstraint("id"));
@@ -113,7 +113,7 @@ public class ScheduleEventSeriesState {
             if (index == 0) {
                 first = event;
             } else if (!items.isEmpty()) {
-                IMObjectReference reference = getReference(0);
+                Reference reference = getReference(0);
                 first = (Act) service.get(reference);
             } else {
                 first = null;
@@ -173,7 +173,7 @@ public class ScheduleEventSeriesState {
     public RepeatCondition getCondition(int index) {
         RepeatCondition condition = null;
         if (series != null) {
-            ActBean bean = new ActBean(series, service);
+            IMObjectBean bean = service.getBean(series);
             condition = RepeatHelper.getCondition(bean, index);
         }
         return condition;
@@ -230,11 +230,11 @@ public class ScheduleEventSeriesState {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
                 if (series != null) {
-                    ActBean bean = new ActBean(series, service);
-                    bean.removeNodeRelationships("items", event);
+                    IMObjectBean bean = service.getBean(series);
+                    bean.removeTargets("items", event, "repeat");
                     service.save(Arrays.asList(series, event));
                     service.remove(event);
-                    if (bean.getNodeTargetObjectRefs("items").isEmpty()) {
+                    if (bean.getValues("items").isEmpty()) {
                         service.remove(series);
                     }
                 }
@@ -288,14 +288,14 @@ public class ScheduleEventSeriesState {
         TransactionCallbackWithoutResult callback = new TransactionCallbackWithoutResult() {
             @Override
             protected void doInTransactionWithoutResult(TransactionStatus status) {
-                ActBean bean = new ActBean(series, service);
+                IMObjectBean bean = service.getBean(series);
                 List<Act> acts = new ArrayList<>();
                 for (int i = index; i < items.size(); ++i) {
-                    IMObjectReference reference = getReference(i);
+                    Reference reference = getReference(i);
                     Act act = (Act) ServiceHelper.getArchetypeService().get(reference);
                     if (act != null) {
                         acts.add(act);
-                        bean.removeNodeRelationships("items", act);
+                        bean.removeTargets("items", act, "repeat");
                     }
                 }
                 List<Act> toSave = new ArrayList<>(acts);
@@ -370,7 +370,7 @@ public class ScheduleEventSeriesState {
      */
     private List<String> getNonPendingStatuses(int index) {
         List<String> result = new ArrayList<>();
-        if (TypeHelper.isA(event, ScheduleArchetypes.APPOINTMENT)) {
+        if (event.isA(ScheduleArchetypes.APPOINTMENT)) {
             for (int i = index + 1; i < items.size(); ++i) {
                 String status = items.get(i).getString("act.status");
                 if (!WorkflowStatus.PENDING.equals(status) && !result.contains(status)) {
@@ -387,7 +387,7 @@ public class ScheduleEventSeriesState {
      * @param index the event index
      * @return the corresponding event reference
      */
-    private IMObjectReference getReference(int index) {
+    private Reference getReference(int index) {
         long id = getId(items.get(index));
         return new IMObjectReference(event.getArchetypeId(), id);
     }

@@ -18,9 +18,8 @@ package org.openvpms.web.workspace.patient.problem;
 
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.component.im.act.ActHierarchyFilter;
 
 import java.util.ArrayList;
@@ -42,7 +41,7 @@ public class ProblemFilter extends ActHierarchyFilter<Act> {
     /**
      * The search criteria.
      */
-    private final Predicate<Act> search;
+    private final Predicate<org.openvpms.component.model.act.Act> search;
 
     /**
      * Constructs an {@link ProblemFilter}.
@@ -51,7 +50,8 @@ public class ProblemFilter extends ActHierarchyFilter<Act> {
      * @param search     the search criteria. May be {@code null}
      * @param ascending  if {@code true} sort items on ascending timestamp; otherwise sort on descending timestamp
      */
-    public ProblemFilter(String[] shortNames, Predicate<Act> search, boolean ascending) {
+    public ProblemFilter(String[] shortNames, Predicate<org.openvpms.component.model.act.Act> search,
+                         boolean ascending) {
         super(shortNames, true);
         this.search = search;
         setSortItemsAscending(ascending);
@@ -65,7 +65,7 @@ public class ProblemFilter extends ActHierarchyFilter<Act> {
      */
     @Override
     public Comparator<Act> getComparator(Act act) {
-        if (TypeHelper.isA(act, PatientArchetypes.PATIENT_MEDICATION, PatientArchetypes.CLINICAL_NOTE)) {
+        if (act.isA(PatientArchetypes.PATIENT_MEDICATION, PatientArchetypes.CLINICAL_NOTE)) {
             return super.getComparator(true);
         }
         return super.getComparator(act);
@@ -80,7 +80,7 @@ public class ProblemFilter extends ActHierarchyFilter<Act> {
      * @return the filtered acts
      */
     @Override
-    protected List<Act> filter(Act parent, List<Act> children, Map<IMObjectReference, Act> acts) {
+    protected List<Act> filter(Act parent, List<Act> children, Map<Reference, Act> acts) {
         List<Act> result;
         if (search == null) {
             result = children;
@@ -88,7 +88,7 @@ public class ProblemFilter extends ActHierarchyFilter<Act> {
             result = new ArrayList<>();
             for (Act act : children) {
                 // events always match, so that the child acts can be searched.
-                if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_EVENT) || search.test(act)) {
+                if (act.isA(PatientArchetypes.CLINICAL_EVENT) || search.test(act)) {
                     result.add(act);
                 }
             }
@@ -104,11 +104,11 @@ public class ProblemFilter extends ActHierarchyFilter<Act> {
      * @return the immediate children of {@code act}
      */
     @Override
-    protected Set<Act> getChildren(Act act, Map<IMObjectReference, Act> acts) {
+    protected Set<Act> getChildren(Act act, Map<Reference, Act> acts) {
         Set<Act> children = super.getChildren(act, acts);
-        if (TypeHelper.isA(act, PatientArchetypes.CLINICAL_PROBLEM)) {
-            ActBean bean = new ActBean(act);
-            Set<Act> events = getActs(bean.getNodeSourceObjectRefs("events"), acts);
+        if (act.isA(PatientArchetypes.CLINICAL_PROBLEM)) {
+            IMObjectBean bean = new IMObjectBean(act);
+            Set<Act> events = getActs(bean.getSourceRefs("events"), acts);
             children.addAll(events);
         }
         return children;

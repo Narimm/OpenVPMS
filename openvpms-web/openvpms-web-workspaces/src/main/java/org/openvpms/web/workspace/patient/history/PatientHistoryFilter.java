@@ -21,9 +21,8 @@ import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.act.ActHierarchyFilter;
 
@@ -63,7 +62,7 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
     /**
      * The search criteria.
      */
-    private final Predicate<Act> search;
+    private final Predicate<org.openvpms.component.model.act.Act> search;
 
     /**
      * Constructs a {@link PatientHistoryFilter}.
@@ -93,7 +92,8 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
      * @param search        the search criteria. May be {@code null}
      * @param sortAscending if {@code true} sort items on ascending timestamp; otherwise sort on descending timestamp
      */
-    public PatientHistoryFilter(String[] shortNames, Predicate<Act> search, boolean sortAscending) {
+    public PatientHistoryFilter(String[] shortNames, Predicate<org.openvpms.component.model.act.Act> search,
+                                boolean sortAscending) {
         super();
         this.shortNames = new ArrayList<>(Arrays.asList(shortNames));
         invoice = this.shortNames.remove(CustomerAccountArchetypes.INVOICE_ITEM);
@@ -109,7 +109,7 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
      */
     @Override
     public Comparator<Act> getComparator(Act act) {
-        if (TypeHelper.isA(act, PatientArchetypes.PATIENT_MEDICATION, PatientArchetypes.CLINICAL_NOTE)) {
+        if (act.isA(PatientArchetypes.PATIENT_MEDICATION, PatientArchetypes.CLINICAL_NOTE)) {
             return super.getComparator(true);
         }
         return super.getComparator(act);
@@ -124,9 +124,9 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
      * @return the filtered acts
      */
     @Override
-    protected List<Act> filter(Act parent, List<Act> children, Map<IMObjectReference, Act> acts) {
+    protected List<Act> filter(Act parent, List<Act> children, Map<Reference, Act> acts) {
         List<Act> result;
-        if (invoice && TypeHelper.isA(parent, PatientArchetypes.CLINICAL_EVENT)) {
+        if (invoice && parent.isA(PatientArchetypes.CLINICAL_EVENT)) {
             children = filterInvoiceItems(parent, children);
         }
         if (search == null) {
@@ -167,14 +167,15 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
      */
     @Override
     protected boolean include(Act child, Act parent, Act root) {
-        if (TypeHelper.isA(parent, PatientArchetypes.CLINICAL_PROBLEM)) {
-            ActBean bean = new ActBean(child);
-            IMObjectReference event = bean.getNodeSourceObjectRef("event");
+        boolean result = true;
+        if (parent.isA(PatientArchetypes.CLINICAL_PROBLEM)) {
+            IMObjectBean bean = new IMObjectBean(child);
+            Reference event = bean.getSourceRef("event");
             if (event != null && event.getId() != root.getId()) {
-                return false;
+                result = false;
             }
         }
-        return true;
+        return result;
     }
 
     /**
@@ -185,7 +186,7 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
      */
     @Override
     protected Collection<org.openvpms.component.model.act.ActRelationship> getRelationships(Act act) {
-        String[] acts = shortNames.toArray(new String[shortNames.size()]);
+        String[] acts = shortNames.toArray(new String[0]);
         return getRelationships(act.getSourceActRelationships(), createIsA(acts, true));
     }
 
@@ -196,10 +197,10 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
      * @return {@code true} if the act supports versioned document
      */
     private boolean supportsVersions(Act act) {
-        return act instanceof DocumentAct && TypeHelper.isA(act, InvestigationArchetypes.PATIENT_INVESTIGATION,
-                                                            PatientArchetypes.DOCUMENT_ATTACHMENT,
-                                                            PatientArchetypes.DOCUMENT_LETTER,
-                                                            PatientArchetypes.DOCUMENT_IMAGE);
+        return act instanceof DocumentAct && act.isA(InvestigationArchetypes.PATIENT_INVESTIGATION,
+                                                     PatientArchetypes.DOCUMENT_ATTACHMENT,
+                                                     PatientArchetypes.DOCUMENT_LETTER,
+                                                     PatientArchetypes.DOCUMENT_IMAGE);
     }
 
     /**
@@ -212,14 +213,14 @@ public class PatientHistoryFilter extends ActHierarchyFilter<Act> {
     private List<Act> filterInvoiceItems(Act event, List<Act> children) {
         List<Act> result;
         result = new ArrayList<>(children);
-        ActBean bean = new ActBean(event);
-        List<IMObjectReference> chargeItemRefs = bean.getNodeTargetObjectRefs("chargeItems");
+        IMObjectBean bean = new IMObjectBean(event);
+        List<Reference> chargeItemRefs = bean.getTargetRefs("chargeItems");
         if (!chargeItemRefs.isEmpty()) {
             for (int i = 0; i < children.size() && !chargeItemRefs.isEmpty(); ++i) {
                 Act act = children.get(i);
-                if (TypeHelper.isA(act, PatientArchetypes.PATIENT_MEDICATION)) {
-                    ActBean medication = new ActBean(act);
-                    List<IMObjectReference> chargeItem = medication.getNodeSourceObjectRefs("invoiceItem");
+                if (act.isA(PatientArchetypes.PATIENT_MEDICATION)) {
+                    IMObjectBean medication = new IMObjectBean(act);
+                    List<Reference> chargeItem = medication.getSourceRefs("invoiceItem");
                     if (!chargeItem.isEmpty()) {
                         chargeItemRefs.remove(chargeItem.get(0));
                     }

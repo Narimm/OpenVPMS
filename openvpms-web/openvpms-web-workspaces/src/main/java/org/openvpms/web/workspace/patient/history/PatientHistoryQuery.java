@@ -19,7 +19,8 @@ package org.openvpms.web.workspace.patient.history;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Extent;
+import nextapp.echo2.app.Row;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.ArrayUtils;
@@ -32,6 +33,7 @@ import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.web.component.im.list.ShortNameListModel;
@@ -41,8 +43,15 @@ import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.im.relationship.RelationshipHelper;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.CheckBoxFactory;
+import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.style.Styles;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 
 /**
@@ -66,6 +75,11 @@ public class PatientHistoryQuery extends AbstractPatientHistoryQuery {
      * Determines if charges are included.
      */
     private CheckBox includeCharges;
+
+    /**
+     * The product type selector.
+     */
+    private ProductTypeSelector productType;
 
     /**
      * The short names to query.
@@ -137,6 +151,35 @@ public class PatientHistoryQuery extends AbstractPatientHistoryQuery {
     }
 
     /**
+     * Returns the product types to select.
+     *
+     * @return the product type references, or an empty list if all product types are being selected
+     */
+    public Set<Reference> getProductTypes() {
+        Set<Reference> result;
+        ProductTypeSelector selector = getProductTypeSelector();
+        if (selector.isAll()) {
+            result = Collections.emptySet();
+        } else {
+            result = new HashSet<>();
+            for (Entity entity : selector.getSelected()) {
+                result.add(entity.getObjectReference());
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the preferred height of the query when rendered.
+     *
+     * @return the preferred height, or {@code null} if it has no preferred height
+     */
+    @Override
+    public Extent getHeight() {
+        return super.getHeight(2);
+    }
+
+    /**
      * Initialises the query.
      *
      * @param charges if {@code true}, display charges
@@ -150,7 +193,7 @@ public class PatientHistoryQuery extends AbstractPatientHistoryQuery {
         } else {
             setSelectedItemShortNames(shortNames);
         }
-        includeCharges = CheckBoxFactory.create("patient.record.query.includeCharges", charges);
+        includeCharges = CheckBoxFactory.create(charges);
 
         includeCharges.addActionListener(new ActionListener() {
             @Override
@@ -174,19 +217,35 @@ public class PatientHistoryQuery extends AbstractPatientHistoryQuery {
      */
     @Override
     protected void doLayout(Component container) {
-        Label typeLabel = LabelFactory.create("query.type");
-        container.add(typeLabel);
-        SelectField shortNameSelector = getShortNameSelector();
-        container.add(shortNameSelector);
-        container.add(includeCharges);
-        Button sort = getSort();
-        container.add(sort);
         FocusGroup focusGroup = getFocusGroup();
+        SelectField shortNameSelector = getShortNameSelector();
+        Button sort = getSort();
+        ProductTypeSelector selector = getProductTypeSelector();
+
+        container.add(LabelFactory.create("query.type"));
+        container.add(shortNameSelector);
         focusGroup.add(shortNameSelector);
+        Row subrow = RowFactory.create(Styles.CELL_SPACING, LabelFactory.create("patient.record.query.includeCharges"),
+                                       includeCharges, sort);
+        container.add(subrow);
         focusGroup.add(includeCharges);
         focusGroup.add(sort);
-        addSearchField(container);
-        super.doLayout(container);
+        addSearchField(subrow);
+        container.add(LabelFactory.create("patient.record.query.productType"));
+        container.add(selector);
+        focusGroup.add(selector.getTarget());
+        addDateRange(container);
+    }
+
+    /**
+     * Creates a container component to lay out the query component in.
+     *
+     * @return a new container
+     * @see #doLayout(Component)
+     */
+    @Override
+    protected Component createContainer() {
+        return GridFactory.create(3);
     }
 
     /**
@@ -253,5 +312,18 @@ public class PatientHistoryQuery extends AbstractPatientHistoryQuery {
         if (preferences != null) {
             preferences.setPreference(PreferenceArchetypes.HISTORY, "showCharges", includeCharges.isSelected());
         }
+    }
+
+    /**
+     * Returns the product type selector.
+     *
+     * @return the product type selector
+     */
+    private ProductTypeSelector getProductTypeSelector() {
+        if (productType == null) {
+            productType = new ProductTypeSelector();
+            productType.setListener(this::onQuery);
+        }
+        return productType;
     }
 }

@@ -72,7 +72,8 @@ public class PatientHistoryBrowser extends AbstractPatientHistoryBrowser {
             // ensure the table model has the selected child act short names prior to performing the query
             PatientHistoryQuery query = getQuery();
             pagedModel.setShortNames(query.getSelectedItemShortNames());
-            pagedModel.setSearch(query.getValue());
+            pagedModel.setTextSearch(query.getValue());
+            pagedModel.setProductTypes(query.getProductTypes());
             pagedModel.setSortAscending(query.isSortAscending());
         }
         super.query();

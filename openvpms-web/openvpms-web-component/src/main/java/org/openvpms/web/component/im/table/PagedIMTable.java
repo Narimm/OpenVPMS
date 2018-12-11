@@ -11,11 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
 
+import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.SplitPane;
@@ -179,7 +180,6 @@ public class PagedIMTable<T> {
      *
      * @return the underlying model
      */
-    @SuppressWarnings("unchecked")
     public PagedIMTableModel<T, T> getModel() {
         return (PagedIMTableModel<T, T>) table.getModel();
     }
@@ -256,8 +256,12 @@ public class PagedIMTable<T> {
 
         private final Component container;
 
-        public DefaultContainer() {
-            this.container = ColumnFactory.create(Styles.CELL_SPACING);
+        private final Column navigatorContainer;
+
+        DefaultContainer() {
+            navigatorContainer = ColumnFactory.create(Styles.INSET);
+            navigatorContainer.setVisible(false);
+            container = ColumnFactory.create(Styles.CELL_SPACING, navigatorContainer);
         }
 
         @Override
@@ -267,14 +271,12 @@ public class PagedIMTable<T> {
 
         @Override
         public void setNavigator(TableNavigator navigator) {
-            container.add(navigator, 0);
+            navigatorContainer.add(navigator);
         }
 
         @Override
         public void showNavigator(boolean show) {
-            if (navigator != null) {
-                navigator.setVisible(show);
-            }
+            navigatorContainer.setVisible(show);
         }
 
         @Override
@@ -288,7 +290,7 @@ public class PagedIMTable<T> {
         private final SplitPane container;
         private Extent position;
 
-        public SplitPaneContainer() {
+        SplitPaneContainer() {
             this.container = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_TOP_BOTTOM, "PagedIMTable");
             position = container.getSeparatorPosition();
             if (position == null && container.getStyleName() != null) {

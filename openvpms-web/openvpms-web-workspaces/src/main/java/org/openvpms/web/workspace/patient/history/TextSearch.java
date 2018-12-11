@@ -19,9 +19,9 @@ package org.openvpms.web.workspace.patient.history;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.act.DocumentAct;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.object.IMObject;
 

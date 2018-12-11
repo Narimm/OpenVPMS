@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -129,7 +129,7 @@ public class QueryHelper {
      * @param query the query
      * @return the matching objects
      */
-    public static <T extends IMObject> List<T> query(ArchetypeQuery query) {
+    public static <T extends org.openvpms.component.model.object.IMObject> List<T> query(ArchetypeQuery query) {
         List<T> matches = new ArrayList<>();
         CollectionUtils.addAll(matches, new IMObjectQueryIterator<T>(query));
         return matches;

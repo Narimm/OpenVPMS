@@ -19,7 +19,6 @@ package org.openvpms.web.workspace.admin.calendar;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.web.workspace.workflow.appointment.repeat.ScheduleEventSeries;
 
@@ -47,7 +46,7 @@ public class CalendarEventSeries extends ScheduleEventSeries {
      * @return a new state
      */
     @Override
-    protected State createState(ActBean bean) {
+    protected State createState(IMObjectBean bean) {
         return new EventState(bean);
     }
 
@@ -93,7 +92,7 @@ public class CalendarEventSeries extends ScheduleEventSeries {
          *
          * @param event the event
          */
-        public EventState(ActBean event) {
+        public EventState(IMObjectBean event) {
             super(event);
         }
 

@@ -19,10 +19,10 @@ package org.openvpms.web.component.im.act;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.functors.NotPredicate;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.archetype.functor.RelationshipRef;
 import org.openvpms.component.model.act.ActRelationship;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -87,7 +87,7 @@ public class ActHierarchyFilter<T extends Act> extends ActFilter<T> {
      * @return the immediate children of the act, or an empty list if they have been filtered
      */
     @Override
-    public List<T> filter(T act, T root, Map<IMObjectReference, T> acts) {
+    public List<T> filter(T act, T root, Map<Reference, T> acts) {
         List<T> result = new ArrayList<>();
         if (include(act)) {
             List<T> items = getChildren(act, root, acts);
@@ -174,7 +174,7 @@ public class ActHierarchyFilter<T extends Act> extends ActFilter<T> {
      * @param acts     the set of visited acts, keyed on reference
      * @return the filtered acts
      */
-    protected List<T> filter(T parent, List<T> children, Map<IMObjectReference, T> acts) {
+    protected List<T> filter(T parent, List<T> children, Map<Reference, T> acts) {
         return children;
     }
 
@@ -217,7 +217,7 @@ public class ActHierarchyFilter<T extends Act> extends ActFilter<T> {
      * @return the include target acts
      */
     @SuppressWarnings("unchecked")
-    protected List<T> getChildren(T act, T root, Map<IMObjectReference, T> acts) {
+    protected List<T> getChildren(T act, T root, Map<Reference, T> acts) {
         List<T> result = new ArrayList<>();
         Set<T> cached = getChildren(act, acts);
         for (Act match : cached) {
@@ -238,12 +238,11 @@ public class ActHierarchyFilter<T extends Act> extends ActFilter<T> {
      * @param acts a cache of the visited acts, keyed on reference
      * @return the immediate children of {@code act}
      */
-    @SuppressWarnings("unchecked")
-    protected Set<T> getChildren(T act, Map<IMObjectReference, T> acts) {
+    protected Set<T> getChildren(T act, Map<Reference, T> acts) {
         Collection<ActRelationship> relationships = getRelationships(act);
-        List<IMObjectReference> references = new ArrayList<>();
+        List<Reference> references = new ArrayList<>();
         for (ActRelationship relationship : relationships) {
-            IMObjectReference target = (IMObjectReference) relationship.getTarget();
+            Reference target = relationship.getTarget();
             if (target != null) {
                 references.add(target);
             }
@@ -252,10 +251,10 @@ public class ActHierarchyFilter<T extends Act> extends ActFilter<T> {
     }
 
     @SuppressWarnings("unchecked")
-    protected Set<T> getActs(List<IMObjectReference> references, Map<IMObjectReference, T> acts) {
+    protected Set<T> getActs(List<Reference> references, Map<Reference, T> acts) {
         Set<T> result = new HashSet<>();
-        Set<IMObjectReference> uncached = new HashSet<>();
-        for (IMObjectReference reference : references) {
+        Set<Reference> uncached = new HashSet<>();
+        for (Reference reference : references) {
             T found = acts.get(reference);
             if (found != null) {
                 result.add(found);
@@ -264,7 +263,7 @@ public class ActHierarchyFilter<T extends Act> extends ActFilter<T> {
             }
         }
         if (!uncached.isEmpty()) {
-            Map<IMObjectReference, T> map = (Map<IMObjectReference, T>) ActHelper.getActMap(uncached);
+            Map<Reference, T> map = (Map<Reference, T>) ActHelper.getActMap(uncached);
             acts.putAll(map);
             result.addAll(map.values());
         }

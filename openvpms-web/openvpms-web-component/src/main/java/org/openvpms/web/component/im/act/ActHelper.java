@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
@@ -21,9 +21,9 @@ import org.openvpms.archetype.rules.act.ActCalculator;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.functor.ActComparator;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.web.system.ServiceHelper;
@@ -108,9 +108,9 @@ public class ActHelper {
      * @return the target acts in the relationships
      */
     public static List<Act> getTargetActs(Collection<ActRelationship> relationships) {
-        List<IMObjectReference> refs = new ArrayList<>();
+        List<Reference> refs = new ArrayList<>();
         for (ActRelationship relationship : relationships) {
-            IMObjectReference target = relationship.getTarget();
+            Reference target = relationship.getTarget();
             if (target != null) {
                 refs.add(target);
             }
@@ -127,16 +127,16 @@ public class ActHelper {
      * @param references the act references
      * @return the associated acts
      */
-    public static List<Act> getActs(Collection<IMObjectReference> references) {
+    public static List<Act> getActs(Collection<Reference> references) {
         List<Act> result = new ArrayList<>();
         if (!references.isEmpty()) {
             Set<String> shortNames = new HashSet<>();
             List<Long> ids = new ArrayList<>();
-            for (IMObjectReference ref : references) {
+            for (Reference ref : references) {
                 ids.add(ref.getId());
-                shortNames.add(ref.getArchetypeId().getShortName());
+                shortNames.add(ref.getArchetype());
             }
-            ArchetypeQuery query = new ArchetypeQuery(shortNames.toArray(new String[shortNames.size()]), false, false);
+            ArchetypeQuery query = new ArchetypeQuery(shortNames.toArray(new String[0]), false, false);
             query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
             Collections.sort(ids);
             query.add(Constraints.in("id", ids.toArray()));
@@ -155,8 +155,8 @@ public class ActHelper {
      * @param references the act references
      * @return the associated acts
      */
-    public static Map<IMObjectReference, Act> getActMap(Collection<IMObjectReference> references) {
-        Map<IMObjectReference, Act> result = new HashMap<>();
+    public static Map<Reference, Act> getActMap(Collection<Reference> references) {
+        Map<Reference, Act> result = new HashMap<>();
         for (Act act : getActs(references)) {
             result.put(act.getObjectReference(), act);
         }
@@ -169,7 +169,7 @@ public class ActHelper {
      * @param references the object references. Must refer to the same base type
      * @return a sorted list of identifiers
      */
-    public static Long[] getIds(List<IMObjectReference> references) {
+    public static Long[] getIds(List<Reference> references) {
         Long[] result = new Long[references.size()];
         for (int i = 0; i < references.size(); ++i) {
             result[i] = references.get(i).getId();

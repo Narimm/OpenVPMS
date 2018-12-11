@@ -18,7 +18,11 @@ package org.openvpms.web.workspace.patient.history;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.component.im.act.PagedActHierarchyTableModel;
+
+import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * A table model that for patient history that supports paging and text filtering.
@@ -28,9 +32,14 @@ import org.openvpms.web.component.im.act.PagedActHierarchyTableModel;
 public class AbstractPagedPatientHistoryTableModel extends PagedActHierarchyTableModel<Act> {
 
     /**
-     * The search criteria.
+     * The text search criteria.
      */
-    private TextSearch search;
+    private TextSearch textSearch;
+
+    /**
+     * The product type search criteria.
+     */
+    private ProductTypeSearch productTypeSearch;
 
     /**
      * Constructs an {@link AbstractPagedPatientHistoryTableModel}.
@@ -43,16 +52,29 @@ public class AbstractPagedPatientHistoryTableModel extends PagedActHierarchyTabl
     }
 
     /**
-     * Sets the search criteria.
+     * Sets the text search criteria.
      *
      * @param search the search criteria. May be {@code null}
      */
-    public void setSearch(String search) {
+    public void setTextSearch(String search) {
         search = StringUtils.trimToNull(search);
         // NOTE: the service associated with the model performs caching
         AbstractPatientHistoryTableModel model = getModel();
-        this.search = (search != null) ? new TextSearch(search, model.showClinician(), model.showBatches(),
-                                                        model.getService()) : null;
+        this.textSearch = (search != null) ? new TextSearch(search, model.showClinician(), model.showBatches(),
+                                                            model.getService()) : null;
+    }
+
+    /**
+     * Sets the product type search criteria.
+     *
+     * @param productTypes the product types
+     */
+    public void setProductTypes(Set<Reference> productTypes) {
+        if (productTypes.isEmpty()) {
+            productTypeSearch = null;
+        } else {
+            productTypeSearch = new ProductTypeSearch(productTypes, getModel().getService());
+        }
     }
 
     /**
@@ -70,8 +92,15 @@ public class AbstractPagedPatientHistoryTableModel extends PagedActHierarchyTabl
      *
      * @return the search criteria. May be {@code null}
      */
-    protected TextSearch getSearch() {
-        return search;
+    protected Predicate<org.openvpms.component.model.act.Act> getSearch() {
+        if (productTypeSearch != null && textSearch != null) {
+            return productTypeSearch.and(textSearch);
+        } else if (productTypeSearch != null) {
+            return productTypeSearch;
+        } else if (textSearch != null) {
+            return textSearch;
+        }
+        return null;
     }
 
 }

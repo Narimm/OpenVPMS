@@ -492,13 +492,32 @@ public class PatientTestHelper {
      */
     public static DocumentAct createInvestigation(Date startTime, Party patient, User clinician, Party location,
                                                   Entity investigationType) {
+        return createInvestigation(startTime, patient, clinician, location, investigationType, null);
+    }
+
+    /**
+     * Creates an investigation.
+     *
+     * @param startTime         the act start time
+     * @param patient           the patient
+     * @param clinician         the clinician. May be {@code null}
+     * @param location          the practice location. May be {@code null}
+     * @param investigationType the investigation type
+     * @param product           the product. May be {@code null}
+     * @return a new investigation
+     */
+    public static DocumentAct createInvestigation(Date startTime, Party patient, User clinician, Party location,
+                                                  Entity investigationType, Product product) {
         DocumentAct act = (DocumentAct) createAct(InvestigationArchetypes.PATIENT_INVESTIGATION, startTime, patient,
                                                   clinician);
-        ActBean bean = new ActBean(act);
+        IMObjectBean bean = new IMObjectBean(act);
         if (location != null) {
-            bean.addNodeParticipation("location", location);
+            bean.setTarget("location", location);
         }
-        bean.addNodeParticipation("investigationType", investigationType);
+        bean.setTarget("investigationType", investigationType);
+        if (product != null) {
+            bean.setTarget("product", product);
+        }
         bean.save();
         return act;
     }
@@ -674,11 +693,25 @@ public class PatientTestHelper {
      * @return a new document act
      */
     public static DocumentAct createDocumentLetter(Date startTime, Party patient, Act... versions) {
+        return createDocumentLetter(startTime, patient, null, versions);
+    }
+
+    /**
+     * Creates a letter document act.
+     *
+     * @param startTime the act start time
+     * @param patient   the patient
+     * @return a new document act
+     */
+    public static DocumentAct createDocumentLetter(Date startTime, Party patient, Product product, Act... versions) {
         Act act = createAct(PatientArchetypes.DOCUMENT_LETTER, startTime, patient, null);
         List<Act> toSave = new ArrayList<>();
         toSave.add(act);
+        ActBean bean = new ActBean(act);
+        if (product != null) {
+            bean.setTarget("product", product);
+        }
         if (versions.length > 0) {
-            ActBean bean = new ActBean(act);
             for (Act version : versions) {
                 bean.addNodeRelationship("versions", version);
                 toSave.add(version);

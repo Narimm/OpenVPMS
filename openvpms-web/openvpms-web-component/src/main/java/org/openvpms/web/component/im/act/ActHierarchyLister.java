@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
@@ -20,7 +20,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -102,7 +102,7 @@ public class ActHierarchyLister<T extends Act> {
     protected Node<T> buildTree(T root, ActFilter<T> filter, int maxDepth) {
         Node<T> tree = new Node<>(root);
         Map<T, Node<T>> nodes = new HashMap<>();
-        Map<IMObjectReference, T> acts = new HashMap<>();
+        Map<Reference, T> acts = new HashMap<>();
         buildTree(root, root, filter, 2, maxDepth, tree, nodes, acts); // root elements are depth = 1
         return tree;
     }
@@ -121,7 +121,7 @@ public class ActHierarchyLister<T extends Act> {
      * @param acts     the set of visited acts
      */
     private void buildTree(T act, T root, ActFilter<T> filter, int depth, int maxDepth, Node<T> parent,
-                           Map<T, Node<T>> nodes, Map<IMObjectReference, T> acts) {
+                           Map<T, Node<T>> nodes, Map<Reference, T> acts) {
         List<T> children = filter.filter(act, root, acts);
         List<Node<T>> added = new ArrayList<>(); // new nodes that need subtrees built
         List<Node<T>> move = new ArrayList<>();  // existing nodes that may need moving
@@ -176,11 +176,6 @@ public class ActHierarchyLister<T extends Act> {
     static class Node<T extends Act> {
 
         /**
-         * The parent node, or {@code null} if this is a root node.
-         */
-        private Node parent;
-
-        /**
          * The node value.
          */
         private final T value;
@@ -189,6 +184,11 @@ public class ActHierarchyLister<T extends Act> {
          * The child nodes.
          */
         private final List<Node<T>> children = new ArrayList<>();
+
+        /**
+         * The parent node, or {@code null} if this is a root node.
+         */
+        private Node parent;
 
         /**
          * Constructs a parent {@link Node}.

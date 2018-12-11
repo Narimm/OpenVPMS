@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.act;
@@ -22,10 +22,10 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,7 +52,7 @@ public class ActHelperTestCase extends ArchetypeServiceTest {
         Act problem = createProblem(patient);
         Act weight = createAct(PatientArchetypes.PATIENT_WEIGHT, patient);
 
-        List<ActRelationship> relationships = new ArrayList<ActRelationship>();
+        List<ActRelationship> relationships = new ArrayList<>();
         ActBean bean = new ActBean(event);
         relationships.add(bean.addNodeRelationship("items", note));
         relationships.add(bean.addNodeRelationship("items", problem));
@@ -77,7 +77,7 @@ public class ActHelperTestCase extends ArchetypeServiceTest {
         Act weight = createAct(PatientArchetypes.PATIENT_WEIGHT, patient);
         save(note, problem, weight);
 
-        List<IMObjectReference> refs = new ArrayList<IMObjectReference>();
+        List<Reference> refs = new ArrayList<>();
         refs.add(note.getObjectReference());
         refs.add(problem.getObjectReference());
         refs.add(weight.getObjectReference());

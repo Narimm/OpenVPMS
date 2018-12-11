@@ -396,8 +396,8 @@ public class MailEditor extends AbstractModifiable {
         if (viewer instanceof Button) {
             // TODO - hardcoded style not ideal
             Button button = (Button) viewer;
-            button.setBorder(new Border(Border.STYLE_NONE, Color.WHITE, 1));
-            button.setRolloverBorder(new Border(Border.STYLE_NONE, Color.WHITE, 1));
+            button.setBorder(new Border(0, Color.WHITE, Border.STYLE_NONE));
+            button.setRolloverBorder(new Border(0, Color.WHITE, Border.STYLE_NONE));
         }
         Label sizeLabel = getSizeLabel(ref.getSize());
         TableLayoutData layout = new TableLayoutData();

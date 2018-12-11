@@ -34,6 +34,7 @@ import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.component.im.doc.DocumentTestHelper;
 
 import java.math.BigDecimal;
@@ -41,7 +42,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Predicate;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
@@ -278,7 +282,16 @@ public class PatientHistoryIteratorTestCase extends ArchetypeServiceTest {
         User clinician = TestHelper.createClinician();
         Entity investigationType = ProductTestHelper.createInvestigationType();
         investigationType.setName("Pathology");
+        Entity medicationProductType = ProductTestHelper.createProductType("Medications");
+        Entity investigationProductType = ProductTestHelper.createProductType("Investigations");
         save(investigationType);
+
+        Product product1 = ProductTestHelper.createMedication(medicationProductType);
+        product1.setName("drug");
+        save(product1);
+        Entity batch = ProductTestHelper.createBatch("1234567", product1, new Date());
+
+        Product product2 = ProductTestHelper.createMedication(investigationProductType);
 
         Act weight = createWeight(patient, getDatetime("2018-02-09 10:00:00"), new BigDecimal("5.1"),
                                   WeightUnits.KILOGRAMS);
@@ -293,14 +306,9 @@ public class PatientHistoryIteratorTestCase extends ArchetypeServiceTest {
 
         Act investigation = PatientTestHelper.createInvestigation(getDatetime("2018-01-09 11:00:00"), patient,
                                                                   clinician, TestHelper.createLocation(),
-                                                                  investigationType);
+                                                                  investigationType, product2);
 
-        Product product = ProductTestHelper.createMedication();
-        product.setName("drug");
-        save(product);
-        Entity batch = ProductTestHelper.createBatch("1234567", product, new Date());
-
-        Act medication = PatientTestHelper.createMedication(getDatetime("2018-02-09 11:05:00"), patient, product);
+        Act medication = PatientTestHelper.createMedication(getDatetime("2018-02-09 11:05:00"), patient, product1);
         IMObjectBean bean = new IMObjectBean(medication);
         bean.setValue("label", "Take once a day before meals");
         bean.setTarget("batch", batch);
@@ -308,18 +316,19 @@ public class PatientHistoryIteratorTestCase extends ArchetypeServiceTest {
 
         Entity documentTemplate = DocumentTestHelper.createDocumentTemplate(DOCUMENT_FORM, "Vaccination Certificate");
         save(documentTemplate);
-        DocumentAct form = createDocumentForm(getDatetime("2018-01-09 12:00:00"), patient, null, documentTemplate);
+        DocumentAct form = createDocumentForm(getDatetime("2018-01-09 12:00:00"), patient, product1, documentTemplate);
 
         DocumentAct letterVersion = PatientTestHelper.createDocumentLetterVersion(getDatetime("2018-01-09 12:05:00"));
         letterVersion.setFileName("Referral 1.pdf");
         DocumentAct letter = PatientTestHelper.createDocumentLetter(getDatetime("2018-01-09 12:04:00"), patient,
-                                                                    letterVersion);
+                                                                    product2, letterVersion);
         letter.setFileName("Referral 2.pdf");
         save(letter, letterVersion);
 
+        Entity serviceProductType = ProductTestHelper.createProductType();
         Product service = ProductTestHelper.createService();
         service.setName("Consult Fee");
-        save(service);
+        ProductTestHelper.addProductType(service, serviceProductType);
         FinancialAct charge = FinancialTestHelper.createInvoiceItem(getDatetime("2018-01-09 12:05:00"), patient,
                                                                     clinician, service, ONE, TEN, ZERO, ZERO, ZERO);
         save(charge);
@@ -370,6 +379,16 @@ public class PatientHistoryIteratorTestCase extends ArchetypeServiceTest {
 
         // charge
         check(acts, "fee", true, event, charge);
+
+        // check product type
+        check(acts, null, new Entity[]{medicationProductType}, true, event, form, medication);
+        check(acts, null, new Entity[]{investigationProductType}, true, event, investigation, letter);
+        check(acts, null, new Entity[]{serviceProductType}, true, event, charge);
+        check(acts, null, new Entity[]{medicationProductType, serviceProductType}, true, event, form, charge,
+              medication);
+
+        // check text search + product type
+        check(acts, "fee", new Entity[]{medicationProductType, serviceProductType}, true, event, charge);
     }
 
     /**
@@ -381,7 +400,20 @@ public class PatientHistoryIteratorTestCase extends ArchetypeServiceTest {
      * @param expected      the expected acts
      */
     private void check(List<Act> events, String search, boolean sortAscending, Act... expected) {
-        check(events, SHORT_NAMES, search, sortAscending, expected);
+        check(events, SHORT_NAMES, search, null, sortAscending, expected);
+    }
+
+    /**
+     * Verifies that {@link PatientHistoryIterator} returns the expected acts, in the correct order.
+     *
+     * @param events        the events
+     * @param search        the search criteria
+     * @param sortAscending if {@code true} sort items on ascending timestamp; otherwise sort on descending timestamp
+     * @param productTypes  the product types. May be {@code null}
+     * @param expected      the expected acts
+     */
+    private void check(List<Act> events, String search, Entity[] productTypes, boolean sortAscending, Act... expected) {
+        check(events, SHORT_NAMES, search, productTypes, sortAscending, expected);
     }
 
     /**
@@ -393,7 +425,7 @@ public class PatientHistoryIteratorTestCase extends ArchetypeServiceTest {
      * @param expected      the expected acts
      */
     private void check(List<Act> events, String[] shortNames, boolean sortAscending, Act... expected) {
-        check(events, shortNames, null, sortAscending, expected);
+        check(events, shortNames, null, null, sortAscending, expected);
     }
 
     /**
@@ -402,12 +434,14 @@ public class PatientHistoryIteratorTestCase extends ArchetypeServiceTest {
      * @param events        the events
      * @param shortNames    the child act short names
      * @param search        the search criteria. May be {@code null}
+     * @param productTypes  the product types. May be {@code null}
      * @param sortAscending if {@code true} sort items on ascending timestamp; otherwise sort on descending timestamp
      * @param expected      the expected acts
      */
-    private void check(List<Act> events, String[] shortNames, String search, boolean sortAscending, Act[] expected) {
+    private void check(List<Act> events, String[] shortNames, String search, Entity[] productTypes,
+                       boolean sortAscending, Act[] expected) {
         int index = 0;
-        List<Act> acts = getActs(events, shortNames, search, sortAscending);
+        List<Act> acts = getActs(events, shortNames, search, productTypes, sortAscending);
         assertEquals(expected.length, acts.size());
         for (Act act : acts) {
             assertEquals(expected[index++], act);
@@ -456,14 +490,28 @@ public class PatientHistoryIteratorTestCase extends ArchetypeServiceTest {
      * @param events        the events
      * @param shortNames    the child act short names
      * @param search        the search criteria
+     * @param productTypes  the product types. May be {@code null}
      * @param sortAscending if {@code true} sort items on ascending timestamp; otherwise sort on descending timestamp
      */
-    private List<Act> getActs(List<Act> events, String[] shortNames, String search, boolean sortAscending) {
-        TextSearch textSearch = null;
+    private List<Act> getActs(List<Act> events, String[] shortNames, String search, Entity[] productTypes,
+                              boolean sortAscending) {
+        Predicate<org.openvpms.component.model.act.Act> predicate = null;
         if (search != null) {
-            textSearch = new TextSearch(search, true, true, getArchetypeService());
+            predicate = new TextSearch(search, true, true, getArchetypeService());
         }
-        PatientHistoryIterator iterator = new PatientHistoryIterator(events, shortNames, textSearch, sortAscending);
+        if (productTypes != null) {
+            Set<Reference> set = new HashSet<>();
+            for (Entity productType : productTypes) {
+                set.add(productType.getObjectReference());
+            }
+            ProductTypeSearch productTypeSearch = new ProductTypeSearch(set, getArchetypeService());
+            if (predicate == null) {
+                predicate = productTypeSearch;
+            } else {
+                predicate = predicate.and(productTypeSearch);
+            }
+        }
+        PatientHistoryIterator iterator = new PatientHistoryIterator(events, shortNames, predicate, sortAscending);
         List<Act> result = new ArrayList<>();
         CollectionUtils.addAll(result, iterator);
         return result;

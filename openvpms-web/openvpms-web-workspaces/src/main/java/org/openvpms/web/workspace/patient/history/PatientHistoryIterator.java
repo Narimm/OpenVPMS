@@ -38,7 +38,8 @@ public class PatientHistoryIterator extends ActHierarchyIterator<Act> {
      * @param search        the search criteria. May be {@code null}
      * @param sortAscending if {@code true} sort items on ascending timestamp; otherwise sort on descending timestamp
      */
-    public PatientHistoryIterator(Iterable<Act> acts, String[] shortNames, Predicate<Act> search,
+    public PatientHistoryIterator(Iterable<Act> acts, String[] shortNames,
+                                  Predicate<org.openvpms.component.model.act.Act> search,
                                   boolean sortAscending) {
         this(acts, new PatientHistoryFilter(shortNames, search, sortAscending));
     }

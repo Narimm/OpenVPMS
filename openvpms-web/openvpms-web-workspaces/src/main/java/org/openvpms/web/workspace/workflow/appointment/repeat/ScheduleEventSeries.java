@@ -136,8 +136,8 @@ public class ScheduleEventSeries {
         this.event = event;
         this.service = service;
         this.maxEvents = maxEvents;
-        ActBean bean = new ActBean(event, service);
-        series = (Act) bean.getNodeSourceObject("repeat");
+        IMObjectBean bean = service.getBean(event);
+        series = bean.getSource("repeat", Act.class);
         if (series != null) {
             previous = createState(bean);
             ActBean seriesBean = new ActBean(series, service);
@@ -324,7 +324,7 @@ public class ScheduleEventSeries {
      * @param bean the act bean
      * @return a new state
      */
-    protected State createState(ActBean bean) {
+    protected State createState(IMObjectBean bean) {
         return new State(bean);
     }
 
@@ -335,11 +335,11 @@ public class ScheduleEventSeries {
      * @param seriesBean the series
      * @return the appointment
      */
-    protected Act create(Times times, ActBean seriesBean) {
+    protected Act create(Times times, IMObjectBean seriesBean) {
         Act act = (Act) service.create(event.getArchetypeId());
         IMObjectBean bean = populate(act, times, current);
         bean.setTarget("author", current.getAuthor());
-        seriesBean.addNodeRelationship("items", act);
+        seriesBean.addTarget("items", act, "repeat");
         return act;
     }
 
@@ -657,8 +657,8 @@ public class ScheduleEventSeries {
      * @param series the series
      * @return all of the acts in the series
      */
-    private List<Act> getEvents(Act event, ActBean series) {
-        List<IMObjectReference> items = series.getNodeTargetObjectRefs("items");
+    private List<Act> getEvents(Act event, IMObjectBean series) {
+        List<Reference> items = series.getTargetRefs("items");
         items.remove(event.getObjectReference());
         List<Act> result;
         result = ActHelper.getActs(items);

@@ -136,13 +136,13 @@ public class MappedCriteriaQueryFactory {
             Expression expression = buildExpression(where, built);
             if (expression instanceof Predicate) {
                 predicates.add((Predicate) expression);
-                result.where(predicates.toArray(new Predicate[predicates.size()]));
+                result.where(predicates.toArray(new Predicate[0]));
             } else {
-                Predicate and = builder.and(predicates.toArray(new Predicate[predicates.size()]));
+                Predicate and = builder.and(predicates.toArray(new Predicate[0]));
                 result.where(builder.and(and, expression));
             }
         } else {
-            result.where(predicates.toArray(new Predicate[predicates.size()]));
+            result.where(predicates.toArray(new Predicate[0]));
         }
 
         // build group by
@@ -215,13 +215,13 @@ public class MappedCriteriaQueryFactory {
             Expression<Boolean> expression = cast(buildExpression(where, built), Boolean.class);
             if (expression instanceof Predicate) {
                 predicates.add((Predicate) expression);
-                target.where(predicates.toArray(new Predicate[predicates.size()]));
+                target.where(predicates.toArray(new Predicate[0]));
             } else {
-                Predicate and = builder.and(predicates.toArray(new Predicate[predicates.size()]));
+                Predicate and = builder.and(predicates.toArray(new Predicate[0]));
                 target.where(builder.and(and, expression));
             }
         } else {
-            target.where(predicates.toArray(new Predicate[predicates.size()]));
+            target.where(predicates.toArray(new Predicate[0]));
         }
     }
 
@@ -246,8 +246,8 @@ public class MappedCriteriaQueryFactory {
      * @param query      the query to add to
      * @param built      the map of built from clauses to their JPA equivalents
      */
-    private <X, Y> void buildMultiselect(Selection<?>[] selections, CriteriaQuery<Y> query,
-                                         Map<TupleElement<?>, TupleElement<?>> built) {
+    private <Y> void buildMultiselect(Selection<?>[] selections, CriteriaQuery<Y> query,
+                                      Map<TupleElement<?>, TupleElement<?>> built) {
         Selection<?>[] targets = new Selection<?>[selections.length];
         for (int i = 0; i < selections.length; ++i) {
             targets[i] = buildSelection(selections[i], built);
@@ -264,21 +264,37 @@ public class MappedCriteriaQueryFactory {
     private Selection<?> buildSelection(Selection<?> selection, Map<TupleElement<?>, TupleElement<?>> built) {
         Selection<?> result;
         if (selection instanceof FromImpl) {
-            result = (Selection<?>) built.get((FromImpl) selection);
+            result = (Selection<?>) built.get(selection);
             if (result == null) {
                 throw new IllegalArgumentException("Selection doesn't map to a From instance: " + selection);
             }
         } else if (selection instanceof PathImpl) {
             PathImpl path = (PathImpl) selection;
             if (Reference.class.isAssignableFrom(path.getJavaType())) {
-                Root<?> mappedRoot = getParentRoot(path, built);
-                if (mappedRoot == null) {
+                From<?, ?> parent = getParent(path, built);
+                if (parent == null) {
                     throw new IllegalStateException("Can't select reference. Not a known root");
                 }
-                result = builder.construct(IMObjectReference.class, mappedRoot.get("archetypeId"), mappedRoot.get("id"),
-                                           mappedRoot.get("linkId"));
+                Path<?> reference;
+                if (path.getNode() == null) {
+                    // reference to self
+                    reference = parent;
+                } else {
+                    // reference node
+                    String[] parts = getNodePath(path);
+                    if (parts.length == 1) {
+                        reference = parent.get(parts[0]);
+                        if (path.getAlias() != null) {
+                            reference.alias(path.getAlias());
+                        }
+                    } else {
+                        throw new IllegalArgumentException("Unsupported node " + path.getNode().getPath());
+                    }
+                }
+                result = builder.construct(IMObjectReference.class, reference.get("archetypeId"), reference.get("id"),
+                                           reference.get("linkId"));
             } else {
-                From<?, ?> parent = getParentRoot(path, built);
+                From<?, ?> parent = getParent(path, built);
                 if (parent == null) {
                     throw new IllegalStateException("Can't select path. Not a known root");
                 }
@@ -360,18 +376,18 @@ public class MappedCriteriaQueryFactory {
     }
 
     /**
-     * Returns the parent root of a path.
+     * Returns the parent {@code From} of a path.
      *
      * @param path  the path
      * @param built the built elements
      * @return the parent root
      */
-    private Root<?> getParentRoot(PathImpl path, Map<TupleElement<?>, TupleElement<?>> built) {
+    private From<?, ?> getParent(PathImpl path, Map<TupleElement<?>, TupleElement<?>> built) {
         PathImpl<?> parent = path.getParent();
         if (parent == null) {
             throw new IllegalStateException("Can't have an null parent when selecting by reference");
         }
-        return (Root<?>) built.get(parent);
+        return (From<?, ?>) built.get(parent);
     }
 
     /**
@@ -383,7 +399,7 @@ public class MappedCriteriaQueryFactory {
      */
     private Predicate getArchetypePredicate(Path<?> path, Set<String> archetypes) {
         Predicate result;
-        String[] list = archetypes.toArray(new String[archetypes.size()]);
+        String[] list = archetypes.toArray(new String[0]);
         if (list.length == 1) {
             result = builder.equal(path.get("archetypeId").get("shortName"), list[0]);
         } else {
@@ -575,7 +591,7 @@ public class MappedCriteriaQueryFactory {
         for (Expression<Boolean> predicate : expressions) {
             predicates.add((Predicate) buildExpression(predicate, built));
         }
-        return predicates.toArray(new Predicate[predicates.size()]);
+        return predicates.toArray(new Predicate[0]);
     }
 
     /**
@@ -701,8 +717,7 @@ public class MappedCriteriaQueryFactory {
      * @param built the map of built elements to their JPA equivalents
      * @return a JPA path corresponding to that supplied
      */
-    private <X extends IMObject> Path<?> buildArchetypePath(PathImpl<?> path,
-                                                            Map<TupleElement<?>, TupleElement<?>> built) {
+    private Path<?> buildArchetypePath(PathImpl<?> path, Map<TupleElement<?>, TupleElement<?>> built) {
         PathImpl<?> parent = path.getParent();
         Path<?> result;
         From<?, ?> from = (From<?, ?>) built.get(parent);
