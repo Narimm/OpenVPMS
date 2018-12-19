@@ -16,6 +16,8 @@
 
 package org.openvpms.web.workspace.workflow;
 
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
+import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
@@ -122,7 +124,9 @@ public class GetClinicalEventTask extends SynchronousTask {
 
         User clinician = context.getClinician();
         Act event;
-        ClinicalEventFactory factory = new ClinicalEventFactory();
+        ClinicalEventFactory factory = new ClinicalEventFactory(ServiceHelper.getArchetypeService(),
+                                                                ServiceHelper.getBean(MedicalRecordRules.class),
+                                                                ServiceHelper.getBean(AppointmentRules.class));
         try {
             event = factory.getEvent(date, patient, clinician, appointment, reason, context.getLocation(), newEvent);
 

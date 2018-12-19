@@ -29,12 +29,11 @@ import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.resource.i18n.Messages;
-import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
 
 /**
- * .
+ * Factory for <em>act.patientClinicalEvent</em>s.
  *
  * @author Tim Anderson
  */
@@ -43,7 +42,7 @@ public class ClinicalEventFactory {
     /**
      * The medical record rules.
      */
-    private final MedicalRecordRules rules;
+    private final MedicalRecordRules recordRules;
 
     /**
      * The archetype service.
@@ -58,15 +57,20 @@ public class ClinicalEventFactory {
 
     /**
      * Constructs a {@link ClinicalEventFactory}.
+     *
+     * @param service          the archetype service
+     * @param recordRules      the medical record rules
+     * @param appointmentRules the appointment rules
      */
-    public ClinicalEventFactory() {
-        service = ServiceHelper.getArchetypeService();
-        rules = ServiceHelper.getBean(MedicalRecordRules.class);
-        appointmentRules = ServiceHelper.getBean(AppointmentRules.class);
+    public ClinicalEventFactory(IArchetypeService service, MedicalRecordRules recordRules,
+                                AppointmentRules appointmentRules) {
+        this.service = service;
+        this.recordRules = recordRules;
+        this.appointmentRules = appointmentRules;
     }
 
     /**
-     * Executes the task.
+     * Returns the event for a patient based on the specified criteria.
      *
      * @param date        the date to use to locate the event
      * @param patient     the patient
@@ -75,7 +79,7 @@ public class ClinicalEventFactory {
      * @param reason      a reason for the event
      * @param location    the practice location
      * @param newEvent    if {@code true}, require a new event, unless the appointment links to one already.
-     *                    If not, and there is an In Progress event, terminate the task
+     *                    If not, and there is an In Progress event, throw an {@code IllegalStateException}
      * @throws IllegalStateException if a new event cannot be created
      * @throws OpenVPMSException     for any other error
      */
@@ -100,7 +104,7 @@ public class ClinicalEventFactory {
         }
         if (event != null) {
             if (event.isNew()) {
-                populate(event, reason, appointment, location);
+                populate(event, reason, location);
             } else if (newEvent) {
                 // a new event is required, unless the appointment links to an incomplete event
                 if (!ActStatus.COMPLETED.equals(event.getStatus())) {
@@ -110,8 +114,8 @@ public class ClinicalEventFactory {
                                                                         event.getActivityStartTime()));
                     }
                 } else {
-                    event = rules.createEvent(patient, date, clinician);
-                    populate(event, reason, appointment, location);
+                    event = recordRules.createEvent(patient, date, clinician);
+                    populate(event, reason, location);
                 }
             }
             // TODO - need to check if a non-boarding appointment would re-use an existing boarding visit.
@@ -122,24 +126,23 @@ public class ClinicalEventFactory {
     /**
      * Returns an event that may have acts added.
      *
-     * @param date
+     * @param date      the event start time
      * @param patient   the patient
      * @param clinician the clinician. May be {@code null}
      * @return an event
      */
     protected Act getEvent(Date date, Party patient, Entity clinician) {
-        return rules.getEventForAddition(patient, date, clinician);
+        return recordRules.getEventForAddition(patient, date, clinician);
     }
 
     /**
      * Populates an event.
      *
-     * @param event       the event to populate
-     * @param reason      a reason for the event
-     * @param appointment the appointment. May be {@code null}
-     * @param location    the practice location
+     * @param event    the event to populate
+     * @param reason   a reason for the event
+     * @param location the practice location
      */
-    protected void populate(Act event, String reason, Act appointment, Party location) {
+    protected void populate(Act event, String reason, Party location) {
         event.setStatus(ActStatus.IN_PROGRESS);
         event.setReason(reason);
         IMObjectBean bean = service.getBean(event);

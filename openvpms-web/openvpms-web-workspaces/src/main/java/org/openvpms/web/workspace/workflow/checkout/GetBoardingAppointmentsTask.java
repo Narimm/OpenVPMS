@@ -63,8 +63,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import static org.openvpms.archetype.rules.workflow.ScheduleArchetypes.ORGANISATION_SCHEDULE;
 import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.join;
+import static org.openvpms.component.system.common.query.Constraints.shortName;
 
 /**
  * A task that collects the boarding appointments to check-out.
@@ -160,7 +162,8 @@ class GetBoardingAppointmentsTask extends AbstractTask {
         }
         ArchetypeQuery query = new ArchetypeQuery(ScheduleArchetypes.APPOINTMENT);
         query.add(join("customer").add(eq("entity", customer)));
-        query.add(join("schedule").add(join("entity").add(join("location").add(eq("target", location)))));
+        query.add(join("schedule").add(join("entity", shortName(ORGANISATION_SCHEDULE))
+                                               .add(join("location").add(eq("target", location)))));
         query.add(Constraints.ne("id", appointment.getId()));
         query.add(Constraints.not(Constraints.in("status", AppointmentStatus.PENDING, AppointmentStatus.COMPLETED,
                                                  AppointmentStatus.CANCELLED)));

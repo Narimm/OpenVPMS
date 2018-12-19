@@ -19,6 +19,8 @@ package org.openvpms.web.workspace.workflow.checkin;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.user.UserArchetypes;
@@ -52,7 +54,6 @@ import org.openvpms.web.component.property.AbstractSaveableEditor;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
-import org.openvpms.web.echo.dialog.InformationDialog;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.focus.FocusHelper;
@@ -174,6 +175,11 @@ public class CheckInEditor extends AbstractSaveableEditor {
     private final int boardingDays;
 
     /**
+     * The clinical event factory.
+     */
+    private ClinicalEventFactory clinicalEventFactory;
+
+    /**
      * The clinician to assign to new events. May be {@code null}
      */
     private User clinician;
@@ -187,6 +193,11 @@ public class CheckInEditor extends AbstractSaveableEditor {
      * The patient visit. An <em>act.patientClinicalEvent</em>.
      */
     private Act visit;
+
+    /**
+     * Visit validation error.
+     */
+    private String visitError;
 
     /**
      * The bean wrapping the visit.
@@ -238,7 +249,10 @@ public class CheckInEditor extends AbstractSaveableEditor {
         this.location = location;
         this.arrivalTime = arrivalTime;
         this.appointment = appointment;
+        AppointmentRules appointmentRules = ServiceHelper.getBean(AppointmentRules.class);
         flowSheetServiceFactory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
+        clinicalEventFactory = new ClinicalEventFactory(service, ServiceHelper.getBean(MedicalRecordRules.class),
+                                                        appointmentRules);
 
         cageType = getCageType();
 
@@ -263,8 +277,7 @@ public class CheckInEditor extends AbstractSaveableEditor {
         if (selectWorkList()) {
             taskPanel = new TaskPanel(arrivalTime, appointment, layoutContext, service);
             enableSmartFlow = flowSheetServiceFactory.isSmartFlowSheetEnabled(location);
-            AppointmentRules rules = ServiceHelper.getBean(AppointmentRules.class);
-            boardingDays = (appointment != null) ? rules.getBoardingDays(appointment) : -1;
+            boardingDays = (appointment != null) ? appointmentRules.getBoardingDays(appointment) : -1;
             taskPanel.setWorkListListener(this::onWorkListChanged);
         } else {
             taskPanel = null;
@@ -424,7 +437,8 @@ public class CheckInEditor extends AbstractSaveableEditor {
     protected boolean doValidation(Validator validator) {
         boolean valid = validator.validate(patientProperty) && validator.validate(clinicianProperty);
         if (valid) {
-            valid = validateWeight(validator) && validateTask(validator) && validateFlowSheet(validator);
+            valid = validateVisit(validator) && validateWeight(validator) && validateTask(validator)
+                    && validateFlowSheet(validator);
         }
         return valid;
     }
@@ -533,6 +547,28 @@ public class CheckInEditor extends AbstractSaveableEditor {
      */
     Editor getWorkListEditor() {
         return (taskPanel != null) ? taskPanel.getWorkListEditor() : null;
+    }
+
+    /**
+     * Validates the visit.
+     *
+     * @param validator the validator
+     * @return {@code true} if the visit is valid
+     */
+    private boolean validateVisit(Validator validator) {
+        boolean valid = false;
+        if (visit == null) {
+            String message;
+            if (StringUtils.isEmpty(visitError)) {
+                message = Messages.format("property.error.required", getDisplayName(PatientArchetypes.CLINICAL_EVENT));
+            } else {
+                message = visitError;
+            }
+            validator.add(this, new ValidatorError(message));
+        } else {
+            valid = true;
+        }
+        return valid;
     }
 
     /**
@@ -709,13 +745,14 @@ public class CheckInEditor extends AbstractSaveableEditor {
             try {
                 String reason = (appointment != null) ? appointment.getReason() : null;
                 boolean newEvent = cageType != null;  // require a new event if the schedule has a cage type
-                visit = new ClinicalEventFactory().getEvent(arrivalTime, patient, clinician, appointment, reason, location,
-                                                            newEvent);
+                visit = clinicalEventFactory.getEvent(arrivalTime, patient, clinician, appointment, reason, location,
+                                                      newEvent);
                 visitBean = (visit.isNew()) ? service.getBean(visit) : null;
+                visitError = null;
             } catch (IllegalStateException exception) {
                 visit = null;
                 visitBean = null;
-                InformationDialog.show(exception.getMessage());
+                visitError = exception.getMessage();
             }
         } else {
             visit = null;
