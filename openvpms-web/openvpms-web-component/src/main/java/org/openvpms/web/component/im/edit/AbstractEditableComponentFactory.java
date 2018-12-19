@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -40,6 +40,7 @@ import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * A factory for editable components.
@@ -47,6 +48,16 @@ import java.util.List;
  * @author Tim Anderson
  */
 public class AbstractEditableComponentFactory extends AbstractIMObjectComponentFactory {
+
+    /**
+     * Tracks creation of editors.
+     */
+    private final Consumer<Editor> editorListener;
+
+    /**
+     * The editor factory.
+     */
+    private final IMObjectEditorFactory factory;
 
     /**
      * Component factory for read-only/derived properties.
@@ -61,7 +72,20 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
      * @param style   the style name to use
      */
     public AbstractEditableComponentFactory(LayoutContext context, String style) {
+        this(context, style, null);
+    }
+
+    /**
+     * Constructs an {@link AbstractEditableComponentFactory}.
+     *
+     * @param context        the layout context.
+     * @param style          the style name to use
+     * @param editorListener invoked when an editor is created. May be {@code null}
+     */
+    public AbstractEditableComponentFactory(LayoutContext context, String style, Consumer<Editor> editorListener) {
         super(context, style);
+        factory = ServiceHelper.getBean(IMObjectEditorFactory.class);
+        this.editorListener = editorListener;
     }
 
     /**
@@ -144,7 +168,9 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
      * @return a new editor for {@code object}
      */
     protected IMObjectEditor getObjectEditor(IMObject object, IMObject parent, LayoutContext context) {
-        return ServiceHelper.getBean(IMObjectEditorFactory.class).create(object, parent, context);
+        IMObjectEditor editor = factory.create(object, parent, context);
+        created(editor);
+        return editor;
     }
 
     /**
@@ -177,7 +203,9 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
      * @return a new editor for {@code property}
      */
     protected LookupPropertyEditor createLookupEditor(Property property, IMObject context) {
-        return LookupPropertyEditorFactory.create(property, context, getLayoutContext());
+        LookupPropertyEditor editor = LookupPropertyEditorFactory.create(property, context, getLayoutContext());
+        created(editor);
+        return editor;
     }
 
     /**
@@ -239,7 +267,9 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
         LayoutContext context = getLayoutContext();
         HelpContext help = context.getHelpContext().subtopic(property.getName());
         LayoutContext subContext = new DefaultLayoutContext(context, help);
-        return IMObjectCollectionEditorFactory.create(property, object, subContext);
+        IMObjectCollectionEditor editor = IMObjectCollectionEditorFactory.create(property, object, subContext);
+        created(editor);
+        return editor;
     }
 
     /**
@@ -258,6 +288,7 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
         } else {
             editor = IMObjectReferenceEditorFactory.create(property, object, context);
         }
+        created(editor);
         return editor;
     }
 
@@ -269,7 +300,22 @@ public class AbstractEditableComponentFactory extends AbstractIMObjectComponentF
      * @return a new editor
      */
     protected PropertyEditor createPropertyEditor(Property property, Component component) {
-        return new PropertyComponentEditor(property, component);
+        PropertyComponentEditor editor = new PropertyComponentEditor(property, component);
+        created(editor);
+        return editor;
+    }
+
+    /**
+     * Invoked when an editor is created.
+     * <br/>
+     * Notifies any registered editor tracker.
+     *
+     * @param editor the editor
+     */
+    private void created(Editor editor) {
+        if (editorListener != null) {
+            editorListener.accept(editor);
+        }
     }
 
     /**

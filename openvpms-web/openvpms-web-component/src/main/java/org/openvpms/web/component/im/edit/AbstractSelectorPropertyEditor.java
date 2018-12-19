@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -175,7 +175,7 @@ public abstract class AbstractSelectorPropertyEditor<T extends IMObject> extends
      * @param allowCreate determines if objects may be created
      * @return a new selector
      */
-    protected IMObjectSelector<T> createSelector(final Property property, LayoutContext context, final boolean allowCreate) {
+    protected IMObjectSelector<T> createSelector(final Property property, LayoutContext context, boolean allowCreate) {
         return new IMObjectSelector<T>(property, allowCreate, context) {
             @Override
             protected Query<T> createQuery(String name) {

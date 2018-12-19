@@ -326,7 +326,7 @@ public abstract class AbstractContext implements Context {
      *
      * @param schedule the current schedule
      */
-    public void setSchedule(Party schedule) {
+    public void setSchedule(Entity schedule) {
         setObject(SCHEDULE_SHORTNAME, schedule);
     }
 

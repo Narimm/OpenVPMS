@@ -302,7 +302,7 @@ public interface Context {
      *
      * @param schedule the current schedule. May be {@code null}
      */
-    void setSchedule(Party schedule);
+    void setSchedule(Entity schedule);
 
     /**
      * Returns the current schedule.

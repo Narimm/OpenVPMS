@@ -421,12 +421,14 @@ public class IMObjectSelector<T extends IMObject> extends Selector<T> {
     /**
      * Creates the select button.
      *
-     * @param buttonId        the button identifier. Ignored for this implementation
+     * @param buttonId        the button identifier
      * @param enableShortcuts if {@code true}, enable shortcuts
      * @return the select button
      */
     protected Button createSelectButton(String buttonId, boolean enableShortcuts) {
-        return ButtonFactory.create(null, "select");
+        Button select = ButtonFactory.create(null, "select");
+        select.setId(buttonId);
+        return select;
     }
 
     /**

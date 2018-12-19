@@ -30,6 +30,7 @@ import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -77,6 +78,19 @@ public class ComponentGrid {
             row.add(new Cell(component));
         }
         addRow(row);
+    }
+
+    /**
+     * Adds components at the end of the grid, laid out in the specified no. of columns.
+     *
+     * @param columns    the no. of columns to spread the components over
+     * @param components the component to add
+     */
+    public void arrange(int columns, Component... components) {
+        for (int i = 0; i < components.length; i += columns) {
+            Component[] row = Arrays.copyOfRange(components, i, Math.min(components.length, i + columns));
+            add(row);
+        }
     }
 
     /**
@@ -169,7 +183,7 @@ public class ComponentGrid {
      * @param columnGroupSpan the number of column groups the components span
      */
     public void add(ComponentSet set, int columnGroups, int columnGroupSpan) {
-        ComponentState[] states = set.getComponents().toArray(new ComponentState[set.getComponents().size()]);
+        ComponentState[] states = set.getComponents().toArray(new ComponentState[0]);
         add(states, columnGroups, columnGroupSpan);
     }
 
@@ -476,7 +490,7 @@ public class ComponentGrid {
      */
     private List<Cell> grow(int row, int column) {
         while (row >= cells.size()) {
-            cells.add(new ArrayList<Cell>());
+            cells.add(new ArrayList<>());
         }
         List<Cell> list = cells.get(row);
         while (column >= list.size()) {
@@ -495,9 +509,7 @@ public class ComponentGrid {
      */
     private void addRow(List<Cell> row) {
         cells.add(row);
-        if (columns < row.size()) {
-            columns = row.size();
-        }
+        checkMaxColumns(row);
     }
 
     /**
@@ -507,6 +519,14 @@ public class ComponentGrid {
      */
     private void addRow(int index, List<Cell> row) {
         cells.add(index, row);
+        checkMaxColumns(row);
+    }
+
+    /**
+     * Updates the no. of columns if the specified row has more than the current.
+     * @param row the row
+     */
+    private void checkMaxColumns(List<Cell> row) {
         if (columns < row.size()) {
             columns = row.size();
         }
@@ -547,7 +567,7 @@ public class ComponentGrid {
         /**
          * Default constructor.
          */
-        public Cell() {
+        Cell() {
             this(null);
         }
 
@@ -556,7 +576,7 @@ public class ComponentGrid {
          *
          * @param component the component. May be {@code null}
          */
-        public Cell(Component component) {
+        Cell(Component component) {
             this(component, null);
         }
 
@@ -566,7 +586,7 @@ public class ComponentGrid {
          * @param component the component. May be {@code null}
          * @param state     the component state that the component is from. May be {@code null}
          */
-        public Cell(Component component, ComponentState state) {
+        Cell(Component component, ComponentState state) {
             this(component, state, (component != null && component.getLayoutData() instanceof GridLayoutData) ?
                                    (GridLayoutData) component.getLayoutData() : null);
         }
@@ -578,7 +598,7 @@ public class ComponentGrid {
          * @param state      the component state that the component is from. May be {@code null}
          * @param layoutData the layoutData. May be {@code null}
          */
-        public Cell(Component component, ComponentState state, GridLayoutData layoutData) {
+        Cell(Component component, ComponentState state, GridLayoutData layoutData) {
             this.component = component;
             this.state = state;
             this.layoutData = layoutData;
@@ -589,7 +609,7 @@ public class ComponentGrid {
          *
          * @return the column span
          */
-        public int getColumnSpan() {
+        int getColumnSpan() {
             return layoutData != null ? layoutData.getColumnSpan() : 1;
         }
 
@@ -598,7 +618,7 @@ public class ComponentGrid {
          *
          * @return the component. May be {@code null}
          */
-        public Component getComponent() {
+        Component getComponent() {
             return component;
         }
 
@@ -607,7 +627,7 @@ public class ComponentGrid {
          *
          * @return the component state, or {@code null} if the component isn't associated with any state
          */
-        public ComponentState getComponentState() {
+        ComponentState getComponentState() {
             return state;
         }
 
@@ -616,7 +636,7 @@ public class ComponentGrid {
          *
          * @return the layout data. May be {@code null}
          */
-        public GridLayoutData getLayoutData() {
+        GridLayoutData getLayoutData() {
             return layoutData;
         }
     }

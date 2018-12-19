@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
@@ -24,13 +24,13 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyMap;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.model.archetype.NodeDescriptor;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.ArrayList;
@@ -42,6 +42,7 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -58,9 +59,9 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
      */
     @Test
     public void testGetObject() {
-        IMObject object = new IMObject();
-        IMObjectProperty property = new IMObjectProperty(object, new NodeDescriptor());
-        assertTrue(property.getObject() == object);
+        IMObject object = createIMObject();
+        IMObjectProperty property = new IMObjectProperty(object, createDescriptor());
+        assertSame(property.getObject(), object);
     }
 
     /**
@@ -68,9 +69,9 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
      */
     @Test
     public void testGetDescriptor() {
-        NodeDescriptor descriptor = new NodeDescriptor();
-        IMObjectProperty property = new IMObjectProperty(new IMObject(), descriptor);
-        assertTrue(property.getDescriptor() == descriptor);
+        NodeDescriptor descriptor = createDescriptor();
+        IMObjectProperty property = new IMObjectProperty(createIMObject(), descriptor);
+        assertSame(property.getDescriptor(), descriptor);
     }
 
     /**
@@ -78,9 +79,9 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
      */
     @Test
     public void testDisplayName() {
-        NodeDescriptor descriptor = new NodeDescriptor();
+        NodeDescriptor descriptor = createDescriptor();
         descriptor.setDisplayName("foo");
-        IMObjectProperty property = new IMObjectProperty(new IMObject(), descriptor);
+        IMObjectProperty property = new IMObjectProperty(createIMObject(), descriptor);
         assertEquals("foo", property.getDisplayName());
     }
 
@@ -89,9 +90,9 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
      */
     @Test
     public void testDescription() {
-        NodeDescriptor descriptor = new NodeDescriptor();
+        NodeDescriptor descriptor = createDescriptor();
         descriptor.setDescription("foo");
-        IMObjectProperty property = new IMObjectProperty(new IMObject(), descriptor);
+        IMObjectProperty property = new IMObjectProperty(createIMObject(), descriptor);
         assertEquals("foo", property.getDescription());
     }
 
@@ -100,9 +101,9 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
      */
     @Test
     public void testIsLookup() {
-        NodeDescriptor descriptor = new NodeDescriptor();
+        NodeDescriptor descriptor = createDescriptor();
         descriptor.setType(String.class.getName());
-        IMObjectProperty property = new IMObjectProperty(new IMObject(), descriptor);
+        IMObjectProperty property = new IMObjectProperty(createIMObject(), descriptor);
         assertFalse(property.isLookup());
         AssertionDescriptor lookup = new AssertionDescriptor();
         lookup.setName("lookup");
@@ -115,9 +116,9 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
      */
     @Test
     public void testIsCollection() {
-        NodeDescriptor descriptor = new NodeDescriptor();
+        NodeDescriptor descriptor = createDescriptor();
         descriptor.setType(String.class.getName());
-        IMObjectProperty property = new IMObjectProperty(new IMObject(), descriptor);
+        IMObjectProperty property = new IMObjectProperty(createIMObject(), descriptor);
         assertFalse(property.isCollection());
         descriptor.setType(HashMap.class.getName());
         assertTrue(property.isCollection());
@@ -132,8 +133,8 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
      */
     @Test
     public void testGetArchetypeRange() {
-        NodeDescriptor descriptor = new NodeDescriptor();
-        IMObjectProperty property = new IMObjectProperty(new IMObject(), descriptor);
+        NodeDescriptor descriptor = createDescriptor();
+        IMObjectProperty property = new IMObjectProperty(createIMObject(), descriptor);
 
         assertEquals(0, property.getArchetypeRange().length);
 
@@ -156,8 +157,8 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
      */
     @Test
     public void testIsDerived() {
-        NodeDescriptor descriptor = new NodeDescriptor();
-        IMObjectProperty property = new IMObjectProperty(new IMObject(), descriptor);
+        NodeDescriptor descriptor = createDescriptor();
+        IMObjectProperty property = new IMObjectProperty(createIMObject(), descriptor);
 
         assertFalse(property.isDerived());
         descriptor.setDerived(true);
@@ -169,8 +170,8 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
      */
     @Test
     public void testIsReadOnly() {
-        NodeDescriptor descriptor = new NodeDescriptor();
-        IMObjectProperty property = new IMObjectProperty(new IMObject(), descriptor);
+        NodeDescriptor descriptor = createDescriptor();
+        IMObjectProperty property = new IMObjectProperty(createIMObject(), descriptor);
 
         assertFalse(property.isReadOnly());
         descriptor.setReadOnly(true);
@@ -182,8 +183,8 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
      */
     @Test
     public void testIsHidden() {
-        NodeDescriptor descriptor = new NodeDescriptor();
-        IMObjectProperty property = new IMObjectProperty(new IMObject(), descriptor);
+        NodeDescriptor descriptor = createDescriptor();
+        IMObjectProperty property = new IMObjectProperty(createIMObject(), descriptor);
 
         assertFalse(property.isHidden());
         descriptor.setHidden(true);
@@ -195,8 +196,8 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
      */
     @Test
     public void testIsRequired() {
-        NodeDescriptor descriptor = new NodeDescriptor();
-        IMObjectProperty property = new IMObjectProperty(new IMObject(), descriptor);
+        NodeDescriptor descriptor = createDescriptor();
+        IMObjectProperty property = new IMObjectProperty(createIMObject(), descriptor);
 
         assertFalse(property.isRequired());
         descriptor.setMinCardinality(1);
@@ -208,8 +209,8 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
      */
     @Test
     public void testGetMinCardinality() {
-        NodeDescriptor descriptor = new NodeDescriptor();
-        IMObjectProperty property = new IMObjectProperty(new IMObject(), descriptor);
+        NodeDescriptor descriptor = createDescriptor();
+        IMObjectProperty property = new IMObjectProperty(createIMObject(), descriptor);
 
         assertEquals(0, property.getMinCardinality());
         descriptor.setMinCardinality(1);
@@ -221,8 +222,8 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
      */
     @Test
     public void testGetMaxCardinality() {
-        NodeDescriptor descriptor = new NodeDescriptor();
-        IMObjectProperty property = new IMObjectProperty(new IMObject(), descriptor);
+        NodeDescriptor descriptor = createDescriptor();
+        IMObjectProperty property = new IMObjectProperty(createIMObject(), descriptor);
 
         // check default
         assertEquals(1, property.getMaxCardinality());
@@ -237,14 +238,14 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
     }
 
     /**
-     * Verifies that <tt>UnsupportedOperationException</tt> is raised for attempts to change derived properties.
+     * Verifies that {@code UnsupportedOperationException} is raised for attempts to change derived properties.
      */
     @Test
     public void testUnsupportedOperationExceptionForDerivedProperty() {
-        NodeDescriptor descriptor = new NodeDescriptor();
+        NodeDescriptor descriptor = createDescriptor();
         descriptor.setName("derived");
         descriptor.setDerived(true);
-        IMObjectProperty property = new IMObjectProperty(new IMObject(), descriptor);
+        IMObjectProperty property = new IMObjectProperty(createIMObject(), descriptor);
 
         try {
             property.setValue("Foo");
@@ -423,9 +424,9 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
      * @return a new property
      */
     protected IMObjectProperty createProperty(String name, Class type) {
-        IMObject object = new IMObject();
+        IMObject object = createIMObject();
         object.setArchetypeId(new ArchetypeId(CustomerArchetypes.PERSON));
-        NodeDescriptor descriptor = new NodeDescriptor();
+        NodeDescriptor descriptor = createDescriptor();
         descriptor.setName(name);
         descriptor.setType(type.getName());
         return new IMObjectProperty(object, descriptor);
@@ -446,45 +447,6 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
         return new IMObjectTestProperty(customer, descriptor);
     }
 
-    private class IMObjectTestProperty extends IMObjectProperty implements TestProperty {
-
-        /**
-         * The count of validations.
-         */
-        private int count = 0;
-
-        /**
-         * Constructs an <tt>IMObjectTestProperty</tt>.
-         *
-         * @param object     the object that the property belongs to
-         * @param descriptor the property descriptor
-         */
-        public IMObjectTestProperty(IMObject object, NodeDescriptor descriptor) {
-            super(object, descriptor);    //To change body of overridden methods use File | Settings | File Templates.
-        }
-
-        /**
-         * Validates the object.
-         *
-         * @param validator the validator
-         * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
-         */
-        @Override
-        protected boolean doValidation(Validator validator) {
-            ++count;
-            return super.doValidation(validator);
-        }
-
-        /**
-         * Returns the no. of times validation has been invoked.
-         *
-         * @return the no. of times validation has been invoked
-         */
-        public int getValidations() {
-            return count;
-        }
-    }
-
     /**
      * Verifies a validation error matches that expected.
      * <p/>
@@ -497,9 +459,22 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
     @Override
     protected void checkValidationError(Property property, String message) {
         IMObjectProperty p = (IMObjectProperty) property;
-        IMObject parent = p.getObject();
+        IMObject parent = (IMObject) p.getObject();
         String expected = ValidatorError.format(parent.getArchetypeId().getShortName(), property.getName(), message);
         super.checkValidationError(property, expected);
+    }
+
+    private IMObject createIMObject() {
+        return new IMObject();
+    }
+
+    /**
+     * Creates a new node descriptor.
+     *
+     * @return a new node descriptor
+     */
+    private NodeDescriptor createDescriptor() {
+        return new org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor();
     }
 
     /**
@@ -516,7 +491,7 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
     }
 
     /**
-     * Clones a node descriptor, asssigning it a new name.
+     * Clones a node descriptor, assigning it a new name.
      * <p/>
      * This is to avoid affected descriptors cached by the archetype service.
      *
@@ -528,7 +503,9 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
     private NodeDescriptor cloneDescriptor(String name, String nodeName, IMObject object) {
         NodeDescriptor descriptor = PropertyTestHelper.getDescriptor(object, nodeName);
         try {
-            descriptor = (NodeDescriptor) descriptor.clone(); // clone it to avoid affecting cached descriptor
+            org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor d
+                    = (org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor) descriptor;
+            descriptor = (NodeDescriptor) d.clone(); // clone it to avoid affecting cached descriptor
         } catch (CloneNotSupportedException exception) {
             fail("Failed to clone descriptor");
         }
@@ -580,6 +557,45 @@ public class IMObjectPropertyTestCase extends AbstractPropertyTest {
         archetypes.addProperty(archetype);
         range.addProperty(archetypes);
         descriptor.addAssertionDescriptor(range);
+    }
+
+    private class IMObjectTestProperty extends IMObjectProperty implements TestProperty {
+
+        /**
+         * The count of validations.
+         */
+        private int count = 0;
+
+        /**
+         * Constructs an {@code IMObjectTestProperty}.
+         *
+         * @param object     the object that the property belongs to
+         * @param descriptor the property descriptor
+         */
+        IMObjectTestProperty(IMObject object, NodeDescriptor descriptor) {
+            super(object, descriptor);
+        }
+
+        /**
+         * Returns the no. of times validation has been invoked.
+         *
+         * @return the no. of times validation has been invoked
+         */
+        public int getValidations() {
+            return count;
+        }
+
+        /**
+         * Validates the object.
+         *
+         * @param validator the validator
+         * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+         */
+        @Override
+        protected boolean doValidation(Validator validator) {
+            ++count;
+            return super.doValidation(validator);
+        }
     }
 
 }

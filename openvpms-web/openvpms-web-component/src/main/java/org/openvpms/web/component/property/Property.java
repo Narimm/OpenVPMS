@@ -16,11 +16,11 @@
 
 package org.openvpms.web.component.property;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.archetype.NodeDescriptor;
 
 import java.math.BigDecimal;
 import java.util.Date;

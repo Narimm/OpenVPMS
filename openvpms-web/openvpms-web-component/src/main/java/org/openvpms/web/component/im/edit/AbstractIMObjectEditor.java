@@ -65,7 +65,6 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -186,7 +185,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
             context.setLayoutStrategyFactory(new EditLayoutStrategyFactory());
         }
 
-        IMObjectComponentFactory factory = new ComponentFactory(context);
+        IMObjectComponentFactory factory = new DefaultEditableComponentFactory(context, this::registerEditor);
         context.setComponentFactory(factory);
 
         editors.addModifiableListener(this::onModified);
@@ -730,8 +729,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * @return a new layout strategy
      */
     protected IMObjectLayoutStrategy createLayoutStrategy() {
-        IMObjectLayoutStrategyFactory layoutStrategy
-                = context.getLayoutStrategyFactory();
+        IMObjectLayoutStrategyFactory layoutStrategy = context.getLayoutStrategyFactory();
         return layoutStrategy.create(getObject(), getParent());
     }
 
@@ -771,7 +769,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      */
     protected void disposeOnChangeLayout() {
         Set<Editor> set = editors.getEditors();
-        for (Editor editor : set.toArray(new Editor[set.size()])) {
+        for (Editor editor : set.toArray(new Editor[0])) {
             if (disposeOnChangeLayout(editor)) {
                 editors.remove(editor);
                 createdEditors.remove(editor);
@@ -782,7 +780,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
 
     /**
      * Determines if an editor should be disposed on layout change.
-     * This implementation returns {@code true} for editors created via the {@link ComponentFactory}.
+     * This implementation returns {@code true} for editors created via the editor factory.
      *
      * @param editor the editor
      * @return {@code true} if the editor should be disposed
@@ -994,6 +992,26 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     }
 
     /**
+     * Registers an editor created via the editor factory.
+     *
+     * @param editor the editor
+     */
+    private void registerEditor(Editor editor) {
+        if (editor instanceof LookupPropertyEditor) {
+            // need to track lookup editor separately, as these can be refreshed
+            Component component = editor.getComponent();
+            if (component instanceof LookupField) {
+                LookupField lookup = (LookupField) editor.getComponent();
+                ModifiableListener listener = modifiable -> refreshLookups(lookup);
+                ((LookupPropertyEditor) editor).getProperty().addModifiableListener(listener);
+                lookups.put((LookupPropertyEditor) editor, listener);
+            }
+        }
+        editors.add(editor);
+        createdEditors.add(editor);
+    }
+
+    /**
      * Removes listeners associated with lookup nodes.
      */
     private void disposeLookups() {
@@ -1003,97 +1021,4 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
         lookups.clear();
     }
 
-    /**
-     * A factory that tracks creation of editors.
-     */
-    private class ComponentFactory extends AbstractEditableComponentFactory {
-
-        /**
-         * Constructs a {@link  ComponentFactory}.
-         *
-         * @param context the layout context
-         */
-        public ComponentFactory(LayoutContext context) {
-            super(context, Styles.EDIT);
-        }
-
-        /**
-         * Returns an editor for a lookup property.
-         *
-         * @param property the lookup property
-         * @param context  the parent object
-         * @return a new editor for {@code property}
-         */
-        @Override
-        protected LookupPropertyEditor createLookupEditor(Property property, IMObject context) {
-            LookupPropertyEditor editor = super.createLookupEditor(property, context);
-            Component component = editor.getComponent();
-            if (component instanceof LookupField) {
-                final LookupField lookup = (LookupField) editor.getComponent();
-                ModifiableListener listener = modifiable -> refreshLookups(lookup);
-                property.addModifiableListener(listener);
-                lookups.put(editor, listener);
-            }
-            return register(editor);
-        }
-
-        /**
-         * Returns an editor for a collection property.
-         *
-         * @param property the collection property
-         * @param object   the parent object
-         * @return a new editor for {@code property}
-         */
-        @Override
-        protected Editor createCollectionEditor(CollectionProperty property, IMObject object) {
-            Editor editor = super.createCollectionEditor(property, object);
-            return register(editor);
-        }
-
-        /**
-         * Creates an editor for an {@link IMObject}.
-         *
-         * @param object the object to edit
-         * @param parent the object's parent. May be {@code null}
-         * @return a new editor for {@code object}
-         */
-        @Override
-        protected IMObjectEditor getObjectEditor(IMObject object, IMObject parent, LayoutContext context) {
-            IMObjectEditor editor = super.getObjectEditor(object, parent, context);
-            return register(editor);
-        }
-
-        /**
-         * Returns an editor for an object reference property.
-         *
-         * @param property the object reference property
-         * @param object   the parent object
-         * @return a new editor for {@code property}
-         */
-        @Override
-        protected Editor createObjectReferenceEditor(Property property, IMObject object) {
-            Editor editor = super.createObjectReferenceEditor(property, object);
-            return register(editor);
-        }
-
-        /**
-         * Creates a {@link PropertyEditor} for a component.
-         *
-         * @param property  the property
-         * @param component the component
-         * @return a new editor
-         */
-        @Override
-        protected PropertyEditor createPropertyEditor(Property property, Component component) {
-            PropertyEditor editor = super.createPropertyEditor(property, component);
-            return register(editor);
-        }
-
-        private <T extends Editor> T register(T editor) {
-            editors.add(editor);
-            createdEditors.add(editor);
-            return editor;
-        }
-
-    }
 }

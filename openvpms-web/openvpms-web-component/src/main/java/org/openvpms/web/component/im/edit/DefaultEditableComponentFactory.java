@@ -11,14 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
 
 
+import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.style.Styles;
+
+import java.util.function.Consumer;
 
 /**
  * A factory for editable components.
@@ -35,4 +38,15 @@ public class DefaultEditableComponentFactory extends AbstractEditableComponentFa
     public DefaultEditableComponentFactory(LayoutContext context) {
         super(context, Styles.EDIT);
     }
+
+    /**
+     * Constructs a {@link DefaultEditableComponentFactory}.
+     *
+     * @param context        the layout context.
+     * @param editorListener invoked when an editor is created. May be {@code null}
+     */
+    public DefaultEditableComponentFactory(LayoutContext context, Consumer<Editor> editorListener) {
+        super(context, Styles.EDIT, editorListener);
+    }
+
 }

@@ -18,10 +18,10 @@ package org.openvpms.web.component.property;
 
 
 import org.apache.commons.jxpath.util.TypeConverter;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.archetype.NodeDescriptor;
 import org.openvpms.component.system.common.jxpath.OpenVPMSTypeConverter;
 import org.openvpms.component.system.common.util.PropertySetException;
 
@@ -443,7 +443,6 @@ public abstract class AbstractProperty extends AbstractModifiable implements Pro
      * Wildcards are expanded.
      *
      * @return the archetype short names
-     * @throws ArchetypeServiceException for any error
      */
     @Override
     public String[] getArchetypeRange() {

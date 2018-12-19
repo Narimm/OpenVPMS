@@ -112,6 +112,15 @@ public class PatientActEditor extends AbstractActEditor {
     /**
      * Sets the clinician.
      *
+     * @param clinician the clinician. May be {@code null}.
+     */
+    public void setClinician(User clinician) {
+        setParticipant("clinician", clinician);
+    }
+
+    /**
+     * Sets the clinician.
+     *
      * @param clinician the clinician reference. May be {@code null}.
      */
     public void setClinician(IMObjectReference clinician) {

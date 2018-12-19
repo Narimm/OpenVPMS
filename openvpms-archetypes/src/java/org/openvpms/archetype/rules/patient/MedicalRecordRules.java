@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -26,7 +26,6 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -36,6 +35,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.archetype.NodeDescriptor;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
 import org.openvpms.component.system.common.query.Constraints;
@@ -525,49 +525,6 @@ public class MedicalRecordRules {
     }
 
     /**
-     * Creates a new <em>act.patientClinicalEvent</em> for the patient and start time.
-     *
-     * @param patient   the patient reference
-     * @param startTime the event start time
-     * @param clinician the clinician reference. May be {@code null}
-     * @return a new event
-     */
-    private Act createEvent(IMObjectReference patient, Date startTime, IMObjectReference clinician) {
-        Act event;
-        event = (Act) service.create(PatientArchetypes.CLINICAL_EVENT);
-        event.setActivityStartTime(startTime);
-        ActBean eventBean = new ActBean(event, service);
-        eventBean.addNodeParticipation("patient", patient);
-        if (clinician != null) {
-            eventBean.addNodeParticipation("clinician", clinician);
-        }
-        return event;
-    }
-
-    /**
-     * Returns a map of acts keyed on their associated patient reference.
-     *
-     * @param acts the acts
-     * @return the acts keyed on patient reference
-     */
-    private Map<IMObjectReference, List<Act>> getByPatient(List<Act> acts) {
-        Map<IMObjectReference, List<Act>> result = new HashMap<>();
-        for (Act act : acts) {
-            ActBean bean = new ActBean(act, service);
-            IMObjectReference patient = bean.getParticipantRef(PatientArchetypes.PATIENT_PARTICIPATION);
-            if (patient != null) {
-                List<Act> list = result.get(patient);
-                if (list == null) {
-                    list = new ArrayList<>();
-                }
-                list.add(act);
-                result.put(patient, list);
-            }
-        }
-        return result;
-    }
-
-    /**
      * Adds a list of <em>act.patientMedication</em>, <em>act.patientInvestigation*</em>, <em>act.patientDocument*</em>,
      * and <em>act.customerAccountInvoiceItem</em> acts to an <em>act.patientClinicalEvent</em> associated with each
      * act's patient.
@@ -648,6 +605,49 @@ public class MedicalRecordRules {
                 || (eventEnd != null && startDate.after(eventEnd))
                 || (eventEnd == null && startDate.after(eventStart))) {
                 result = false; // need to create a new event
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Creates a new <em>act.patientClinicalEvent</em> for the patient and start time.
+     *
+     * @param patient   the patient reference
+     * @param startTime the event start time
+     * @param clinician the clinician reference. May be {@code null}
+     * @return a new event
+     */
+    private Act createEvent(IMObjectReference patient, Date startTime, IMObjectReference clinician) {
+        Act event;
+        event = (Act) service.create(PatientArchetypes.CLINICAL_EVENT);
+        event.setActivityStartTime(startTime);
+        ActBean eventBean = new ActBean(event, service);
+        eventBean.addNodeParticipation("patient", patient);
+        if (clinician != null) {
+            eventBean.addNodeParticipation("clinician", clinician);
+        }
+        return event;
+    }
+
+    /**
+     * Returns a map of acts keyed on their associated patient reference.
+     *
+     * @param acts the acts
+     * @return the acts keyed on patient reference
+     */
+    private Map<IMObjectReference, List<Act>> getByPatient(List<Act> acts) {
+        Map<IMObjectReference, List<Act>> result = new HashMap<>();
+        for (Act act : acts) {
+            ActBean bean = new ActBean(act, service);
+            IMObjectReference patient = bean.getParticipantRef(PatientArchetypes.PATIENT_PARTICIPATION);
+            if (patient != null) {
+                List<Act> list = result.get(patient);
+                if (list == null) {
+                    list = new ArrayList<>();
+                }
+                list.add(act);
+                result.put(patient, list);
             }
         }
         return result;

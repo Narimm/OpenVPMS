@@ -1253,6 +1253,13 @@
         </properties>
     </style>
 
+    <style name="CheckInDialog" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${CheckInDialog.width}"/>
+            <property name="height" value="${CheckInDialog.height}"/>
+        </properties>
+    </style>
+
     <style name="ProductImportExportDialog" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
         <properties>
             <property name="width" value="${dialog.large.width}"/>
@@ -2386,6 +2393,12 @@
                     <typeface name="${font.typeface}"/>
                 </font>
             </property>
+        </properties>
+    </style>
+
+    <style name="edit" base-name="default" type="nextapp.echo2.app.list.AbstractListComponent">
+        <properties>
+            <property name="disabledBackground" value="#e1e1e1"/>
         </properties>
     </style>
 

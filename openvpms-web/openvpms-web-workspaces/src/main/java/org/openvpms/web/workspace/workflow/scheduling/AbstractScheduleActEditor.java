@@ -20,6 +20,7 @@ import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.bound.BoundDateTimeField;
 import org.openvpms.web.component.bound.BoundDateTimeFieldFactory;
@@ -101,6 +102,24 @@ public class AbstractScheduleActEditor extends AbstractActEditor {
      */
     public Party getPatient() {
         return (Party) getParticipant("patient");
+    }
+
+    /**
+     * Sets the patient.
+     *
+     * @param patient the patient. May be {@code null}
+     */
+    public void setPatient(Party patient) {
+        setParticipant("patient", patient);
+    }
+
+    /**
+     * Sets the clinician.
+     *
+     * @param clinician the clinician. May be {@code null}
+     */
+    public void setClinician(User clinician) {
+        setParticipant("clinician", clinician);
     }
 
     /**

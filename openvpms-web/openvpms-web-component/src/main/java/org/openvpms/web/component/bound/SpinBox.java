@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.bound;
@@ -28,6 +28,7 @@ import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.text.TextField;
 
 
@@ -71,7 +72,7 @@ public class SpinBox extends Row implements BoundProperty {
 
 
     /**
-     * Constructs a <tt>SpinBox</tt>.
+     * Constructs a {@link SpinBox}.
      *
      * @param min the minimum (and starting) value
      * @param max the maximum value
@@ -81,7 +82,7 @@ public class SpinBox extends Row implements BoundProperty {
     }
 
     /**
-     * Constructs a <tt>SpinBox</tt>.
+     * Constructs a {@link SpinBox}.
      *
      * @param property the property to bind to
      * @param min      the minimum value
@@ -92,7 +93,7 @@ public class SpinBox extends Row implements BoundProperty {
     }
 
     /**
-     * Constructs a <tt>SpinBox</tt>.
+     * Constructs a {@link SpinBox}.
      *
      * @param property  the property to bind to
      * @param min       the minimum (and starting) value
@@ -114,6 +115,7 @@ public class SpinBox extends Row implements BoundProperty {
 
         int columns = Integer.toString(max).length() + 2; // add some padding
         TextField text = BoundTextComponentFactory.createNumeric(property, columns);
+        text.setStyleName(Styles.EDIT);
         Button inc = ButtonFactory.create(null, "SpinBox.increment");
         inc.setFocusTraversalParticipant(false);
         inc.addActionListener(new ActionListener() {

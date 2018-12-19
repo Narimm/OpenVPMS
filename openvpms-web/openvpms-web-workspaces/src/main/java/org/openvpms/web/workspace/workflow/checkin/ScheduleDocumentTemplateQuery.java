@@ -11,21 +11,26 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
 
+import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.ExistsConstraint;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.doc.DocumentTemplateQuery;
 import org.openvpms.web.component.im.query.EntityResultSet;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.echo.focus.FocusHelper;
 
+import static org.openvpms.component.system.common.query.Constraints.eq;
 import static org.openvpms.component.system.common.query.Constraints.exists;
 import static org.openvpms.component.system.common.query.Constraints.idEq;
 import static org.openvpms.component.system.common.query.Constraints.join;
@@ -50,6 +55,7 @@ class ScheduleDocumentTemplateQuery extends DocumentTemplateQuery {
      */
     private final Entity workList;
 
+
     /**
      * Constructs a {@link ScheduleDocumentTemplateQuery}.
      *
@@ -60,6 +66,35 @@ class ScheduleDocumentTemplateQuery extends DocumentTemplateQuery {
         this.schedule = (schedule == null || useAllTemplates(schedule)) ? null : schedule;
         this.workList = (workList == null || useAllTemplates(workList)) ? null : workList;
         setTypes(PatientArchetypes.DOCUMENT_FORM, PatientArchetypes.DOCUMENT_LETTER);
+    }
+
+    /**
+     * Determines if the query should be run automatically.
+     *
+     * @return {@code true} if the query should be run automatically;
+     * otherwise {@code false}
+     */
+    @Override
+    public boolean isAuto() {
+        return true;
+    }
+
+    /**
+     * Returns the schedule.
+     *
+     * @return the schedule, or {@code null} if  all templates are being used
+     */
+    public Entity getSchedule() {
+        return schedule;
+    }
+
+    /**
+     * Returns the work list.
+     *
+     * @return the work list, or {@code null} if  all templates are being used
+     */
+    public Entity getWorkList() {
+        return workList;
     }
 
     /**
@@ -83,21 +118,39 @@ class ScheduleDocumentTemplateQuery extends DocumentTemplateQuery {
     }
 
     /**
-     * Returns the schedule.
+     * Determines if a schedule/work list has any active templates linked to it.
      *
-     * @return the schedule, or {@code null} if  all templates are being used
+     * @param schedule the schedule/work list. May be {@code null}
+     * @return {@code true} if there are any active templates, otherwise {@code false}
      */
-    public Entity getSchedule() {
-        return schedule;
+    public static boolean hasTemplates(Entity schedule) {
+        boolean result = false;
+        if (schedule != null) {
+            if (useAllTemplates(schedule)) {
+                result = true;
+            } else {
+                ArchetypeQuery query = new ArchetypeQuery(schedule.getObjectReference());
+                query.add(new NodeSelectConstraint("id"));
+                query.add(join("templates").add(join("target").add(eq("active", true))));
+                query.setMaxResults(1);
+                ObjectSetQueryIterator iterator = new ObjectSetQueryIterator(query);
+                result = iterator.hasNext();
+            }
+        }
+        return result;
     }
 
     /**
-     * Returns the work list.
+     * Lays out the component in a container, and sets focus on the instance
+     * name.
      *
-     * @return the work list, or {@code null} if  all templates are being used
+     * @param container the container
      */
-    public Entity getWorkList() {
-        return workList;
+    @Override
+    protected void doLayout(Component container) {
+        addShortNameSelector(container);
+        addSearchField(container);
+        FocusHelper.setFocus(getSearchField());
     }
 
     /**

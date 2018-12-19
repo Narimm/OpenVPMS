@@ -131,7 +131,7 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         Act event = runner.runWorkflow(patient, customer, workList, date, clinician, location);
         assertNotEquals(previousEvent, event); // new event should have been created
 
-        Act task = runner.checkTask(workList, customer, patient, TaskStatus.PENDING);
+        Act task = runner.checkTask(workList, customer, patient, clinician, TaskStatus.PENDING);
 
         checkConsultWorkflow(task, event, clinician);
     }

@@ -18,10 +18,10 @@ package org.openvpms.web.workspace.patient.mr;
 
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.archetype.NodeDescriptor;
 import org.openvpms.component.model.product.Product;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;

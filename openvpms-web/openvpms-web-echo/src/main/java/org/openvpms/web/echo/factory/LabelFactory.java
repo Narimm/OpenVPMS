@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.factory;
@@ -46,6 +46,31 @@ public final class LabelFactory extends ComponentFactory {
      */
     public static Label create() {
         return create(false);
+    }
+
+    /**
+     * Creates a new label with the specified text and default style.
+     *
+     * @param text the label text
+     * @return a new label
+     */
+    public static Label text(String text) {
+        Label label = create();
+        label.setText(text);
+        return label;
+    }
+
+    /**
+     * Creates a new label with the specified text.
+     *
+     * @param text the label text
+     * @param style the style name
+     * @return a new label
+     */
+    public static Label text(String text, String style) {
+        Label label = create(null, style);
+        label.setText(text);
+        return label;
     }
 
     /**

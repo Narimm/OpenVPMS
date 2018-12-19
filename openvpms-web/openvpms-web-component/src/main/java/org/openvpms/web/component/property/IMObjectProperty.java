@@ -20,14 +20,14 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.archetype.descriptor.DescriptorException;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.model.archetype.AssertionDescriptor;
+import org.openvpms.component.model.archetype.NodeDescriptor;
+import org.openvpms.component.model.object.IMObject;
 import org.openvpms.component.service.archetype.ValidationError;
 import org.openvpms.web.component.im.util.ObjectHelper;
 import org.openvpms.web.resource.i18n.Messages;
@@ -50,12 +50,12 @@ public class IMObjectProperty extends AbstractProperty
     /**
      * The object that the property belongs to.
      */
-    private final IMObject object;
+    private final org.openvpms.component.business.domain.im.common.IMObject object;
 
     /**
      * The property descriptor.
      */
-    private final NodeDescriptor descriptor;
+    private final org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor descriptor;
 
     /**
      * Current validation errors.
@@ -75,8 +75,8 @@ public class IMObjectProperty extends AbstractProperty
      * @param descriptor the property descriptor
      */
     public IMObjectProperty(IMObject object, NodeDescriptor descriptor) {
-        this.object = object;
-        this.descriptor = descriptor;
+        this.object = (org.openvpms.component.business.domain.im.common.IMObject) object;
+        this.descriptor = (org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor) descriptor;
     }
 
     /**
@@ -329,7 +329,7 @@ public class IMObjectProperty extends AbstractProperty
      * @return the collection
      */
     public List getValues() {
-        List<IMObject> values = null;
+        List<? extends IMObject> values = null;
         try {
             values = descriptor.getChildren(object);
             if (values != null) {
@@ -347,7 +347,7 @@ public class IMObjectProperty extends AbstractProperty
      * @return the no. of elements in the collection
      */
     public int size() {
-        List<IMObject> values = descriptor.getChildren(object);
+        List values = getValues();
         return values != null ? values.size() : 0;
     }
 
@@ -482,8 +482,8 @@ public class IMObjectProperty extends AbstractProperty
                     IArchetypeService service
                             = ServiceHelper.getArchetypeService();
                     for (Object value : getValues()) {
-                        IMObject object = (IMObject) value;
-                        errors = ValidationHelper.validate(object, service);
+                        errors = ValidationHelper.validate(
+                                (org.openvpms.component.business.domain.im.common.IMObject) value, service);
                         if (errors != null) {
                             break;
                         }

@@ -16,11 +16,11 @@
 
 package org.openvpms.web.component.property;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.archetype.NodeDescriptor;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -109,7 +109,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
      * object.
      *
      * @return {@code true} if the objects are children of the parent object,
-     *         or {@code false} if they are its peer
+     * or {@code false} if they are its peer
      */
     public boolean isParentChild() {
         return ((CollectionProperty) property).isParentChild();
@@ -149,7 +149,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
      *
      * @param value the property value
      * @return {@code true} if the value was set, {@code false} if it
-     *         cannot be set due to error, or is the same as the existing value
+     * cannot be set due to error, or is the same as the existing value
      */
     public boolean setValue(Object value) {
         return property.setValue(value);
@@ -313,9 +313,9 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Determines if the property is required.
      *
-     * @return {@code true} if the property is required; otherwise
-     *         {@code false}
+     * @return {@code true} if the property is required; otherwise {@code false}
      */
+    @Override
     public boolean isRequired() {
         return property.isRequired();
     }
@@ -530,8 +530,7 @@ public abstract class DelegatingProperty implements CollectionProperty {
     /**
      * Returns the property descriptor.
      *
-     * @return the property descriptor, or {@code null} if the property has
-     *         no descriptor
+     * @return the property descriptor, or {@code null} if the property has no descriptor
      */
     public NodeDescriptor getDescriptor() {
         return property.getDescriptor();

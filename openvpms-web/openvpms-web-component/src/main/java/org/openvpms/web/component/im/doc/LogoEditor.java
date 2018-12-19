@@ -28,20 +28,14 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.system.common.exception.OpenVPMSException;
-import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
-import org.openvpms.web.component.edit.Editor;
-import org.openvpms.web.component.edit.Saveable;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.select.BasicSelector;
-import org.openvpms.web.component.property.AbstractModifiable;
-import org.openvpms.web.component.property.ErrorListener;
-import org.openvpms.web.component.property.ModifiableListener;
-import org.openvpms.web.component.property.ModifiableListeners;
+import org.openvpms.web.component.property.AbstractSaveableEditor;
 import org.openvpms.web.component.property.ValidationHelper;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
@@ -60,7 +54,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class LogoEditor extends AbstractModifiable implements Editor, Saveable, Deletable, Cancellable {
+public class LogoEditor extends AbstractSaveableEditor implements Deletable, Cancellable {
 
     /**
      * The upload selector.
@@ -88,11 +82,6 @@ public class LogoEditor extends AbstractModifiable implements Editor, Saveable, 
     private final Entity parent;
 
     /**
-     * The listeners.
-     */
-    private final ModifiableListeners listeners = new ModifiableListeners();
-
-    /**
      * The archetype service.
      */
     private IArchetypeRuleService service;
@@ -108,24 +97,9 @@ public class LogoEditor extends AbstractModifiable implements Editor, Saveable, 
     private DocumentAct act;
 
     /**
-     * Determines if this has been modified.
-     */
-    private boolean modified = false;
-
-    /**
-     * Indicates if the object has been saved.
-     */
-    private boolean saved = false;
-
-    /**
      * The component.
      */
     private Component component;
-
-    /**
-     * The focus group.
-     */
-    private FocusGroup focusGroup;
 
     /**
      * Constructs a {@link LogoEditor}.
@@ -136,13 +110,13 @@ public class LogoEditor extends AbstractModifiable implements Editor, Saveable, 
      */
     public LogoEditor(DocumentAct act, Entity parent, LayoutContext context) {
         this.act = act;
+        service = ServiceHelper.getArchetypeService();
         if (act.isNew()) {
-            IMObjectBean bean = new IMObjectBean(act);
+            IMObjectBean bean = service.getBean(act);
             bean.setTarget("owner", parent);
         }
         this.parent = parent;
         this.context = context;
-        service = ServiceHelper.getArchetypeService();
         handler = ServiceHelper.getBean(ImageDocumentHandler.class);
         selector = new BasicSelector<>("button.upload");
         selector.getSelect().addActionListener(new ActionListener() {
@@ -170,41 +144,11 @@ public class LogoEditor extends AbstractModifiable implements Editor, Saveable, 
         if (component == null) {
             updateDisplay();
             component = RowFactory.create(Styles.CELL_SPACING, selector.getComponent(), remove);
-            focusGroup = new FocusGroup("LogoEditor");
+            FocusGroup focusGroup = getFocusGroup();
             focusGroup.add(selector.getComponent());
             focusGroup.add(remove);
         }
         return component;
-    }
-
-    /**
-     * Returns the focus group.
-     *
-     * @return the focus group, or {@code null} if the editor hasn't been rendered
-     */
-    @Override
-    public FocusGroup getFocusGroup() {
-        return focusGroup;
-    }
-
-    /**
-     * Registers a listener to be notified of alerts.
-     *
-     * @param listener the listener. May be {@code null}
-     */
-    @Override
-    public void setAlertListener(AlertListener listener) {
-
-    }
-
-    /**
-     * Returns the listener to be notified of alerts.
-     *
-     * @return the listener. May be {@code null}
-     */
-    @Override
-    public AlertListener getAlertListener() {
-        return null;
     }
 
     /**
@@ -214,122 +158,10 @@ public class LogoEditor extends AbstractModifiable implements Editor, Saveable, 
      */
     @Override
     public void dispose() {
+        super.dispose();
         if (component != null) {
             component.removeAll();
         }
-    }
-
-    /**
-     * Determines if the object has been modified.
-     *
-     * @return {@code true} if the object has been modified
-     */
-    @Override
-    public boolean isModified() {
-        return modified;
-    }
-
-    /**
-     * Clears the modified status of the object.
-     */
-    @Override
-    public void clearModified() {
-        modified = false;
-    }
-
-    /**
-     * Adds a listener to be notified when this changes.
-     * <p>
-     * Listeners will be notified in the order they were registered.
-     * <p>
-     * Duplicate additions are ignored.
-     *
-     * @param listener the listener to add
-     */
-    @Override
-    public void addModifiableListener(ModifiableListener listener) {
-        listeners.addListener(listener);
-    }
-
-    /**
-     * Adds a listener to be notified when this changes, specifying the order of the listener.
-     *
-     * @param listener the listener to add
-     * @param index    the index to add the listener at. The 0-index listener is notified first
-     */
-    @Override
-    public void addModifiableListener(ModifiableListener listener, int index) {
-        listeners.addListener(listener, index);
-    }
-
-    /**
-     * Removes a listener.
-     *
-     * @param listener the listener to remove
-     */
-    @Override
-    public void removeModifiableListener(ModifiableListener listener) {
-        listeners.removeListener(listener);
-    }
-
-    /**
-     * Sets a listener to be notified of errors.
-     *
-     * @param listener the listener to register. May be {@code null}
-     */
-    @Override
-    public void setErrorListener(ErrorListener listener) {
-
-    }
-
-    /**
-     * Returns the listener to be notified of errors.
-     *
-     * @return the listener. May be {@code null}
-     */
-    @Override
-    public ErrorListener getErrorListener() {
-        return null;
-    }
-
-    /**
-     * Save any edits.
-     *
-     * @throws OpenVPMSException if the save fails
-     */
-    @Override
-    public void save() {
-        if (modified) {
-            if (act != null) {
-                if (act.getDocument() == null) {
-                    if (!act.isNew()) {
-                        service.save(act);
-                        refMgr.commit();
-                        service.remove(act);
-                        act = null;
-                    }
-                } else {
-                    service.save(act);
-                    refMgr.commit();
-                    if (act.getDocument() == null) {
-                        service.remove(act);
-                        act = null;
-                    }
-                }
-            }
-            saved = true;
-            modified = false;
-        }
-    }
-
-    /**
-     * Determines if any edits have been saved.
-     *
-     * @return {@code true} if edits have been saved.
-     */
-    @Override
-    public boolean isSaved() {
-        return saved;
     }
 
     /**
@@ -372,13 +204,39 @@ public class LogoEditor extends AbstractModifiable implements Editor, Saveable, 
     }
 
     /**
+     * Save any edits.
+     *
+     * @throws OpenVPMSException if the save fails
+     */
+    @Override
+    protected void doSave() {
+        if (act != null) {
+            if (act.getDocument() == null) {
+                if (!act.isNew()) {
+                    service.save(act);
+                    refMgr.commit();
+                    service.remove(act);
+                    act = null;
+                }
+            } else {
+                service.save(act);
+                refMgr.commit();
+                if (act.getDocument() == null) {
+                    service.remove(act);
+                    act = null;
+                }
+            }
+        }
+    }
+
+    /**
      * Creates a new document act.
      *
      * @return a new document act
      */
     protected DocumentAct createAct() {
         DocumentAct act = (DocumentAct) service.create(DocumentArchetypes.LOGO_ACT);
-        IMObjectBean bean = new IMObjectBean(act);
+        IMObjectBean bean = service.getBean(act);
         bean.setTarget("owner", parent);
         return act;
     }
@@ -395,7 +253,7 @@ public class LogoEditor extends AbstractModifiable implements Editor, Saveable, 
         service.deriveValue(act, "name");
         act.setMimeType(document.getMimeType());
 
-        IMObjectBean bean = new IMObjectBean(document);
+        IMObjectBean bean = service.getBean(document);
         int width = bean.getInt("width");
         int height = bean.getInt("height");
         String description;
@@ -426,7 +284,6 @@ public class LogoEditor extends AbstractModifiable implements Editor, Saveable, 
      * @param document the uploaded document
      */
     protected void onUpload(Document document) {
-        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
         service.save(document);
         if (act == null) {
             act = createAct();
@@ -434,8 +291,8 @@ public class LogoEditor extends AbstractModifiable implements Editor, Saveable, 
         populateAct(act, document);
         replaceDocument(document);
         updateDisplay();
-        modified = true;
-        listeners.notifyListeners(this);
+        setModified();
+        notifyListeners();
     }
 
     /**
@@ -450,8 +307,8 @@ public class LogoEditor extends AbstractModifiable implements Editor, Saveable, 
             act.setDescription(null);
         }
         updateDisplay();
-        modified = true;
-        listeners.notifyListeners(this);
+        setModified();
+        notifyListeners();
     }
 
     /**

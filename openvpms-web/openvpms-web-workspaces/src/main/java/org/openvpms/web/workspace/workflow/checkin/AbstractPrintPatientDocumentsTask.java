@@ -20,9 +20,6 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.NodeSelectConstraint;
-import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.web.component.app.ContextException;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.query.AbstractBrowserListener;
@@ -41,8 +38,7 @@ import org.openvpms.web.workspace.customer.CustomerMailContext;
 
 import java.util.Collection;
 
-import static org.openvpms.component.system.common.query.Constraints.eq;
-import static org.openvpms.component.system.common.query.Constraints.join;
+import static org.openvpms.web.workspace.workflow.checkin.ScheduleDocumentTemplateQuery.hasTemplates;
 
 /**
  * Task to optionally print <em>act.patientDocumentForm</em> and <em>act.patientDocumentLetter</em> for a patient.
@@ -91,7 +87,7 @@ public abstract class AbstractPrintPatientDocumentsTask extends Tasks {
 
             String title = Messages.get("workflow.print.title");
             HelpContext help = context.getHelpContext().subtopic("print");
-            final PatientDocumentTemplateBrowser browser = new PatientDocumentTemplateBrowser(
+            PatientDocumentTemplateBrowser browser = new PatientDocumentTemplateBrowser(
                     new ScheduleDocumentTemplateQuery(schedule, worklist), new DefaultLayoutContext(context, help));
             String[] buttons = canCancel() ? PopupDialog.OK_SKIP_CANCEL : PopupDialog.OK_SKIP;
             dialog = new BrowserDialog<>(title, buttons, browser, help);
@@ -190,7 +186,6 @@ public abstract class AbstractPrintPatientDocumentsTask extends Tasks {
      */
     protected abstract Entity getWorkList(TaskContext context);
 
-
     /**
      * Creates a task to print a document.
      *
@@ -232,29 +227,6 @@ public abstract class AbstractPrintPatientDocumentsTask extends Tasks {
         }
         // now start the workflow to print the documents
         super.start(context);
-    }
-
-    /**
-     * Determines if a schedule/work list has any active templates linked to it.
-     *
-     * @param schedule the schedule/work list. May be {@code null}
-     * @return {@code true} if there are any active templates, otherwise {@code false}
-     */
-    private boolean hasTemplates(Entity schedule) {
-        boolean result = false;
-        if (schedule != null) {
-            if (ScheduleDocumentTemplateQuery.useAllTemplates(schedule)) {
-                result = true;
-            } else {
-                ArchetypeQuery query = new ArchetypeQuery(schedule.getObjectReference());
-                query.add(new NodeSelectConstraint("id"));
-                query.add(join("templates").add(join("target").add(eq("active", true))));
-                query.setMaxResults(1);
-                ObjectSetQueryIterator iterator = new ObjectSetQueryIterator(query);
-                result = iterator.hasNext();
-            }
-        }
-        return result;
     }
 
 

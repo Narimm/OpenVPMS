@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.im.patient;
 
+import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -38,7 +39,8 @@ public class PatientQuery extends QueryAdapter<ObjectSet, Party> {
      * Constructs a {@link PatientQuery} that queries patients instances with the specified short names.
      *
      * @param shortNames the short names
-     * @param context    the context
+     * @param context    the context. If this contains a customer, patients will be restricted to those associated
+     *                   with the customer
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     public PatientQuery(String[] shortNames, Context context) {
@@ -46,10 +48,19 @@ public class PatientQuery extends QueryAdapter<ObjectSet, Party> {
     }
 
     /**
-     * Constructs a {@code PatientQuery} that queries patients instances with the specified short names.
+     * Constructs a {@link PatientQuery}.
+     *
+     * @param customer if {@code non-null}, restricts patients to those associated with the customer
+     */
+    public PatientQuery(Party customer) {
+        this(new String[]{PatientArchetypes.PATIENT}, customer);
+    }
+
+    /**
+     * Constructs a {@link PatientQuery} that queries patients instances with the specified short names.
      *
      * @param shortNames the short names
-     * @param customer   the customer. May be {@code null}
+     * @param customer   if {@code non-null}, restricts patients to those associated with the customer
      * @throws ArchetypeQueryException if the short names don't match any archetypes
      */
     public PatientQuery(String[] shortNames, Party customer) {
@@ -80,7 +91,7 @@ public class PatientQuery extends QueryAdapter<ObjectSet, Party> {
      * Determines if all patients are being queried.
      *
      * @return {@code true} if all patients are being queried, {@code false} if only those patient associated with
-     *         the customer are being queried
+     * the customer are being queried
      */
     public boolean isQueryAllPatients() {
         return ((PatientObjectSetQuery) getQuery()).isQueryAllPatients();

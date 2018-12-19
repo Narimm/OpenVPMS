@@ -17,18 +17,17 @@
 package org.openvpms.component.business.service.archetype.helper.lookup;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.model.archetype.AssertionDescriptor;
+import org.openvpms.component.model.archetype.NodeDescriptor;
 
 
 /**
  * Factory for {@link LookupAssertion}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class LookupAssertionFactory {
 

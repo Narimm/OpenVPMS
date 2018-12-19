@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -29,34 +29,25 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.DefaultActEditor;
-import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.edit.PatientReferenceEditor;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
-import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
-import org.openvpms.web.component.im.query.ListQuery;
-import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.util.IMObjectHelper;
-import org.openvpms.web.component.workflow.EditIMObjectTask;
-import org.openvpms.web.component.workflow.SelectIMObjectTask;
 import org.openvpms.web.component.workflow.Task;
-import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.test.EchoTestHelper;
 import org.openvpms.web.workspace.patient.PatientEditor;
 import org.openvpms.web.workspace.workflow.EditVisitTask;
 import org.openvpms.web.workspace.workflow.FinancialWorkflowRunner;
 import org.openvpms.web.workspace.workflow.TestEditVisitTask;
 
 import java.math.BigDecimal;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -65,6 +56,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.web.test.EchoTestHelper.findBrowserDialog;
+import static org.openvpms.web.test.EchoTestHelper.findEditDialog;
+import static org.openvpms.web.test.EchoTestHelper.fireButton;
 import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 /**
@@ -95,21 +89,20 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
     }
 
     /**
-     * Sets the patient used for patient selection.
+     * Returns the check in dialog.
+     * <p/>
+     * The current task must be an {@link CheckInWorkflow.CheckInDialogTask}.
      *
-     * @param patient the patient. May be {@code null}
+     * @return the dialog
      */
-    public void setPatient(Party patient) {
-        getWorkflow().setPatient(patient);
+    public CheckInDialog getCheckInDialog() {
+        Task task = getTask();
+        assertTrue(task instanceof CheckInWorkflow.CheckInDialogTask);
+        return ((CheckInWorkflow.CheckInDialogTask) task).getCheckInDialog();
     }
 
-    /**
-     * Sets the work list used for work list selection.
-     *
-     * @param workList the work list. May be {@code null}
-     */
-    public void setWorkList(Party workList) {
-        getWorkflow().setWorkList(workList);
+    public CheckInEditor getCheckInEditor() {
+        return getCheckInDialog().getEditor();
     }
 
     /**
@@ -134,15 +127,44 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
     }
 
     /**
+     * Displays the patient browser in the check-in editor.
+     *
+     * @return the browser dialog
+     */
+    @SuppressWarnings("unchecked")
+    public BrowserDialog<Party> selectPatient() {
+        CheckInEditor editor = getCheckInEditor();
+        PatientReferenceEditor patientEditor = editor.getPatientReferenceEditor();
+        fireButton(patientEditor.getComponent(), "button.select");
+        return (BrowserDialog<Party>) findBrowserDialog();
+    }
+
+    /**
+     * Displays the work list browser in the check-in editor.
+     *
+     * @return the browser dialog
+     */
+    @SuppressWarnings("unchecked")
+    public BrowserDialog<Entity> selectWorkList() {
+        CheckInEditor editor = getCheckInEditor();
+        Editor workListEditor = editor.getWorkListEditor();
+        assertNotNull(workListEditor);
+        fireButton(workListEditor.getComponent(), "button.select");
+        return (BrowserDialog<Entity>) findBrowserDialog();
+    }
+
+
+    /**
      * Populates the name of a patient in a patient editor, so that it can be saved.
      * <p/>
-     * The current task must be an {@link EditIMObjectTask}, with an {@link PatientEditor}.
+     * There must be an {@link EditDialog}, with an {@link PatientEditor}.
      *
      * @param name the patient name
      * @return the patient edit dialog
      */
     public EditDialog editPatient(String name) {
-        EditDialog dialog = getEditDialog();
+        EditDialog dialog = findEditDialog();
+        assertNotNull(dialog);
         IMObjectEditor editor = dialog.getEditor();
         assertTrue(editor instanceof PatientEditor);
         Party patient = (Party) editor.getObject();
@@ -170,95 +192,27 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
     }
 
     /**
-     * Selects the specified work list in the work list selection browser, and verifies that a corresponding task
-     * is created.
-     * <p/>
-     * The current task must be an {@link SelectIMObjectTask}.
-     *
-     * @param workList the work list
-     * @param customer the expected customer
-     * @param patient  the expected patient
-     */
-    public void selectWorkList(Party workList, Party customer, Party patient) {
-        BrowserDialog<Party> dialog = getSelectionDialog();
-        Browser<Party> browser = dialog.getBrowser();
-        fireSelection(browser, workList);
-        assertEquals(workList, getContext().getWorkList());
-
-        // verify a task has been created
-        checkTask(workList, customer, patient, TaskStatus.PENDING);
-    }
-
-    /**
-     * Selects the specified button of the document selection dialog.
-     *
-     * @param buttonId the button identifier
-     */
-    public void printPatientDocuments(String buttonId) {
-        BrowserDialog<Entity> dialog = getPrintDocumentsDialog();
-        EchoTestHelper.fireDialogButton(dialog, buttonId);
-    }
-
-    /**
-     * Returns the dialog to print patient documents.
-     *
-     * @return the dialog
-     */
-    public BrowserDialog<Entity> getPrintDocumentsDialog() {
-        Task current = getTask();
-        assertTrue(current instanceof PrintPatientDocumentsTask);
-        BrowserDialog<Entity> dialog = ((PrintPatientDocumentsTask) current).getBrowserDialog();
-        assertNotNull(dialog);
-        return dialog;
-    }
-
-    /**
      * Verifies the context has a task with the specified attributes.
      *
-     * @param workList the expected work list
-     * @param customer the expected customer
-     * @param patient  the expected patient
-     * @param status   the expected status
+     * @param workList  the expected work list
+     * @param customer  the expected customer
+     * @param patient   the expected patient
+     * @param clinician the expected clinician
+     * @param status    the expected status
      * @return the task
      */
-    public Act checkTask(Party workList, Party customer, Party patient, String status) {
+    public Act checkTask(Party workList, Party customer, Party patient, User clinician, String status) {
         Act task = (Act) getContext().getObject(ScheduleArchetypes.TASK);
         assertNotNull(task);
         assertTrue(!task.isNew());  // has been saved
         assertEquals(status, task.getStatus());
-        ActBean bean = new ActBean(task);
+        IMObjectBean bean = new IMObjectBean(task);
         assertEquals(0, DateRules.compareTo(getWorkflow().getArrivalTime(), task.getActivityStartTime()));
-        assertEquals(bean.getNodeParticipant("worklist"), workList);
-        assertEquals(bean.getNodeParticipant("customer"), customer);
-        assertEquals(bean.getNodeParticipant("patient"), patient);
+        assertEquals(bean.getTarget("worklist"), workList);
+        assertEquals(bean.getTarget("customer"), customer);
+        assertEquals(bean.getTarget("patient"), patient);
+        assertEquals(bean.getTarget("clinician"), clinician);
         return task;
-    }
-
-    /**
-     * Returns the editor for the patient weight.
-     *
-     * @return the patient weight editor
-     */
-    public EditDialog getWeightEditor() {
-        EditDialog dialog = getEditDialog();
-        IMObjectEditor editor = dialog.getEditor();
-        assertTrue(TypeHelper.isA(editor.getObject(), PatientArchetypes.PATIENT_WEIGHT));
-        return dialog;
-    }
-
-    /**
-     * Sets the weight for a patient.
-     * <p/>
-     * The current task must be an {@link EditIMObjectTask} editing an <em>act.patientWeight</em>.
-     *
-     * @param weight the patient weight
-     * @return the edit dialog
-     */
-    public EditDialog setWeight(BigDecimal weight) {
-        EditDialog dialog = getWeightEditor();
-        DefaultActEditor editor = (DefaultActEditor) dialog.getEditor();
-        editor.getProperty("weight").setValue(weight);
-        return dialog;
     }
 
     /**
@@ -274,14 +228,14 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
         Act event = (Act) getContext().getObject(PatientArchetypes.CLINICAL_EVENT);
         assertNotNull(event);
         assertFalse(event.isNew());  // should be saved
-        ActBean bean = new ActBean(event);
+        IMObjectBean bean = new IMObjectBean(event);
         Date arrivalTime = getWorkflow().getArrivalTime();
         assertEquals("Expected " + arrivalTime + ", got " + event.getActivityStartTime(),
                      0, DateRules.compareTo(arrivalTime, event.getActivityStartTime(), true));
-        assertEquals(patient, bean.getNodeParticipant("patient"));
-        assertEquals(clinician, bean.getNodeParticipant("clinician"));
+        assertEquals(patient, bean.getTarget("patient"));
+        assertEquals(clinician, bean.getTarget("clinician"));
         assertEquals(status, event.getStatus());
-        assertEquals(location, bean.getNodeParticipant("location"));
+        assertEquals(location, bean.getTarget("location"));
         return event;
     }
 
@@ -297,9 +251,9 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
         Act invoice = (Act) getContext().getObject(CustomerAccountArchetypes.INVOICE);
         assertNotNull(invoice);
         assertEquals(saved, !invoice.isNew());
-        ActBean bean = new ActBean(invoice);
+        IMObjectBean bean = new IMObjectBean(invoice);
         assertEquals(0, bean.getBigDecimal("amount").compareTo(amount));
-        assertEquals(clinician, bean.getNodeParticipant("clinician"));
+        assertEquals(clinician, bean.getTarget("clinician"));
         assertEquals(status, invoice.getStatus());
     }
 
@@ -313,29 +267,16 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
     public void checkWeight(Party patient, BigDecimal weight, User clinician) {
         Act event = (Act) getContext().getObject(PatientArchetypes.CLINICAL_EVENT);
         assertNotNull(event);
-        ActBean bean = new ActBean(event);
-        List<Act> acts = bean.getNodeActs("items");
+        IMObjectBean bean = new IMObjectBean(event);
+        List<Act> acts = bean.getTargets("items", Act.class);
         Act weightAct = IMObjectHelper.getObject(PatientArchetypes.PATIENT_WEIGHT, acts);
         assertNotNull(weightAct);
         acts.remove(weightAct);
         assertNull(IMObjectHelper.getObject(PatientArchetypes.PATIENT_WEIGHT, acts));
-        ActBean weightBean = new ActBean(weightAct);
-        assertEquals(patient, weightBean.getNodeParticipant("patient"));
-        assertEquals(clinician, weightBean.getNodeParticipant("clinician"));
-        assertTrue(weight.compareTo(weightBean.getBigDecimal("weight")) == 0);
-    }
-
-    /**
-     * Adds a weight for the patient.
-     *
-     * @param patient   the patient
-     * @param weight    the patient weight
-     * @param clinician the expected clinician. May be {@code null}
-     */
-    public void addWeight(Party patient, BigDecimal weight, User clinician) {
-        EditDialog dialog = setWeight(weight);
-        fireDialogButton(dialog, PopupDialog.OK_ID);
-        checkWeight(patient, weight, clinician);
+        IMObjectBean weightBean = new IMObjectBean(weightAct);
+        assertEquals(patient, weightBean.getTarget("patient"));
+        assertEquals(clinician, weightBean.getTarget("clinician"));
+        assertEquals(0, weight.compareTo(weightBean.getBigDecimal("weight")));
     }
 
     /**
@@ -350,24 +291,37 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
      * @return the event
      */
     public Act runWorkflow(Party patient, Party customer, Party workList, Date arrivalTime, User clinician, Party location) {
-        setPatient(patient);                              // need to pre-set patient and work list
-        setWorkList(workList);                            // so they can be selected in popups
+
         setArrivalTime(arrivalTime);
         start();
 
-        ActBean bean = new ActBean(appointment);
-        if (bean.getNodeParticipantRef("patient") == null) {
-            // as the appointment has no patient, a pop should be displayed to select one
-            selectPatient(patient);
+        CheckInEditor editor = getCheckInEditor();
+
+        if (clinician != null) {
+            editor.setClinician(clinician);
         }
 
-        // select the work list and verify a task has been created.
-        selectWorkList(workList, customer, patient);
+        IMObjectBean bean = new IMObjectBean(appointment);
+        if (bean.getTargetRef("patient") == null) {
+            editor.setPatient(patient);
+        } else {
+            assertEquals(patient, editor.getPatient());
+        }
 
-        // add the patient weight
-        addWeight(patient, BigDecimal.valueOf(10), clinician);
+        if (workList != null) {
+            editor.setWorkList(workList);
+        }
 
-        printPatientDocuments(PopupDialog.SKIP_ID);
+        // set the patient weight
+        editor.setWeight(BigDecimal.TEN);
+
+        fireDialogButton(getCheckInDialog(), PopupDialog.OK_ID);
+
+        checkWeight(patient, BigDecimal.TEN, clinician);
+
+        if (workList != null) {
+            checkTask(workList, customer, patient, clinician, TaskStatus.PENDING);
+        }
 
         // edit the clinical event
         PopupDialog eventDialog = editVisit();
@@ -391,7 +345,7 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
         appointment = IMObjectHelper.reload(appointment);
         if (appointmentUpdated) {
             assertEquals(AppointmentStatus.CHECKED_IN, appointment.getStatus());
-            ActBean bean = new ActBean(appointment);
+            IMObjectBean bean = new IMObjectBean(appointment);
             assertEquals(0, DateRules.compareTo(getWorkflow().getArrivalTime(), bean.getDate("arrivalTime")));
         } else {
             assertEquals(AppointmentStatus.PENDING, appointment.getStatus());
@@ -439,24 +393,6 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
         }
 
         /**
-         * Sets the patient to pre-populate the patient selection browser with.
-         *
-         * @param patient the patient. May be {@code null}
-         */
-        public void setPatient(Party patient) {
-            this.patient = patient;
-        }
-
-        /**
-         * Sets the work-list to pre-populate the work-list selection browser with.
-         *
-         * @param workList the work-list. May be {@code null}
-         */
-        public void setWorkList(Party workList) {
-            this.workList = workList;
-        }
-
-        /**
          * Sets the customer arrival time.
          *
          * @param arrivalTime the arrival time
@@ -485,45 +421,6 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
         public void start() {
             initialise(appointment, context);
             super.start();
-        }
-
-        /**
-         * Creates a new {@link SelectIMObjectTask} to select a patient.
-         *
-         * @param context       the context
-         * @param patientEditor the patient editor, if a new patient is selected
-         * @return a new task to select a patient
-         */
-        @Override
-        protected SelectIMObjectTask<Party> createSelectPatientTask(TaskContext context,
-                                                                    EditIMObjectTask patientEditor) {
-            List<Party> patients = (patient != null) ? Collections.singletonList(patient) : Collections.<Party>emptyList();
-            Query<Party> query = new ListQuery<>(patients, PatientArchetypes.PATIENT, Party.class);
-            return new SelectIMObjectTask<Party>(query, patientEditor, context.getHelpContext()) {
-                @Override
-                protected Browser<Party> createBrowser(Query<Party> query, LayoutContext layout) {
-                    return new DefaultIMObjectTableBrowser<>(query, layout);
-                }
-            };
-        }
-
-        /**
-         * Creates a new {@link SelectIMObjectTask} to select a work list.
-         *
-         * @param context the context
-         * @return a new task to select a work list
-         */
-        @Override
-        protected SelectIMObjectTask<Entity> createSelectWorkListTask(TaskContext context) {
-            List<Entity> list = (workList != null) ? Collections.<Entity>singletonList(workList)
-                                                   : Collections.<Entity>emptyList();
-            Query<Entity> query = new ListQuery<>(list, ScheduleArchetypes.ORGANISATION_WORKLIST, Entity.class);
-            return new SelectIMObjectTask<Entity>(query, context.getHelpContext()) {
-                @Override
-                protected Browser<Entity> createBrowser(Query<Entity> query, LayoutContext layout) {
-                    return new DefaultIMObjectTableBrowser<>(query, layout);
-                }
-            };
         }
 
         /**

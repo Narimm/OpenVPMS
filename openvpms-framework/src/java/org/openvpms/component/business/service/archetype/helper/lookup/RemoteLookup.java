@@ -17,7 +17,6 @@
 package org.openvpms.component.business.service.archetype.helper.lookup;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -25,6 +24,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.model.archetype.AssertionDescriptor;
+import org.openvpms.component.model.archetype.NodeDescriptor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -118,7 +118,9 @@ public class RemoteLookup extends AbstractLookupAssertion {
     @Override
     public Collection<Lookup> getLookups(IMObject context) {
         Collection<Lookup> lookups = super.getLookups(context);
-        Object value = descriptor.getValue(context);
+        org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor d
+                = (org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor) descriptor;
+        Object value = d.getValue(context);
         String code = (value instanceof String) ? (String) value : null;
         if (code != null) {
             // if the code refers to an inactive lookup, ensure it is included

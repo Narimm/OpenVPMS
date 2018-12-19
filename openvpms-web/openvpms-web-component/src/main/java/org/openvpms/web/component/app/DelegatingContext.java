@@ -313,7 +313,7 @@ public abstract class DelegatingContext implements Context {
      *
      * @param schedule the current schedule
      */
-    public void setSchedule(Party schedule) {
+    public void setSchedule(Entity schedule) {
         context.setSchedule(schedule);
     }
 
