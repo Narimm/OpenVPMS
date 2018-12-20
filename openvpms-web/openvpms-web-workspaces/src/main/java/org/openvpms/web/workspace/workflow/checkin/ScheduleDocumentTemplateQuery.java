@@ -63,8 +63,14 @@ class ScheduleDocumentTemplateQuery extends DocumentTemplateQuery {
      * @param workList the work list. May be {@code null}
      */
     public ScheduleDocumentTemplateQuery(Entity schedule, Entity workList) {
-        this.schedule = (schedule == null || useAllTemplates(schedule)) ? null : schedule;
-        this.workList = (workList == null || useAllTemplates(workList)) ? null : workList;
+        if (useAllTemplates(schedule) || useAllTemplates(workList)) {
+            // don't constrain to either a schedule or work list.
+            this.schedule = null;
+            this.workList = null;
+        } else {
+            this.schedule = schedule;
+            this.workList = workList;
+        }
         setTypes(PatientArchetypes.DOCUMENT_FORM, PatientArchetypes.DOCUMENT_LETTER);
     }
 

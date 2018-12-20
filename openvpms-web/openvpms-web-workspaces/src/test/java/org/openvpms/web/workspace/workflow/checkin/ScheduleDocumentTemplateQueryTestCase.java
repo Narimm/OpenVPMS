@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -117,6 +117,48 @@ public class ScheduleDocumentTemplateQueryTestCase extends AbstractAppTest {
         Entity schedule1 = createSchedule(location, false, template1, template2);
         Entity workList1 = createWorkList(false, template1, template2);
         checkQuery(schedule1, workList1, template1, template2);
+    }
+
+    /**
+     * Tests querying for schedules and work lists where {@code useAllTemplates=true} for the schedule only.
+     * This should select all results.
+     */
+    @Test
+    public void testUseAllTemplatesTrueWithScheduleButNotWorkList() {
+        Party location = TestHelper.createLocation();
+        Entity template1 = DocumentTestHelper.createDocumentTemplate(PatientArchetypes.DOCUMENT_LETTER);
+        Entity template2 = DocumentTestHelper.createDocumentTemplate(PatientArchetypes.DOCUMENT_LETTER);
+        Entity template3 = DocumentTestHelper.createDocumentTemplate(PatientArchetypes.DOCUMENT_LETTER);
+        Entity template4 = DocumentTestHelper.createDocumentTemplate(PatientArchetypes.DOCUMENT_LETTER);
+        Entity schedule1 = createSchedule(location, true);
+        Entity workList1 = createWorkList(false, template3);
+        ScheduleDocumentTemplateQuery query = new ScheduleDocumentTemplateQuery(schedule1, workList1);
+
+        checkSelects(true, query, template1);
+        checkSelects(true, query, template2);
+        checkSelects(true, query, template3);
+        checkSelects(true, query, template4);
+    }
+
+    /**
+     * Tests querying for schedules and work lists where {@code useAllTemplates=true} for the work list only.
+     * This should select all results.
+     */
+    @Test
+    public void testUseAllTemplatesTrueWithWorKListButNotSchedule() {
+        Party location = TestHelper.createLocation();
+        Entity template1 = DocumentTestHelper.createDocumentTemplate(PatientArchetypes.DOCUMENT_LETTER);
+        Entity template2 = DocumentTestHelper.createDocumentTemplate(PatientArchetypes.DOCUMENT_LETTER);
+        Entity template3 = DocumentTestHelper.createDocumentTemplate(PatientArchetypes.DOCUMENT_LETTER);
+        Entity template4 = DocumentTestHelper.createDocumentTemplate(PatientArchetypes.DOCUMENT_LETTER);
+        Entity schedule1 = createSchedule(location, false);
+        Entity workList1 = createWorkList(true);
+        ScheduleDocumentTemplateQuery query = new ScheduleDocumentTemplateQuery(schedule1, workList1);
+
+        checkSelects(true, query, template1);
+        checkSelects(true, query, template2);
+        checkSelects(true, query, template3);
+        checkSelects(true, query, template4);
     }
 
     /**

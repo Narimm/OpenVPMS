@@ -16,17 +16,23 @@
 
 package org.openvpms.web.workspace.workflow.checkin;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
+import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Check-In documents.
@@ -39,6 +45,11 @@ class DocumentPanel {
      * The schedule. May be {@code null}
      */
     private final Entity schedule;
+
+    /**
+     * Determines if the schedule has templates.
+     */
+    private final boolean scheduleHasTemplates;
 
     /**
      * The layout context.
@@ -77,6 +88,7 @@ class DocumentPanel {
         this.schedule = schedule;
         this.context = context;
         this.maxResults = maxResults;
+        scheduleHasTemplates = ScheduleDocumentTemplateQuery.hasTemplates(schedule);
         addBrowser(worklist);
     }
 
@@ -95,7 +107,7 @@ class DocumentPanel {
      * @return a list of <em>entity.documentTemplate</em>
      */
     public Collection<Entity> getTemplates() {
-        return browser.getSelections();
+        return (browser != null) ? browser.getSelections() : Collections.emptyList();
     }
 
     /**
@@ -125,35 +137,78 @@ class DocumentPanel {
         if (browser != null) {
             focusGroup.remove(browser.getFocusGroup());
         }
-        ScheduleDocumentTemplateQuery query = new ScheduleDocumentTemplateQuery(schedule, worklist);
-        query.setMaxResults(maxResults);
-        browser = new PatientDocumentTemplateBrowser(query, context) {
-            /**
-             * Lay out this component.
-             */
-            @Override
-            protected void doLayout() {
-                Column container = ColumnFactory.create();
-                doLayout(container);
-                setComponent(container);
-                query();
-            }
-
-            /**
-             * Creates a new paged table.
-             *
-             * @param model the table model
-             * @return a new paged table
-             */
-            @Override
-            protected PagedIMTable<Entity> createTable(IMTableModel<Entity> model) {
-                return new PagedIMTable<>(model, false);
-            }
-        };
         container.removeAll();
-        container.add(browser.getComponent());
-        focusGroup.add(browser.getFocusGroup());
+        if (scheduleHasTemplates || (worklist != null && ScheduleDocumentTemplateQuery.hasTemplates(worklist))) {
+            ScheduleDocumentTemplateQuery query = new ScheduleDocumentTemplateQuery(schedule, worklist);
+            query.setMaxResults(maxResults);
+
+            browser = new TemplateBrowser(query);
+            container.add(browser.getComponent());
+            focusGroup.add(browser.getFocusGroup());
+        } else {
+            String message;
+            if (schedule != null && worklist != null) {
+                message = Messages.format("workflow.checkin.print.none2", schedule.getName(), worklist.getName());
+            } else if (schedule != null) {
+                message = Messages.format("workflow.checkin.print.none1", schedule.getName());
+            } else if (worklist != null) {
+                message = Messages.format("workflow.checkin.print.none1", worklist.getName());
+            } else {
+                message = Messages.format("workflow.checkin.print.none");
+            }
+            container.add(LabelFactory.text(message));
+        }
     }
 
+    /**
+     * A {@link PatientDocumentTemplateBrowser} that is rendered in a {@code Column}, rather than a {@code SplitPane},
+     */
+    private class TemplateBrowser extends PatientDocumentTemplateBrowser {
 
+        /**
+         * Constructs a {@link TemplateBrowser}.
+         *
+         * @param query the query
+         */
+        TemplateBrowser(ScheduleDocumentTemplateQuery query) {
+            super(query, DocumentPanel.this.context);
+        }
+
+        /**
+         * Lay out this component.
+         */
+        @Override
+        protected void doLayout() {
+            Column container = ColumnFactory.create();
+            doLayout(container);
+            setComponent(container);
+            query();
+        }
+
+        /**
+         * Lays out the container when there are no results to display.
+         *
+         * @param container the container
+         */
+        protected void doLayoutForNoResults(Component container) {
+            Label label = LabelFactory.create("browser.noresults", Styles.BOLD);
+            label.setLayoutData(ColumnFactory.layout(Alignment.ALIGN_CENTER));
+
+            Column wrapper = ColumnFactory.create(Styles.LARGE_INSET, label);
+            wrapper.setLayoutData(ColumnFactory.layout(Alignment.ALIGN_CENTER));
+
+            container.add(wrapper);
+        }
+
+        /**
+         * Creates a new paged table.
+         *
+         * @param model the table model
+         * @return a new paged table
+         */
+        @Override
+        protected PagedIMTable<Entity> createTable(IMTableModel<Entity> model) {
+            return new PagedIMTable<>(model, false);
+        }
+    }
 }
