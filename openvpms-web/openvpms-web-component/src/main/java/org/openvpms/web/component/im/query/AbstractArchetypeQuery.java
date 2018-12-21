@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -397,14 +397,17 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
     protected void addShortNameSelector(Component container) {
         String[] shortNames = getShortNames();
         if (shortNames.length > 1) {
-            final ShortNameListModel model = new ShortNameListModel(shortNames, true);
-            final SelectField shortNameSelector = SelectFieldFactory.create(model);
+            ShortNameListModel model = new ShortNameListModel(shortNames, true);
+            SelectField shortNameSelector = SelectFieldFactory.create(model);
+            shortNameSelector.addPropertyChangeListener(evt -> {
+                int index = shortNameSelector.getSelectedIndex();
+                String shortName = model.getShortName(index);
+                setShortName(shortName);
+                onShortNameChanged();
+            });
             shortNameSelector.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent event) {
-                    int index = shortNameSelector.getSelectedIndex();
-                    String shortName = model.getShortName(index);
-                    setShortName(shortName);
-                    onShortNameChanged();
+                    onQuery();
                 }
             });
             shortNameSelector.setCellRenderer(new ShortNameListCellRenderer());
@@ -418,15 +421,19 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
 
     /**
      * Returns the search field.
+     * <p/>
+     * When the field updates, {@link #onSearchFieldChanged()} is invoked.<br/>
+     * When enter is pressed, {@link #onQuery()} is invoked.
      *
      * @return the search field
      */
     protected TextField getSearchField() {
         if (searchField == null) {
             searchField = TextComponentFactory.create();
+            searchField.addPropertyChangeListener(evt -> onSearchFieldChanged());
             searchField.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent event) {
-                    onSearchFieldChanged();
+                    onQuery();
                 }
             });
         }
@@ -455,12 +462,7 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
             ListModel model = new DefaultListModel(ACTIVE_CHOICES);
             activeSelector = SelectFieldFactory.create(model);
             activeSelector.setSelectedIndex(0);
-            activeSelector.setCellRenderer(new ListCellRenderer() {
-                @Override
-                public Object getListCellRendererComponent(Component list, Object value, int index) {
-                    return Messages.get(value.toString());
-                }
-            });
+            activeSelector.setCellRenderer((ListCellRenderer) (list, value, index) -> Messages.get(value.toString()));
             activeSelector.addActionListener(new ActionListener() {
                 @Override
                 public void onAction(ActionEvent event) {
@@ -487,17 +489,19 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
     }
 
     /**
-     * Invoked when the search field changes. Invokes {@link #onQuery}.
+     * Invoked when the search field change.
+     * <p/>
+     * This implementation is a no-op.
      */
     protected void onSearchFieldChanged() {
-        onQuery();
     }
 
     /**
-     * Invoked when the short name is selected. Invokes {@link #onQuery}
+     * Invoked when the short name is selected.
+     * <p/>
+     * This implementation is a no-op.
      */
     protected void onShortNameChanged() {
-        onQuery();
     }
 
     /**

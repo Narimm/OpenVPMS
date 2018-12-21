@@ -243,9 +243,10 @@ public abstract class CustomerPatientObjectSetQuery extends AbstractEntityQuery<
     protected TextField getPatient() {
         if (patient == null) {
             patient = TextComponentFactory.create();
+            patient.addPropertyChangeListener((evt) -> onPatientChanged());
             patient.addActionListener(new ActionListener() {
                 public void onAction(ActionEvent event) {
-                    onPatientChanged();
+                    onQuery();
                 }
             });
         }
@@ -294,13 +295,12 @@ public abstract class CustomerPatientObjectSetQuery extends AbstractEntityQuery<
      * Invoked when the patient text is changed.
      * <p/>
      * This implementation checks the identity search box if {@link #checkPatientIdentity} is {@code true} and the text
-     * contains numerics, then runs the query.
+     * contains numerics.
      */
     private void onPatientChanged() {
         if (checkPatientIdentity) {
             checkIdentityName(getPatient().getText());
         }
-        onQuery();
     }
 
     protected static abstract class Memento extends AbstractQueryState {

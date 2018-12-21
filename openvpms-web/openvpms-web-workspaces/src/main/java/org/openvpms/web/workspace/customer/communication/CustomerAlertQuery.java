@@ -109,9 +109,10 @@ public class CustomerAlertQuery extends DateRangeActQuery<Act> {
         LookupQuery source = new ArchetypeLookupQuery(CustomerArchetypes.ALERT_TYPE);
         alertTypes = LookupFieldFactory.create(source, true);
         alertTypes.setSelected((String) null); // default to all
+        alertTypes.addPropertyChangeListener(evt -> onAlertTypeChanged());
         alertTypes.addActionListener(new ActionListener() {
             public void onAction(ActionEvent e) {
-                onAlertTypeChanged();
+                onQuery();
             }
         });
         this.activeNow = activeNow;
@@ -168,14 +169,14 @@ public class CustomerAlertQuery extends DateRangeActQuery<Act> {
         // intercept rather than pass on the sort constraint on, as it may contain a VirtualNodeSortConstraint
         if (activeNow) {
             IConstraint dateRangeConstraint = QueryHelper.createDateRangeConstraint(new Date());
-            set = new ActResultSet<Act>(getArchetypeConstraint(),
-                                        new ParticipantConstraint[]{getParticipantConstraint()},
-                                        dateRangeConstraint, getStatuses(),
-                                        excludeStatuses(), getConstraints(), getMaxResults(), null);
+            set = new ActResultSet<>(getArchetypeConstraint(),
+                                     new ParticipantConstraint[]{getParticipantConstraint()},
+                                     dateRangeConstraint, getStatuses(),
+                                     excludeStatuses(), getConstraints(), getMaxResults(), null);
         } else {
             set = super.createResultSet(null);
         }
-        LocalSortResultSet<Act> result = new LocalSortResultSet<Act>(set);
+        LocalSortResultSet<Act> result = new LocalSortResultSet<>(set);
         result.sort(sort);
         return result;
     }
@@ -188,7 +189,7 @@ public class CustomerAlertQuery extends DateRangeActQuery<Act> {
      * @return the filtered set
      */
     private ResultSet<Act> filterOnAlertType(ResultSet<Act> set, SortConstraint[] sort) {
-        List<Act> matches = new ArrayList<Act>();
+        List<Act> matches = new ArrayList<>();
         while (set.hasNext()) {
             IPage<Act> page = set.next();
             for (Act act : page.getResults()) {
@@ -198,7 +199,7 @@ public class CustomerAlertQuery extends DateRangeActQuery<Act> {
                 }
             }
         }
-        ResultSet<Act> result = new IMObjectListResultSet<Act>(matches, getMaxResults());
+        ResultSet<Act> result = new IMObjectListResultSet<>(matches, getMaxResults());
         if (sort != null) {
             result.sort(sort);
         }
@@ -210,7 +211,6 @@ public class CustomerAlertQuery extends DateRangeActQuery<Act> {
      */
     private void onAlertTypeChanged() {
         setAlertType(alertTypes.getSelectedCode());
-        onQuery();
     }
 
 }
