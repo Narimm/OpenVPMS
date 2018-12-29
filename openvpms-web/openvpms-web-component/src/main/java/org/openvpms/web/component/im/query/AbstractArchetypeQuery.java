@@ -401,7 +401,7 @@ public abstract class AbstractArchetypeQuery<T> extends AbstractQuery<T> {
             SelectField shortNameSelector = SelectFieldFactory.create(model);
             shortNameSelector.addPropertyChangeListener(evt -> {
                 int index = shortNameSelector.getSelectedIndex();
-                String shortName = model.getShortName(index);
+                String shortName = (index >= 0) ? model.getShortName(index) : null;
                 setShortName(shortName);
                 onShortNameChanged();
             });
