@@ -150,6 +150,11 @@ public class CheckInDialog extends ModalDialog {
         return editor.getTask();
     }
 
+    /**
+     * Returns the editor.
+     *
+     * @return the editor
+     */
     CheckInEditor getEditor() {
         return editor;
     }

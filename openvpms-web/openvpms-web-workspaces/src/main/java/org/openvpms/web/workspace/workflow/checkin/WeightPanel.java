@@ -187,6 +187,7 @@ class WeightPanel {
         }
         currentWeightAge.setText(age);
         weightBean.setTarget("patient", patient);
+        editor.setWeight(null); // so users don't have to clear the existing value before entering a new one
     }
 
     /**
@@ -307,6 +308,10 @@ class WeightPanel {
 
         public PropertyEditor getUnits() {
             return (PropertyEditor) getEditor("units");
+        }
+
+        public void setWeight(BigDecimal value) {
+            getProperty("weight").setValue(value);
         }
 
         public boolean isZero() {
