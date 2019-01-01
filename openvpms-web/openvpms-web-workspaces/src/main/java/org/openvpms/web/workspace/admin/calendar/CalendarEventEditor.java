@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.calendar;
@@ -21,6 +21,7 @@ import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.model.entity.Entity;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.system.ServiceHelper;
@@ -44,7 +45,7 @@ public class CalendarEventEditor extends AbstractCalendarEventEditor {
      * @param context the layout context
      */
     public CalendarEventEditor(Act act, IMObject parent, LayoutContext context) {
-        super(act, parent, context);
+        this(act, parent, false, context);
     }
 
     /**
@@ -57,6 +58,18 @@ public class CalendarEventEditor extends AbstractCalendarEventEditor {
      */
     public CalendarEventEditor(Act act, IMObject parent, boolean editSeries, LayoutContext context) {
         super(act, parent, editSeries, context);
+        addStartEndTimeListeners();
+    }
+
+    /**
+     * Creates a new instance of the editor, with the latest instance of the object to edit.
+     *
+     * @return {@code null}
+     */
+    @Override
+    public IMObjectEditor newInstance() {
+        boolean editSeries = getSeriesEditor() != null;
+        return new CalendarEventEditor(reload(getObject()), getParent(), editSeries, getLayoutContext());
     }
 
     /**
