@@ -11,12 +11,10 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.button;
-
-import org.openvpms.web.echo.style.Styles;
 
 /**
  * A check box that uses a different styles when the check box is enabled/disabled.
@@ -25,12 +23,16 @@ import org.openvpms.web.echo.style.Styles;
  */
 public class CheckBox extends nextapp.echo2.app.CheckBox {
 
-    private boolean edit = false;
+    /**
+     * The style name to set when the checkbox is enabled.
+     */
+    private String style;
 
     /**
      * The disabled style name.
      */
     private static final String DISABLED_STYLE = "disabled";
+
 
     /**
      * Sets the name of the style to use from the
@@ -43,16 +45,8 @@ public class CheckBox extends nextapp.echo2.app.CheckBox {
      */
     @Override
     public void setStyleName(String newValue) {
-        edit = Styles.EDIT.equals(newValue);
-        if (edit) {
-            if (isEnabled()) {
-                super.setStyleName(Styles.DEFAULT);
-            } else {
-                super.setStyleName(DISABLED_STYLE);
-            }
-        } else {
-            super.setStyleName(newValue);
-        }
+        this.style = newValue;
+        super.setStyleName(newValue);
     }
 
     /**
@@ -64,12 +58,10 @@ public class CheckBox extends nextapp.echo2.app.CheckBox {
     @Override
     public void setEnabled(boolean newValue) {
         super.setEnabled(newValue);
-        if (edit) {
-            if (newValue) {
-                super.setStyleName(Styles.DEFAULT);
-            } else {
-                setStyleName(DISABLED_STYLE);
-            }
+        if (newValue) {
+            super.setStyleName(style);
+        } else {
+            setStyleName(DISABLED_STYLE);
         }
     }
 }

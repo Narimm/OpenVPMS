@@ -11,12 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.RemoveConfirmationHandler;
+import org.openvpms.web.echo.help.HelpContext;
 
 /**
  * Implementation if {@link RemoveConfirmationHandler} for {@link ChargeItemRelationshipCollectionEditor}.
@@ -29,15 +31,12 @@ import org.openvpms.web.component.im.edit.RemoveConfirmationHandler;
 public class DefaultChargeRemoveConfirmationHandler extends ChargeRemoveConfirmationHandler {
 
     /**
-     * Singleton instance.
+     * Constructs a {@link DefaultChargeRemoveConfirmationHandler}.
+     *
+     * @param context the context
+     * @param help    the help context
      */
-    public static final RemoveConfirmationHandler INSTANCE = new DefaultChargeRemoveConfirmationHandler();
-
-    /**
-     * Default constructor.
-     */
-    private DefaultChargeRemoveConfirmationHandler() {
-
+    public DefaultChargeRemoveConfirmationHandler(Context context, HelpContext help) {
+        super(context, help);
     }
-
 }

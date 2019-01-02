@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -85,7 +85,8 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
                                                           PriceActEditContext editContext) {
         super(property, act, context, factory);
         this.editContext = editContext;
-        setRemoveConfirmationHandler(DefaultChargeRemoveConfirmationHandler.INSTANCE);
+        setRemoveConfirmationHandler(new DefaultChargeRemoveConfirmationHandler(context.getContext(),
+                                                                                context.getHelpContext()));
     }
 
     /**
@@ -150,7 +151,9 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
      * @return a new table model
      */
     protected ChargeItemTableModel createChargeItemTableModel(LayoutContext context) {
-        return new ChargeItemTableModel(getCollectionPropertyEditor().getArchetypeRange(),
+        PriceActEditContext editContext = getEditContext();
+        return new ChargeItemTableModel(getCollectionPropertyEditor().getArchetypeRange(), null,
+                                        editContext.useMinimumQuantities(), editContext.overrideMinimumQuantities(),
                                         context);
     }
 
@@ -221,7 +224,7 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
      * Creates a new product template expander.
      * <p/>
      * This implementation will restrict products to those of the location and stock location,
-     * if {@link PriceActEditContext#useLocationProducts} is {@code true}.
+     * if {@link PriceActEditContext#useLocationProducts()} is {@code true}.
      *
      * @return a new product template expander
      */
@@ -255,6 +258,7 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
      *
      * @return the model
      */
+    @SuppressWarnings("unchecked")
     private ChargeItemTableModel<Act> getModel() {
         IMTableModel model = getTable().getModel().getModel();
         return (ChargeItemTableModel<Act>) model;

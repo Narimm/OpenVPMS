@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -345,7 +345,8 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     protected ChargeItemTableModel createChargeItemTableModel(LayoutContext context) {
         CustomerChargeEditContext editContext = getEditContext();
         return new ChargeItemTableModel(getCollectionPropertyEditor().getArchetypeRange(), editContext.getStock(),
-                                        editContext.overrideMinimumQuantities(), context);
+                                        editContext.useMinimumQuantities(), editContext.overrideMinimumQuantities(),
+                                        context);
     }
 
     /**

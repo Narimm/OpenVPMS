@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -28,7 +28,7 @@ public interface ListMarkModel {
         /**
          * Invoked when a list index is marked or unmarked.
          *
-         * @param index the list index
+         * @param index  the list index
          * @param marked if {@code true}, the index was marked, otherwise it was unmarked
          */
         void changed(int index, boolean marked);
@@ -71,6 +71,14 @@ public interface ListMarkModel {
      * @return {@code true} if it is marked, {@code false} if it is unmarked
      */
     boolean isMarked(int index);
+
+    /**
+     * Determines if a list index can be marked.
+     *
+     * @param index the list index
+     * @return {@code true} it it can be marked
+     */
+    boolean canMark(int index);
 
     /**
      * Removes all marks.

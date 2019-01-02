@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -105,6 +105,17 @@ public class DefaultListMarkModel implements ListMarkModel {
     @Override
     public boolean isEmpty() {
         return marks.isEmpty();
+    }
+
+    /**
+     * Determines if a list index can be marked.
+     *
+     * @param index the list index
+     * @return {@code true}
+     */
+    @Override
+    public boolean canMark(int index) {
+        return true;
     }
 
     /**

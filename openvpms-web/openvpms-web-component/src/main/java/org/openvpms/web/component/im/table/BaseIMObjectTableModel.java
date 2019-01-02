@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -349,17 +349,23 @@ public abstract class BaseIMObjectTableModel<T extends IMObject>
             }
             result = rowMarks[row];
             if (result == null) {
-                CheckBox checkBox = CheckBoxFactory.create(model.isMarked(row));
+                CheckBox checkBox;
+                if (model.canMark(row)) {
+                    checkBox = CheckBoxFactory.create(model.isMarked(row));
+                    checkBox.addPropertyChangeListener(evt -> markRow(row, checkBox));
+                    checkBox.addActionListener(new ActionListener() {
+                        @Override
+                        public void onAction(ActionEvent event) {
+                        }
+                    });
+                    rowMarks[row] = checkBox;
+                } else {
+                    checkBox = CheckBoxFactory.create(false);
+                    checkBox.setEnabled(false);
+                }
                 TableLayoutData layout = new TableLayoutData();
                 layout.setAlignment(Alignment.ALIGN_CENTER);
                 checkBox.setLayoutData(layout);
-                checkBox.addPropertyChangeListener(evt -> markRow(row, checkBox));
-                checkBox.addActionListener(new ActionListener() {
-                    @Override
-                    public void onAction(ActionEvent event) {
-                    }
-                });
-                rowMarks[row] = checkBox;
                 result = checkBox;
             }
         }

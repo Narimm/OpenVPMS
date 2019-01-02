@@ -2517,6 +2517,8 @@
         </properties>
     </style>
 
+    <style name="edit" type="nextapp.echo2.app.CheckBox" base-name="default"/>
+
     <style name="disabled" type="nextapp.echo2.app.CheckBox" base-name="default">
         <properties>
             <property name="stateIcon" type="nextapp.echo2.app.HttpImageReference">

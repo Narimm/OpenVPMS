@@ -11,28 +11,48 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import nextapp.echo2.app.Column;
+import nextapp.echo2.app.Label;
+import nextapp.echo2.app.RadioButton;
+import nextapp.echo2.app.button.ButtonGroup;
+import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.AbstractRemoveConfirmationHandler;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.RemoveConfirmationHandler;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.ListResultSet;
+import org.openvpms.web.component.im.table.DefaultDescriptorTableModel;
+import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.ErrorDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
+import org.openvpms.web.echo.event.ActionListener;
+import org.openvpms.web.echo.factory.ButtonFactory;
+import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.customer.PriceActItemEditor;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+
+import static org.openvpms.web.echo.style.Styles.CELL_SPACING;
+import static org.openvpms.web.echo.style.Styles.WIDE_CELL_SPACING;
 
 /**
  * Implementation if {@link RemoveConfirmationHandler} for {@link AbstractChargeItemRelationshipCollectionEditor}.
@@ -45,9 +65,25 @@ import java.util.List;
 public abstract class ChargeRemoveConfirmationHandler extends AbstractRemoveConfirmationHandler {
 
     /**
-     * The logger.
+     * The context.
      */
-    private static final Log log = LogFactory.getLog(ChargeRemoveConfirmationHandler.class);
+    private final Context context;
+
+    /**
+     * The help context.
+     */
+    private final HelpContext help;
+
+    /**
+     * Constructs a {@link ChargeRemoveConfirmationHandler}.
+     *
+     * @param context the context
+     * @param help    the help context
+     */
+    public ChargeRemoveConfirmationHandler(Context context, HelpContext help) {
+        this.context = context;
+        this.help = help;
+    }
 
     /**
      * Confirms removal of an object from a collection.
@@ -104,22 +140,36 @@ public abstract class ChargeRemoveConfirmationHandler extends AbstractRemoveConf
      * @param collection the collection to remove the objects from, if approved
      */
     protected void confirmRemove(List<IMObject> objects, AbstractChargeItemRelationshipCollectionEditor collection) {
-        String displayName = collection.getProperty().getDisplayName();
-        String title = Messages.format("imobject.collection.deletes.title", displayName);
-        String message = Messages.format("imobject.collection.deletes.message", objects.size(), displayName);
-        ConfirmationDialog dialog = new ConfirmationDialog(title, message, ConfirmationDialog.YES_NO);
-        dialog.addWindowPaneListener(new PopupDialogListener() {
-            @Override
-            public void onYes() {
-                removeAll(objects, collection);
+        PriceActEditContext editContext = collection.getEditContext();
+        List<IMObject> minQuantities = new ArrayList<>();
+        if (editContext.useMinimumQuantities()) {
+            for (IMObject object : objects) {
+                BigDecimal quantity = getMinQuantity(object);
+                if (quantity.compareTo(BigDecimal.ZERO) > 0) {
+                    minQuantities.add(object);
+                }
             }
+        }
+        if (!minQuantities.isEmpty()) {
+            removeMinimumQuantities(objects, minQuantities, collection, editContext.overrideMinimumQuantities());
+        } else {
+            String displayName = collection.getProperty().getDisplayName();
+            String title = Messages.format("imobject.collection.deletes.title", displayName);
+            String message = Messages.format("imobject.collection.deletes.message", objects.size(), displayName);
+            ConfirmationDialog dialog = new ConfirmationDialog(title, message, ConfirmationDialog.YES_NO);
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onYes() {
+                    removeAll(objects, collection);
+                }
 
-            @Override
-            public void onNo() {
-                cancelRemove(collection);
-            }
-        });
-        dialog.show();
+                @Override
+                public void onNo() {
+                    cancelRemove(collection);
+                }
+            });
+            dialog.show();
+        }
     }
 
     /**
@@ -174,12 +224,17 @@ public abstract class ChargeRemoveConfirmationHandler extends AbstractRemoveConf
         String name = getDisplayName(editor);
         if (override) {
             ConfirmationDialog.show(
-                    Messages.format("customer.charge.minquantity.delete.title", name),
+                    Messages.format("imobject.delete.title", name),
                     Messages.format("customer.charge.minquantity.delete.message", name, quantity),
                     ConfirmationDialog.YES_NO, new PopupDialogListener() {
                         @Override
                         public void onYes() {
                             collection.remove(object);
+                        }
+
+                        @Override
+                        public void onNo() {
+                            cancelRemove(collection);
                         }
                     });
         } else {
@@ -189,34 +244,68 @@ public abstract class ChargeRemoveConfirmationHandler extends AbstractRemoveConf
     }
 
     /**
+     * Invoked when multiple objects with non-zero minimum quantity are being removed.
+     * <p/>
+     * This displays a confirmation dialog if there are no restrictions on removal, or the user can override
+     * minimum quantities.
+     * <p/>
+     * If there are restrictions on removal, and the user can't override them, an error will be displayed.
+     *
+     * @param objects       all objects to remove
+     * @param minQuantities the objects with minimum quantities
+     * @param collection    the collection to remove the object from, if confirmed
+     * @param override      determines if the user can override minimum quantities
+     */
+    protected void removeMinimumQuantities(List<IMObject> objects, List<IMObject> minQuantities,
+                                           AbstractChargeItemRelationshipCollectionEditor collection,
+                                           boolean override) {
+        String name = collection.getProperty().getDisplayName();
+        if (override) {
+            LayoutContext layout = new DefaultLayoutContext(context, help);
+            BatchDeleteConfirmationDialog dialog = new BatchDeleteConfirmationDialog(name, minQuantities, layout);
+            dialog.addWindowPaneListener(new PopupDialogListener() {
+                @Override
+                public void onOK() {
+                    if (dialog.deleteAll()) {
+                        removeAll(objects, collection);
+                    } else {
+                        List<IMObject> remaining = new ArrayList<>(objects);
+                        remaining.removeAll(minQuantities);
+                        if (!remaining.isEmpty()) {
+                            removeAll(remaining, collection);
+                        }
+                        cancelRemove(collection); // unmark those not deleted
+                    }
+                }
+
+                @Override
+                public void onCancel() {
+                    cancelRemove(collection);
+                }
+            });
+            dialog.show();
+        } else {
+            // this shouldn't be possible, as multiple deletion is disabled if a user doesn't have permission
+            ErrorDialog.show(Messages.format("customer.charge.minquantity.deleteforbidden.title", name),
+                             Messages.format("customer.charge.minquantity.deleteforbidden.message", name,
+                                             getMinQuantity(minQuantities.get(0))));
+        }
+    }
+
+    private BigDecimal getMinQuantity(IMObject object) {
+        IMObjectBean bean = new IMObjectBean(object);
+        return bean.getBigDecimal(PriceActItemEditor.MINIMUM_QUANTITY, BigDecimal.ZERO);
+    }
+
+    /**
      * Removes a collection of items.
      *
      * @param objects    the objects to remove
      * @param collection the collection the objects belong to
      */
     private void removeAll(List<IMObject> objects, AbstractChargeItemRelationshipCollectionEditor collection) {
-        PriceActEditContext editContext = collection.getEditContext();
-        boolean useMinimumQuantities = editContext.useMinimumQuantities();
-        boolean override = editContext.overrideMinimumQuantities();
         for (IMObject object : objects) {
-            boolean remove = true;
-            if (useMinimumQuantities && !override) {
-                // Sanity check to make sure the user can delete objects. Objects shouldn't be selectable for deletion
-                // in this case.
-                IMObjectEditor chargeEditor = collection.getEditor(object);
-                if (chargeEditor instanceof PriceActItemEditor) {
-                    PriceActItemEditor editor = (PriceActItemEditor) chargeEditor;
-                    BigDecimal quantity = editor.getMinimumQuantity();
-                    if (quantity.compareTo(BigDecimal.ZERO) > 0) {
-                        log.error("Ignoring attempt to remove object=" + object.getId() + " with minimum quantity="
-                                  + quantity);
-                        remove = false;
-                    }
-                }
-            }
-            if (remove) {
-                apply(object, collection);
-            }
+            apply(object, collection);
         }
     }
 
@@ -235,6 +324,99 @@ public abstract class ChargeRemoveConfirmationHandler extends AbstractRemoveConf
             result = DescriptorHelper.getDisplayName(editor.getObject());
         }
         return result;
+    }
+
+    private class BatchDeleteConfirmationDialog extends ConfirmationDialog {
+
+        /**
+         * Collection name.
+         */
+        private final String name;
+
+        /**
+         * The objects with minimum quantities.
+         */
+        private final List<IMObject> objects;
+
+        /**
+         * The layout context.
+         */
+        private final LayoutContext context;
+
+        /**
+         * Determines if all objects should be deleted.
+         */
+        private boolean deleteAll;
+
+
+        /**
+         * Constructs a {@link BatchDeleteConfirmationDialog}.
+         *
+         * @param name    the collection name
+         * @param objects the objects with minimum quantities
+         * @param context the layout context
+         */
+        BatchDeleteConfirmationDialog(String name, List<IMObject> objects, LayoutContext context) {
+            super(Messages.format("imobject.collection.deletes.title", name),
+                  Messages.format("customer.charge.minquantity.batchdelete.message", name), OK_CANCEL);
+            setStyleName("MediumWidthHeightDialog");
+            this.name = name;
+            this.objects = objects;
+            this.context = context;
+            getButtons().setEnabled(OK_ID, false);
+        }
+
+        /**
+         * Determines if all objects should be deleted.
+         *
+         * @return {@code true} if all objects should be deleted
+         */
+        public boolean deleteAll() {
+            return deleteAll;
+        }
+
+        /**
+         * Lays out the component prior to display.
+         */
+        @Override
+        protected void doLayout() {
+            Label content = LabelFactory.create(true, true);
+            content.setText(getMessage());
+            DefaultDescriptorTableModel<IMObject> model = new DefaultDescriptorTableModel<>(
+                    objects.get(0).getArchetype(), context, "date", "patient", "product", "minQuantity");
+            PagedIMTable<IMObject> table = new PagedIMTable<>(model);
+            table.setResultSet(new ListResultSet<>(objects, 7));
+            // TODO need a better dialog style. This is to support 1024x768
+
+            ButtonGroup group = new ButtonGroup();
+            RadioButton deselect = ButtonFactory.create(null, group, new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    setDeleteAll(false);
+                }
+            });
+            deselect.setText(Messages.format("customer.charge.minquantity.batchdelete.skip", name));
+
+            RadioButton delete = ButtonFactory.create(null, group, new ActionListener() {
+                @Override
+                public void onAction(ActionEvent event) {
+                    setDeleteAll(true);
+                }
+            });
+            delete.setText(Messages.format("customer.charge.minquantity.batchdelete.deleteall", name));
+            Label treatment = LabelFactory.create("customer.charge.minquantity.batchdelete.treatment");
+            Column buttons = ColumnFactory.create(CELL_SPACING, treatment, deselect, delete);
+
+            Column preamble = ColumnFactory.create(CELL_SPACING, content, table.getComponent());
+            Column column = ColumnFactory.create(WIDE_CELL_SPACING, preamble, buttons);
+            getLayout().add(ColumnFactory.create(Styles.LARGE_INSET, column));
+        }
+
+        private void setDeleteAll(boolean deleteAll) {
+            this.deleteAll = deleteAll;
+            getButtons().setEnabled(OK_ID, true);
+        }
+
     }
 
 }
