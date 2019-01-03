@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
@@ -122,7 +122,7 @@ public class FollowUpTaskEditor extends AbstractTaskActEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         ArchetypeNodes nodes = new ArchetypeNodes(true, true).simple("worklist").order("worklist", "startTime")
-                .order("taskType", "startTime").hidden(true);
+                .order("taskType", "startTime").exclude("patient").hidden(true);
         DefaultLayoutStrategy strategy = new DefaultLayoutStrategy(nodes);
         strategy.addComponent(new ComponentState(workListEditor));
         strategy.addComponent(new ComponentState(getStartTimeEditor()));

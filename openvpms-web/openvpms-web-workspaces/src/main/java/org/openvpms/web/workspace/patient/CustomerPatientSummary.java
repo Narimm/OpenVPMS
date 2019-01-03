@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient;
@@ -24,9 +24,11 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.DefaultContextSwitchListener;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.CustomerSummary;
 import org.openvpms.web.workspace.patient.summary.PatientSummary;
@@ -171,7 +173,7 @@ public class CustomerPatientSummary {
         Component customerSummary = (customer != null) ? getCustomerSummary(customer, local) : null;
         Component patientSummary = (patient != null) ? getPatientSummary(patient, local) : null;
         if (customerSummary != null || patientSummary != null) {
-            result = ColumnFactory.create("CellSpacing");
+            result = ColumnFactory.create(Styles.CELL_SPACING);
             if (customerSummary != null) {
                 result.add(customerSummary);
             }
@@ -202,7 +204,7 @@ public class CustomerPatientSummary {
      * @return the customer summary component
      */
     protected Component getPatientSummary(Party patient, Context context) {
-        PatientSummary summary = new PatientSummary(context, help, preferences);
+        PatientSummary summary = new PatientSummary(context, help, preferences, DefaultContextSwitchListener.INSTANCE);
         return summary.getSummary(patient);
     }
 }

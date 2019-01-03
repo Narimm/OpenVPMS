@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.summary;
 
 import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.customer.CustomerSummary;
 import org.openvpms.web.workspace.patient.CustomerPatientSummary;
@@ -56,8 +57,10 @@ public interface CustomerPatientSummaryFactory {
      * @param context     the context
      * @param help        the help context
      * @param preferences user preferences
+     * @param listener    the context switch listener, or {@code null} to disable context switching
      * @return the summary
      */
-    PatientSummary createPatientSummary(Context context, HelpContext help, Preferences preferences);
+    PatientSummary createPatientSummary(Context context, HelpContext help, Preferences preferences,
+                                        ContextSwitchListener listener);
 
 }

@@ -11,11 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.patient;
 
+import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Row;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -36,6 +39,8 @@ import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.query.QueryAdapter;
 import org.openvpms.web.component.property.Property;
+import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.style.Styles;
 
 
 /**
@@ -58,6 +63,11 @@ public class PatientParticipationEditor extends ParticipationEditor<Party> {
     private CustomerParticipationEditor customerEditor;
 
     /**
+     * The container row.
+     */
+    private Row row;
+
+    /**
      * Constructs a {@link PatientParticipationEditor}.
      *
      * @param participation the object to edit
@@ -67,8 +77,7 @@ public class PatientParticipationEditor extends ParticipationEditor<Party> {
     public PatientParticipationEditor(Participation participation, Act parent, LayoutContext layout) {
         super(participation, parent, layout);
         if (!TypeHelper.isA(participation, PatientArchetypes.PATIENT_PARTICIPATION)) {
-            throw new IllegalArgumentException(
-                "Invalid participation type:" + participation.getArchetypeId().getShortName());
+            throw new IllegalArgumentException("Invalid participation type:" + participation.getArchetype());
         }
         Context context = getLayoutContext().getContext();
         alerts = new MandatoryAlerts(context, layout.getHelpContext());
@@ -86,7 +95,7 @@ public class PatientParticipationEditor extends ParticipationEditor<Party> {
 
     /**
      * Associates a customer participation editor with this.
-     * <p/>
+     * <p>
      * If non-null, the customer will be updated when a patient is selected in the browser.
      *
      * @param editor the editor. May be {@code null}
@@ -100,6 +109,20 @@ public class PatientParticipationEditor extends ParticipationEditor<Party> {
      */
     public void showAlerts() {
         alerts.show(getEntity());
+    }
+
+    /**
+     * Returns the rendered object.
+     *
+     * @return the rendered object
+     */
+    @Override
+    public Component getComponent() {
+        if (row == null) {
+            Button info = PatientSummaryViewer.createButton(getLayoutContext(), this::getEntity);
+            row = RowFactory.create(Styles.CELL_SPACING, super.getComponent(), info);
+        }
+        return row;
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.summary;
@@ -47,6 +47,7 @@ import org.openvpms.web.component.alert.Alert;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.ContextApplicationInstance;
 import org.openvpms.web.component.app.ContextHelper;
+import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.app.GlobalContext;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.EditDialogFactory;
@@ -99,6 +100,11 @@ import static org.openvpms.archetype.rules.patient.PatientArchetypes.PATIENT_PAR
 public class PatientSummary extends PartySummary {
 
     /**
+     * The context switch listener, or {@code null} to disable context switching.
+     */
+    private final ContextSwitchListener listener;
+
+    /**
      * The patient rules.
      */
     private final PatientRules rules;
@@ -134,9 +140,11 @@ public class PatientSummary extends PartySummary {
      * @param context     the context
      * @param help        the help context
      * @param preferences user preferences
+     * @param listener    the context switch listener, or {@code null} to disable context switching
      */
-    public PatientSummary(Context context, HelpContext help, Preferences preferences) {
+    public PatientSummary(Context context, HelpContext help, Preferences preferences, ContextSwitchListener listener) {
         super(context, help.topic("patient/summary"), preferences);
+        this.listener = listener;
         rules = ServiceHelper.getBean(PatientRules.class);
         reminderRules = ServiceHelper.getBean(ReminderRules.class);
         insuranceRules = ServiceHelper.getBean(InsuranceRules.class);
@@ -203,7 +211,7 @@ public class PatientSummary extends PartySummary {
         } else {
             name += " (" + getPatientSex(patient) + " " + Messages.get("patient.entire") + ")";
         }
-        IMObjectReferenceViewer patientName = new IMObjectReferenceViewer(patient.getObjectReference(), name, true,
+        IMObjectReferenceViewer patientName = new IMObjectReferenceViewer(patient.getObjectReference(), name, listener,
                                                                           getContext());
         patientName.setStyleName("hyperlink-bold");
         return patientName.getComponent();
@@ -453,17 +461,23 @@ public class PatientSummary extends PartySummary {
             }
         }
 
-        Button button = ButtonFactory.create(null, "hyperlink-bold", new ActionListener() {
-            public void onAction(ActionEvent event) {
-                ContextApplicationInstance instance = ContextApplicationInstance.getInstance();
-                ContextHelper.setPatient(instance.getContext(), patient);
-                instance.switchTo(InsuranceArchetypes.POLICY);
-            }
-        });
-        button.setText(name);
-
         grid.add(title);
-        grid.add(button);
+        if (listener != null) {
+            Button button = ButtonFactory.create(null, "hyperlink-bold", new ActionListener() {
+                public void onAction(ActionEvent event) {
+                    ContextApplicationInstance instance = ContextApplicationInstance.getInstance();
+                    ContextHelper.setPatient(instance.getContext(), patient);
+                    listener.switchTo(InsuranceArchetypes.POLICY);
+                }
+            });
+            button.setText(name);
+            grid.add(button);
+        } else {
+            Label label = LabelFactory.create(null, Styles.BOLD);
+            label.setText(name);
+            grid.add(label);
+        }
+
     }
 
     /**

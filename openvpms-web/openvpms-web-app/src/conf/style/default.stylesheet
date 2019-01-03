@@ -81,6 +81,14 @@
         </properties>
     </style>
 
+    <style name="SummaryDialog" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
+        <properties>
+            <property name="width" value="${SummaryDialog.width}"/>
+            <property name="height" value="${SummaryDialog.height}"/>
+            <property name="resizable" value="true"/>
+        </properties>
+    </style>
+
     <style name="MainPane.Right" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
@@ -2793,6 +2801,14 @@
                       type="nextapp.echo2.app.ResourceImageReference">
                 <resource-image-reference
                         resource="/org/openvpms/web/resource/image/buttons/select.gif"/>
+            </property>
+        </properties>
+    </style>
+
+    <style name="button.info" type="nextapp.echo2.app.button.AbstractButton">
+        <properties>
+            <property name="icon" type="nextapp.echo2.app.HttpImageReference">
+                <http-image-reference url="../images/info.png"/>
             </property>
         </properties>
     </style>

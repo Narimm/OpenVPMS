@@ -11,13 +11,18 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.summary;
 
+import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.prefs.Preferences;
+import org.openvpms.component.model.party.Party;
 import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.ContextSwitchListener;
+import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.patient.PatientSummaryFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.workspace.customer.CustomerSummary;
 import org.openvpms.web.workspace.patient.CustomerPatientSummary;
@@ -28,7 +33,7 @@ import org.openvpms.web.workspace.patient.CustomerPatientSummary;
  *
  * @author Tim Anderson
  */
-public class DefaultCustomerPatientSummaryFactory implements CustomerPatientSummaryFactory {
+public class DefaultCustomerPatientSummaryFactory implements CustomerPatientSummaryFactory, PatientSummaryFactory {
 
     /**
      * Creates a customer/patient summary.
@@ -63,10 +68,28 @@ public class DefaultCustomerPatientSummaryFactory implements CustomerPatientSumm
      * @param context     the context
      * @param help        the help context
      * @param preferences user preferences
+     * @param listener    the context switch listener, or {@code null} to disable context switching
      * @return the summary
      */
     @Override
-    public PatientSummary createPatientSummary(Context context, HelpContext help, Preferences preferences) {
-        return new PatientSummary(context, help, preferences);
+    public PatientSummary createPatientSummary(Context context, HelpContext help, Preferences preferences,
+                                               ContextSwitchListener listener) {
+        return new PatientSummary(context, help, preferences, listener);
     }
+
+    /**
+     * Returns a summary for a patient.
+     *
+     * @param patient the  patient
+     * @param context the layout context
+     * @return a new patient summary
+     */
+    @Override
+    public Component getSummary(Party patient, LayoutContext context) {
+        PatientSummary patientSummary = createPatientSummary(context.getContext(), context.getHelpContext(),
+                                                             context.getPreferences(),
+                                                             context.getContextSwitchListener());
+        return patientSummary.getSummary((org.openvpms.component.business.domain.im.party.Party) patient);
+    }
+
 }

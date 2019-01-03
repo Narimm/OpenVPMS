@@ -11,13 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
 
+import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import nextapp.echo2.app.Row;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
@@ -49,15 +51,18 @@ import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.patient.PatientQuery;
+import org.openvpms.web.component.im.patient.PatientSummaryViewer;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.property.AbstractSaveableEditor;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.echo.factory.LabelFactory;
+import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.focus.FocusHelper;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
@@ -483,8 +488,11 @@ public class CheckInEditor extends AbstractSaveableEditor {
         };
         patientReferenceEditor.setAllowCreate(true);
 
+        Button info = PatientSummaryViewer.createButton(layoutContext, this::getPatient);
+        Row patientRow = RowFactory.create(Styles.CELL_SPACING, patientReferenceEditor.getComponent(), info);
+
         Label customerLabel = LabelFactory.text(getDisplayName(ScheduleArchetypes.APPOINTMENT, "customer", service));
-        grid.add(LabelFactory.text(patientProperty.getDisplayName()), patientReferenceEditor.getComponent(),
+        grid.add(LabelFactory.text(patientProperty.getDisplayName()), patientRow,
                  customerLabel, LabelFactory.text(customer.getName()));
         focus.add(patientReferenceEditor.getFocusGroup());
 
