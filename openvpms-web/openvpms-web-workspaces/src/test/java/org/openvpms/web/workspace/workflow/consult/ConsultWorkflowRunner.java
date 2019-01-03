@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.consult;
@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.test.EchoTestHelper;
 import org.openvpms.web.workspace.patient.visit.VisitEditor;
 import org.openvpms.web.workspace.patient.visit.VisitEditorDialog;
 import org.openvpms.web.workspace.workflow.EditVisitTask;
@@ -94,6 +95,19 @@ class ConsultWorkflowRunner extends FinancialWorkflowRunner<ConsultWorkflowRunne
         assertEquals(customer, context.getCustomer());
         assertEquals(patient, context.getPatient());
         assertEquals(clinician, context.getClinician());
+    }
+
+    /**
+     * Verifies that a {@link ClinicianSelectionDialog} is displayed and has the specified clinician.
+     *
+     * @param clinician the expected clinician
+     * @return the dialog
+     */
+    public ClinicianSelectionDialog checkClinician(User clinician) {
+        ClinicianSelectionDialog dialog = EchoTestHelper.findWindowPane(ClinicianSelectionDialog.class);
+        assertEquals(clinician, dialog.getClinician());
+        EchoTestHelper.fireDialogButton(dialog, ClinicianSelectionDialog.OK_ID);
+        return dialog;
     }
 
     protected static class TestWorkflow extends ConsultWorkflow {

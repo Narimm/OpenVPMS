@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -150,6 +150,13 @@ public abstract class AbstractSelectorPropertyEditor<T extends IMObject> extends
     }
 
     /**
+     * Returns the object corresponding to the property.
+     *
+     * @return the object. May be {@code null}
+     */
+    public abstract T getObject();
+
+    /**
      * Returns the component.
      *
      * @return the component
@@ -254,13 +261,6 @@ public abstract class AbstractSelectorPropertyEditor<T extends IMObject> extends
         }
         return modified;
     }
-
-    /**
-     * Returns the object corresponding to the property.
-     *
-     * @return the object. May be {@code null}
-     */
-    protected abstract T getObject();
 
     /**
      * Updates the underlying property with the specified value.

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -82,7 +82,7 @@ public class SelectorIMObjectCollectionEditor extends AbstractIMObjectCollection
          * @param property the property
          * @param context  the context
          */
-        public Selector(CollectionProperty property, LayoutContext context) {
+        Selector(CollectionProperty property, LayoutContext context) {
             super(property, context);
             updateSelector();
         }
@@ -93,7 +93,7 @@ public class SelectorIMObjectCollectionEditor extends AbstractIMObjectCollection
          * @return the object. May be {@code null}
          */
         @Override
-        protected IMObject getObject() {
+        public IMObject getObject() {
             List<IMObject> objects = getCollectionPropertyEditor().getObjects();
             return !objects.isEmpty() ? objects.get(0) : null;
         }

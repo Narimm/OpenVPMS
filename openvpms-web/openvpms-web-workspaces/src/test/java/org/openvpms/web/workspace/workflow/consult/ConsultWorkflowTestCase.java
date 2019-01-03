@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.consult;
@@ -33,6 +33,7 @@ import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
+import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEditorTest;
 import org.openvpms.web.workspace.customer.charge.CustomerChargeActItemEditor;
@@ -328,6 +329,10 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     private void checkConsultWorkflow(Act act, Act event, User clinician) {
         ConsultWorkflowRunner workflow = new ConsultWorkflowRunner(act, getPractice(), context);
         workflow.start();
+        if (!UserHelper.useLoggedInClinician(context)) {
+            // prompts for clinician
+            workflow.checkClinician(clinician);
+        }
 
         VisitEditorDialog dialog = workflow.editVisit();
         assertEquals(event, dialog.getEditor().getEvent());
@@ -351,7 +356,9 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         ConsultWorkflowRunner workflow = new ConsultWorkflowRunner(appointment, getPractice(), context);
         workflow.start();
 
-        // first task is to edit the clinical event 
+        workflow.checkClinician(clinician);
+
+        // edit the clinical event
         VisitEditorDialog dialog = workflow.editVisit();
         BigDecimal fixedPrice = new BigDecimal("18.18");
         workflow.addVisitInvoiceItem(patient, fixedPrice);
@@ -389,6 +396,8 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         ConsultWorkflowRunner workflow = new ConsultWorkflowRunner(act, getPractice(), context);
         workflow.start();
 
+        workflow.checkClinician(clinician);
+
         VisitEditorDialog dialog = workflow.editVisit();
         workflow.addVisitInvoiceItem(patient, new BigDecimal(20));
         dialog.getEditor().getChargeEditor().setStatus(ActStatus.COMPLETED);
@@ -416,6 +425,8 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         // run the workflow again, but this time mark the invoice IN_PROGRESS
         ConsultWorkflowRunner workflow = new ConsultWorkflowRunner(act, getPractice(), context);
         workflow.start();
+
+        workflow.checkClinician(clinician);
 
         VisitEditorDialog dialog = workflow.editVisit();
         workflow.addVisitInvoiceItem(patient, new BigDecimal(20));

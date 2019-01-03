@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.consult;
@@ -29,6 +29,7 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.UserHelper;
+import org.openvpms.web.component.workflow.AbstractConfirmationTask;
 import org.openvpms.web.component.workflow.ConditionalCreateTask;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
@@ -42,7 +43,9 @@ import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskProperties;
 import org.openvpms.web.component.workflow.UpdateIMObjectTask;
 import org.openvpms.web.component.workflow.WorkflowImpl;
+import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.workflow.EditVisitTask;
 import org.openvpms.web.workspace.workflow.GetClinicalEventTask;
 import org.openvpms.web.workspace.workflow.MandatoryCustomerAlertTask;
@@ -64,12 +67,6 @@ public class ConsultWorkflow extends WorkflowImpl {
     private final TaskContext initial;
 
     /**
-     * Determines if the clinician should be used to populate the appointment/task, event, and invoice, if
-     * one isn't present.
-     */
-    private final boolean setClinician;
-
-    /**
      * Constructs a {@link ConsultWorkflow} from an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
      *
      * @param act      the act
@@ -77,21 +74,7 @@ public class ConsultWorkflow extends WorkflowImpl {
      * @param help     the help context
      */
     public ConsultWorkflow(Act act, final Context external, HelpContext help) {
-        this(act, false, external, help);
-    }
-
-    /**
-     * Constructs a {@link ConsultWorkflow} from an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
-     *
-     * @param act          the act
-     * @param setClinician determines if the clinician should be used to populate the appointment/task,
-     *                     event, and invoice, if one isn't present
-     * @param external     the external context to access and update
-     * @param help         the help context
-     */
-    public ConsultWorkflow(Act act, boolean setClinician, final Context external, HelpContext help) {
         super(help);
-        this.setClinician = setClinician;
         initial = createContext(act, external, help);
         addTasks(act, external);
     }
@@ -148,27 +131,25 @@ public class ConsultWorkflow extends WorkflowImpl {
      * @param external the external context to update at the end of the workflow
      */
     protected void addTasks(Act act, final Context external) {
+        if (!UserHelper.useLoggedInClinician(initial)) {
+            addTask(new ClinicianSelectionTask(getHelpContext()));
+        }
+
         // update the act status to IN_PROGRESS if its not BILLED or COMPLETED
         addTask(createInProgressTask(act));
-        if (setClinician) {
-            addTask(new UpdateClinicianTask(act.getArchetypeId().getShortName()));
-        }
+        addTask(new UpdateClinicianTask(act.getArchetypeId().getShortName()));
 
         addTask(new MandatoryCustomerAlertTask());
         addTask(new MandatoryPatientAlertTask());
 
         Act appointment = TypeHelper.isA(act, ScheduleArchetypes.APPOINTMENT) ? act : null;
         addTask(new GetClinicalEventTask(act.getActivityStartTime(), appointment));
-        if (setClinician) {
-            addTask(new UpdateClinicianTask(PatientArchetypes.CLINICAL_EVENT));
-        }
+        addTask(new UpdateClinicianTask(PatientArchetypes.CLINICAL_EVENT));
 
         // get the latest invoice, possibly associated with the event. If none exists, creates a new one
         addTask(new GetConsultInvoiceTask());
         addTask(new ConditionalCreateTask(CustomerAccountArchetypes.INVOICE));
-        if (setClinician) {
-            addTask(new UpdateInvoiceClinicianTask());
-        }
+        addTask(new UpdateInvoiceClinicianTask());
 
         // edit the act.patientClinicalEvent in a local context, propagating the patient, customer and clinician on
         // completion
@@ -203,9 +184,6 @@ public class ConsultWorkflow extends WorkflowImpl {
     /**
      * Creates a task to update the appointment/task act status to {@code IN_PROGRESS} if it is not {@code IN_PROGRESS},
      * {@code BILLED} or {@code COMPLETED}.
-     * <p>
-     * if  the act has no clinician, and {@code setClinician == true} and there is a clinician in the context, this
-     * will be used to update the act.
      * <p>
      * For task acts, this also sets the "arrivalTime" node to the current time.
      *
@@ -303,6 +281,31 @@ public class ConsultWorkflow extends WorkflowImpl {
             if (object != null && !ActStatus.POSTED.equals(object.getStatus())) {
                 super.execute(context);
             }
+        }
+    }
+
+    private static class ClinicianSelectionTask extends AbstractConfirmationTask {
+
+        /**
+         * Constructs a {@link ClinicianSelectionTask}.
+         *
+         * @param help the help context
+         */
+        public ClinicianSelectionTask(HelpContext help) {
+            super(help);
+        }
+
+        /**
+         * Creates a new confirmation dialog.
+         *
+         * @param context the task context
+         * @param help    the help context
+         * @return a new confirmation dialog
+         */
+        @Override
+        protected ConfirmationDialog createConfirmationDialog(final TaskContext context, HelpContext help) {
+            return new ClinicianSelectionDialog(context, Messages.get("consult.clinician.title"),
+                                                Messages.get("consult.clinician.message"), help);
         }
     }
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -78,6 +78,23 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
         super(property, context, allowCreate);
         this.parent = parent;
         updateSelector();
+    }
+
+    /**
+     * Returns the object corresponding to the reference.
+     *
+     * @return the object, or {@code null} if the reference is {@code null} or the object no longer exists
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public T getObject() {
+        Property property = getProperty();
+        IMObjectReference reference = (IMObjectReference) property.getValue();
+        T object = null;
+        if (reference != null) {
+            object = (T) IMObjectHelper.getObject(reference, property.getArchetypeRange(), getContext());
+        }
+        return object;
     }
 
     /**
@@ -194,23 +211,6 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
      */
     protected Context getContext() {
         return getLayoutContext().getContext();
-    }
-
-    /**
-     * Returns the object corresponding to the reference.
-     *
-     * @return the object, or {@code null} if the reference is {@code null} or the object no longer exists
-     */
-    @SuppressWarnings("unchecked")
-    @Override
-    protected T getObject() {
-        Property property = getProperty();
-        IMObjectReference reference = (IMObjectReference) property.getValue();
-        T object = null;
-        if (reference != null) {
-            object = (T) IMObjectHelper.getObject(reference, property.getArchetypeRange(), getContext());
-        }
-        return object;
     }
 
     /**

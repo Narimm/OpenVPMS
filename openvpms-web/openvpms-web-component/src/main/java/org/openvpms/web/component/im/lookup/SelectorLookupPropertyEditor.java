@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.lookup;
@@ -73,7 +73,7 @@ public class SelectorLookupPropertyEditor extends AbstractSelectorPropertyEditor
      * @return the object. May be {@code null}
      */
     @Override
-    protected Lookup getObject() {
+    public Lookup getObject() {
         Property property = getProperty();
         if (property.isCollection()) {
             List values = ((CollectionProperty) property).getValues();

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.estimate;
@@ -32,6 +32,7 @@ import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.util.IMObjectHelper;
+import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.CRUDWindowListener;
 import org.openvpms.web.echo.button.ButtonSet;
@@ -173,7 +174,16 @@ public class EstimateCRUDWindow extends CustomerActCRUDWindow<Act> {
         final Act act = IMObjectHelper.reload(getObject()); // make sure we have the latest version
         if (act != null) {
             if (canInvoice(act)) {
-                ConfirmationDialog dialog = createInvoiceConfirmationDialog(act);
+                ConfirmationDialog dialog;
+                Context context = getContext();
+                HelpContext help = getHelpContext().subtopic("invoice");
+                if (UserHelper.useLoggedInClinician(context)) {
+                    String title = Messages.get("customer.estimate.invoice.title");
+                    String message = Messages.get("customer.estimate.invoice");
+                    dialog = new ConfirmationDialog(title, message, help);
+                } else {
+                    dialog = new EstimateInvoiceClinicianSelectionDialog(context, help);
+                }
                 dialog.addWindowPaneListener(new PopupDialogListener() {
                     @Override
                     public void onOK() {
@@ -185,19 +195,6 @@ public class EstimateCRUDWindow extends CustomerActCRUDWindow<Act> {
         } else {
             ErrorDialog.show(Messages.format("imobject.noexist", getArchetypes().getDisplayName()));
         }
-    }
-
-    /**
-     * Creates a dialog to confirm invoicing an estimate.
-     *
-     * @param act the estimate to be invoiced
-     * @return a new dialog
-     */
-    protected ConfirmationDialog createInvoiceConfirmationDialog(Act act) {
-        String title = Messages.get("customer.estimate.invoice.title");
-        String message = Messages.get("customer.estimate.invoice.message");
-        HelpContext help = getHelpContext().subtopic("invoice");
-        return new ConfirmationDialog(title, message, help);
     }
 
     /**
