@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -137,9 +137,9 @@ public class ReminderExportProcessor extends PatientReminderProcessor {
                                        List<ReminderEvent> cancelled, List<ReminderEvent> errors, List<Act> updated,
                                        boolean resend) {
         List<ReminderEvent> toProcess = new ArrayList<>();
-        ContactMatcher matcher = createContactMatcher(ContactArchetypes.LOCATION);
         for (ReminderEvent reminder : reminders) {
             Party customer = reminder.getCustomer();
+            ContactMatcher matcher = createContactMatcher(ContactArchetypes.LOCATION);
             Contact contact = getContact(customer, matcher, reminder.getContact());
             if (contact != null) {
                 populate(reminder, contact, getLocation(customer));
