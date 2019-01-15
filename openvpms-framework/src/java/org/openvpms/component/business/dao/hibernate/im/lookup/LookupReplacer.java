@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.lookup;
@@ -43,11 +43,11 @@ import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
+import org.openvpms.component.model.lookup.Lookup;
 import org.springframework.transaction.support.TransactionSynchronizationAdapter;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -138,7 +138,8 @@ public class LookupReplacer {
         addMapping(EntityRelationship.class, "entity_relationships", "entity_relationship_details",
                    "entity_relationship_id", EntityRelationshipDOImpl.class);
         addMapping(EntityLink.class, "entity_links", "entity_link_details", "id", EntityLinkDOImpl.class);
-        addMapping(Lookup.class, "lookups", "lookup_details", "lookup_id", LookupDOImpl.class);
+        addMapping(org.openvpms.component.business.domain.im.lookup.Lookup.class, "lookups", "lookup_details",
+                   "lookup_id", LookupDOImpl.class);
         addMapping(LookupRelationship.class, "lookup_relationships", "lookup_relationship_details",
                    "lookup_relationship_id", LookupRelationshipDOImpl.class);
         addMapping(Participation.class, "participations", "participation_details", "participation_id",
@@ -185,8 +186,7 @@ public class LookupReplacer {
 
         // find all uses of the lookup where it is referred to by a node descriptor using the lookup's code
         LookupUsageFinder finder = new LookupUsageFinder(archetypes);
-        Map<NodeDescriptor, ArchetypeDescriptor> refs
-                = finder.getCodeReferences(lookup.getArchetypeId().getShortName());
+        Map<NodeDescriptor, ArchetypeDescriptor> refs = finder.getCodeReferences(lookup.getArchetype());
 
         for (Map.Entry<NodeDescriptor, ArchetypeDescriptor> entry : refs.entrySet()) {
             NodeDescriptor node = entry.getKey();
@@ -215,14 +215,14 @@ public class LookupReplacer {
         if (source.getId() == target.getId()) {
             throw new IllegalArgumentException("Source and target lookups are identical");
         }
-        if (!source.getArchetypeId().equals(target.getArchetypeId())) {
+        if (!source.getArchetype().equals(target.getArchetype())) {
             throw new IllegalArgumentException("Source and target lookups must have the same archetype");
         }
 
         // find all uses of the lookup where it is referred to by a node descriptor using the lookup's code
         LookupUsageFinder finder = new LookupUsageFinder(archetypes);
         Map<NodeDescriptor, ArchetypeDescriptor> refs
-                = finder.getCodeReferences(source.getArchetypeId().getShortName());
+                = finder.getCodeReferences(source.getArchetype());
 
         // now replace them
         for (Map.Entry<NodeDescriptor, ArchetypeDescriptor> entry : refs.entrySet()) {

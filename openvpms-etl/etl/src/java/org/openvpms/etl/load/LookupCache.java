@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2007 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.load;
@@ -22,12 +20,12 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IPage;
 
@@ -40,17 +38,9 @@ import java.util.Map;
 /**
  * Lookup cache.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class LookupCache {
-
-    /**
-     * A map of lookup relationships short names to the corresponding
-     * relationship instances.
-     */
-    private Map<String, List<LookupRelationship>> relationshipsByArchetype
-            = new HashMap<String, List<LookupRelationship>>();
 
     /**
      * The archetype service.
@@ -63,25 +53,30 @@ class LookupCache {
     private final ILookupService lookupService;
 
     /**
+     * A map of lookup relationships short names to the corresponding
+     * relationship instances.
+     */
+    private Map<String, List<LookupRelationship>> relationshipsByArchetype = new HashMap<>();
+
+    /**
      * The logger.
      */
-    private final Log log = LogFactory.getLog(LookupCache.class);
+    private static final Log log = LogFactory.getLog(LookupCache.class);
 
 
     /**
-     * Constructs a new <tt>LookupCache</tt>.
+     * Constructs a {@link LookupCache}.
      *
      * @param service the archetype service
      */
     @SuppressWarnings("HardCodedStringLiteral")
-    public LookupCache(IArchetypeService service,
-                       ILookupService lookupService) {
+    public LookupCache(IArchetypeService service, ILookupService lookupService) {
         this.service = service;
         this.lookupService = lookupService;
         if (!(lookupService instanceof CachingLookupService)) {
             log.warn(CachingLookupService.class.getName()
-                    + " is not configured. The lookup cache may "
-                    + "not perform optimally");
+                     + " is not configured. The lookup cache may "
+                     + "not perform optimally");
         }
     }
 
@@ -90,7 +85,7 @@ class LookupCache {
      *
      * @param archetype the lookup archetype short name
      * @param code      the lookup code
-     * @return the corresponding lookup, or <tt>null</tt> if none exists
+     * @return the corresponding lookup, or {@code null} if none exists
      * @throws ArchetypeServiceException for any error
      */
     public Lookup get(String archetype, String code) {
@@ -114,7 +109,7 @@ class LookupCache {
      *
      * @param archetype the lookup archetype short name
      * @param code      the lookup code
-     * @return <tt>true</tt> if the lookup exists
+     * @return {@code true} if the lookup exists
      * @throws ArchetypeServiceException for any error
      */
     public boolean exists(String archetype, String code) {
@@ -144,14 +139,13 @@ class LookupCache {
      * @param archetype the lookup relationship archetype short name
      * @param source    the source lookup reference
      * @param target    the target lookup reference
-     * @return <tt>true</tt> if the relationship exists
+     * @return {@code true} if the relationship exists
      * @throws ArchetypeServiceException for any error
      */
-    public boolean exists(String archetype, IMObjectReference source,
-                          IMObjectReference target) {
+    public boolean exists(String archetype, Reference source, Reference target) {
         for (LookupRelationship relationship : getRelationships(archetype)) {
             if (ObjectUtils.equals(relationship.getSource(), source)
-                    && ObjectUtils.equals(relationship.getTarget(), target)) {
+                && ObjectUtils.equals(relationship.getTarget(), target)) {
                 return true;
             }
         }

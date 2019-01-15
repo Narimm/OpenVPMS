@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
@@ -120,13 +120,10 @@ public class IMObjectSorter {
      * @return a new comparator
      */
     @SuppressWarnings("unchecked")
-    public static <T extends IMObject> Comparator<T> getNameComparator(boolean ascending) {
-        final Comparator comparator = getComparator(ascending);
-        return new Comparator<T>() {
-            public int compare(T o1, T o2) {
-                return comparator.compare(o1.getName(), o2.getName());
-            }
-        };
+    public static <T extends org.openvpms.component.model.object.IMObject> Comparator<T> getNameComparator(
+            boolean ascending) {
+        Comparator comparator = getComparator(ascending);
+        return (o1, o2) -> comparator.compare(o1.getName(), o2.getName());
     }
 
     /**

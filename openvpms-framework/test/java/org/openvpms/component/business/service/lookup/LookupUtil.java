@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
@@ -166,8 +166,8 @@ public class LookupUtil {
      * @return a new lookup relationship
      */
     public static LookupRelationship addRelationship(
-            IArchetypeService service, String shortName, Lookup source,
-            Lookup target) {
+            IArchetypeService service, String shortName, org.openvpms.component.model.lookup.Lookup source,
+            org.openvpms.component.model.lookup.Lookup target) {
         LookupRelationship relationship
                 = (LookupRelationship) service.create(shortName);
         assertNotNull(relationship);

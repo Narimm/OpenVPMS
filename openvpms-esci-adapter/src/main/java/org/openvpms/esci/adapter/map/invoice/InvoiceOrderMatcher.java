@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.esci.adapter.map.invoice;
@@ -25,8 +23,8 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.map.AbstractUBLMapper;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
@@ -36,10 +34,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 
 
 /**
@@ -50,25 +48,17 @@ import java.util.HashSet;
  * <li>an unreferenced order line with the same product
  * </ol>
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 class InvoiceOrderMatcher extends AbstractUBLMapper {
 
     /**
-     * The bean factory.
-     */
-    private final IMObjectBeanFactory factory;
-
-    /**
-     * Constructs an <tt>InvoiceOrderMatcher</tt>.
+     * Constructs an {@link InvoiceOrderMatcher}.
      *
      * @param service the archetype service
-     * @param factory the bean factory
      */
-    public InvoiceOrderMatcher(IArchetypeService service, IMObjectBeanFactory factory) {
+    InvoiceOrderMatcher(IArchetypeService service) {
         setArchetypeService(service);
-        this.factory = factory;
     }
 
     /**
@@ -87,8 +77,8 @@ class InvoiceOrderMatcher extends AbstractUBLMapper {
             addOrderItems(order, context);
         }
 
-        List<InvoiceLineState> lines = new ArrayList<InvoiceLineState>();
-        List<InvoiceLineState> unlinked = new ArrayList<InvoiceLineState>();
+        List<InvoiceLineState> lines = new ArrayList<>();
+        List<InvoiceLineState> unlinked = new ArrayList<>();
 
         // first pass - create state for each invoice line, and determine the list of unlinked lines
         for (UBLInvoiceLine line : invoice.getInvoiceLines()) {
@@ -107,7 +97,7 @@ class InvoiceOrderMatcher extends AbstractUBLMapper {
             }
 
             // third pass - link invoice lines to unlinked order items, where a partial match exists
-            Set<InvoiceLineState> partial = new HashSet<InvoiceLineState>(tracker.getPartialMatches());
+            Set<InvoiceLineState> partial = new HashSet<>(tracker.getPartialMatches());
             for (InvoiceLineState line : partial) {
                 partialMatch(line, tracker);
             }
@@ -190,10 +180,11 @@ class InvoiceOrderMatcher extends AbstractUBLMapper {
     private void checkOrder(FinancialAct order, MappingContext context) {
         checkOrder(order, context.getSupplier(), context.getStockLocation(), context.getInvoice());
         String invoiceId = context.getInvoice().getID();
-        ActBean orderBean = factory.createActBean(order);
-        List<FinancialAct> deliveries = orderBean.getNodeActs("deliveries", FinancialAct.class);
+        IArchetypeService service = getArchetypeService();
+        IMObjectBean orderBean = service.getBean(order);
+        List<FinancialAct> deliveries = orderBean.getSources("deliveries", FinancialAct.class);
         for (FinancialAct delivery : deliveries) {
-            ActBean deliveryBean = factory.createActBean(delivery);
+            IMObjectBean deliveryBean = service.getBean(delivery);
             String supplierInvoiceId = deliveryBean.getString("supplierInvoiceId");
             if (ObjectUtils.equals(invoiceId, supplierInvoiceId)) {
                 throw new ESCIAdapterException(ESCIAdapterMessages.duplicateInvoiceForOrder(invoiceId, order.getId()));
@@ -241,8 +232,9 @@ class InvoiceOrderMatcher extends AbstractUBLMapper {
         FinancialAct result = null;
         IMObjectReference invoiceRef = line.getProduct().getObjectReference();
         for (FinancialAct item : unlinked.getItems(line.getOrder())) {
-            ActBean bean = factory.createActBean(item);
-            IMObjectReference orderRef = bean.getNodeParticipantRef("product");
+            IArchetypeService service = getArchetypeService();
+            IMObjectBean bean = service.getBean(item);
+            Reference orderRef = bean.getTargetRef("product");
             if (ObjectUtils.equals(invoiceRef, orderRef)) {
                 BigDecimal orderQuantity = item.getQuantity();
                 if (line.getQuantity().compareTo(orderQuantity) == 0) {
@@ -273,11 +265,7 @@ class InvoiceOrderMatcher extends AbstractUBLMapper {
         if (!matches.isEmpty()) {
             if (matches.size() > 1) {
                 // sort items on ascending quantity.
-                Collections.sort(matches, new Comparator<FinancialAct>() {
-                    public int compare(FinancialAct o1, FinancialAct o2) {
-                        return o1.getQuantity().compareTo(o2.getQuantity());
-                    }
-                });
+                matches.sort(Comparator.comparing(FinancialAct::getQuantity));
             }
             line.setOrderItem(matches.get(0));
             unlinked.remove(line);
@@ -292,8 +280,8 @@ class InvoiceOrderMatcher extends AbstractUBLMapper {
      * @param context the mapping context
      */
     private void addOrderItems(FinancialAct order, MappingContext context) {
-        ActBean bean = factory.createActBean(order);
-        context.setOrderItems(order, bean.getNodeActs("items", FinancialAct.class));
+        IMObjectBean bean = getArchetypeService().getBean(order);
+        context.setOrderItems(order, bean.getTargets("items", FinancialAct.class));
     }
 
     /**
@@ -309,7 +297,7 @@ class InvoiceOrderMatcher extends AbstractUBLMapper {
         /**
          * The order items that partially match an invoice lines.
          */
-        private Map<InvoiceLineState, List<FinancialAct>> partial = new HashMap<InvoiceLineState, List<FinancialAct>>();
+        private Map<InvoiceLineState, List<FinancialAct>> partial = new HashMap<>();
 
 
         /**
@@ -317,8 +305,8 @@ class InvoiceOrderMatcher extends AbstractUBLMapper {
          *
          * @param context the mapping context
          */
-        public UnlinkedTracker(MappingContext context) {
-            unlinked = new HashMap<FinancialAct, List<FinancialAct>>(context.getOrderItems());
+        UnlinkedTracker(MappingContext context) {
+            unlinked = new HashMap<>(context.getOrderItems());
         }
 
         /**
@@ -329,7 +317,7 @@ class InvoiceOrderMatcher extends AbstractUBLMapper {
          */
         public List<FinancialAct> getItems(FinancialAct order) {
             List<FinancialAct> result = unlinked.get(order);
-            return (result != null) ? result : Collections.<FinancialAct>emptyList();
+            return (result != null) ? result : Collections.emptyList();
         }
 
         /**
@@ -362,7 +350,7 @@ class InvoiceOrderMatcher extends AbstractUBLMapper {
         public void addPartialMatch(InvoiceLineState line, FinancialAct item) {
             List<FinancialAct> items = partial.get(line);
             if (items == null) {
-                items = new ArrayList<FinancialAct>();
+                items = new ArrayList<>();
                 partial.put(line, items);
             }
             items.add(item);
@@ -385,7 +373,7 @@ class InvoiceOrderMatcher extends AbstractUBLMapper {
          */
         public List<FinancialAct> getPartialMatches(InvoiceLineState line) {
             List<FinancialAct> result = partial.get(line);
-            return (result != null) ? result : Collections.<FinancialAct>emptyList();
+            return (result != null) ? result : Collections.emptyList();
         }
 
     }

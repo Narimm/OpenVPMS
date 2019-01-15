@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -22,8 +22,8 @@ import nextapp.echo2.app.table.DefaultTableColumnModel;
 import nextapp.echo2.app.table.TableColumn;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableModel;
 import org.openvpms.web.component.im.util.IMObjectSorter;
@@ -31,7 +31,6 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.system.ServiceHelper;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -42,11 +41,6 @@ import java.util.List;
 public class ProductPriceTableModel extends DescriptorTableModel<IMObject> {
 
     /**
-     * Determines if pricing groups should be displayed.
-     */
-    private boolean showPricingGroups;
-
-    /**
      * The pricing group column index.
      */
     private final int pricingGroupIndex;
@@ -55,6 +49,11 @@ public class ProductPriceTableModel extends DescriptorTableModel<IMObject> {
      * The product price rules.
      */
     private final ProductPriceRules rules;
+
+    /**
+     * Determines if pricing groups should be displayed.
+     */
+    private boolean showPricingGroups;
 
     /**
      * Constructs a {@link ProductPriceTableModel}.
@@ -102,7 +101,7 @@ public class ProductPriceTableModel extends DescriptorTableModel<IMObject> {
             if (size == 1) {
                 result = pricingGroups.get(0).getName();
             } else if (size > 1) {
-                Collections.sort(pricingGroups, IMObjectSorter.getNameComparator(true));
+                pricingGroups.sort(IMObjectSorter.getNameComparator(true));
                 Column col = ColumnFactory.create();
                 for (Lookup lookup : pricingGroups) {
                     Label label = LabelFactory.create();

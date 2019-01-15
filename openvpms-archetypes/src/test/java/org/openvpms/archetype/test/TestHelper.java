@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.test;
@@ -869,7 +869,7 @@ public class TestHelper {
      * @param relationshipShortName the lookup relationship short name
      * @return the lookup
      */
-    public static Lookup getLookup(String shortName, String code, Lookup source,
+    public static Lookup getLookup(String shortName, String code, org.openvpms.component.model.lookup.Lookup source,
                                    String relationshipShortName) {
         return getLookup(shortName, code, code, source, relationshipShortName);
     }
@@ -885,8 +885,8 @@ public class TestHelper {
      * @param relationshipShortName the lookup relationship short name
      * @return the lookup
      */
-    public static Lookup getLookup(String shortName, String code, String name, Lookup source,
-                                   String relationshipShortName) {
+    public static Lookup getLookup(String shortName, String code, String name,
+                                   org.openvpms.component.model.lookup.Lookup source, String relationshipShortName) {
         Lookup target = getLookup(shortName, code, name, true);
         for (Relationship relationship : source.getLookupRelationships()) {
             if (relationship.getTarget().equals(target.getObjectReference())) {
@@ -898,7 +898,7 @@ public class TestHelper {
         relationship.setTarget(target.getObjectReference());
         source.addLookupRelationship(relationship);
         target.addLookupRelationship(relationship);
-        save(Arrays.asList(source, target));
+        save((Lookup) source, target);
         return target;
     }
 

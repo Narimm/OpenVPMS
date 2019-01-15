@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -23,8 +23,8 @@ import org.openvpms.archetype.csv.CSVReaderException;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.lookup.Lookup;
 
 import java.math.BigDecimal;
 import java.text.DateFormat;
@@ -216,9 +216,9 @@ public class ProductCSVReader extends AbstractCSVReader implements ProductReader
      * @throws ProductIOException if the document is invalid
      */
     public List<SimpleDateFormat> getDateFormats(Document document) {
-        List<SimpleDateFormat> result = new ArrayList<SimpleDateFormat>();
+        List<SimpleDateFormat> result = new ArrayList<>();
         List<String[]> lines = readLines(document);
-        Set<String> dates = new LinkedHashSet<String>();
+        Set<String> dates = new LinkedHashSet<>();
         for (int i = 0; i < lines.size(); ++i) {
             String[] line = lines.get(i);
             int lineNo = i + 2;
@@ -246,8 +246,8 @@ public class ProductCSVReader extends AbstractCSVReader implements ProductReader
      * @return the read product data
      */
     public ProductDataSet read(Document document) {
-        List<ProductData> data = new ArrayList<ProductData>();
-        List<ProductData> errors = new ArrayList<ProductData>();
+        List<ProductData> data = new ArrayList<>();
+        List<ProductData> errors = new ArrayList<>();
         ProductDataSet result = new ProductDataSet(data, errors);
 
         List<String[]> lines = readLines(document);
@@ -350,7 +350,7 @@ public class ProductCSVReader extends AbstractCSVReader implements ProductReader
      * @return the formats that can parse the supplied dates
      */
     private Set<SimpleDateFormat> getDateFormats(Set<String> dates, SimpleDateFormat[] formats) {
-        Set<SimpleDateFormat> result = new HashSet<SimpleDateFormat>();
+        Set<SimpleDateFormat> result = new HashSet<>();
         for (String date : dates) {
             for (SimpleDateFormat format : formats) {
                 try {
@@ -432,7 +432,7 @@ public class ProductCSVReader extends AbstractCSVReader implements ProductReader
      * @throws ProductIOException if a pricing group code is invalid
      */
     private Set<Lookup> getPricingGroups(String[] line, int index, int lineNo) {
-        Set<Lookup> result = new HashSet<Lookup>();
+        Set<Lookup> result = new HashSet<>();
         String[] codes = {};
         String value = StringUtils.trimToNull(line[index]);
         if (value != null) {

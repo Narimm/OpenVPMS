@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -23,9 +23,7 @@ import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.openvpms.component.model.bean.IMObjectBean;
 
 import java.util.Date;
 
@@ -40,12 +38,6 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
  * @author Tim Anderson
  */
 public class PatientAgeFormatterTestCase extends ArchetypeServiceTest {
-
-    /**
-     * The bean factory.
-     */
-    @Autowired
-    protected IMObjectBeanFactory factory;
 
     /**
      * Configures a lookup.durationformat and verifies that LookupDateDurationFormatter formats correctly with it.
@@ -98,7 +90,7 @@ public class PatientAgeFormatterTestCase extends ArchetypeServiceTest {
      * @param formats  the <em>lookup.durationformats</em>. May be <tt>null</tt>
      */
     protected void setPracticeFormat(Party practice, Lookup formats) {
-        IMObjectBean bean = factory.createBean(practice);
+        IMObjectBean bean = getBean(practice);
 
         String code = (formats != null) ? formats.getCode() : null;
         bean.setValue("patientAgeFormat", code);
@@ -112,7 +104,7 @@ public class PatientAgeFormatterTestCase extends ArchetypeServiceTest {
      */
     protected PatientAgeFormatter createFormatter() {
         PracticeRules rules = new PracticeRules(getArchetypeService(), null);
-        return new PatientAgeFormatter(getLookupService(), rules, factory);
+        return new PatientAgeFormatter(getLookupService(), rules, getArchetypeService());
     }
 
     /**

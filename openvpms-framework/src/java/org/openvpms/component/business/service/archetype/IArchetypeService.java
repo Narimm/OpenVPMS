@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
@@ -87,7 +87,8 @@ public interface IArchetypeService {
      * @param object the object to validate
      * @return any validation errors
      */
-    List<org.openvpms.component.service.archetype.ValidationError> validate(IMObject object);
+    List<org.openvpms.component.service.archetype.ValidationError> validate(
+            org.openvpms.component.model.object.IMObject object);
 
     /**
      * Validate the specified {@link IMObject}. To validate the object it will retrieve the archetype and iterate
@@ -96,7 +97,7 @@ public interface IArchetypeService {
      * @param object the object to validate
      * @throws ValidationException if there are validation errors
      */
-    void validateObject(IMObject object);
+    void validateObject(org.openvpms.component.model.object.IMObject object);
 
     /**
      * Derived values for the specified {@link IMObject}, based on its corresponding {@link ArchetypeDescriptor}.
@@ -104,7 +105,7 @@ public interface IArchetypeService {
      * @param object the object to derived values for
      * @throws ArchetypeServiceException if values cannot be derived
      */
-    void deriveValues(IMObject object);
+    void deriveValues(org.openvpms.component.model.object.IMObject object);
 
     /**
      * Derive the value for the {@link NodeDescriptor} with the specified name.
@@ -113,7 +114,7 @@ public interface IArchetypeService {
      * @param node   the name of the {@link NodeDescriptor}, which will be used to derive the value
      * @throws ArchetypeServiceException if the value cannot be derived
      */
-    void deriveValue(IMObject object, String node);
+    void deriveValue(org.openvpms.component.model.object.IMObject object, String node);
 
     /**
      * Returns all the {@link ArchetypeDescriptor} managed by this service.
@@ -155,7 +156,7 @@ public interface IArchetypeService {
      * @param object the object to remove
      * @throws ArchetypeServiceException if the object cannot be removed
      */
-    void remove(IMObject object);
+    void remove(org.openvpms.component.model.object.IMObject object);
 
     /**
      * Saves an object, executing any <em>save</em> rules associated with its archetype.
@@ -164,7 +165,7 @@ public interface IArchetypeService {
      * @throws ArchetypeServiceException if the service cannot save the specified object
      * @throws ValidationException       if the object cannot be validated
      */
-    void save(IMObject object);
+    void save(org.openvpms.component.model.object.IMObject object);
 
     /**
      * Saves an object, executing any <em>save</em> rules associated with its archetype.
@@ -175,7 +176,7 @@ public interface IArchetypeService {
      * @throws ValidationException       if the specified object cannot be validated
      */
     @Deprecated
-    void save(IMObject object, boolean validate);
+    void save(org.openvpms.component.model.object.IMObject object, boolean validate);
 
     /**
      * Save a collection of {@link IMObject} instances.
@@ -184,7 +185,7 @@ public interface IArchetypeService {
      * @throws ArchetypeServiceException if an object can't be saved
      * @throws ValidationException       if an object can't be validated
      */
-    void save(Collection<? extends IMObject> objects);
+    void save(Collection<? extends org.openvpms.component.model.object.IMObject> objects);
 
     /**
      * Save a collection of {@link IMObject} instances.
@@ -194,7 +195,7 @@ public interface IArchetypeService {
      * @throws ValidationException       if an object can't be validated
      */
     @Deprecated
-    void save(Collection<? extends IMObject> objects, boolean validate);
+    void save(Collection<? extends org.openvpms.component.model.object.IMObject> objects, boolean validate);
 
     /**
      * Retrieves an object given its reference.

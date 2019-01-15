@@ -11,19 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper.lookup;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.model.archetype.AssertionDescriptor;
+import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.IMObject;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -55,15 +55,13 @@ public class SourceLookup extends AbstractLookupAssertion {
 
 
     /**
-     * Constructs a new <tt>SourceLookup</code>.
+     * Constructs a {@link SourceLookup}.
      *
      * @param descriptor    the assertion descriptor
      * @param service       the archetype service
      * @param lookupService the lookup service
      */
-    public SourceLookup(AssertionDescriptor descriptor,
-                        IArchetypeService service,
-                        ILookupService lookupService) {
+    public SourceLookup(AssertionDescriptor descriptor, IArchetypeService service, ILookupService lookupService) {
         super(descriptor, TYPE, service, lookupService);
         relationship = getProperty("relationship");
         value = getProperty("value");
@@ -96,8 +94,8 @@ public class SourceLookup extends AbstractLookupAssertion {
      * Returns the lookup with the specified code.
      *
      * @param context the context
-     * @return the lookup matching <tt>code</code>, or <tt>null</code> if
-     *         none is found
+     * @return the lookup matching {@code code}, or {@code null} if
+     * none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
@@ -120,9 +118,9 @@ public class SourceLookup extends AbstractLookupAssertion {
     /**
      * Returns the name of the lookup with the specified code.
      *
-     * @param context the context. May be <tt>null</code>
-     * @return the name of the lookup matching <tt>code</code>, or
-     *         <tt>null</code> if none is found
+     * @param context the context. May be {@code null}
+     * @return the name of the lookup matching {@code code}, or
+     * {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
@@ -135,7 +133,7 @@ public class SourceLookup extends AbstractLookupAssertion {
      * Returns the target lookup.
      *
      * @param context the context
-     * @return the target lookup, or <tt>null</code> if none can be found
+     * @return the target lookup, or {@code null} if none can be found
      */
     private Lookup getTargetLookup(IMObject context) {
         return getLookup(context, value, relationship, "target");

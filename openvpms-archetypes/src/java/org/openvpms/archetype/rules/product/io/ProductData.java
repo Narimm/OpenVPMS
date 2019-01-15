@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
 
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.model.lookup.Lookup;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -45,6 +45,11 @@ public class ProductData {
     private final String name;
 
     /**
+     * Line that the data was read from.
+     */
+    private final int line;
+
+    /**
      * The printed name. May be {@code null}
      */
     private String printedName;
@@ -55,19 +60,14 @@ public class ProductData {
     private BigDecimal taxRate;
 
     /**
-     * Line that the data was read from.
-     */
-    private final int line;
-
-    /**
      * The fixed prices.
      */
-    private List<PriceData> fixedPrices = new ArrayList<PriceData>();
+    private List<PriceData> fixedPrices = new ArrayList<>();
 
     /**
      * The unit prices.
      */
-    private List<PriceData> unitPrices = new ArrayList<PriceData>();
+    private List<PriceData> unitPrices = new ArrayList<>();
 
     /**
      * Reference to an existing product.

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper.lookup;
@@ -19,11 +19,11 @@ package org.openvpms.component.business.service.archetype.helper.lookup;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.datatypes.property.AssertionProperty;
 import org.openvpms.component.business.domain.im.datatypes.property.PropertyList;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.model.archetype.AssertionDescriptor;
 import org.openvpms.component.model.archetype.NamedProperty;
+import org.openvpms.component.model.lookup.Lookup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,12 +70,11 @@ class LocalLookup extends AbstractLookupAssertion {
                        IArchetypeService service,
                        ILookupService lookupService) {
         super(assertion, TYPE, service, lookupService);
-        PropertyList list = (PropertyList) assertion.getPropertyMap()
-                .getProperties().get("entries"); // NON-NLS
+        PropertyList list = (PropertyList) assertion.getPropertyMap().getProperties().get("entries"); // NON-NLS
         for (NamedProperty prop : list.getProperties()) {
             AssertionProperty aprop = (AssertionProperty) prop;
-            lookups.add(new Lookup(ArchetypeId.LOCAL_LOOKUP_ID,
-                                   aprop.getName(), aprop.getValue()));
+            lookups.add(new org.openvpms.component.business.domain.im.lookup.Lookup(ArchetypeId.LOCAL_LOOKUP_ID,
+                                                                                    aprop.getName(), aprop.getValue()));
         }
     }
 
@@ -92,8 +91,7 @@ class LocalLookup extends AbstractLookupAssertion {
     /**
      * Returns the lookup with the specified code.
      *
-     * @return the lookup matching <code>code</code>, or <code>null</code> if
-     *         none is found
+     * @return the lookup matching <code>code</code>, or <code>null</code> if none is found
      */
     @Override
     public Lookup getLookup(String code) {

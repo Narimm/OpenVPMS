@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.load;
@@ -20,12 +20,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.commons.resources.Messages;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.lookup.AbstractLookupService;
+import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -42,29 +42,25 @@ import java.util.Set;
  * TODO - should be replaced by
  * {@link org.openvpms.component.business.service.lookup.CachingLookupService}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class CachingLookupService extends AbstractLookupService {
 
     /**
      * A map of lookup short names to their corresponding codes and lookups.
      */
-    private final Map<String, Map<String, Lookup>> lookupsByArchetype
-            = new HashMap<String, Map<String, Lookup>>();
+    private final Map<String, Map<String, Lookup>> lookupsByArchetype = new HashMap<>();
 
     /**
      * A map of lookups keyed on reference.
      */
-    private final Map<IMObjectReference, Lookup> lookupsByRef
-            = new HashMap<IMObjectReference, Lookup>();
+    private final Map<Reference, Lookup> lookupsByRef = new HashMap<>();
 
 
     /**
      * A cache of target lookups, keyed on source lookup reference.
      */
-    private final Map<IMObjectReference, RelatedLookups> targetLookups
-            = new HashMap<IMObjectReference, RelatedLookups>();
+    private final Map<Reference, RelatedLookups> targetLookups = new HashMap<>();
 
     /**
      * The logger.
@@ -114,10 +110,9 @@ public class CachingLookupService extends AbstractLookupService {
      * @param shortName the lookup archetype short name. May contain wildcards
      * @return a collection of lookups with the specified short name
      */
-    @SuppressWarnings("unchecked")
     public Collection<Lookup> getLookups(String shortName) {
         String[] shortNames = getShortNames(shortName);
-        List<Lookup> result = new ArrayList<Lookup>();
+        List<Lookup> result = new ArrayList<>();
         for (String name : shortNames) {
             Map<String, Lookup> lookups = get(name);
             result.addAll(lookups.values());
@@ -151,7 +146,7 @@ public class CachingLookupService extends AbstractLookupService {
      */
     public synchronized void add(Lookup lookup) {
         lookupsByRef.put(lookup.getObjectReference(), lookup);
-        String shortName = lookup.getArchetypeId().getShortName();
+        String shortName = lookup.getArchetype();
         Map<String, Lookup> lookups = get(shortName);
         lookups.put(lookup.getCode(), lookup);
     }
@@ -237,7 +232,7 @@ public class CachingLookupService extends AbstractLookupService {
     private synchronized Map<String, Lookup> get(String shortName) {
         Map<String, Lookup> lookups = lookupsByArchetype.get(shortName);
         if (lookups == null) {
-            lookups = new HashMap<String, Lookup>();
+            lookups = new HashMap<>();
             Collection<Lookup> list = query(shortName);
             for (Lookup lookup : list) {
                 String code = lookup.getCode();
@@ -261,7 +256,7 @@ public class CachingLookupService extends AbstractLookupService {
      * @return the targets of the lookup
      */
     private RelatedLookups getTargets(Lookup lookup) {
-        IMObjectReference ref = lookup.getObjectReference();
+        Reference ref = lookup.getObjectReference();
         RelatedLookups related = targetLookups.get(ref);
         if (related == null) {
             Collection<Lookup> targets = super.getTargetLookups(lookup);
@@ -297,8 +292,7 @@ public class CachingLookupService extends AbstractLookupService {
         /**
          * The related lookups, keyed on relationship short name.
          */
-        private Map<String, Collection<Lookup>> lookupsByRelationship
-                = new HashMap<String, Collection<Lookup>>();
+        private Map<String, Collection<Lookup>> lookupsByRelationship = new HashMap<>();
 
 
         /**
@@ -306,8 +300,8 @@ public class CachingLookupService extends AbstractLookupService {
          *
          * @param lookups the related lookups
          */
-        public RelatedLookups(Collection<Lookup> lookups) {
-            this.lookups = new HashSet<Lookup>(lookups);
+        RelatedLookups(Collection<Lookup> lookups) {
+            this.lookups = new HashSet<>(lookups);
         }
 
         /**
@@ -335,10 +329,8 @@ public class CachingLookupService extends AbstractLookupService {
          * @param relationship the lookup relationship short name
          * @param lookups      the related lookups
          */
-        public void setLookups(String relationship,
-                               Collection<Lookup> lookups) {
-            lookupsByRelationship.put(relationship,
-                                      new ArrayList<Lookup>(lookups));
+        public void setLookups(String relationship, Collection<Lookup> lookups) {
+            lookupsByRelationship.put(relationship, new ArrayList<>(lookups));
         }
 
         /**
@@ -350,8 +342,7 @@ public class CachingLookupService extends AbstractLookupService {
         public void add(String relationship, Lookup lookup) {
             lookups.add(lookup);
 
-            Collection<Lookup> lookups
-                    = lookupsByRelationship.get(relationship);
+            Collection<Lookup> lookups = lookupsByRelationship.get(relationship);
             if (lookups != null) {
                 lookups.add(lookup);
             }

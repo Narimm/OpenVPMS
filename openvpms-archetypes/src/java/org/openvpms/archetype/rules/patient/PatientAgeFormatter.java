@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -24,11 +22,11 @@ import org.openvpms.archetype.i18n.time.DurationFormatter;
 import org.openvpms.archetype.i18n.time.LookupDateDurationFormatter;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.util.DateUnits;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 
 import java.util.Date;
 import java.util.Locale;
@@ -38,8 +36,7 @@ import java.util.ResourceBundle;
 /**
  * Formats the age of a patient.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class PatientAgeFormatter implements DurationFormatter {
 
@@ -54,9 +51,9 @@ public class PatientAgeFormatter implements DurationFormatter {
     private final ILookupService lookups;
 
     /**
-     * Bean factory.
+     * The archetype service.
      */
-    private final IMObjectBeanFactory factory;
+    private final IArchetypeService service;
 
     /**
      * The duration formatter.
@@ -80,23 +77,23 @@ public class PatientAgeFormatter implements DurationFormatter {
     }
 
     /**
-     * Constructs a <tt>PatientAgeFormatter</tt>.
+     * Constructs a {@link PatientAgeFormatter}.
      *
      * @param lookups the lookup service
      * @param rules   the practice rules, used to determine the practice
-     * @param factory the bean factory
+     * @param service the archetype service
      */
-    public PatientAgeFormatter(ILookupService lookups, PracticeRules rules, IMObjectBeanFactory factory) {
+    public PatientAgeFormatter(ILookupService lookups, PracticeRules rules, IArchetypeService service) {
         this.lookups = lookups;
         this.rules = rules;
-        this.factory = factory;
+        this.service = service;
         init();
     }
 
     /**
      * Formats a patient's age determined by its birthdate and the current time.
      *
-     * @param birthDate the birth date. May be <tt>null</tt>
+     * @param birthDate the birth date. May be {@code null}
      * @return the formatted birth date
      */
     public String format(Date birthDate) {
@@ -106,8 +103,8 @@ public class PatientAgeFormatter implements DurationFormatter {
     /**
      * Formats a patient's age relative to a particular date.
      *
-     * @param from the patient's birth date. May be <tt>null</tt>
-     * @param to   the ending time. May be <tt>null</tt>
+     * @param from the patient's birth date. May be {@code null}
+     * @param to   the ending time. May be {@code null}
      * @return the formatted duration
      */
     public String format(Date from, Date to) {
@@ -163,12 +160,12 @@ public class PatientAgeFormatter implements DurationFormatter {
     private synchronized void init() {
         Party practice = rules.getPractice();
         if (practice != null) {
-            IMObjectBean bean = factory.createBean(practice);
+            IMObjectBean bean = service.getBean(practice);
             String code = bean.getString("patientAgeFormat");
             if (code != null) {
                 Lookup lookup = lookups.getLookup(LookupDateDurationFormatter.DURATION_FORMATS, code);
                 if (lookup != null) {
-                    formatter = new LookupDateDurationFormatter(lookup, lookups, factory);
+                    formatter = new LookupDateDurationFormatter(lookup, lookups, service);
                 }
             }
         }

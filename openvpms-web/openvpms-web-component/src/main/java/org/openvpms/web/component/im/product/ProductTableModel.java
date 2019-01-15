@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -27,10 +27,10 @@ import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.rules.product.ServiceRatioService;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.BaseIMObjectTableModel;
@@ -50,6 +50,11 @@ import java.util.Date;
 public class ProductTableModel extends BaseIMObjectTableModel<Product> {
 
     /**
+     * The pricing context.
+     */
+    private final ProductPricingContext pricingContext;
+
+    /**
      * The fixed price model index.
      */
     private int fixedPriceIndex;
@@ -58,11 +63,6 @@ public class ProductTableModel extends BaseIMObjectTableModel<Product> {
      * The unit price model index.
      */
     private int unitPriceIndex;
-
-    /**
-     * The pricing context.
-     */
-    private final ProductPricingContext pricingContext;
 
     /**
      * Determines if the active column should be displayed.

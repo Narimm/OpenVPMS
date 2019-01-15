@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.math;
 
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -60,7 +60,9 @@ public class Currency {
      * Constants used in rounding.
      */
     private static final BigDecimal POS_HALF = new BigDecimal("0.5");
+
     private static final BigDecimal NEG_HALF = new BigDecimal("-0.5");
+
     private static final BigDecimal TWO = BigDecimal.valueOf(2);
 
 
@@ -78,9 +80,6 @@ public class Currency {
         IMObjectBean bean = new IMObjectBean(lookup, service);
         String mode = bean.getString("roundingMode");
         roundingMode = RoundingMode.valueOf(mode);
-        if (roundingMode == null) {
-            throw new CurrencyException(InvalidRoundingMode, mode, code);
-        }
         minDenomination = bean.getBigDecimal("minDenomination", BigDecimal.ZERO);
         minPrice = bean.getBigDecimal("minPrice", BigDecimal.ZERO);
     }

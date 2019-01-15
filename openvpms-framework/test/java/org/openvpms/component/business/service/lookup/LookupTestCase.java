@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
@@ -124,7 +124,7 @@ public class LookupTestCase extends AbstractArchetypeServiceTest {
         assertNotNull(adesc);
         NodeDescriptor ndesc = adesc.getNodeDescriptor("target");
         assertNotNull(ndesc);
-        Collection<Lookup> targets = lookups.getTargetLookups(cty);
+        Collection<org.openvpms.component.model.lookup.Lookup> targets = lookups.getTargetLookups(cty);
         assertEquals(3, targets.size());
     }
 
@@ -178,8 +178,8 @@ public class LookupTestCase extends AbstractArchetypeServiceTest {
         ArchetypeDescriptor descriptor = getArchetypeDescriptor("contact.location");
         assertNotNull(descriptor.getNodeDescriptor("country"));
         assertTrue(descriptor.getNodeDescriptor("country").isLookup());
-        Collection<Lookup> values = LookupHelper.get(getArchetypeService(), lookups,
-                                                     descriptor.getNodeDescriptor("country"), null);
+        Collection<org.openvpms.component.model.lookup.Lookup> values
+                = LookupHelper.get(getArchetypeService(), lookups, descriptor.getNodeDescriptor("country"), null);
         assertTrue(values.size() > 0);
     }
 

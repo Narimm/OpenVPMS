@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper.lookup;
@@ -19,13 +19,13 @@ package org.openvpms.component.business.service.archetype.helper.lookup;
 import org.apache.commons.jxpath.JXPathContext;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.model.archetype.AssertionDescriptor;
+import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.IMObject;
 
 import java.util.Collection;
 import java.util.List;
@@ -84,6 +84,7 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      *
      * @return the assertion descriptor
      */
+    @Override
     public AssertionDescriptor getDescriptor() {
         return descriptor;
     }
@@ -93,6 +94,7 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      *
      * @return the type of the assertion
      */
+    @Override
     public String getType() {
         return type;
     }
@@ -104,6 +106,7 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      * @return a list of lookups
      * @throws LookupHelperException if invoked
      */
+    @Override
     public List<Lookup> getLookups() {
         throw new LookupHelperException(InvalidLookupAssertion, new Object[]{descriptor.getName()});
     }
@@ -117,6 +120,7 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      * @return a list of lookups
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @Override
     public Collection<Lookup> getLookups(IMObject context) {
         return getLookups();
     }
@@ -130,6 +134,7 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      * @return the lookup matching {@code code}, or {@code null} if none is found
      * @throws LookupHelperException if invoked
      */
+    @Override
     public Lookup getLookup(String code) {
         throw new LookupHelperException(InvalidLookupAssertion, new Object[]{descriptor.getName()});
     }
@@ -146,6 +151,7 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      * @throws LookupHelperException     if this method is unsupported by the
      *                                   lookup type
      */
+    @Override
     public Lookup getLookup(IMObject context, String code) {
         return getLookup(code);
     }
@@ -160,6 +166,7 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      * @throws ArchetypeServiceException for any archetype service error
      * @throws LookupHelperException     if this method is unsupported by the lookup type
      */
+    @Override
     public String getName(String code) {
         Lookup lookup = getLookup(code);
         return (lookup != null) ? lookup.getName() : null;
@@ -174,6 +181,7 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      * @throws ArchetypeServiceException for any archetype service error
      * @throws LookupHelperException     if this method is unsupported by the lookup type
      */
+    @Override
     public String getName(IMObject context, String code) {
         return getName(code);
     }
@@ -184,6 +192,7 @@ abstract class AbstractLookupAssertion implements LookupAssertion {
      * @return the default lookup or {@code null} if there is no default
      * @throws ArchetypeServiceException for any archetype service error
      */
+    @Override
     public Lookup getDefault() {
         for (Lookup lookup : getLookups()) {
             if (lookup.isDefaultLookup()) {

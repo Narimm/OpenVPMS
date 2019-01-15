@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.esci.adapter.map.order;
@@ -39,7 +39,6 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.esci.adapter.AbstractESCITest;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
@@ -328,6 +327,26 @@ public class OrderMapperTestCase extends AbstractESCITest {
     }
 
     /**
+     * Helper to create a new POSTED order.
+     *
+     * @return a new order
+     */
+    @Override
+    protected FinancialAct createOrder() {
+        BigDecimal quantity = new BigDecimal(5);
+        BigDecimal unitPrice = new BigDecimal(10);
+
+        // create an order with a single item, and post it
+        FinancialAct actItem = createOrderItem(quantity, 1, unitPrice);
+        FinancialAct act = createOrder(actItem);
+        act.setStatus(ActStatus.POSTED);
+        ActBean bean = new ActBean(act);
+        bean.addNodeParticipation("author", author);
+        bean.save();
+        return act;
+    }
+
+    /**
      * Creates a new order mapper.
      *
      * @return a new mapper
@@ -343,7 +362,7 @@ public class OrderMapperTestCase extends AbstractESCITest {
         mapper.setSupplierRules(new SupplierRules(service));
         mapper.setLookupService(lookups);
         mapper.setCurrencies(currencies);
-        mapper.setBeanFactory(new IMObjectBeanFactory(service));
+        mapper.setArchetypeService(service);
         return mapper;
     }
 
@@ -499,26 +518,6 @@ public class OrderMapperTestCase extends AbstractESCITest {
         assertEquals(cityName, postalAddress.getCityName().getValue());
         assertEquals(postalZone, postalAddress.getPostalZone().getValue());
         assertEquals(countrySubentity, postalAddress.getCountrySubentity().getValue());
-    }
-
-    /**
-     * Helper to create a new POSTED order.
-     *
-     * @return a new order
-     */
-    @Override
-    protected FinancialAct createOrder() {
-        BigDecimal quantity = new BigDecimal(5);
-        BigDecimal unitPrice = new BigDecimal(10);
-
-        // create an order with a single item, and post it
-        FinancialAct actItem = createOrderItem(quantity, 1, unitPrice);
-        FinancialAct act = createOrder(actItem);
-        act.setStatus(ActStatus.POSTED);
-        ActBean bean = new ActBean(act);
-        bean.addNodeParticipation("author", author);
-        bean.save();
-        return act;
     }
 
     /**

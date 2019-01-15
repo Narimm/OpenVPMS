@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.io;
@@ -21,7 +21,7 @@ import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Label;
 import nextapp.echo2.app.layout.TableLayoutData;
 import nextapp.echo2.app.table.DefaultTableColumnModel;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.im.table.AbstractIMTableModel;
 import org.openvpms.web.component.im.util.IMObjectSorter;
@@ -33,7 +33,6 @@ import org.openvpms.web.resource.i18n.format.NumberFormatter;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -221,7 +220,7 @@ abstract class ProductImportExportTableModel<T> extends AbstractIMTableModel<T> 
      * @return a column of the pricing groups
      */
     protected Column getPricingGroups(List<Lookup> groups, String styleName) {
-        Collections.sort(groups, IMObjectSorter.getNameComparator(true));
+        groups.sort(IMObjectSorter.getNameComparator(true));
         Column column = ColumnFactory.create(Styles.CELL_SPACING);
         for (Lookup group : groups) {
             Label label = LabelFactory.create(null, styleName);
@@ -239,7 +238,7 @@ abstract class ProductImportExportTableModel<T> extends AbstractIMTableModel<T> 
      * @return a column of the pricing groups
      */
     protected Column getPricingGroups(Set<Lookup> groups, String styleName) {
-        List<Lookup> list = new ArrayList<Lookup>(groups);
+        List<Lookup> list = new ArrayList<>(groups);
         return getPricingGroups(list, styleName);
     }
 

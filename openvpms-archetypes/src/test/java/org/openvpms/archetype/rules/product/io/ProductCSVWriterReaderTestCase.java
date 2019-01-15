@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -29,11 +29,11 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -513,10 +513,10 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
         ProductPrice fixed1 = createFixedPrice("1.0", "0.5", "100", "10", "2012-02-01", "2012-04-01", false);
         ProductPrice unit1 = createUnitPrice("1.92", "1.2", "60", "10", "2012-02-02", "2012-04-02");
 
-        IMObjectBean unit1Bean = new IMObjectBean(unit1);
+        IMObjectBean unit1Bean = getBean(unit1);
         unit1Bean.setValue("cost", null);
         unit1Bean.setValue("maxDiscount", null);
-        IMObjectBean fixed1Bean = new IMObjectBean(fixed1);
+        IMObjectBean fixed1Bean = getBean(fixed1);
         fixed1Bean.setValue("cost", null);
         fixed1Bean.setValue("maxDiscount", null);
         product.addProductPrice(fixed1);
@@ -572,7 +572,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
      * @param expected the expected product
      */
     private void checkProduct(ProductData data, Product expected) {
-        IMObjectBean bean = new IMObjectBean(expected);
+        IMObjectBean bean = getBean(expected);
         assertEquals(expected.getId(), data.getId());
         assertEquals(expected.getName(), data.getName());
         assertEquals(bean.getString("printedName"), data.getPrintedName());
@@ -586,7 +586,7 @@ public class ProductCSVWriterReaderTestCase extends AbstractProductIOTest {
      * @param expected the expected price
      */
     private void checkPrice(PriceData data, ProductPrice expected) {
-        IMObjectBean bean = new IMObjectBean(expected);
+        IMObjectBean bean = getBean(expected);
         assertEquals(expected.getPrice(), data.getPrice());
         assertEquals(bean.getBigDecimal("cost"), data.getCost());
         assertEquals(bean.getBigDecimal("maxDiscount"), data.getMaxDiscount());

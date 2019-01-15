@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -23,10 +23,10 @@ import org.openvpms.archetype.rules.practice.Location;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
@@ -146,16 +146,6 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
     private final boolean excludeCredit;
 
     /**
-     * The overdue from-day range.
-     */
-    private int from;
-
-    /**
-     * The overdue to-day range.
-     */
-    private int to;
-
-    /**
      * The archetype service.
      */
     private final IArchetypeService service;
@@ -164,6 +154,31 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
      * The lookup service.
      */
     private final ILookupService lookups;
+
+    /**
+     * The rules.
+     */
+    private final CustomerAccountRules rules;
+
+    /**
+     * Balance calculator helper.
+     */
+    private final BalanceCalculator balanceCalc;
+
+    /**
+     * Calculator helper.
+     */
+    private final ActCalculator calculator;
+
+    /**
+     * The overdue from-day range.
+     */
+    private int from;
+
+    /**
+     * The overdue to-day range.
+     */
+    private int to;
 
     /**
      * The last retrieved set.
@@ -181,24 +196,9 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
     private Iterator<ObjectSet> iterator;
 
     /**
-     * The rules.
-     */
-    private final CustomerAccountRules rules;
-
-    /**
      * Customer account type lookup cache.
      */
     private Map<String, Lookup> lookupCache = new HashMap<>();
-
-    /**
-     * Balance calculator helper.
-     */
-    private final BalanceCalculator balanceCalc;
-
-    /**
-     * Calculator helper.
-     */
-    private final ActCalculator calculator;
 
     /**
      * The customer archetypes.
@@ -592,8 +592,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
      * Returns a lookup given its code.
      *
      * @param code the lookup code
-     * @return the lookup corresponding to {@code code} or {@code null}
-     *         if none is found
+     * @return the lookup corresponding to {@code code} or {@code null} if none is found
      */
     private Lookup getLookup(String code) {
         Lookup lookup;
@@ -755,11 +754,9 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
          * @param shortName the act short name
          * @param dateKey   the key to store the date under
          * @param amountKey the key to store the amount under
-         * @return {@code true} if an act corresponding to the short name
-         *         exists
+         * @return {@code true} if an act corresponding to the short name exists
          */
-        private boolean query(String shortName, String dateKey,
-                              String amountKey) {
+        private boolean query(String shortName, String dateKey, String amountKey) {
             boolean found = false;
             ShortNameConstraint archetype = new ShortNameConstraint("act", shortName);
             ArchetypeQuery query = new ArchetypeQuery(archetype);

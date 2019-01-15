@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.rule;
@@ -65,7 +65,8 @@ public interface IArchetypeRuleService extends IArchetypeService {
      * @throws ValidationException       if the specified entity cannot be
      *                                   validated
      */
-    void save(IMObject object);
+    @Override
+    void save(org.openvpms.component.model.object.IMObject object);
 
     /**
      * Save a collection of {@link IMObject} instances. executing any
@@ -77,7 +78,8 @@ public interface IArchetypeRuleService extends IArchetypeService {
      * @throws ArchetypeServiceException if an object can't be saved
      * @throws ValidationException       if an object can't be validated
      */
-    void save(Collection<? extends IMObject> objects);
+    @Override
+    void save(Collection<? extends org.openvpms.component.model.object.IMObject> objects);
 
     /**
      * Removes an object, executing any <em>remove</em> rules associated with
@@ -86,7 +88,8 @@ public interface IArchetypeRuleService extends IArchetypeService {
      * @param object the object to remove
      * @throws ArchetypeServiceException if the object cannot be removed
      */
-    void remove(IMObject object);
+    @Override
+    void remove(org.openvpms.component.model.object.IMObject object);
 
 
 }

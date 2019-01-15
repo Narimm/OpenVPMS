@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.user;
@@ -25,12 +25,12 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.system.common.jxpath.AbstractObjectFunctions;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -189,11 +189,11 @@ public class UserFunctions extends AbstractObjectFunctions {
         if (practice != null) {
             Lookup lookup = lookups.getLookup(practice, node);
             if (lookup != null) {
-                IMObjectBean bean = new IMObjectBean(lookup, service);
+                IMObjectBean bean = service.getBean(lookup);
                 String expression = bean.getString("expression");
                 if (expression != null) {
                     try {
-                        IMObjectBean userBean = new IMObjectBean(user, service);
+                        IMObjectBean userBean = service.getBean(user);
                         JXPathContext context = JXPathHelper.newContext(user, functions);
                         Variables variables = context.getVariables();
                         variables.declareVariable(USERNAME, userBean.getValue(USERNAME));

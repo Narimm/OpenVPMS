@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
@@ -218,22 +218,23 @@ public class ArchetypeService implements IArchetypeService {
      * @return any validation errors
      */
     @Override
-    public List<org.openvpms.component.service.archetype.ValidationError> validate(IMObject object) {
-        return validator.validate(object);
+    public List<org.openvpms.component.service.archetype.ValidationError> validate(
+            org.openvpms.component.model.object.IMObject object) {
+        return validator.validate((IMObject) object);
     }
 
     /**
      * (non-Javadoc)
      *
-     * @see org.openvpms.component.business.service.archetype.IArchetypeService#validateObject(org.openvpms.component.business.domain.im.common.IMObject)
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#validateObject(org.openvpms.component.model.object.IMObject)
      */
-    public void validateObject(IMObject object) {
-        List<org.openvpms.component.service.archetype.ValidationError> errors = validator.validate(object);
+    @Override
+    public void validateObject(org.openvpms.component.model.object.IMObject object) {
+        List<org.openvpms.component.service.archetype.ValidationError> errors = validator.validate((IMObject) object);
         if (!errors.isEmpty()) {
             throw new ValidationException(
-                    errors,
-                    ValidationException.ErrorCode.FailedToValidObjectAgainstArchetype,
-                    new Object[]{object.getArchetypeId()});
+                    errors, ValidationException.ErrorCode.FailedToValidObjectAgainstArchetype,
+                    new Object[]{object.getArchetype()});
 
         }
     }
@@ -241,27 +242,23 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#deriveValues(org.openvpms.component.business.domain.im.common.IMObject)
      */
-    public void deriveValues(IMObject object) {
+    @Override
+    public void deriveValues(org.openvpms.component.model.object.IMObject object) {
         // check for a non-null object
         if (object == null) {
             return;
         }
 
         if (log.isDebugEnabled()) {
-            log.debug(
-                    "ArchetypeService.deriveValues: Deriving values for type"
-                    + object.getArchetypeId().getShortName()
-                    + " with id " + object.getId()
-                    + " and version " + object.getVersion());
+            log.debug("ArchetypeService.deriveValues: Deriving values for type" + object.getArchetype()
+                      + " with id " + object.getId() + " and version " + object.getVersion());
         }
 
         // check that we can retrieve a valid archetype for this object
-        ArchetypeDescriptor descriptor = getArchetypeDescriptor(
-                object.getArchetypeId());
+        ArchetypeDescriptor descriptor = getArchetypeDescriptor(object.getArchetype());
         if (descriptor == null) {
-            throw new ArchetypeServiceException(
-                    ArchetypeServiceException.ErrorCode.NoArchetypeDefinition,
-                    object.getArchetypeId().toString());
+            throw new ArchetypeServiceException(ArchetypeServiceException.ErrorCode.NoArchetypeDefinition,
+                                                object.getArchetype());
         }
 
         // if there are nodes attached to the archetype then validate the
@@ -276,7 +273,8 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#deriveValue(org.openvpms.component.business.domain.im.common.IMObject, java.lang.String)
      */
-    public void deriveValue(IMObject object, String node) {
+    @Override
+    public void deriveValue(org.openvpms.component.model.object.IMObject object, String node) {
         if (object == null) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.NonNullObjectRequired);
@@ -288,19 +286,16 @@ public class ArchetypeService implements IArchetypeService {
         }
 
         // check that the node name is valid for the specified object
-        ArchetypeDescriptor adesc = getArchetypeDescriptor(
-                object.getArchetypeId());
+        ArchetypeDescriptor adesc = getArchetypeDescriptor(object.getArchetype());
         if (adesc == null) {
-            throw new ArchetypeServiceException(
-                    ArchetypeServiceException.ErrorCode.InvalidArchetypeDescriptor,
-                    object.getArchetypeId());
+            throw new ArchetypeServiceException(ArchetypeServiceException.ErrorCode.InvalidArchetypeDescriptor,
+                                                object.getArchetype());
         }
 
         NodeDescriptor ndesc = adesc.getNodeDescriptor(node);
         if (ndesc == null) {
-            throw new ArchetypeServiceException(
-                    ArchetypeServiceException.ErrorCode.InvalidNodeDescriptor,
-                    node, object.getArchetypeId());
+            throw new ArchetypeServiceException(ArchetypeServiceException.ErrorCode.InvalidNodeDescriptor,
+                                                node, object.getArchetype());
         }
 
         // derive the value
@@ -357,8 +352,8 @@ public class ArchetypeService implements IArchetypeService {
     }
 
     /* (non-Javadoc)
-         * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(org.openvpms.component.system.common.query.ArchetypeQuery)
-         */
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#get(org.openvpms.component.system.common.query.ArchetypeQuery)
+     */
     public IPage<IMObject> get(IArchetypeQuery query) {
         if (log.isDebugEnabled()) {
             log.debug("ArchetypeService.get: query " + query);
@@ -462,12 +457,12 @@ public class ArchetypeService implements IArchetypeService {
     /**
      * (non-Javadoc)
      *
-     * @see org.openvpms.component.business.service.archetype.IArchetypeService#remove(org.openvpms.component.business.domain.im.common.IMObject)
+     * @see IArchetypeService#remove(org.openvpms.component.model.object.IMObject)
      */
-    public void remove(IMObject object) {
+    @Override
+    public void remove(org.openvpms.component.model.object.IMObject object) {
         if (log.isDebugEnabled()) {
-            log.debug("ArchetypeService.remove: Removing object of type "
-                      + object.getArchetypeId().getShortName()
+            log.debug("ArchetypeService.remove: Removing object of type " + object.getArchetype()
                       + " with id " + object.getId()
                       + " and version " + object.getVersion());
         }
@@ -478,11 +473,11 @@ public class ArchetypeService implements IArchetypeService {
                     new Object[]{});
         }
 
-        notifyRemove(object, true);
+        notifyRemove((IMObject) object, true);
 
         try {
-            dao.delete(object);
-            notifyRemove(object, false);
+            dao.delete((IMObject) object);
+            notifyRemove((IMObject) object, false);
         } catch (IMObjectDAOException exception) {
             if (IMObjectDAOException.ErrorCode.CannotDeleteLookupInUse.equals(exception.getErrorCode())) {
                 throw new ArchetypeServiceException(ArchetypeServiceException.ErrorCode.CannotDeleteLookupInUse,
@@ -497,7 +492,8 @@ public class ArchetypeService implements IArchetypeService {
     /* (non-Javadoc)
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#save(org.openvpms.component.business.domain.im.common.IMObject)
      */
-    public void save(IMObject entity) {
+    @Override
+    public void save(org.openvpms.component.model.object.IMObject entity) {
         save(entity, true);
     }
 
@@ -506,12 +502,11 @@ public class ArchetypeService implements IArchetypeService {
      *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#save(org.openvpms.component.business.domain.im.common.IMObject)
      */
-    public void save(IMObject object, boolean validate) {
+    @Override
+    public void save(org.openvpms.component.model.object.IMObject object, boolean validate) {
         if (log.isDebugEnabled()) {
-            log.debug("ArchetypeService.save: Saving object of type "
-                      + object.getArchetypeId().getShortName()
-                      + " with id " + object.getId()
-                      + " and version " + object.getVersion());
+            log.debug("ArchetypeService.save: Saving object of type " + object.getArchetype()
+                      + " with id " + object.getId() + " and version " + object.getVersion());
         }
 
         if (dao == null) {
@@ -525,7 +520,7 @@ public class ArchetypeService implements IArchetypeService {
             validateObject(object);
         }
         try {
-            dao.save(object);
+            dao.save((IMObject) object);
             if (object instanceof ArchetypeDescriptor || object instanceof AssertionTypeDescriptor) {
                 updateCache(object);
             }
@@ -544,7 +539,8 @@ public class ArchetypeService implements IArchetypeService {
      * @throws ArchetypeServiceException if an object can't be saved
      * @throws ValidationException       if an object can't be validated
      */
-    public void save(Collection<? extends IMObject> objects) {
+    @Override
+    public void save(Collection<? extends org.openvpms.component.model.object.IMObject> objects) {
         save(objects, true);
     }
 
@@ -556,7 +552,8 @@ public class ArchetypeService implements IArchetypeService {
      * @throws ArchetypeServiceException if an object can't be saved
      * @throws ValidationException       if an object can't be validated
      */
-    public void save(Collection<? extends IMObject> objects, boolean validate) {
+    @Override
+    public void save(Collection<? extends org.openvpms.component.model.object.IMObject> objects, boolean validate) {
         if (dao == null) {
             throw new ArchetypeServiceException(
                     ArchetypeServiceException.ErrorCode.NoDaoConfigured,
@@ -567,15 +564,15 @@ public class ArchetypeService implements IArchetypeService {
 
         // first validate each object
         if (validate) {
-            for (IMObject object : objects) {
+            for (org.openvpms.component.model.object.IMObject object : objects) {
                 validateObject(object);
             }
         }
 
         // now issue a call to save the objects
         try {
-            dao.save(objects);
-            for (IMObject object : objects) {
+            dao.save((Collection) objects);
+            for (org.openvpms.component.model.object.IMObject object : objects) {
                 if (object instanceof ArchetypeDescriptor || object instanceof AssertionTypeDescriptor) {
                     updateCache(object);
                 }
@@ -620,8 +617,8 @@ public class ArchetypeService implements IArchetypeService {
     }
 
     /* (non-Javadoc)
-    * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeShortNames(java.lang.String, boolean)
-    */
+     * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeShortNames(java.lang.String, boolean)
+     */
     public List<String> getArchetypeShortNames(String shortName,
                                                boolean primaryOnly) {
         return dCache.getArchetypeShortNames(shortName, primaryOnly);
@@ -769,7 +766,7 @@ public class ArchetypeService implements IArchetypeService {
      *
      * @param object the object to add to the cache
      */
-    private void updateCache(final IMObject object) {
+    private void updateCache(org.openvpms.component.model.object.IMObject object) {
         if (TransactionSynchronizationManager.isActualTransactionActive()) {
             // update the cache when the transaction commits
             TransactionSynchronizationManager.registerSynchronization(
@@ -791,18 +788,16 @@ public class ArchetypeService implements IArchetypeService {
      *
      * @param object the object to add to the cache
      */
-    private void addToCache(IMObject object) {
+    private void addToCache(org.openvpms.component.model.object.IMObject object) {
         if (object instanceof ArchetypeDescriptor) {
-            ArchetypeDescriptor descriptor
-                    = (ArchetypeDescriptor) get(object.getObjectReference());
+            ArchetypeDescriptor descriptor = (ArchetypeDescriptor) get(object.getObjectReference());
             // retrieve the saved instance - this will have assertion descriptors correctly associated with assertion
             // type descriptors
             if (descriptor != null) {
                 dCache.addArchetypeDescriptor(descriptor);
             }
         } else if (object instanceof AssertionTypeDescriptor) {
-            AssertionTypeDescriptor descriptor
-                    = (AssertionTypeDescriptor) object;
+            AssertionTypeDescriptor descriptor = (AssertionTypeDescriptor) object;
             dCache.addAssertionTypeDescriptor(descriptor);
         }
     }
@@ -813,7 +808,7 @@ public class ArchetypeService implements IArchetypeService {
      * @param object  the object
      * @param preSave if {@code true} the object is about to be saved, otherwise it has been saved
      */
-    private void notifySave(IMObject object, boolean preSave) {
+    private void notifySave(org.openvpms.component.model.object.IMObject object, boolean preSave) {
         synchronized (listeners) {
             notifySave(object, null, preSave);
         }
@@ -823,14 +818,13 @@ public class ArchetypeService implements IArchetypeService {
      * Notifies any listeners when a collection of objects is saved.
      *
      * @param objects the objects
-     * @param preSave if {@code true} the objects are about to be saved,
-     *                otherwise they have been saved
+     * @param preSave if {@code true} the objects are about to be saved, otherwise they have been saved
      */
-    private void notifySave(Collection<? extends IMObject> objects,
+    private void notifySave(Collection<? extends org.openvpms.component.model.object.IMObject> objects,
                             boolean preSave) {
         synchronized (listeners) {
             Notifier notifier = null;
-            for (IMObject object : objects) {
+            for (org.openvpms.component.model.object.IMObject object : objects) {
                 notifier = notifySave(object, notifier, preSave);
             }
         }
@@ -844,11 +838,9 @@ public class ArchetypeService implements IArchetypeService {
      * @param preSave  if {@code true} the object is about to be saved, otherwise it has been saved
      * @return the notifier
      */
-    private Notifier notifySave(IMObject object, Notifier notifier,
+    private Notifier notifySave(org.openvpms.component.model.object.IMObject object, Notifier notifier,
                                 boolean preSave) {
-        ArchetypeId id = object.getArchetypeId();
-        String shortName = id.getShortName();
-        List<IArchetypeServiceListener> list = listeners.get(shortName);
+        List<IArchetypeServiceListener> list = listeners.get(object.getArchetype());
         if (list != null) {
             if (notifier == null) {
                 notifier = Notifier.getNotifier(this);

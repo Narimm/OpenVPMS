@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro.impl;
 
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.macro.MacroException;
 import org.openvpms.report.ReportFactory;
 
@@ -65,7 +65,7 @@ class MacroFactory {
         } else if (TypeHelper.isA(lookup, MacroArchetypes.REPORT_MACRO)) {
             return new ReportMacro(lookup, service);
         }
-        throw new IllegalArgumentException("Unsupported lookup type: " + lookup.getArchetypeId().getShortName());
+        throw new IllegalArgumentException("Unsupported lookup type: " + lookup.getArchetype());
     }
 
     /**

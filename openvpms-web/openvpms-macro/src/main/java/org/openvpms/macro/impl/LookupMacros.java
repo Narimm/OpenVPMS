@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro.impl;
@@ -21,13 +21,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.function.factory.ArchetypeFunctionsFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.ReadOnlyArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.macro.MacroException;
 import org.openvpms.macro.Macros;
@@ -59,7 +59,7 @@ public class LookupMacros implements Macros, InitializingBean, DisposableBean {
     /**
      * The macros, keyed on code
      */
-    private final Map<String, Macro> macros = Collections.synchronizedMap(new HashMap<String, Macro>());
+    private final Map<String, Macro> macros = Collections.synchronizedMap(new HashMap<>());
 
     /**
      * The archetype service.
@@ -77,11 +77,6 @@ public class LookupMacros implements Macros, InitializingBean, DisposableBean {
     private final ArchetypeFunctionsFactory functionsFactory;
 
     /**
-     * The JXPath extension functions that macros may invoke.
-     */
-    private FunctionLibrary functions;
-
-    /**
      * The listener to monitor macro updates.
      */
     private final IArchetypeServiceListener listener;
@@ -93,6 +88,11 @@ public class LookupMacros implements Macros, InitializingBean, DisposableBean {
     private final ThreadLocal<ScopedVariables> scopedVariables = new ThreadLocal<>();
 
     /**
+     * The JXPath extension functions that macros may invoke.
+     */
+    private FunctionLibrary functions;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(LookupMacros.class);
@@ -100,9 +100,9 @@ public class LookupMacros implements Macros, InitializingBean, DisposableBean {
     /**
      * Constructs a {@link LookupMacros}.
      *
-     * @param lookups the lookup service
-     * @param service the archetype service
-     * @param factory the document handlers
+     * @param lookups   the lookup service
+     * @param service   the archetype service
+     * @param factory   the document handlers
      * @param functions the JXPath extension functions that macros may invoke
      * @throws ArchetypeServiceException for any archetype service error
      */

@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.map;
 
@@ -22,8 +20,8 @@ import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.ubl.common.AmountType;
@@ -53,8 +51,7 @@ import java.util.GregorianCalendar;
 /**
  * UBL helper methods.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class UBLHelper {
 
@@ -63,15 +60,15 @@ public class UBLHelper {
      *
      * @param rules      the practice rules
      * @param currencies the currencies
-     * @param factory    the bean factory
+     * @param service    the bean factory
      * @return the currency
      */
-    public static Currency getCurrency(PracticeRules rules, Currencies currencies, IMObjectBeanFactory factory) {
+    public static Currency getCurrency(PracticeRules rules, Currencies currencies, IArchetypeService service) {
         Party practice = rules.getPractice();
         if (practice == null) {
             throw new IllegalStateException("No party.organisationPractice defined");
         }
-        IMObjectBean bean = factory.createBean(practice);
+        IMObjectBean bean = service.getBean(practice);
         String code = bean.getString("currency");
         return currencies.getCurrency(code);
     }

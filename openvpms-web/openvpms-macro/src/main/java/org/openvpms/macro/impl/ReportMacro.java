@@ -11,18 +11,18 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro.impl;
 
 import org.openvpms.archetype.rules.doc.DocumentTemplate;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.macro.MacroException;
 
 /**
@@ -45,7 +45,7 @@ public class ReportMacro extends AbstractExpressionMacro {
      * @throws MacroException if the document template cannot be found
      */
     public ReportMacro(Lookup lookup, IArchetypeService service) {
-        this(new IMObjectBean(lookup, service), service);
+        this(service.getBean(lookup), service);
     }
 
     /**
@@ -57,7 +57,7 @@ public class ReportMacro extends AbstractExpressionMacro {
      */
     protected ReportMacro(IMObjectBean bean, IArchetypeService service) {
         super(bean);
-        IMObjectReference reference = bean.getReference("report");
+        Reference reference = bean.getReference("report");
         Entity entity = null;
         if (reference != null) {
             entity = (Entity) service.get(reference);

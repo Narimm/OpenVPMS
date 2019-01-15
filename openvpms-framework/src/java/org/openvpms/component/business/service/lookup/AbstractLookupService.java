@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
@@ -20,12 +20,12 @@ import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertion;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionFactory;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.model.lookup.LookupRelationship;
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -42,8 +42,7 @@ import java.util.List;
 
 
 /**
- * Abstract implementation of the {@link ILookupService}, that
- * delegates to the {@link IArchetypeService}.
+ * Abstract implementation of the {@link ILookupService}, that delegates to the {@link IArchetypeService}.
  *
  * @author Tim Anderson
  */
@@ -83,6 +82,7 @@ public abstract class AbstractLookupService implements ILookupService {
      * @param code      the lookup code
      * @return the corresponding lookup or {@code null} if none is found
      */
+    @Override
     public Lookup getLookup(String shortName, String code) {
         return getLookup(shortName, code, true);
     }
@@ -106,6 +106,7 @@ public abstract class AbstractLookupService implements ILookupService {
      * @param shortName the lookup archetype short name
      * @return a collection of lookups with the specified short name
      */
+    @Override
     public Collection<Lookup> getLookups(String shortName) {
         return query(shortName);
     }
@@ -116,6 +117,7 @@ public abstract class AbstractLookupService implements ILookupService {
      * @param shortName the lookup archetype short name
      * @return the default lookup, or {@code null} if none is found
      */
+    @Override
     public Lookup getDefaultLookup(String shortName) {
         ArchetypeQuery query = new ArchetypeQuery(shortName, false, true)
                 .add(Constraints.eq(DEFAULT_LOOKUP, true))
@@ -132,6 +134,7 @@ public abstract class AbstractLookupService implements ILookupService {
      * @param lookup the target lookup
      * @return a collection of source lookups
      */
+    @Override
     public Collection<Lookup> getSourceLookups(Lookup lookup) {
         return getSourceLookups(lookup.getTargetLookupRelationships());
     }
@@ -145,8 +148,8 @@ public abstract class AbstractLookupService implements ILookupService {
      *                              wildcards
      * @return a collection of source lookups
      */
-    public Collection<Lookup> getSourceLookups(Lookup lookup,
-                                               String relationshipShortName) {
+    @Override
+    public Collection<Lookup> getSourceLookups(Lookup lookup, String relationshipShortName) {
         Collection<LookupRelationship> relationships
                 = getRelationships(relationshipShortName,
                                    lookup.getTargetLookupRelationships());
@@ -160,6 +163,7 @@ public abstract class AbstractLookupService implements ILookupService {
      * @param lookup the source lookup
      * @return a collection of target lookups
      */
+    @Override
     public Collection<Lookup> getTargetLookups(Lookup lookup) {
         return getTargetLookups(lookup.getSourceLookupRelationships());
     }
@@ -173,8 +177,8 @@ public abstract class AbstractLookupService implements ILookupService {
      *                              wildcards
      * @return a collection of target lookups
      */
-    public Collection<Lookup> getTargetLookups(Lookup lookup,
-                                               String relationshipShortName) {
+    @Override
+    public Collection<Lookup> getTargetLookups(Lookup lookup, String relationshipShortName) {
         Collection<LookupRelationship> relationships
                 = getRelationships(relationshipShortName,
                                    lookup.getSourceLookupRelationships());
@@ -188,6 +192,7 @@ public abstract class AbstractLookupService implements ILookupService {
      * @param node      the node name
      * @return a list of lookups
      */
+    @Override
     public Collection<Lookup> getLookups(String shortName, String node) {
         ArchetypeDescriptor archetype = service.getArchetypeDescriptor(shortName);
         if (archetype == null) {
@@ -211,9 +216,10 @@ public abstract class AbstractLookupService implements ILookupService {
      * @param node   the node name
      * @return a list of lookups
      */
-    public Collection<Lookup> getLookups(IMObject object, String node) {
-        IMObjectBean bean = new IMObjectBean(object, service);
-        NodeDescriptor descriptor = bean.getDescriptor(node);
+    @Override
+    public Collection<Lookup> getLookups(org.openvpms.component.model.object.IMObject object, String node) {
+        IMObjectBean bean = service.getBean(object);
+        NodeDescriptor descriptor = (NodeDescriptor) bean.getNode(node);
         if (descriptor == null) {
             throw new IllegalArgumentException("Invalid node name: " + node);
         }
@@ -228,9 +234,10 @@ public abstract class AbstractLookupService implements ILookupService {
      * @param node   the node name
      * @return the lookup, or {@code null} if none is found
      */
-    public Lookup getLookup(IMObject object, String node) {
-        IMObjectBean bean = new IMObjectBean(object, service);
-        return (Lookup) bean.getLookup(node);
+    @Override
+    public Lookup getLookup(org.openvpms.component.model.object.IMObject object, String node) {
+        IMObjectBean bean = service.getBean(object);
+        return bean.getLookup(node);
     }
 
     /**
@@ -240,7 +247,8 @@ public abstract class AbstractLookupService implements ILookupService {
      * @param node   the node name
      * @return the lookup's name, or {@code null} if none is found
      */
-    public String getName(IMObject object, String node) {
+    @Override
+    public String getName(org.openvpms.component.model.object.IMObject object, String node) {
         Lookup lookup = getLookup(object, node);
         return (lookup != null) ? lookup.getName() : null;
     }
@@ -253,8 +261,9 @@ public abstract class AbstractLookupService implements ILookupService {
      * @param source the lookup to replace
      * @param target the lookup to replace {@code source} with
      */
+    @Override
     public void replace(Lookup source, Lookup target) {
-        if (!source.getArchetypeId().equals(target.getArchetypeId())) {
+        if (!source.getArchetype().equals(target.getArchetype())) {
             throw new LookupServiceException(LookupServiceException.ErrorCode.CannotReplaceArchetypeMismatch);
         }
         dao.replace(source, target);

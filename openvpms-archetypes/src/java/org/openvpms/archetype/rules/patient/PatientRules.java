@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -39,13 +39,12 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctio
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.IsA;
 import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.model.archetype.NodeDescriptor;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.bean.Policies;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
@@ -114,11 +113,6 @@ public class PatientRules {
     private PatientAgeFormatter formatter;
 
     /**
-     * The bean factory.
-     */
-    private IMObjectBeanFactory factory;
-
-    /**
      * Helper functions.
      */
     private ArchetypeServiceFunctions functions;
@@ -149,7 +143,6 @@ public class PatientRules {
         this.service = service;
         this.lookups = lookups;
         this.formatter = formatter;
-        factory = new IMObjectBeanFactory(service);
         functions = new ArchetypeServiceFunctions(service, lookups);
     }
 
@@ -164,7 +157,7 @@ public class PatientRules {
      */
     public EntityRelationship addPatientOwnerRelationship(Party customer,
                                                           Party patient) {
-        EntityBean bean = factory.createEntityBean(customer);
+        EntityBean bean = new EntityBean(customer, service);
         EntityRelationship relationship = bean.addRelationship(PatientArchetypes.PATIENT_OWNER, patient);
         relationship.setActiveStartTime(new Date());
         return relationship;
@@ -179,7 +172,7 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public EntityRelationship addPatientLocationRelationship(Party customer, Party patient) {
-        EntityBean bean = factory.createEntityBean(customer);
+        EntityBean bean = new EntityBean(customer, service);
         EntityRelationship relationship = bean.addRelationship(PatientArchetypes.PATIENT_LOCATION, patient);
         relationship.setActiveStartTime(new Date());
         return relationship;
@@ -197,10 +190,8 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getOwner(Act act) {
-        ActBean bean = factory.createActBean(act);
-        Party patient = (Party) bean.getParticipant(PatientArchetypes.PATIENT_PARTICIPATION);
-        Date startTime = act.getActivityStartTime();
-        return getOwner(patient, startTime, false);
+        Party patient = getPatient(act);
+        return patient != null ? getOwner(patient, act.getActivityStartTime(), false) : null;
     }
 
     /**
@@ -222,9 +213,8 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getCurrentOwner(Act act) {
-        ActBean bean = factory.createActBean(act);
-        Party patient = (Party) bean.getParticipant("participation.patient");
-        return getOwner(patient, new Date(), true);
+        Party patient = getPatient(act);
+        return patient != null ? getOwner(patient, new Date(), true) : null;
     }
 
     /**
@@ -247,7 +237,7 @@ public class PatientRules {
      * @return a reference to the owner, or {@code null} if none can be found
      */
     public IMObjectReference getOwnerReference(Party patient) {
-        EntityBean bean = factory.createEntityBean(patient);
+        EntityBean bean = new EntityBean(patient);
         Predicate predicate = AndPredicate.getInstance(new IsA(PatientArchetypes.PATIENT_OWNER),
                                                        IsActiveRelationship.isActiveNow());
         EntityRelationship er = bean.getNodeRelationship("customers", predicate);
@@ -274,8 +264,7 @@ public class PatientRules {
      * @return the patient location, or {@code null} if none is found
      */
     public Party getLocation(Act act) {
-        ActBean bean = factory.createActBean(act);
-        Party patient = (Party) bean.getParticipant(PatientArchetypes.PATIENT_PARTICIPATION);
+        Party patient = getPatient(act);
         Date startTime = act.getActivityStartTime();
         return getLocation(patient, startTime, false);
     }
@@ -299,9 +288,8 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getCurrentLocation(Act act) {
-        ActBean bean = factory.createActBean(act);
-        Party patient = (Party) bean.getParticipant("participation.patient");
-        return getLocation(patient, new Date(), true);
+        Party patient = getPatient(act);
+        return (patient != null) ? getLocation(patient, new Date(), true) : null;
     }
 
     /**
@@ -329,8 +317,8 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public Party getReferralVet(Party patient, Date time) {
-        EntityBean bean = factory.createEntityBean(patient);
-        return (Party) bean.getNodeTargetEntity("referrals", time);
+        IMObjectBean bean = service.getBean(patient);
+        return bean.getTarget("referrals", Party.class, Policies.active(time));
     }
 
     /**
@@ -340,7 +328,7 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void setInactive(Party patient) {
-        IMObjectBean bean = factory.createBean(patient);
+        IMObjectBean bean = service.getBean(patient);
         if (bean.getBoolean("active")) {
             bean.setValue("active", false);
             bean.save();
@@ -354,7 +342,7 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void setDeceased(Party patient) {
-        EntityBean bean = factory.createEntityBean(patient);
+        IMObjectBean bean = service.getBean(patient);
         if (!bean.getBoolean("deceased")) {
             bean.setValue("deceased", true);
             bean.setValue("active", false);
@@ -373,7 +361,7 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public boolean isDeceased(Party patient) {
-        IMObjectBean bean = factory.createBean(patient);
+        IMObjectBean bean = service.getBean(patient);
         return bean.getBoolean("deceased");
     }
 
@@ -384,7 +372,7 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public void setDesexed(Party patient) {
-        IMObjectBean bean = factory.createBean(patient);
+        IMObjectBean bean = service.getBean(patient);
         if (!bean.getBoolean("desexed")) {
             bean.setValue("desexed", true);
             bean.save();
@@ -399,7 +387,7 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public boolean isDesexed(Party patient) {
-        IMObjectBean bean = factory.createBean(patient);
+        IMObjectBean bean = service.getBean(patient);
         return bean.getBoolean("desexed");
     }
 
@@ -432,8 +420,7 @@ public class PatientRules {
      *                                   todo - should be localised
      */
     public String getPatientDesexStatus(Act act) {
-        ActBean bean = factory.createActBean(act);
-        Party patient = (Party) bean.getParticipant("participation.patient");
+        Party patient = getPatient(act);
         return getPatientDesexStatus(patient);
     }
 
@@ -444,7 +431,7 @@ public class PatientRules {
      * @return the patient's date of birth. May be {@code null}
      */
     public Date getDateOfBirth(Party patient) {
-        IMObjectBean bean = factory.createBean(patient);
+        IMObjectBean bean = service.getBean(patient);
         return bean.getDate("dateOfBirth");
     }
 
@@ -473,14 +460,14 @@ public class PatientRules {
      */
     public String getPatientAge(Party patient, Date date) {
         String result;
-        IMObjectBean bean = factory.createBean(patient);
+        IMObjectBean bean = service.getBean(patient);
         Date birthDate = bean.getDate("dateOfBirth");
         Date deceasedDate = bean.getDate("deceasedDate");
         synchronized (this) {
             if (formatter == null) {
                 // TODO - this is a hack, but requires refactoring of rules into services to make better
                 // use of dependency injection
-                formatter = new PatientAgeFormatter(lookups, rules, factory);
+                formatter = new PatientAgeFormatter(lookups, rules, service);
             }
         }
         if (deceasedDate == null) {
@@ -534,7 +521,7 @@ public class PatientRules {
      * @return the colour. May be {@code null}
      */
     public String getPatientColour(Party patient) {
-        IMObjectBean bean = new IMObjectBean(patient, service);
+        IMObjectBean bean = service.getBean(patient);
         return bean.getString("colour");
     }
 
@@ -565,9 +552,8 @@ public class PatientRules {
      * @return the description node or {@code null} if no act can be found
      */
     public String getPatientWeight(Act act) {
-        ActBean bean = factory.createActBean(act);
-        Party patient = (Party) bean.getParticipant("participation.patient");
-        return getPatientWeight(patient);
+        Party patient = getPatient(act);
+        return (patient != null) ? getPatientWeight(patient) : null;
     }
 
     /**
@@ -603,7 +589,7 @@ public class PatientRules {
      * @return the patient's weight, or {@code 0} if its weight is not known
      */
     public Weight getWeight(Act act) {
-        IMObjectBean bean = new IMObjectBean(act, service);
+        IMObjectBean bean = service.getBean(act);
         String units = bean.getString("units", WeightUnits.KILOGRAMS.toString());
         return new Weight(bean.getBigDecimal("weight", BigDecimal.ZERO), WeightUnits.valueOf(units),
                           act.getActivityStartTime());
@@ -720,16 +706,12 @@ public class PatientRules {
      */
     public boolean isAllergy(Act alert) {
         boolean result = false;
-        ActBean bean = new ActBean(alert, service);
-        Entity alertType = bean.getNodeParticipant("alertType");
+        IMObjectBean bean = service.getBean(alert);
+        Entity alertType = bean.getTarget("alertType", Entity.class);
         if (alertType != null) {
-            IMObjectBean alertBean = new IMObjectBean(alertType, service);
-            IMObject lookup = alertBean.getValue("class", new Predicate() {
-                @Override
-                public boolean evaluate(Object object) {
-                    return (object instanceof Lookup) && ALLERGY_ALERT_TYPE.equals(((Lookup) object).getCode());
-                }
-            });
+            IMObjectBean alertBean = service.getBean(alertType);
+            IMObject lookup = alertBean.getValue("class", IMObject.class, object ->
+                    (object instanceof Lookup) && ALLERGY_ALERT_TYPE.equals(((Lookup) object).getCode()));
             result = lookup != null;
         }
         return result;
@@ -752,6 +734,17 @@ public class PatientRules {
     }
 
     /**
+     * Returns the patient associated with an act.
+     *
+     * @param act the act
+     * @return the patient, or {@code null} if none is found
+     */
+    private Party getPatient(Act act) {
+        IMObjectBean bean = service.getBean(act);
+        return bean.hasNode("patient") ? bean.getTarget("patient", Party.class) : null;
+    }
+
+    /**
      * Returns the source of a patient relationship closest to the specified start time.
      *
      * @param patient   the patient. May be {@code null}
@@ -763,7 +756,7 @@ public class PatientRules {
     private Party getSourceParty(Party patient, Date startTime, boolean active, String shortName) {
         Party result = null;
         if (patient != null && startTime != null) {
-            EntityBean bean = factory.createEntityBean(patient);
+            EntityBean bean = new EntityBean(patient, service);
             result = (Party) bean.getSourceEntity(shortName, startTime, false);
             if (result == null && !active) {
                 // no match for the start time, so try and find a source close to the start time

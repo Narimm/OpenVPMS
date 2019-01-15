@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
@@ -25,11 +25,11 @@ import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescri
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.openvpms.component.model.lookup.Lookup;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.math.BigDecimal;
@@ -147,7 +147,7 @@ public class ArchetypeServiceTestCase extends AbstractArchetypeServiceTest {
         country.setName("Australia");
         assertTrue(StringUtils.isEmpty(country.getDescription()));
 
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(country.getArchetypeId());
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(country.getArchetype());
         assertNotNull(adesc);
         NodeDescriptor ndesc = adesc.getNodeDescriptor("description");
         assertNotNull(ndesc);
@@ -173,7 +173,7 @@ public class ArchetypeServiceTestCase extends AbstractArchetypeServiceTest {
         country.setCode("AU");
         assertTrue(StringUtils.isEmpty(country.getDescription()));
 
-        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(country.getArchetypeId());
+        ArchetypeDescriptor adesc = service.getArchetypeDescriptor(country.getArchetype());
         assertNotNull(adesc);
         NodeDescriptor ndesc = adesc.getNodeDescriptor("name");
         assertNotNull(ndesc);

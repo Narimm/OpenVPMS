@@ -11,15 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.macro.impl;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.macro.MacroException;
 
 /**
@@ -43,7 +43,7 @@ public abstract class AbstractExpressionMacro extends Macro {
      * @throws MacroException if the expression is invalid
      */
     public AbstractExpressionMacro(Lookup lookup, IArchetypeService service) {
-        this(new IMObjectBean(lookup, service));
+        this(service.getBean(lookup));
     }
 
     /**

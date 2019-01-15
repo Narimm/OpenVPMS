@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.statement;
@@ -29,11 +29,11 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
 import org.openvpms.archetype.rules.practice.Location;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.component.system.common.query.SortConstraint;
@@ -61,8 +61,6 @@ import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -82,14 +80,14 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
     private final Party practice;
 
     /**
-     * The account type selector.
-     */
-    private LookupField accountType;
-
-    /**
      * The balance type list items.
      */
     private final String[] balanceTypeItems;
+
+    /**
+     * The account type selector.
+     */
+    private LookupField accountType;
 
     /**
      * The balance type selector.
@@ -189,7 +187,7 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
      * are being queried.
      *
      * @return {@code true} if customers with both overdue and non-overdue
-     *         balances are being queried.
+     * balances are being queried.
      */
     public boolean queryAllBalances() {
         return balanceType.getSelectedIndex() == ALL_BALANCE_INDEX;
@@ -199,122 +197,11 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
      * Determines if customers with overdue balances are being queried.
      *
      * @return {@code true} if customers with overdue balances are being
-     *         queried, {@code false} if customers with outstanding balances are being
-     *         queried
+     * queried, {@code false} if customers with outstanding balances are being
+     * queried
      */
     public boolean queryOverduebalances() {
         return balanceType.getSelectedIndex() == OVERDUE_INDEX;
-    }
-
-    /**
-     * Lays out the component in a container, and sets focus on the instance
-     * name.
-     *
-     * @param container the container
-     */
-    @Override
-    protected void doLayout(Component container) {
-        Grid grid = GridFactory.create(6);
-        accountType = LookupFieldFactory.create(
-                new ArchetypeLookupQuery("lookup.customerAccountType"),
-                true);
-        accountType.setSelected((Lookup) null);
-        accountType.setCellRenderer(LookupListCellRenderer.INSTANCE);
-
-        Label accountTypeLabel = LabelFactory.create(
-                "reporting.statements.accountType");
-
-        date = DateFieldFactory.create();
-        date.addPropertyChangeListener(new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent event) {
-            }
-        });
-        Label dateLabel = LabelFactory.create("reporting.statements.date");
-
-        balanceType = SelectFieldFactory.create(balanceTypeItems);
-        balanceType.setCellRenderer(new BalanceTypeListCellRenderer());
-        balanceType.addActionListener(new ActionListener() {
-            public void onAction(ActionEvent e) {
-                onBalanceTypeChanged();
-            }
-        });
-        Label balanceTypeLabel = LabelFactory.create(
-                "reporting.statements.balancetypes");
-
-        grid.add(accountTypeLabel);
-        grid.add(accountType);
-        grid.add(dateLabel);
-        grid.add(date);
-        grid.add(balanceTypeLabel);
-        grid.add(balanceType);
-
-        periodFromLabel = LabelFactory.create(
-                "reporting.statements.periodFrom");
-        periodFrom = TextComponentFactory.create();
-        periodFrom.addPropertyChangeListener(
-                new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent event) {
-                    }
-                });
-
-        periodToLabel = LabelFactory.create("reporting.statements.periodTo");
-        periodTo = TextComponentFactory.create();
-        periodTo.addPropertyChangeListener(
-                new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent event) {
-                    }
-                });
-
-        excludeCredit = CheckBoxFactory.create("reporting.statements.excludeCredit", true);
-
-        grid.add(periodFromLabel);
-        grid.add(periodFrom);
-        grid.add(periodToLabel);
-        grid.add(periodTo);
-        grid.add(excludeCredit);
-        grid.add(LabelFactory.create());
-
-
-        Label customerFromLabel = LabelFactory.create(
-                "reporting.statements.customerFrom");
-        customerFrom = TextComponentFactory.create();
-        customerFrom.addPropertyChangeListener(
-                new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent event) {
-                    }
-                });
-
-        Label customerToLabel = LabelFactory.create(
-                "reporting.statements.customerTo");
-        customerTo = TextComponentFactory.create();
-        customerTo.addPropertyChangeListener(
-                new PropertyChangeListener() {
-                    public void propertyChange(PropertyChangeEvent event) {
-                    }
-                });
-
-        grid.add(customerFromLabel);
-        grid.add(customerFrom);
-        grid.add(customerToLabel);
-        grid.add(customerTo);
-        grid.add(LabelFactory.create("reporting.customer.location"));
-        locationSelector = new LocationSelectField(practice);
-        grid.add(locationSelector);
-
-        container.add(grid);
-
-        FocusGroup group = getFocusGroup();
-        group.add(accountType);
-        group.add(date);
-        group.add(balanceType);
-        group.add(periodFrom);
-        group.add(periodTo);
-        group.add(excludeCredit);
-        group.add(customerFrom);
-        group.add(customerTo);
-        group.add(locationSelector);
-
-        FocusHelper.setFocus(getSearchField());
     }
 
     /**
@@ -373,16 +260,6 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
     }
 
     /**
-     * Creates the result set.
-     *
-     * @param sort the sort criteria. May be {@code null}
-     * @return a new result set
-     */
-    protected ResultSet<ObjectSet> createResultSet(SortConstraint[] sort) {
-        return new ListResultSet<>(getObjects(), getMaxResults());
-    }
-
-    /**
      * Returns the preferred height of the query when rendered.
      *
      * @return the preferred height, or {@code null} if it has no preferred height
@@ -390,6 +267,113 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
     @Override
     public Extent getHeight() {
         return getHeight(3);
+    }
+
+    /**
+     * Lays out the component in a container, and sets focus on the instance
+     * name.
+     *
+     * @param container the container
+     */
+    @Override
+    protected void doLayout(Component container) {
+        Grid grid = GridFactory.create(6);
+        accountType = LookupFieldFactory.create(
+                new ArchetypeLookupQuery("lookup.customerAccountType"),
+                true);
+        accountType.setSelected((Lookup) null);
+        accountType.setCellRenderer(LookupListCellRenderer.INSTANCE);
+
+        Label accountTypeLabel = LabelFactory.create(
+                "reporting.statements.accountType");
+
+        date = DateFieldFactory.create();
+        date.addPropertyChangeListener(event -> {
+        });
+        Label dateLabel = LabelFactory.create("reporting.statements.date");
+
+        balanceType = SelectFieldFactory.create(balanceTypeItems);
+        balanceType.setCellRenderer(new BalanceTypeListCellRenderer());
+        balanceType.addActionListener(new ActionListener() {
+            public void onAction(ActionEvent e) {
+                onBalanceTypeChanged();
+            }
+        });
+        Label balanceTypeLabel = LabelFactory.create(
+                "reporting.statements.balancetypes");
+
+        grid.add(accountTypeLabel);
+        grid.add(accountType);
+        grid.add(dateLabel);
+        grid.add(date);
+        grid.add(balanceTypeLabel);
+        grid.add(balanceType);
+
+        periodFromLabel = LabelFactory.create(
+                "reporting.statements.periodFrom");
+        periodFrom = TextComponentFactory.create();
+        periodFrom.addPropertyChangeListener(event -> {
+        });
+
+        periodToLabel = LabelFactory.create("reporting.statements.periodTo");
+        periodTo = TextComponentFactory.create();
+        periodTo.addPropertyChangeListener(event -> {
+        });
+
+        excludeCredit = CheckBoxFactory.create("reporting.statements.excludeCredit", true);
+
+        grid.add(periodFromLabel);
+        grid.add(periodFrom);
+        grid.add(periodToLabel);
+        grid.add(periodTo);
+        grid.add(excludeCredit);
+        grid.add(LabelFactory.create());
+
+
+        Label customerFromLabel = LabelFactory.create(
+                "reporting.statements.customerFrom");
+        customerFrom = TextComponentFactory.create();
+        customerFrom.addPropertyChangeListener(event -> {
+        });
+
+        Label customerToLabel = LabelFactory.create(
+                "reporting.statements.customerTo");
+        customerTo = TextComponentFactory.create();
+        customerTo.addPropertyChangeListener(event -> {
+        });
+
+        grid.add(customerFromLabel);
+        grid.add(customerFrom);
+        grid.add(customerToLabel);
+        grid.add(customerTo);
+        grid.add(LabelFactory.create("reporting.customer.location"));
+        locationSelector = new LocationSelectField(practice);
+        grid.add(locationSelector);
+
+        container.add(grid);
+
+        FocusGroup group = getFocusGroup();
+        group.add(accountType);
+        group.add(date);
+        group.add(balanceType);
+        group.add(periodFrom);
+        group.add(periodTo);
+        group.add(excludeCredit);
+        group.add(customerFrom);
+        group.add(customerTo);
+        group.add(locationSelector);
+
+        FocusHelper.setFocus(getSearchField());
+    }
+
+    /**
+     * Creates the result set.
+     *
+     * @param sort the sort criteria. May be {@code null}
+     * @return a new result set
+     */
+    protected ResultSet<ObjectSet> createResultSet(SortConstraint[] sort) {
+        return new ListResultSet<>(getObjects(), getMaxResults());
     }
 
     /**
@@ -440,7 +424,7 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
         /**
          * Constructs a new {@code BalanceTypeListCellRenderer}.
          */
-        public BalanceTypeListCellRenderer() {
+        BalanceTypeListCellRenderer() {
             super(String.class);
         }
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.i18n.time;
@@ -20,8 +20,6 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
 
@@ -39,12 +37,6 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
 public class LookupDateDurationFormatterTestCase extends ArchetypeServiceTest {
 
     /**
-     * The bean factory.
-     */
-    @Autowired
-    private IMObjectBeanFactory factory;
-
-    /**
      * Configures a lookup.durationformat and verifies that LookupDateDurationFormatter formats correctly with it.
      */
     @Test
@@ -54,7 +46,8 @@ public class LookupDateDurationFormatterTestCase extends ArchetypeServiceTest {
         addFormat(formats, 90, DateUnits.DAYS, false, false, true, false); // weeks
         addFormat(formats, 1, DateUnits.YEARS, false, true, false, false); // months
         addFormat(formats, 2, DateUnits.YEARS, true, true, false, false);  // years, months
-        LookupDateDurationFormatter formatter = new LookupDateDurationFormatter(formats, getLookupService(), factory);
+        LookupDateDurationFormatter formatter = new LookupDateDurationFormatter(formats, getLookupService(),
+                                                                                getArchetypeService());
 
         Date from = getDate("2011-01-01");
         Date to1 = getDate("2011-01-07");

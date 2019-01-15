@@ -11,16 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -44,6 +44,11 @@ public class PriceData {
      * The price archetype short name.
      */
     private final String shortName;
+
+    /**
+     * The line that the price was read from.
+     */
+    private final int line;
 
     /**
      * The price.
@@ -79,11 +84,6 @@ public class PriceData {
      * The pricing groups.
      */
     private Set<Lookup> pricingGroups;
-
-    /**
-     * The line that the price was read from.
-     */
-    private final int line;
 
     /**
      * Constructs a {@link PriceData}.

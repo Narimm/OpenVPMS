@@ -11,20 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper.lookup;
 
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.model.archetype.AssertionDescriptor;
 import org.openvpms.component.model.archetype.NodeDescriptor;
+import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.IMObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -103,6 +103,7 @@ public class RemoteLookup extends AbstractLookupAssertion {
      * @throws ArchetypeServiceException for any archetype service error
      * @throws LookupHelperException     if this method is unsupported by the lookup type
      */
+    @Override
     public List<Lookup> getLookups() {
         Collection<Lookup> lookups = getLookupService().getLookups(source);
         return new ArrayList<>(lookups);
@@ -120,7 +121,7 @@ public class RemoteLookup extends AbstractLookupAssertion {
         Collection<Lookup> lookups = super.getLookups(context);
         org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor d
                 = (org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor) descriptor;
-        Object value = d.getValue(context);
+        Object value = d.getValue((org.openvpms.component.business.domain.im.common.IMObject) context);
         String code = (value instanceof String) ? (String) value : null;
         if (code != null) {
             // if the code refers to an inactive lookup, ensure it is included

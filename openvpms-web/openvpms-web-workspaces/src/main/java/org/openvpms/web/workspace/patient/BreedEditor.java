@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient;
@@ -21,7 +21,7 @@ import nextapp.echo2.app.list.AbstractListComponent;
 import nextapp.echo2.app.list.ListModel;
 import org.apache.commons.collections4.ComparatorUtils;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.web.component.im.list.BoldListCell;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
@@ -108,13 +108,13 @@ public class BreedEditor extends DefaultLookupPropertyEditor {
 
     private static class BreedLookupListModel extends LookupListModel {
 
-        private static final Comparator<String> COMPARATOR
-                = ComparatorUtils.nullLowComparator(ComparatorUtils.<String>naturalComparator());
-
         /**
          * The index of 'New Breed' in the breed list.
          */
         private int newBreedIndex;
+
+        private static final Comparator<String> COMPARATOR
+                = ComparatorUtils.nullLowComparator(ComparatorUtils.<String>naturalComparator());
 
         /**
          * Constructs a {@link BreedLookupListModel}.
@@ -153,15 +153,13 @@ public class BreedEditor extends DefaultLookupPropertyEditor {
         @Override
         protected void initObjects(List<? extends Lookup> objects) {
             super.initObjects(objects);
-            Lookup newBreed = new Lookup(null, null, BreedLookupListCellRenderer.NEW_BREED);
+            Lookup newBreed = new org.openvpms.component.business.domain.im.lookup.Lookup(
+                    null, null, BreedLookupListCellRenderer.NEW_BREED);
             List<Lookup> lookups = getObjects();
-            newBreedIndex = Collections.binarySearch(lookups, newBreed, new Comparator<Lookup>() {
-                @Override
-                public int compare(Lookup o1, Lookup o2) {
-                    String name1 = o1 != null ? o1.getName() : null;
-                    String name2 = o2 != null ? o2.getName() : null;
-                    return COMPARATOR.compare(name1, name2);
-                }
+            newBreedIndex = Collections.binarySearch(lookups, newBreed, (o1, o2) -> {
+                String name1 = o1 != null ? o1.getName() : null;
+                String name2 = o2 != null ? o2.getName() : null;
+                return COMPARATOR.compare(name1, name2);
             });
             if (newBreedIndex < 0) {
                 newBreedIndex = -newBreedIndex - 1;
@@ -172,7 +170,7 @@ public class BreedEditor extends DefaultLookupPropertyEditor {
 
     private static class BreedLookupListCellRenderer extends LookupListCellRenderer {
 
-        public static final String NEW_BREED = Messages.get("patient.newbreed");
+        static final String NEW_BREED = Messages.get("patient.newbreed");
 
         /**
          * Renders an item in a list.

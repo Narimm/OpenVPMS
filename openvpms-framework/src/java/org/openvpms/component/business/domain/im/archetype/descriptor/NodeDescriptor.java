@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.domain.im.archetype.descriptor;
@@ -341,7 +341,7 @@ public class NodeDescriptor extends Descriptor implements org.openvpms.component
      * @throws FailedToDeriveValueException if the node is not declared to support dervied value or
      *                                      the value cannot be derived correctly.
      */
-    public void deriveValue(IMObject imobj) {
+    public void deriveValue(org.openvpms.component.model.object.IMObject imobj) {
         if (!isDerived()) {
             throw new FailedToDeriveValueException(
                     FailedToDeriveValueException.ErrorCode.DerivedValueUnsupported,

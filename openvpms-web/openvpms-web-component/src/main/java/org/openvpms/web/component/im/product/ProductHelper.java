@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -21,10 +21,10 @@ import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.PricingGroup;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -86,7 +86,7 @@ public class ProductHelper {
      * @return the filtered prices
      */
     public static List<IMObject> filterPrices(List<IMObject> prices, PricingGroup pricingGroup) {
-        List<IMObject> result = new ArrayList<IMObject>();
+        List<IMObject> result = new ArrayList<>();
         for (IMObject object : prices) {
             IMObjectBean bean = new IMObjectBean(object);
             List<Lookup> groups = bean.getValues("pricingGroups", Lookup.class);

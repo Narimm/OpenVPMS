@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
@@ -74,7 +74,7 @@ public class ReadOnlyArchetypeService extends DelegatingArchetypeService {
      * @throws UnsupportedOperationException
      */
     @Override
-    public void validateObject(IMObject object) {
+    public void validateObject(org.openvpms.component.model.object.IMObject object) {
         throw new UnsupportedOperationException();
     }
 
@@ -85,7 +85,7 @@ public class ReadOnlyArchetypeService extends DelegatingArchetypeService {
      * @throws UnsupportedOperationException
      */
     @Override
-    public void deriveValues(IMObject object) {
+    public void deriveValues(org.openvpms.component.model.object.IMObject object) {
         throw new UnsupportedOperationException();
     }
 
@@ -97,7 +97,7 @@ public class ReadOnlyArchetypeService extends DelegatingArchetypeService {
      * @throws UnsupportedOperationException
      */
     @Override
-    public void deriveValue(IMObject object, String node) {
+    public void deriveValue(org.openvpms.component.model.object.IMObject object, String node) {
         throw new UnsupportedOperationException();
     }
 
@@ -108,7 +108,7 @@ public class ReadOnlyArchetypeService extends DelegatingArchetypeService {
      * @throws UnsupportedOperationException
      */
     @Override
-    public void remove(IMObject object) {
+    public void remove(org.openvpms.component.model.object.IMObject object) {
         throw new UnsupportedOperationException();
     }
 
@@ -119,7 +119,7 @@ public class ReadOnlyArchetypeService extends DelegatingArchetypeService {
      * @throws UnsupportedOperationException
      */
     @Override
-    public void save(IMObject object) {
+    public void save(org.openvpms.component.model.object.IMObject object) {
         throw new UnsupportedOperationException();
     }
 
@@ -131,7 +131,7 @@ public class ReadOnlyArchetypeService extends DelegatingArchetypeService {
      * @throws UnsupportedOperationException
      */
     @Override
-    public void save(IMObject object, boolean validate) {
+    public void save(org.openvpms.component.model.object.IMObject object, boolean validate) {
         throw new UnsupportedOperationException();
     }
 
@@ -145,7 +145,7 @@ public class ReadOnlyArchetypeService extends DelegatingArchetypeService {
      * @throws UnsupportedOperationException
      */
     @Override
-    public void save(Collection<? extends IMObject> objects) {
+    public void save(Collection<? extends org.openvpms.component.model.object.IMObject> objects) {
         throw new UnsupportedOperationException();
     }
 
@@ -156,7 +156,7 @@ public class ReadOnlyArchetypeService extends DelegatingArchetypeService {
      * @throws UnsupportedOperationException
      */
     @Override
-    public void save(Collection<? extends IMObject> objects, boolean validate) {
+    public void save(Collection<? extends org.openvpms.component.model.object.IMObject> objects, boolean validate) {
         throw new UnsupportedOperationException();
     }
 

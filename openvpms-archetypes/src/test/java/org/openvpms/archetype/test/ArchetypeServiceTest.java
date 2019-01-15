@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.test;
@@ -96,7 +96,7 @@ public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTe
      * @throws ArchetypeServiceException if the service cannot save the object
      * @throws ValidationException       if the object cannot be validated
      */
-    protected void save(IMObject object) {
+    protected void save(org.openvpms.component.model.object.IMObject object) {
         service.save(object);
     }
 
@@ -108,7 +108,7 @@ public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTe
      * @throws ValidationException       if the object cannot be validated
      */
     @SafeVarargs
-    protected final <T extends IMObject> void save(T... objects) {
+    protected final <T extends org.openvpms.component.model.object.IMObject> void save(T... objects) {
         save(Arrays.asList(objects));
     }
 
@@ -119,7 +119,7 @@ public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTe
      * @throws ArchetypeServiceException if the service cannot save the objects
      * @throws ValidationException       if the object cannot be validated
      */
-    protected <T extends IMObject> void save(Collection<T> objects) {
+    protected <T extends org.openvpms.component.model.object.IMObject> void save(Collection<T> objects) {
         service.save(objects);
     }
 
@@ -171,7 +171,7 @@ public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTe
      * @param object the object to remove
      * @throws ArchetypeServiceException if the service cannot remove the object
      */
-    protected void remove(IMObject object) {
+    protected void remove(org.openvpms.component.model.object.IMObject object) {
         service.remove(object);
     }
 

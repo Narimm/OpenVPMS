@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.lookup;
@@ -20,10 +20,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.component.business.dao.im.common.IMObjectDAO;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.model.object.Relationship;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
@@ -211,7 +211,8 @@ public abstract class AbstractLookupServiceTest extends AbstractArchetypeService
 
         Lookup diagnosis1 = createLookup("lookup.diagnosis", "FIBROMA");
         Lookup diagnosis2 = createLookup("lookup.diagnosisVeNom", "VENOM");
-        diagnosis2.getDetails().put("dataDictionaryId", "1234");
+        IMObjectBean bean = new IMObjectBean(diagnosis2);
+        bean.setValue("dataDictionaryId", "1234");
         save(diagnosis1, diagnosis2);
 
         Collection<Lookup> wildcardLookups = lookupService.getLookups("lookup.diagnosis*");
@@ -265,9 +266,9 @@ public abstract class AbstractLookupServiceTest extends AbstractArchetypeService
     }
 
     /**
-     * Verifies that the {@link ILookupService#getLookup(IMObject, String)}
-     * and {@link ILookupService#getName(IMObject, String)} methods can return inactive lookups for remote and
-     * target lookups.
+     * Verifies that the {@link ILookupService#getLookup(org.openvpms.component.model.object.IMObject, String)}
+     * and {@link ILookupService#getName(org.openvpms.component.model.object.IMObject, String)} methods can return
+     * inactive lookups for remote and target lookups.
      */
     @Test
     public void testInactiveLookups() {

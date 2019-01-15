@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 
@@ -20,7 +20,6 @@ package org.openvpms.component.business.service.archetype;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
@@ -33,6 +32,7 @@ import org.openvpms.component.business.service.archetype.helper.lookup.LookupAss
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionFactory;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.openvpms.component.system.common.util.PropertyState;
 
@@ -127,7 +127,7 @@ public class ArchetypeServiceFunctions {
      * @param name         the node name
      * @param defaultValue the value to return if node does not exist
      * @return the value at the specified node or defaultValue if {@code object} is {@code null} or {@code node} does
-     *         not exist
+     * not exist
      * @see NodeResolver
      */
     public Object get(Object object, String name, Object defaultValue) {

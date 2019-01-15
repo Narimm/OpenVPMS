@@ -11,15 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.lookup;
 
-import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.model.lookup.Lookup;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 
@@ -75,18 +73,16 @@ public abstract class AbstractLookupQuery implements LookupQuery {
      * @param lookups the lookups to sort
      */
     protected void sort(List<Lookup> lookups) {
-        Collections.sort(lookups, new Comparator<Lookup>() {
-            public int compare(Lookup o1, Lookup o2) {
-                String name1 = o1.getName();
-                String name2 = o2.getName();
-                if (name1 == null) {
-                    name1 = "";
-                }
-                if (name2 == null) {
-                    name2 = "";
-                }
-                return name1.compareTo(name2);
+        lookups.sort((o1, o2) -> {
+            String name1 = o1.getName();
+            String name2 = o2.getName();
+            if (name1 == null) {
+                name1 = "";
             }
+            if (name2 == null) {
+                name2 = "";
+            }
+            return name1.compareTo(name2);
         });
     }
 

@@ -11,18 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.hl7;
 
 import org.junit.Test;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 
 import java.util.Arrays;
 import java.util.List;
@@ -52,8 +51,8 @@ public class LookupMappingReaderWriterTestCase extends AbstractLookupMappingTest
         Lookup speciesB = getIDEXXSpecies("SPECIES_B", "speciesB");
         Lookup speciesC = getIDEXXSpecies("SPECIES_C", "speciesC");
         IMObjectBean bean = new IMObjectBean(species2);
-        IMObjectRelationship relationship = bean.addNodeTarget("mapping", speciesB);
-        speciesB.addLookupRelationship((LookupRelationship) relationship);
+        LookupRelationship relationship = (LookupRelationship) bean.addTarget("mapping", speciesB);
+        speciesB.addLookupRelationship(relationship);
         save(species2, speciesB);
 
         final List<Lookup> from = Arrays.asList(species1, species2, species3);

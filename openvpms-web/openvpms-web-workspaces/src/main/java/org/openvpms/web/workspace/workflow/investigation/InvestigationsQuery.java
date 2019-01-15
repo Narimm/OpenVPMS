@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.investigation;
@@ -28,10 +28,10 @@ import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
 import org.openvpms.component.system.common.query.SortConstraint;
 import org.openvpms.web.component.app.Context;
@@ -99,6 +99,13 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     private LookupField resultStatusSelector;
 
     /**
+     * Dummy incomplete status, used in the result status selector.
+     */
+    private static Lookup INCOMPLETE_STATUS
+            = new org.openvpms.component.business.domain.im.lookup.Lookup(new ArchetypeId("lookup.local"), INCOMPLETE,
+                                                                          Messages.get("investigation.incomplete"));
+
+    /**
      * The default sort constraint.
      */
     private static final SortConstraint[] DEFAULT_SORT = {new NodeSortConstraint("startTime", false)};
@@ -114,20 +121,14 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
     private static final ActStatuses RESULT_STATUSES = new ActStatuses(new ResultStatusLookupQuery(), null);
 
     /**
-     * Dummy incomplete status, used in the result status selector.
+     * The reviewed investigation status.
      */
-    private static Lookup INCOMPLETE_STATUS = new Lookup(new ArchetypeId("lookup.local"), INCOMPLETE,
-                                                         Messages.get("investigation.incomplete"));
+    private static final String[] REVIEWED_STATUS = new String[]{"REVIEWED"};
 
     static {
         STATUSES = new ActStatuses(PATIENT_INVESTIGATION);
         STATUSES.setDefault((String) null);
     }
-
-    /**
-     * The reviewed investigation status.
-     */
-    private static final String[] REVIEWED_STATUS = new String[]{"REVIEWED"};
 
     /**
      * Constructs an {@link InvestigationsQuery}.
@@ -266,7 +267,7 @@ public class InvestigationsQuery extends DateRangeActQuery<Act> {
                                  investigationType.getObject());
         addParticipantConstraint(list, "clinician", UserArchetypes.CLINICIAN_PARTICIPATION,
                                  (Entity) clinician.getSelectedItem());
-        ParticipantConstraint[] participants = list.toArray(new ParticipantConstraint[list.size()]);
+        ParticipantConstraint[] participants = list.toArray(new ParticipantConstraint[0]);
 
         Party location = (Party) this.location.getSelectedItem();
         String[] statuses = getStatuses();

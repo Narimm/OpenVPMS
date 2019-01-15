@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.hl7;
@@ -22,17 +22,17 @@ import org.junit.Test;
 import org.openvpms.archetype.csv.AbstractCSVReader;
 import org.openvpms.archetype.rules.doc.DocumentHandler;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.model.lookup.LookupRelationship;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -175,8 +175,8 @@ public class LookupMappingImporterTestCase extends AbstractLookupMappingTest {
             assertEquals(mapping[5], to.getName());
 
             // make sure there is a relationship between them
-            IMObjectBean bean = new IMObjectBean(from);
-            assertTrue(bean.getNodeTargetObjectRefs("mapping").contains(to.getObjectReference()));
+            IMObjectBean bean = getBean(from);
+            assertTrue(bean.getTargetRefs("mapping").contains(to.getObjectReference()));
         }
     }
 
@@ -203,7 +203,7 @@ public class LookupMappingImporterTestCase extends AbstractLookupMappingTest {
      */
     private void removeLookup(String shortName, String code) {
         Lookup lookup = getLookupService().getLookup(shortName, code);
-        List<IMObject> toSave = new ArrayList<>();
+        List<Lookup> toSave = new ArrayList<>();
         if (lookup != null) {
             toSave.add(lookup);
             IArchetypeService service = getArchetypeService();
@@ -245,7 +245,7 @@ public class LookupMappingImporterTestCase extends AbstractLookupMappingTest {
 
         DocumentHandlers handlers = new DocumentHandlers(getArchetypeService());
         DocumentHandler handler = handlers.get("Dummy.csv", AbstractCSVReader.MIME_TYPE);
-        return handler.create("Dummy.csv", new ByteArrayInputStream(writer.toString().getBytes("UTF-8")),
+        return handler.create("Dummy.csv", new ByteArrayInputStream(writer.toString().getBytes(StandardCharsets.UTF_8)),
                               AbstractCSVReader.MIME_TYPE, -1);
     }
 }

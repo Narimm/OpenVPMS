@@ -1,19 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2011 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id: $
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.i18n.time;
@@ -21,10 +19,10 @@ package org.openvpms.archetype.i18n.time;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.util.DateUnits;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 
 import java.util.Collection;
 import java.util.Date;
@@ -33,8 +31,7 @@ import java.util.Date;
 /**
  * An {@link DurationFormatter} for dates that configures itself from a <em>lookup.durationformats</em> lookup.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class LookupDateDurationFormatter implements DurationFormatter {
 
@@ -65,18 +62,17 @@ public class LookupDateDurationFormatter implements DurationFormatter {
 
 
     /**
-     * Constructs a <tt>LookupDurationFormatter</tt>.
+     * Constructs a {@link LookupDateDurationFormatter}.
      *
-     * @param formats an <em>lookup.durationformats</em>
-     * @param service the lookup service
-     * @param factory the bean factory
+     * @param formats       an <em>lookup.durationformats</em>
+     * @param lookupService the lookup service
+     * @param service       the archetype service
      */
-    public LookupDateDurationFormatter(Lookup formats, ILookupService service,
-                                       IMObjectBeanFactory factory) {
+    public LookupDateDurationFormatter(Lookup formats, ILookupService lookupService, IArchetypeService service) {
         formatter = new CompositeDurationFormatter();
-        Collection<Lookup> lookups = service.getTargetLookups(formats, DURATION_FORMATS_RELATIONSHIP);
+        Collection<Lookup> lookups = lookupService.getTargetLookups(formats, DURATION_FORMATS_RELATIONSHIP);
         for (Lookup lookup : lookups) {
-            IMObjectBean bean = factory.createBean(lookup);
+            IMObjectBean bean = service.getBean(lookup);
             int interval = bean.getInt("interval");
             DateUnits units = DateUnits.valueOf(bean.getString("units"));
             boolean showYears = bean.getBoolean("showYears");

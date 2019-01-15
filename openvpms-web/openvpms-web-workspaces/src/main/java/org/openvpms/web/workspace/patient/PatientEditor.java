@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient;
@@ -23,10 +23,10 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -36,7 +36,6 @@ import org.openvpms.web.component.im.relationship.RelationshipCollectionTargetEd
 import org.openvpms.web.component.im.util.IMObjectCreator;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.DatePropertyTransformer;
-import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
@@ -65,6 +64,16 @@ public class PatientEditor extends AbstractIMObjectEditor {
     public static final Date MIN_DATE = java.sql.Date.valueOf("1900-01-01");
 
     /**
+     * Listener for deceased flag changes.
+     */
+    private final ModifiableListener deceasedListener;
+
+    /**
+     * Listener for deceased date changes.
+     */
+    private final ModifiableListener deceasedDateListener;
+
+    /**
      * Editor for the "customFields" node.
      */
     private RelationshipCollectionTargetEditor customFieldEditor;
@@ -83,16 +92,6 @@ public class PatientEditor extends AbstractIMObjectEditor {
      * The layout strategy.
      */
     private PatientLayoutStrategy strategy;
-
-    /**
-     * Listener for deceased flag changes.
-     */
-    private final ModifiableListener deceasedListener;
-
-    /**
-     * Listener for deceased date changes.
-     */
-    private final ModifiableListener deceasedDateListener;
 
     /**
      * Species node.
@@ -133,11 +132,7 @@ public class PatientEditor extends AbstractIMObjectEditor {
                 addOwnerRelationship(patient);
             }
         }
-        getProperty(SPECIES).addModifiableListener(new ModifiableListener() {
-            public void modified(Modifiable modifiable) {
-                speciesChanged();
-            }
-        });
+        getProperty(SPECIES).addModifiableListener(modifiable -> speciesChanged());
         Property breed = getProperty("breed");
         Property newBreed = getProperty(NEW_BREED);
         breedEditor = new BreedEditor(breed, patient);
@@ -165,20 +160,10 @@ public class PatientEditor extends AbstractIMObjectEditor {
         Property deceasedDate = getProperty("deceasedDate");
         deceasedDate.setTransformer(new DatePropertyTransformer(dateOfBirth, MIN_DATE, maxDate));
 
-        deceasedDateListener = new ModifiableListener() {
-            @Override
-            public void modified(Modifiable modifiable) {
-                deceasedDateChanged();
-            }
-        };
+        deceasedDateListener = modifiable -> deceasedDateChanged();
         deceasedDate.addModifiableListener(deceasedDateListener);
 
-        deceasedListener = new ModifiableListener() {
-            @Override
-            public void modified(Modifiable modifiable) {
-                deceasedChanged();
-            }
-        };
+        deceasedListener = modifiable -> deceasedChanged();
         getProperty(DECEASED).addModifiableListener(deceasedListener);
 
         CollectionProperty customField = (CollectionProperty) getProperty("customFields");
@@ -432,7 +417,7 @@ public class PatientEditor extends AbstractIMObjectEditor {
         if (species != null) {
             Lookup lookup = ServiceHelper.getLookupService().getLookup("lookup.species", species);
             if (lookup != null) {
-                IMObjectBean bean = new IMObjectBean(lookup);
+                IMObjectBean bean = getBean(lookup);
                 result = bean.getString("customFields");
             }
         }

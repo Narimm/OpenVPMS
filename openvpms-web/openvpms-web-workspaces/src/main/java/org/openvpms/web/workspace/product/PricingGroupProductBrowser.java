@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product;
@@ -39,12 +39,9 @@ public class PricingGroupProductBrowser extends IMObjectTableBrowser<Product> {
     public PricingGroupProductBrowser(final PricingGroupProductQuery query, LayoutContext context) {
         super(query, query.getDefaultSortConstraint(), new ProductTableModel(query, context), context);
 
-        query.setPricingGroupListener(new PricingGroupProductQuery.PricingGroupListener() {
-            @Override
-            public void onPricingGroupChanged() {
-                ProductTableModel model = (ProductTableModel) getTableModel();
-                model.setPricingGroup(query.getPricingGroup().getGroup());
-            }
+        query.setPricingGroupListener(() -> {
+            ProductTableModel model = (ProductTableModel) getTableModel();
+            model.setPricingGroup(query.getPricingGroup().getGroup());
         });
     }
 

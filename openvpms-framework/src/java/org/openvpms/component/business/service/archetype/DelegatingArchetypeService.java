@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype;
@@ -114,7 +114,7 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
      * @return any validation errors
      */
     @Override
-    public List<ValidationError> validate(IMObject object) {
+    public List<ValidationError> validate(org.openvpms.component.model.object.IMObject object) {
         return service.validate(object);
     }
 
@@ -126,7 +126,7 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
      * @throws ValidationException if there are validation errors
      */
     @Override
-    public void validateObject(IMObject object) {
+    public void validateObject(org.openvpms.component.model.object.IMObject object) {
         service.validateObject(object);
     }
 
@@ -137,7 +137,7 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
      * @throws ArchetypeServiceException if values cannot be derived
      */
     @Override
-    public void deriveValues(IMObject object) {
+    public void deriveValues(org.openvpms.component.model.object.IMObject object) {
         service.deriveValues(object);
     }
 
@@ -149,7 +149,7 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
      * @throws ArchetypeServiceException if the value cannot be derived
      */
     @Override
-    public void deriveValue(IMObject object, String node) {
+    public void deriveValue(org.openvpms.component.model.object.IMObject object, String node) {
         service.deriveValue(object, node);
     }
 
@@ -207,7 +207,7 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
      * @throws ValidationException       if the object cannot be validated
      */
     @Override
-    public void save(IMObject object) {
+    public void save(org.openvpms.component.model.object.IMObject object) {
         save(object, true);
     }
 
@@ -222,7 +222,7 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
      * @throws ValidationException       if an object can't be validated
      */
     @Override
-    public void save(Collection<? extends IMObject> objects) {
+    public void save(Collection<? extends org.openvpms.component.model.object.IMObject> objects) {
         save(objects, true);
     }
 
@@ -236,7 +236,7 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
      */
     @Override
     @Deprecated
-    public void save(final IMObject object, final boolean validate) {
+    public void save(org.openvpms.component.model.object.IMObject object, boolean validate) {
         service.save(object, validate);
     }
 
@@ -249,7 +249,7 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
      */
     @Override
     @Deprecated
-    public void save(final Collection<? extends IMObject> objects, final boolean validate) {
+    public void save(Collection<? extends org.openvpms.component.model.object.IMObject> objects, boolean validate) {
         service.save(objects, validate);
     }
 
@@ -260,7 +260,7 @@ public abstract class DelegatingArchetypeService implements IArchetypeService {
      * @throws ArchetypeServiceException if the object cannot be removed
      */
     @Override
-    public void remove(final IMObject object) {
+    public void remove(org.openvpms.component.model.object.IMObject object) {
         service.remove(object);
     }
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
@@ -21,11 +21,11 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -584,7 +584,7 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
      * @return a set of the lookups
      */
     private Set<Lookup> getSet(Lookup... lookups) {
-        return new HashSet<Lookup>(Arrays.asList(lookups));
+        return new HashSet<>(Arrays.asList(lookups));
     }
 
     /**

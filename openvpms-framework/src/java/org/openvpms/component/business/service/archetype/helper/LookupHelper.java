@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -19,7 +19,6 @@ package org.openvpms.component.business.service.archetype.helper;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertion;
@@ -27,6 +26,7 @@ import org.openvpms.component.business.service.archetype.helper.lookup.LookupAss
 import org.openvpms.component.business.service.archetype.helper.lookup.LookupAssertionHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.model.archetype.AssertionDescriptor;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.system.common.util.PropertyState;
 
 import java.util.Collection;
@@ -185,7 +185,7 @@ public class LookupHelper {
      *
      * @param ndesc the node descriptor
      * @return String
-     *         the unspecified value or null
+     * the unspecified value or null
      */
     public static String getUnspecifiedValue(NodeDescriptor ndesc) {
         String value = null;

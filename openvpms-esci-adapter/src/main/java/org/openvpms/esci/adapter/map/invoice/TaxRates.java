@@ -1,66 +1,62 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.map.invoice;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 
 import java.math.BigDecimal;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Helper to cache tax rates based on their scheme and category.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 class TaxRates {
 
     /**
-     * The tax rates, keyed on the concatentation of the scheme and category IDs.
+     * The archetype service.
      */
-    private Map<String, BigDecimal> cache = new HashMap<String, BigDecimal>();
+    private final IArchetypeService service;
 
     /**
      * The lookup service.
      */
-    private final ILookupService service;
+    private final ILookupService lookups;
 
     /**
-     * The bean factory.
+     * The tax rates, keyed on the concatenation of the scheme and category IDs.
      */
-    private final IMObjectBeanFactory factory;
+    private Map<String, BigDecimal> cache = new HashMap<>();
 
 
     /**
-     * Constructs a <tt>TaxRates</tt>.
+     * Constructs a {@link TaxRates}.
      *
-     * @param service the lookup service
-     * @param factory the bean factory
+     * @param service the archetype service
+     * @param lookups the lookup service
      */
-    public TaxRates(ILookupService service, IMObjectBeanFactory factory) {
+    public TaxRates(IArchetypeService service, ILookupService lookups) {
         this.service = service;
-        this.factory = factory;
+        this.lookups = lookups;
 
     }
 
@@ -69,15 +65,14 @@ class TaxRates {
      *
      * @param scheme   the scheme
      * @param category the category
-     * @return the tax rate, or <tt>null</tt> if no corresponding <em>lookup.taxType</em> was found
+     * @return the tax rate, or {@code null} if no corresponding <em>lookup.taxType</em> was found
      */
     public BigDecimal getTaxRate(String scheme, String category) {
         String key = scheme + "-" + category;
         BigDecimal result = cache.get(key);
         if (result == null) {
-            Collection<Lookup> lookups = service.getLookups("lookup.taxType");
-            for (Lookup lookup : lookups) {
-                IMObjectBean bean = factory.createBean(lookup);
+            for (Lookup lookup : lookups.getLookups("lookup.taxType")) {
+                IMObjectBean bean = service.getBean(lookup);
                 if (ObjectUtils.equals(scheme, bean.getValue("taxScheme"))
                     && ObjectUtils.equals(category, bean.getValue("taxCategory"))) {
                     result = bean.getBigDecimal("rate");

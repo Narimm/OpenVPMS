@@ -1,25 +1,23 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2008 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.lookup;
 
 import nextapp.echo2.app.SelectField;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.web.component.im.list.LookupListCellRenderer;
 import org.openvpms.web.component.im.list.LookupListModel;
 
@@ -29,23 +27,22 @@ import java.util.List;
 /**
  * Field to display {@link Lookup}s in a dropdown list.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class LookupField extends SelectField {
 
     /**
-     * Creates a new <tt>LookupField</tt> that displays a list of lookups.
+     * Constructs a {@link LookupField} that displays a list of lookups.
      *
      * @param lookups the lookups to display
-     * @param all     if <tt>true</tt>, add a localised "All"
+     * @param all     if {@code true}, add a localised "All"
      */
     public LookupField(List<Lookup> lookups, boolean all) {
         this(new LookupListModel(new ListLookupQuery(lookups), all));
     }
 
     /**
-     * Creates a new <tt>LookupField</tt>.
+     * Constructs a {@link LookupField}.
      *
      * @param source the lookup source
      */
@@ -54,28 +51,28 @@ public class LookupField extends SelectField {
     }
 
     /**
-     * Creates a new <tt>LookupField</tt>.
+     * Constructs a {@link LookupField}.
      *
      * @param source the lookup source
-     * @param all    if <tt>true</tt>, add a localised "All"
+     * @param all    if {@code true}, add a localised "All"
      */
     public LookupField(LookupQuery source, boolean all) {
         this(source, all, false);
     }
 
     /**
-     * Creates a new <tt>LookupField</tt>.
+     * Constructs a {@link LookupField}.
      *
      * @param source the lookup source
-     * @param all    if <tt>true</tt>, add a localised "All"
-     * @param none   if <tt>true</tt>, add a localised "None"
+     * @param all    if {@code true}, add a localised "All"
+     * @param none   if {@code true}, add a localised "None"
      */
     public LookupField(LookupQuery source, boolean all, boolean none) {
         this(new LookupListModel(source, all, none));
     }
 
     /**
-     * Creates a new <tt>LookupField</tt> that displays a list of lookups.
+     * Constructs a {@link LookupField} that displays a list of lookups.
      *
      * @param model the list model
      */
@@ -87,8 +84,8 @@ public class LookupField extends SelectField {
     /**
      * Returns the selected lookup's code.
      *
-     * @return the selected lookup's code, or <tt>null</tt> if no lookup is
-     *         selected, or the selected entry is 'All' or 'None'
+     * @return the selected lookup's code, or {@code null} if no lookup is
+     * selected, or the selected entry is 'All' or 'None'
      */
     public String getSelectedCode() {
         Lookup selected = getSelected();
@@ -98,7 +95,7 @@ public class LookupField extends SelectField {
     /**
      * Returns the selected lookup.
      *
-     * @return the selected lookup, or <tt>null</tt> if no lookup is selected.
+     * @return the selected lookup, or {@code null} if no lookup is selected.
      */
     public Lookup getSelected() {
         int index = getSelectedIndex();
@@ -112,7 +109,7 @@ public class LookupField extends SelectField {
     /**
      * Sets the selected lookup.
      *
-     * @param lookup the lookup. May be <tt>null</tt>
+     * @param lookup the lookup. May be {@code null}
      */
     public void setSelected(Lookup lookup) {
         String code = (lookup != null) ? lookup.getCode() : null;
@@ -122,7 +119,7 @@ public class LookupField extends SelectField {
     /**
      * Sets the selected lookup.
      *
-     * @param code the lookup code. May be <tt>null</tt>
+     * @param code the lookup code. May be {@code null}
      */
     public void setSelected(String code) {
         LookupListModel model = getModel();
@@ -144,7 +141,7 @@ public class LookupField extends SelectField {
      * <p/>
      * If the model refreshes {@link #setDefaultSelection()} is invoked.
      *
-     * @return <tt>true</tt> if the model refreshed
+     * @return {@code true} if the model refreshed
      */
     public boolean refresh() {
         LookupListModel model = getModel();

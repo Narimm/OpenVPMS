@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.map.invoice;
 
@@ -31,15 +31,15 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.act.ActRelationship;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -88,11 +88,6 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
      * The currencies.
      */
     private Currencies currencies;
-
-    /**
-     * The bean factory.
-     */
-    private IMObjectBeanFactory factory;
 
     /**
      * The package helper.
@@ -161,32 +156,23 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
     }
 
     /**
-     * Registers the bean factory.
-     *
-     * @param factory the bean factory
-     */
-    @Resource
-    public void setBeanFactory(IMObjectBeanFactory factory) {
-        this.factory = factory;
-    }
-
-    /**
      * Maps an UBL invoice to an <em>act.supplierDelivery</em>.
      *
      * @param invoice       the invoice to map
      * @param supplier      the supplier that submitted the invoice
      * @param stockLocation the stock location
-     * @param accountId     the supplier assigned account identifier. May be <tt>null</tt>
+     * @param accountId     the supplier assigned account identifier. May be {@code null}
      * @return the acts produced in the mapping. The first element is always the <em>act.supplierDelivery</em>
      * @throws ESCIAdapterException if the invoice cannot be mapped
      * @throws OpenVPMSException    for any OpenVPMS error
      */
     public Delivery map(InvoiceType invoice, Party supplier, Party stockLocation, String accountId) {
         Delivery result = new Delivery();
-        Currency practiceCurrency = UBLHelper.getCurrency(practiceRules, currencies, factory);
-        packageHelper = new PackageHelper(productRules, lookupService, factory);
-        TaxRates rates = new TaxRates(lookupService, factory);
-        UBLInvoice wrapper = new UBLInvoice(invoice, practiceCurrency.getCode(), getArchetypeService(), supplierRules);
+        IArchetypeService service = getArchetypeService();
+        Currency practiceCurrency = UBLHelper.getCurrency(practiceRules, currencies, service);
+        packageHelper = new PackageHelper(productRules, service, lookupService);
+        TaxRates rates = new TaxRates(service, lookupService);
+        UBLInvoice wrapper = new UBLInvoice(invoice, practiceCurrency.getCode(), service, supplierRules);
         String invoiceId = wrapper.getID();
         checkUBLVersion(wrapper);
         Date issueDatetime = wrapper.getIssueDatetime();
@@ -196,7 +182,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
 
         checkDuplicateInvoice(supplier, invoiceId, issueDatetime);
 
-        InvoiceOrderMatcher matcher = new InvoiceOrderMatcher(getArchetypeService(), factory);
+        InvoiceOrderMatcher matcher = new InvoiceOrderMatcher(service);
         MappingContext context = matcher.match(wrapper, supplier, stockLocation);
 
         result.setOrder(context.getDocumentOrder());
@@ -207,15 +193,15 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         BigDecimal taxExclusiveAmount = wrapper.getTaxExclusiveAmount();
         BigDecimal taxTotal = wrapper.getTaxAmount();
 
-        ActBean delivery = factory.createActBean(SupplierArchetypes.DELIVERY);
+        IMObjectBean delivery = service.getBean(service.create(SupplierArchetypes.DELIVERY));
         delivery.setValue("startTime", issueDatetime);
         delivery.setValue("supplierNotes", notes);
         delivery.setValue("amount", payableAmount);
         delivery.setValue("tax", taxTotal);
         delivery.setValue("supplierInvoiceId", invoiceId);
-        delivery.addNodeParticipation("supplier", supplier);
-        delivery.addNodeParticipation("stockLocation", stockLocation);
-        result.setDelivery((FinancialAct) delivery.getAct());
+        delivery.setTarget("supplier", supplier);
+        delivery.setTarget("stockLocation", stockLocation);
+        result.setDelivery((FinancialAct) delivery.getObject());
         List<InvoiceLineState> lines = context.getInvoiceLines();
         if (lines.isEmpty()) {
             throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidCardinality(
@@ -231,8 +217,9 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
             UBLInvoiceLine line = state.getLine();
             BigDecimal amount = line.getLineExtensionAmount();
             FinancialAct item = mapInvoiceLine(state, issueDatetime, rates, context);
-            getArchetypeService().deriveValues(item);
-            delivery.addNodeRelationship("items", item);
+            service.deriveValues(item);
+            ActRelationship relationship = (ActRelationship) delivery.addTarget("items", item);
+            item.addActRelationship(relationship);
             result.addDeliveryItem(item);
 
             itemLineExtensionAmount = itemLineExtensionAmount.add(amount);
@@ -240,19 +227,20 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
             itemTaxExTotal = itemTaxExTotal.add(item.getTotal().subtract(item.getTaxAmount()));
         }
         for (FinancialAct relatedOrder : context.getOrders()) {
-            delivery.addNodeRelationship("orders", relatedOrder);
+            delivery.addTarget("orders", relatedOrder, "deliveries");
         }
         Entity author = getAuthor(context);
         if (author != null) {
-            delivery.addNodeParticipation("author", author);
+            delivery.setTarget("author", author);
         }
 
         // map any charges
         for (UBLAllowanceCharge allowanceCharge : wrapper.getAllowanceCharges()) {
             // only support charges at present
             FinancialAct item = mapCharge(allowanceCharge, issueDatetime, invoiceId, rates);
-            getArchetypeService().deriveValues(item);
-            delivery.addNodeRelationship("items", item);
+            service.deriveValues(item);
+            ActRelationship relationship = (ActRelationship) delivery.addTarget("items", item);
+            item.addActRelationship(relationship);
             result.addDeliveryItem(item);
 
             itemTax = itemTax.add(item.getTaxAmount());
@@ -311,10 +299,11 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         Date from = DateRules.getDate(issueDatetime);
         Date to = DateRules.getDate(DateRules.getDate(from, 1, DateUnits.DAYS));
         query.add(Constraints.between("startTime", from, to));
-        IMObjectQueryIterator<FinancialAct> iter = new IMObjectQueryIterator<>(getArchetypeService(), query);
+        IArchetypeService service = getArchetypeService();
+        IMObjectQueryIterator<FinancialAct> iter = new IMObjectQueryIterator<>(service, query);
         while (iter.hasNext()) {
             FinancialAct delivery = iter.next();
-            ActBean bean = factory.createActBean(delivery);
+            IMObjectBean bean = service.getBean(delivery);
             String supplierInvoiceId = bean.getString("supplierInvoiceId");
             if (ObjectUtils.equals(supplierInvoiceId, invoiceId)) {
                 throw new ESCIAdapterException(ESCIAdapterMessages.duplicateInvoice(invoiceId, delivery.getId()));
@@ -416,7 +405,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
      * <ul>
      *
      * @param line the invoice line
-     * @return the corresponding order item, or <tt>null</tt> if none is present
+     * @return the corresponding order item, or {@code null} if none is present
      */
     protected FinancialAct mapOrderItem(InvoiceLineState line) {
         FinancialAct item = line.getOrderItem();
@@ -424,8 +413,8 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         if (item != null && invoiced != null) {
             // verify that the invoice item has the same product as ordered. If not, don't want to refer
             // to the order item in the delivery item.
-            ActBean itemBean = factory.createActBean(item);
-            IMObjectReference orderedProduct = itemBean.getNodeParticipantRef("product");
+            IMObjectBean itemBean = getArchetypeService().getBean(item);
+            Reference orderedProduct = itemBean.getTargetRef("product");
             if (!ObjectUtils.equals(orderedProduct, invoiced.getObjectReference())) {
                 log.warn("Invoiced product doesn't refer to that ordered"); // TODO - log context
                 item = null;
@@ -435,7 +424,7 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
     }
 
     /**
-     * Maps an <tt>InvoiceLineType</tt> to an <em>act.supplierDeliveryItem</em>.
+     * Maps an {@code InvoiceLineType} to an <em>act.supplierDeliveryItem</em>.
      *
      * @param lineState the invoice line state
      * @param startTime the invoice start time
@@ -447,7 +436,8 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
      */
     protected FinancialAct mapInvoiceLine(InvoiceLineState lineState, Date startTime, TaxRates rates,
                                           MappingContext context) {
-        ActBean deliveryItem = factory.createActBean(SupplierArchetypes.DELIVERY_ITEM);
+        IArchetypeService service = getArchetypeService();
+        IMObjectBean deliveryItem = service.getBean(service.create(SupplierArchetypes.DELIVERY_ITEM));
 
         UBLInvoiceLine line = lineState.getLine();
         BigDecimal quantity = line.getInvoicedQuantity();
@@ -489,17 +479,72 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         deliveryItem.setValue("packageUnits", packageUnits);
         deliveryItem.setValue("packageSize", packageSize);
         if (product != null) {
-            deliveryItem.addNodeParticipation("product", product);
+            deliveryItem.setTarget("product", product);
         }
         deliveryItem.setValue("reorderCode", reorderCode);
         deliveryItem.setValue("reorderDescription", reorderDescription);
 
         if (orderItem != null) {
-            deliveryItem.addNodeRelationship("order", orderItem);
+            deliveryItem.addTarget("order", orderItem, "deliveries");
         }
 
-        getArchetypeService().deriveValues(deliveryItem.getObject());
-        return (FinancialAct) deliveryItem.getAct();
+        deliveryItem.deriveValues();
+        return (FinancialAct) deliveryItem.getObject();
+    }
+
+    /**
+     * Maps a charge to a delivery item.
+     *
+     * @param charge    the allowance/charge
+     * @param startTime the invoice start time
+     * @param invoiceId the invoice identifier
+     * @param rates     the tax rates
+     * @return a new delivery item
+     * @throws ESCIAdapterException if the allowance/charge cannot be mapped
+     */
+    protected FinancialAct mapCharge(UBLAllowanceCharge charge, Date startTime, String invoiceId, TaxRates rates) {
+        if (!charge.isCharge()) {
+            throw new ESCIAdapterException(ESCIAdapterMessages.invoiceAllowanceNotSupported(invoiceId));
+        }
+        BigDecimal unitPrice = charge.getAmount();
+        IArchetypeService service = getArchetypeService();
+        IMObjectBean deliveryItem = service.getBean(service.create(SupplierArchetypes.DELIVERY_ITEM));
+        BigDecimal tax = charge.getTaxAmount();
+        UBLTaxCategory taxCategory = charge.getTaxCategory();
+        if (taxCategory != null) {
+            BigDecimal rate = checkTaxCategory(taxCategory, rates);
+            BigDecimal divisor = BigDecimal.valueOf(100);
+            if (tax.compareTo(BigDecimal.ZERO) != 0) {
+                BigDecimal expectedTax = MathRules.divide(unitPrice.multiply(rate), divisor, 2);
+                if (expectedTax.compareTo(tax) != 0) {
+                    ErrorContext context = new ErrorContext(charge, "TaxTotal/TaxAmount");
+                    throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidValue(
+                            context.getPath(), context.getType(), context.getID(), expectedTax.toString(),
+                            tax.toString()));
+                }
+            }
+        }
+        deliveryItem.setValue("startTime", startTime);
+        deliveryItem.setValue("quantity", BigDecimal.ONE);
+        deliveryItem.setValue("packageUnits", null); // override default
+        deliveryItem.setValue("unitPrice", unitPrice);
+        deliveryItem.setValue("tax", tax);
+        deliveryItem.setValue("reorderDescription", charge.getAllowanceChargeReason());  // TODO - not ideal
+
+        deliveryItem.deriveValues();
+        return (FinancialAct) deliveryItem.getObject();
+    }
+
+    /**
+     * Verifies that the UBL version matches that expected.
+     *
+     * @param invoice the invoice
+     */
+    protected void checkUBLVersion(UBLInvoice invoice) {
+        if (!UBL_VERSION.equals(invoice.getUBLVersionID())) {
+            throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidValue(
+                    "UBLVersionID", "Invoice", invoice.getID(), UBL_VERSION, invoice.getUBLVersionID()));
+        }
     }
 
     /**
@@ -509,14 +554,14 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
      * <p/>
      * If it is not present:
      * <ol>
-     * <li>it will be defaulted to that from <tt>ps</tt>, if available
+     * <li>it will be defaulted to that from {@code ps}, if available
      * <li>if ps is not present or the value is 0, it will be defaulted to the unit price from the invoice line.
      * </ol>
      *
      * @param line         the invoice line
-     * @param product      the product. May be <tt>null</tt>
-     * @param ps           the product/supplier relationship. May be <tt>null</tt>
-     * @param reorderCode  the reorder code. May be <tt>null</tt>
+     * @param product      the product. May be {@code null}
+     * @param ps           the product/supplier relationship. May be {@code null}
+     * @param reorderCode  the reorder code. May be {@code null}
      * @param packageSize  the package size
      * @param packageUnits the package units
      * @param context      the mapping context
@@ -552,8 +597,8 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
      * Returns the package units.
      *
      * @param invoicedUnitCode the invoiced quantity unit code
-     * @param pkg              the package information. May be <tt>null</tt>
-     * @return the package units, or <tt>null</tt> if they are not known
+     * @param pkg              the package information. May be {@code null}
+     * @return the package units, or {@code null} if they are not known
      */
     private String getPackageUnits(String invoicedUnitCode, Package pkg) {
         String result = null;
@@ -579,8 +624,8 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
      * Returns the package size.
      *
      * @param line the invoice line
-     * @param pkg  the expected package, or <tt>null</tt> if it is not known
-     * @return the package size, or <tt>0</tt> if it is not known
+     * @param pkg  the expected package, or {@code null} if it is not known
+     * @return the package size, or {@code 0} if it is not known
      * @throws ESCIAdapterException if the package size is incorrectly specified
      */
     private int getPackageSize(UBLInvoiceLine line, Package pkg) {
@@ -655,66 +700,12 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
     }
 
     /**
-     * Maps a charge to a delivery item.
-     *
-     * @param charge    the allowance/charge
-     * @param startTime the invoice start time
-     * @param invoiceId the invoice identifier
-     * @param rates     the tax rates
-     * @return a new delivery item
-     * @throws ESCIAdapterException if the allowance/charge cannot be mapped
-     */
-    protected FinancialAct mapCharge(UBLAllowanceCharge charge, Date startTime, String invoiceId, TaxRates rates) {
-        if (!charge.isCharge()) {
-            throw new ESCIAdapterException(ESCIAdapterMessages.invoiceAllowanceNotSupported(invoiceId));
-        }
-        BigDecimal unitPrice = charge.getAmount();
-        ActBean deliveryItem = factory.createActBean(SupplierArchetypes.DELIVERY_ITEM);
-        BigDecimal tax = charge.getTaxAmount();
-        UBLTaxCategory taxCategory = charge.getTaxCategory();
-        if (taxCategory != null) {
-            BigDecimal rate = checkTaxCategory(taxCategory, rates);
-            BigDecimal divisor = BigDecimal.valueOf(100);
-            if (tax.compareTo(BigDecimal.ZERO) != 0) {
-                BigDecimal expectedTax = MathRules.divide(unitPrice.multiply(rate), divisor, 2);
-                if (expectedTax.compareTo(tax) != 0) {
-                    ErrorContext context = new ErrorContext(charge, "TaxTotal/TaxAmount");
-                    throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidValue(
-                            context.getPath(), context.getType(), context.getID(), expectedTax.toString(),
-                            tax.toString()));
-                }
-            }
-        }
-        deliveryItem.setValue("startTime", startTime);
-        deliveryItem.setValue("quantity", BigDecimal.ONE);
-        deliveryItem.setValue("packageUnits", null); // override default
-        deliveryItem.setValue("unitPrice", unitPrice);
-        deliveryItem.setValue("tax", tax);
-        deliveryItem.setValue("reorderDescription", charge.getAllowanceChargeReason());  // TODO - not ideal
-
-        getArchetypeService().deriveValues(deliveryItem.getObject());
-        return (FinancialAct) deliveryItem.getAct();
-    }
-
-    /**
-     * Verifies that the UBL version matches that expected.
-     *
-     * @param invoice the invoice
-     */
-    protected void checkUBLVersion(UBLInvoice invoice) {
-        if (!UBL_VERSION.equals(invoice.getUBLVersionID())) {
-            throw new ESCIAdapterException(ESCIAdapterMessages.ublInvalidValue(
-                    "UBLVersionID", "Invoice", invoice.getID(), UBL_VERSION, invoice.getUBLVersionID()));
-        }
-    }
-
-    /**
      * Returns an author to associate with the delivery.
      * <p/>
      * This returns the author of the original order, if present. If not, it returns that from the stock location.
      *
      * @param context the mapping context
-     * @return the author reference, or <tt>null</tt> if none is available
+     * @return the author reference, or {@code null} if none is available
      */
     private Entity getAuthor(MappingContext context) {
         Entity result = null;
@@ -728,12 +719,12 @@ public class InvoiceMapperImpl extends AbstractUBLMapper implements InvoiceMappe
         }
 
         if (order != null) {
-            ActBean bean = factory.createActBean(order);
-            result = bean.getNodeParticipant("author");
+            IMObjectBean bean = getArchetypeService().getBean(order);
+            result = bean.getTarget("author", Entity.class);
         }
         if (result == null) {
-            EntityBean bean = factory.createEntityBean(context.getStockLocation());
-            result = bean.getNodeTargetEntity("defaultAuthor");
+            IMObjectBean bean = getArchetypeService().getBean(context.getStockLocation());
+            result = bean.getTarget("defaultAuthor", Entity.class);
         }
         return result;
     }

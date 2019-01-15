@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.hl7;
@@ -19,14 +19,13 @@ package org.openvpms.web.workspace.admin.hl7;
 import net.sf.jasperreports.engine.util.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.web.component.error.ErrorFormatter;
 import org.openvpms.web.resource.i18n.Messages;
 
@@ -52,14 +51,14 @@ public class LookupMappingImporter {
     private final ILookupService lookups;
 
     /**
-     * The document handlers.
-     */
-    private DocumentHandlers handlers;
-
-    /**
      * The field separator.
      */
     private final char separator;
+
+    /**
+     * The document handlers.
+     */
+    private DocumentHandlers handlers;
 
     /**
      * Constructs a {@link LookupMappingImporter}.
@@ -111,10 +110,10 @@ public class LookupMappingImporter {
                 break;
             } else {
                 try {
-                    IMObjectBean bean = new IMObjectBean(from, service);
-                    if (!bean.hasNodeTarget("mapping", to)) {
-                        IMObjectRelationship relationship = bean.addNodeTarget("mapping", to);
-                        to.addLookupRelationship((LookupRelationship) relationship);
+                    IMObjectBean bean = service.getBean(from);
+                    if (!bean.getTargetRefs("mapping").contains(to.getObjectReference())) {
+                        LookupRelationship relationship = (LookupRelationship) bean.addTarget("mapping", to);
+                        to.addLookupRelationship(relationship);
                         service.save(Arrays.asList(from, to));
                         success.add(mapping);
                     }
@@ -141,7 +140,8 @@ public class LookupMappingImporter {
         Lookup result = null;
         String[] matches = DescriptorHelper.getShortNames(shortName);
         if (matches.length != 1 || !StringUtils.equals(matches[0], shortName)
-            || !ObjectUtils.equals(DescriptorHelper.getArchetypeDescriptor(shortName).getClazz(), Lookup.class)) {
+            || !ObjectUtils.equals(DescriptorHelper.getArchetypeDescriptor(shortName).getClazz(),
+                                   org.openvpms.component.business.domain.im.lookup.Lookup.class)) {
             mapping.setError(Messages.format("admin.hl7.mapping.import.invalidArch", shortName));
         } else {
             Lookup lookup = lookups.getLookup(shortName, code);

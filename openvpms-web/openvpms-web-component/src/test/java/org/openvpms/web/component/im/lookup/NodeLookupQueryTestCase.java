@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.lookup;
@@ -23,9 +23,9 @@ import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.web.test.AbstractAppTest;
 
 import java.util.ArrayList;
@@ -55,7 +55,8 @@ public class NodeLookupQueryTestCase extends AbstractAppTest {
 
     /**
      * Tests the {@link NodeLookupQuery#getLookups()} method when constructed using the
-     * {@link NodeLookupQuery#NodeLookupQuery(IMObject, NodeDescriptor)} constructor.
+     * {@link NodeLookupQuery#NodeLookupQuery(IMObject, org.openvpms.component.model.archetype.NodeDescriptor)}
+     * constructor.
      */
     @Test
     public void testGetLookupsForDescriptor() {

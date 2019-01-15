@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -28,11 +28,8 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.openvpms.component.model.bean.IMObjectBean;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -50,12 +47,6 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
  * @author Tim Anderson
  */
 public class PatientRulesTestCase extends ArchetypeServiceTest {
-
-    /**
-     * The bean factory.
-     */
-    @Autowired
-    private IMObjectBeanFactory factory;
 
     /**
      * The rules.
@@ -323,7 +314,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
         assertNull(rules.getPetTag(patient));
 
         EntityIdentity tag = (EntityIdentity) create("entityIdentity.petTag");
-        IMObjectBean tagBean = new IMObjectBean(tag);
+        IMObjectBean tagBean = getBean(tag);
         tagBean.setValue("petTag", "1234567");
         patient.addIdentity(tag);
         assertEquals("1234567", rules.getPetTag(patient));
@@ -365,11 +356,12 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
     @Test
     public void testGetPatientAgeWithBirthDate() {
         Party patient = TestHelper.createPatient(false);
-        IMObjectBean bean = new IMObjectBean(patient);
+        IMObjectBean bean = getBean(patient);
         Date birthDate = getDate("2010-01-01");
         bean.setValue("dateOfBirth", birthDate);
         String age = rules.getPatientAge(patient);
-        PatientAgeFormatter formatter = new PatientAgeFormatter(getLookupService(), practiceRules, factory);
+        PatientAgeFormatter formatter = new PatientAgeFormatter(getLookupService(), practiceRules,
+                                                                getArchetypeService());
         String expected = formatter.format(birthDate);
         assertEquals(expected, age);
     }
@@ -380,13 +372,14 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
     @Test
     public void testGetPatientAgeWithDeceasedDate() {
         Party patient = TestHelper.createPatient(false);
-        IMObjectBean bean = new IMObjectBean(patient);
+        IMObjectBean bean = getBean(patient);
         Date birth = getDate("2010-01-01");
         Date deceased = getDate("2011-05-01");
         bean.setValue("dateOfBirth", birth);
         bean.setValue("deceasedDate", deceased);
         String age = rules.getPatientAge(patient);
-        PatientAgeFormatter formatter = new PatientAgeFormatter(getLookupService(), practiceRules, factory);
+        PatientAgeFormatter formatter = new PatientAgeFormatter(getLookupService(), practiceRules,
+                                                                getArchetypeService());
         String expected = formatter.format(birth, deceased);
         assertEquals(expected, age);
     }
@@ -427,10 +420,10 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
      * @param expected the expected owner
      */
     private void checkOwner(Party patient, String date, Party expected) {
-        Act act = new Act();
+        Act act = (Act) create(PatientArchetypes.PATIENT_WEIGHT);
         act.setActivityStartTime(getDate(date));
-        ActBean bean = new ActBean(act);
-        bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
+        IMObjectBean bean = getBean(act);
+        bean.setTarget("patient", patient);
         assertEquals(expected, rules.getOwner(act));
     }
 
@@ -442,10 +435,10 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
      * @param expected the expected location customer
      */
     private void checkLocation(Party patient, String date, Party expected) {
-        Act act = new Act();
+        Act act = (Act) create(PatientArchetypes.PATIENT_WEIGHT);
         act.setActivityStartTime(getDate(date));
-        ActBean bean = new ActBean(act);
-        bean.addParticipation(PatientArchetypes.PATIENT_PARTICIPATION, patient);
+        IMObjectBean bean = getBean(act);
+        bean.setTarget("patient", patient);
         assertEquals(expected, rules.getLocation(act));
     }
 
@@ -475,7 +468,7 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
      */
     private EntityIdentity createMicrochip(String microchip) {
         EntityIdentity result = (EntityIdentity) create("entityIdentity.microchip");
-        IMObjectBean bean = new IMObjectBean(result);
+        IMObjectBean bean = getBean(result);
         bean.setValue("microchip", microchip);
         return result;
     }

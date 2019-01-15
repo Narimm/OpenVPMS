@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.esci.adapter.map.order;
@@ -30,16 +30,14 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.map.UBLHelper;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
@@ -95,7 +93,7 @@ import java.util.GregorianCalendar;
  * Maps <em>act.supplierOrder</em> acts to UBL Orders.
  *
  * @author Tim Anderson
- * @author bcharlton(benjicharlton@gmail.com)
+ * @author bcharlton(benjicharlton @ gmail.com)
  */
 public class OrderMapperImpl implements OrderMapper {
 
@@ -130,9 +128,9 @@ public class OrderMapperImpl implements OrderMapper {
     private Currencies currencies;
 
     /**
-     * The bean factory.
+     * The archetype service.
      */
-    private IMObjectBeanFactory factory;
+    private IArchetypeService service;
 
     /**
      * XML data type factory.
@@ -223,13 +221,13 @@ public class OrderMapperImpl implements OrderMapper {
     }
 
     /**
-     * Registers the bean factory.
+     * Registers the archetype service.
      *
-     * @param factory the bean factory
+     * @param service the archetype service
      */
     @Resource
-    public void setBeanFactory(IMObjectBeanFactory factory) {
-        this.factory = factory;
+    public void setArchetypeService(IArchetypeService service) {
+        this.service = service;
     }
 
     /**
@@ -253,12 +251,12 @@ public class OrderMapperImpl implements OrderMapper {
         IssueDateType issueDate = UBLHelper.createIssueDate(startTime, datatypeFactory);
         IssueTimeType issueTime = UBLHelper.createIssueTime(startTime, datatypeFactory);
 
-        ActBean bean = factory.createActBean(order);
-        Entity author = bean.getNodeParticipant("author");
-        Party stockLocation = (Party) bean.getNodeParticipant("stockLocation");
+        IMObjectBean bean = service.getBean(order);
+        Entity author = bean.getTarget("author", Entity.class);
+        Party stockLocation = bean.getTarget("stockLocation", Party.class);
         Party location = getLocation(stockLocation);
 
-        Party supplier = (Party) bean.getNodeParticipant("supplier");
+        Party supplier = bean.getTarget("supplier", Party.class);
         EntityRelationship supplierStockLocation = supplierRules.getSupplierStockLocation(supplier, stockLocation);
         if (supplierStockLocation == null) {
             throw new ESCIAdapterException(ESCIAdapterMessages.ESCINotConfigured(supplier, stockLocation));
@@ -280,7 +278,7 @@ public class OrderMapperImpl implements OrderMapper {
         result.getTaxTotal().add(taxTotal);
         result.setAnticipatedMonetaryTotal(total);
 
-        for (Act item : bean.getNodeActs("items")) {
+        for (Act item : bean.getTargets("items", Act.class)) {
             OrderLineType line = getOrderLine(item, supplier, currency);
             result.getOrderLine().add(line);
         }
@@ -296,8 +294,8 @@ public class OrderMapperImpl implements OrderMapper {
      * @return a new <tt>OrderLineType</tt> corresponding to the act
      */
     private OrderLineType getOrderLine(Act act, Party supplier, Currency currency) {
-        ActBean bean = factory.createActBean(act);
-        Product product = (Product) bean.getNodeParticipant("product");
+        IMObjectBean bean = service.getBean(act);
+        Product product = bean.getTarget("product", Product.class);
 
         OrderLineType orderLine = new OrderLineType();
         LineItemType lineItem = new LineItemType();
@@ -335,7 +333,7 @@ public class OrderMapperImpl implements OrderMapper {
      * @param packageUnits the package size unit code. May be <tt>null</tt>
      * @return an <tt>ItemType</tt> corresponding to the supplier and product
      */
-    private ItemType getItem(ActBean bean, Party supplier, Product product, String packageUnits) {
+    private ItemType getItem(IMObjectBean bean, Party supplier, Product product, String packageUnits) {
         ItemType result = new ItemType();
         ItemIdentificationType buyersId = getItemIdentification(product.getId());
         String reorderCode = bean.getString("reorderCode");
@@ -426,7 +424,7 @@ public class OrderMapperImpl implements OrderMapper {
         if (!StringUtils.isEmpty("packageUnits")) {
             Lookup lookup = lookupService.getLookup("lookup.uom", packageUnits);
             if (lookup != null) {
-                IMObjectBean lookupBean = factory.createBean(lookup);
+                IMObjectBean lookupBean = service.getBean(lookup);
                 String unitCode = lookupBean.getString("unitCode");
                 if (!StringUtils.isEmpty(unitCode)) {
                     result = unitCode;
@@ -450,9 +448,9 @@ public class OrderMapperImpl implements OrderMapper {
      * @throws ESCIAdapterException if the stock location isn't associated with a practice location
      */
     private Party getLocation(Party stockLocation) {
-        EntityBean bean = factory.createEntityBean(stockLocation);
+        IMObjectBean bean = service.getBean(stockLocation);
         // TODO - there could be more than one location which refers to different party.organisationLocation 
-        Party result = (Party) bean.getNodeSourceEntity("locations");
+        Party result = bean.getSource("locations", Party.class);
         if (result == null) {
             throw new ESCIAdapterException(ESCIAdapterMessages.noPracticeLocationForStockLocation(stockLocation));
         }
@@ -512,7 +510,7 @@ public class OrderMapperImpl implements OrderMapper {
 
         result.setCustomerAssignedAccountID(customerId);
 
-        IMObjectBean bean = factory.createBean(supplierStockLocation);
+        IMObjectBean bean = service.getBean(supplierStockLocation);
         String accountId = bean.getString("accountId");
         if (!StringUtils.isEmpty(accountId)) {
             SupplierAssignedAccountIDType supplierId = UBLHelper.initID(new SupplierAssignedAccountIDType(), accountId);
@@ -613,7 +611,7 @@ public class OrderMapperImpl implements OrderMapper {
     private String formatPhone(Contact contact, String areaCodeNode, String numberNode) {
         String result = null;
         if (contact != null) {
-            IMObjectBean bean = factory.createBean(contact);
+            IMObjectBean bean = service.getBean(contact);
             String number = bean.getString(numberNode);
             if (!StringUtils.isEmpty(number)) {
                 String areaCode = bean.getString(areaCodeNode);
@@ -636,7 +634,7 @@ public class OrderMapperImpl implements OrderMapper {
     private ElectronicMailType getEmail(Contact contact) {
         String email = null;
         if (contact != null) {
-            IMObjectBean bean = factory.createBean(contact);
+            IMObjectBean bean = service.getBean(contact);
             email = StringUtils.trimToNull(bean.getString("emailAddress"));
         }
         return (email != null) ? UBLHelper.initText(new ElectronicMailType(), email) : null;
@@ -649,7 +647,7 @@ public class OrderMapperImpl implements OrderMapper {
      * @return the corresponding <tt>AddressType</tt>
      */
     private AddressType getAddress(Contact contact) {
-        IMObjectBean bean = factory.createBean(contact);
+        IMObjectBean bean = service.getBean(contact);
 
         AddressType result = new AddressType();
         AddressLineType addressLineType = new AddressLineType();
@@ -713,7 +711,7 @@ public class OrderMapperImpl implements OrderMapper {
      * @return the currency code
      */
     private Currency getCurrency() {
-        return UBLHelper.getCurrency(practiceRules, currencies, factory);
+        return UBLHelper.getCurrency(practiceRules, currencies, service);
     }
 
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -944,7 +944,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
      * @param object the object
      * @return a bean wrapping the object
      */
-    protected IMObjectBean getBean(IMObject object) {
+    protected IMObjectBean getBean(org.openvpms.component.model.object.IMObject object) {
         return ServiceHelper.getArchetypeService().getBean(object);
     }
 

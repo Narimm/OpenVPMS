@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.alert;
@@ -48,7 +48,7 @@ public abstract class AbstractAlertActEditor extends AbstractActEditor {
      *
      * @return the alert type. May be {@code null}
      */
-    public abstract IMObject getAlertType();
+    public abstract org.openvpms.component.model.object.IMObject getAlertType();
 
     /**
      * Acknowledges the alert if it is mandatory.
@@ -56,7 +56,7 @@ public abstract class AbstractAlertActEditor extends AbstractActEditor {
      * This prevents the user from having to deal with a mandatory alert popup after editing the alert
      */
     protected void acknowledgeAlert() {
-        IMObject alertType = getAlertType();
+        org.openvpms.component.model.object.IMObject alertType = getAlertType();
         if (alertType != null) {
             Alert alert = new Alert(alertType, getObject());
             if (alert.isMandatory()) {

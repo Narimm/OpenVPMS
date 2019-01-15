@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.esci.adapter.map.invoice;
@@ -24,14 +24,13 @@ import org.openvpms.archetype.rules.product.ProductRules;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.esci.adapter.AbstractESCITest;
 import org.openvpms.esci.adapter.map.UBLHelper;
 import org.openvpms.esci.ubl.common.AmountType;
@@ -98,7 +97,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
 
         // get the practice currency
         Party practice = getPractice();
-        IMObjectBean bean = new IMObjectBean(practice);
+        IMObjectBean bean = getBean(practice);
         Currencies currencies = new Currencies(getArchetypeService(), getLookupService());
         currency = currencies.getCurrency(bean.getString("currency"));
 
@@ -109,7 +108,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         }
 
         Lookup taxType = TestHelper.getLookup("lookup.taxType", "GST", false);
-        IMObjectBean taxBean = new IMObjectBean(taxType);
+        IMObjectBean taxBean = getBean(taxType);
         taxBean.setValue("taxScheme", "GST");
         taxBean.setValue("taxCategory", "S");
         taxBean.setValue("rate", new BigDecimal("10.00"));
@@ -117,7 +116,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
 
         // make sure there is a UN/CEFACT unit code mapping for BOX
         Lookup uom = TestHelper.getLookup("lookup.uom", "BOX");
-        IMObjectBean uomBean = new IMObjectBean(uom);
+        IMObjectBean uomBean = getBean(uom);
         uomBean.setValue("unitCode", "BX");
         uomBean.save();
     }
@@ -260,7 +259,7 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         Lookup lookup = getLookupService().getLookup("lookup.uom", packageUnits);
         String unitCode = null;
         if (lookup != null) {
-            IMObjectBean uom = new IMObjectBean(lookup);
+            IMObjectBean uom = getBean(lookup);
             unitCode = uom.getString("unitCode");
         }
         return createInvoiceLine(id, product, supplierId, supplierName, listPrice, unitPrice, quantity, unitCode);
@@ -476,7 +475,6 @@ public class AbstractInvoiceTest extends AbstractESCITest {
         mapper.setLookupService(lookups);
         mapper.setCurrencies(currencies);
         mapper.setArchetypeService(service);
-        mapper.setBeanFactory(new IMObjectBeanFactory(service));
         mapper.setSupplierRules(new SupplierRules(service));
         return mapper;
     }

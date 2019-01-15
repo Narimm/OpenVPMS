@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product;
@@ -24,7 +24,6 @@ import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityLink;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
@@ -33,6 +32,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.bean.Policies;
 import org.openvpms.component.model.bean.Predicates;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.model.object.Relationship;
 
@@ -695,40 +695,6 @@ public class ProductPriceRules {
         return bean.getBoolean("default");
     }
 
-    private static class ProductPriceComparator implements Comparator<ProductPrice> {
-
-        /**
-         * The singleton instance.
-         */
-        public static Comparator<ProductPrice> INSTANCE = new ProductPriceComparator();
-
-        @Override
-        public int compare(ProductPrice o1, ProductPrice o2) {
-            int result;
-            if (ObjectUtils.equals(o1.getToDate(), o2.getToDate())) {
-                result = 0;
-            } else if (o1.getToDate() == null) {
-                result = 1;
-            } else if (o2.getToDate() == null) {
-                result = -1;
-            } else {
-                result = DateRules.compareTo(o1.getToDate(), o2.getToDate());
-            }
-            if (result == 0) {
-                if (!ObjectUtils.equals(o1.getFromDate(), o2.getFromDate())) {
-                    if (o1.getFromDate() == null) {
-                        result = 1;
-                    } else if (o2.getFromDate() == null) {
-                        result = -1;
-                    } else {
-                        result = DateRules.compareDates(o1.getFromDate(), o2.getFromDate());
-                    }
-                }
-            }
-            return result;
-        }
-    }
-
     private class ProductPricePredicate implements java.util.function.Predicate<ProductPrice> {
 
         /**
@@ -859,7 +825,7 @@ public class ProductPriceRules {
          */
         private final BigDecimal price;
 
-        public PricePredicate(BigDecimal price, String shortName, Date date, PricingGroup group) {
+        PricePredicate(BigDecimal price, String shortName, Date date, PricingGroup group) {
             super(shortName, date, group);
             this.price = price;
         }
@@ -870,6 +836,40 @@ public class ProductPriceRules {
                 return super.matches(other);
             }
             return 0;
+        }
+    }
+
+    private static class ProductPriceComparator implements Comparator<ProductPrice> {
+
+        /**
+         * The singleton instance.
+         */
+        public static Comparator<ProductPrice> INSTANCE = new ProductPriceComparator();
+
+        @Override
+        public int compare(ProductPrice o1, ProductPrice o2) {
+            int result;
+            if (ObjectUtils.equals(o1.getToDate(), o2.getToDate())) {
+                result = 0;
+            } else if (o1.getToDate() == null) {
+                result = 1;
+            } else if (o2.getToDate() == null) {
+                result = -1;
+            } else {
+                result = DateRules.compareTo(o1.getToDate(), o2.getToDate());
+            }
+            if (result == 0) {
+                if (!ObjectUtils.equals(o1.getFromDate(), o2.getFromDate())) {
+                    if (o1.getFromDate() == null) {
+                        result = 1;
+                    } else if (o2.getFromDate() == null) {
+                        result = -1;
+                    } else {
+                        result = DateRules.compareDates(o1.getFromDate(), o2.getFromDate());
+                    }
+                }
+            }
+            return result;
         }
     }
 }

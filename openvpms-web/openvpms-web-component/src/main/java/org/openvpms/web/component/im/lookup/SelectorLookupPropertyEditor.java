@@ -79,7 +79,7 @@ public class SelectorLookupPropertyEditor extends AbstractSelectorPropertyEditor
             List values = ((CollectionProperty) property).getValues();
             return (!values.isEmpty()) ? (Lookup) values.get(0) : null;
         }
-        return ServiceHelper.getLookupService().getLookup(parent, property.getName());
+        return (Lookup) ServiceHelper.getLookupService().getLookup(parent, property.getName());
     }
 
     /**

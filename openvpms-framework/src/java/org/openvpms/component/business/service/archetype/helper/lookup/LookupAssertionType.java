@@ -11,18 +11,18 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper.lookup;
 
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionTypeDescriptor;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.model.archetype.AssertionDescriptor;
+import org.openvpms.component.model.lookup.Lookup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,8 +66,8 @@ class LookupAssertionType extends AbstractLookupAssertion {
         List<AssertionTypeDescriptor> descs =
                 getArchetypeService().getAssertionTypeDescriptors();
         for (AssertionTypeDescriptor adesc : descs) {
-            lookups.add(new Lookup(ArchetypeId.LOCAL_LOOKUP_ID,
-                                   adesc.getName(), adesc.getName()));
+            lookups.add(new org.openvpms.component.business.domain.im.lookup.Lookup(ArchetypeId.LOCAL_LOOKUP_ID,
+                                                                                    adesc.getName(), adesc.getName()));
         }
         return lookups;
     }
@@ -77,7 +77,7 @@ class LookupAssertionType extends AbstractLookupAssertion {
      *
      * @param code the lookup code
      * @return the lookup matching <code>code</code>, or <code>null</code> if
-     *         none is found
+     * none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Override
@@ -86,8 +86,8 @@ class LookupAssertionType extends AbstractLookupAssertion {
                 getArchetypeService().getAssertionTypeDescriptors();
         for (AssertionTypeDescriptor adesc : descs) {
             if (adesc.getName().equals(code)) {
-                return new Lookup(ArchetypeId.LOCAL_LOOKUP_ID,
-                                  adesc.getName(), adesc.getName());
+                return new org.openvpms.component.business.domain.im.lookup.Lookup(ArchetypeId.LOCAL_LOOKUP_ID,
+                                                                                   adesc.getName(), adesc.getName());
             }
         }
         return null;

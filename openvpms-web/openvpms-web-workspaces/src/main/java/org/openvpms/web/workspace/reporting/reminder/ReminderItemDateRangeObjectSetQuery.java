@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -20,7 +20,7 @@ import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
 import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.lookup.NodeLookupQuery;
 import org.openvpms.web.component.im.query.ActStatuses;
@@ -83,7 +83,7 @@ public class ReminderItemDateRangeObjectSetQuery extends ReminderItemObjectSetQu
         /**
          * Constructs a {@link StatusLookupQuery}.
          */
-        public StatusLookupQuery(String defaultCode, String... codes) {
+        StatusLookupQuery(String defaultCode, String... codes) {
             super(ReminderArchetypes.EMAIL_REMINDER, "status", codes);
             defaultLookup = (defaultCode != null) ? getLookup(defaultCode, getLookups()) : null;
         }

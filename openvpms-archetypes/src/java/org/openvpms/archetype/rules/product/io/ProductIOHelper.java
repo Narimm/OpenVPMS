@@ -11,16 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.product.io;
 
 import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -87,12 +87,7 @@ class ProductIOHelper {
      * @return the pricing groups
      */
     public static Set<Lookup> getPricingGroups(ProductPrice price, IArchetypeService service) {
-        return new HashSet<Lookup>(getPricingGroupList(price, service));
-    }
-
-    private static List<Lookup> getPricingGroupList(ProductPrice price, IArchetypeService service) {
-        IMObjectBean bean = new IMObjectBean(price, service);
-        return bean.getValues("pricingGroups", Lookup.class);
+        return new HashSet<>(getPricingGroupList(price, service));
     }
 
     public static boolean intersects(PriceData price1, PriceData price2) {
@@ -113,12 +108,17 @@ class ProductIOHelper {
         return intersects(price1.getPricingGroups(), price2.getPricingGroups(), true);
     }
 
+    private static List<Lookup> getPricingGroupList(ProductPrice price, IArchetypeService service) {
+        IMObjectBean bean = service.getBean(price);
+        return bean.getValues("pricingGroups", Lookup.class);
+    }
+
     private static boolean intersects(Set<Lookup> group1, Set<Lookup> group2, boolean copy2) {
         if (group1.equals(group2)) {
             return true;
         }
         if (copy2) {
-            group2 = new HashSet<Lookup>(group2);
+            group2 = new HashSet<>(group2);
         }
         group2.retainAll(group1);
         return !group2.isEmpty();

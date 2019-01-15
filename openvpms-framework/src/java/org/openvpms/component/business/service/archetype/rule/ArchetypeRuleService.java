@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.rule;
@@ -26,8 +26,6 @@ import org.openvpms.component.business.service.archetype.ValidationException;
 import org.openvpms.component.business.service.ruleengine.IRuleEngine;
 import org.openvpms.component.business.service.ruleengine.RuleSetUriHelper;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
@@ -105,18 +103,13 @@ public class ArchetypeRuleService extends DelegatingArchetypeService implements 
      *
      * @param object   the object to save
      * @param validate if {@code true} validate the object prior to saving it
-     * @throws ArchetypeServiceException if the service cannot save the
-     *                                   specified object
-     * @throws ValidationException       if the specified object cannot be
-     *                                   validated
+     * @throws ArchetypeServiceException if the service cannot save the specified object
+     * @throws ValidationException       if the specified object cannot be validated
      */
     @Deprecated
-    public void save(final IMObject object, final boolean validate) {
-        execute("save", object, new Runnable() {
-            public void run() {
-                getService().save(object, validate);
-            }
-        });
+    @Override
+    public void save(org.openvpms.component.model.object.IMObject object, boolean validate) {
+        execute("save", object, () -> getService().save(object, validate));
     }
 
     /**
@@ -129,23 +122,19 @@ public class ArchetypeRuleService extends DelegatingArchetypeService implements 
      * @throws ValidationException       if an object can't be validated
      */
     @Deprecated
-    public void save(final Collection<? extends IMObject> objects,
-                     final boolean validate) {
-        execute("save", objects, new Runnable() {
-            public void run() {
-                getService().save(objects, validate);
-            }
-        });
+    @Override
+    public void save(Collection<? extends org.openvpms.component.model.object.IMObject> objects, boolean validate) {
+        execute("save", objects, () -> getService().save(objects, validate));
     }
 
     /**
-     * Removes an object, executing any <em>remove</em> rules associated with
-     * its archetype.
+     * Removes an object, executing any <em>remove</em> rules associated with its archetype.
      *
      * @param object the object to remove
      * @throws ArchetypeServiceException if the object cannot be removed
      */
-    public void remove(final IMObject object) {
+    @Override
+    public void remove(org.openvpms.component.model.object.IMObject object) {
         execute("remove", object, new Runnable() {
             public void run() {
                 getService().remove(object);
@@ -167,14 +156,12 @@ public class ArchetypeRuleService extends DelegatingArchetypeService implements 
      * @param object    the object that will be supplied to before and after rules
      * @param operation the operation to execute
      */
-    private void execute(final String name, final IMObject object, final Runnable operation) {
-        template.execute(new TransactionCallback() {
-            public Object doInTransaction(TransactionStatus status) {
-                executeRules(name, object, true);
-                operation.run();
-                executeRules(name, object, false);
-                return null;
-            }
+    private void execute(String name, org.openvpms.component.model.object.IMObject object, Runnable operation) {
+        template.execute(transactionStatus -> {
+            executeRules(name, object, true);
+            operation.run();
+            executeRules(name, object, false);
+            return null;
         });
     }
 
@@ -192,18 +179,17 @@ public class ArchetypeRuleService extends DelegatingArchetypeService implements 
      * @param objects the object that will be supplied to before and after rules
      * @param op      the operation to execute
      */
-    private void execute(final String name, final Collection<? extends IMObject> objects, final Runnable op) {
-        template.execute(new TransactionCallback() {
-            public Object doInTransaction(TransactionStatus status) {
-                for (IMObject object : objects) {
-                    executeRules(name, object, true);
-                }
-                op.run();
-                for (IMObject object : objects) {
-                    executeRules(name, object, false);
-                }
-                return null;
+    private void execute(String name, Collection<? extends org.openvpms.component.model.object.IMObject> objects,
+                         Runnable op) {
+        template.execute(status -> {
+            for (org.openvpms.component.model.object.IMObject object : objects) {
+                executeRules(name, object, true);
             }
+            op.run();
+            for (org.openvpms.component.model.object.IMObject object : objects) {
+                executeRules(name, object, false);
+            }
+            return null;
         });
     }
 
@@ -214,10 +200,8 @@ public class ArchetypeRuleService extends DelegatingArchetypeService implements 
      * @param object the object to  execute rules for
      * @param before if {@code true} execute <em>before</em> rules, otherwise execute <em>after</em> rules
      */
-    private void executeRules(String name, IMObject object, boolean before) {
-        String uri = RuleSetUriHelper.getRuleSetURI(
-                "archetypeService", name, before,
-                object.getArchetypeId().getShortName());
+    private void executeRules(String name, org.openvpms.component.model.object.IMObject object, boolean before) {
+        String uri = RuleSetUriHelper.getRuleSetURI("archetypeService", name, before, object.getArchetype());
         if (rules.hasRules(uri)) {
             if (log.isDebugEnabled()) {
                 log.debug("Executing rules for uri=" + uri);

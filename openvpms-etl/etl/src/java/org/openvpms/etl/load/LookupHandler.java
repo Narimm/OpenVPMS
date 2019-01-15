@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.etl.load;
@@ -19,7 +19,6 @@ package org.openvpms.etl.load;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -29,6 +28,7 @@ import org.openvpms.component.business.service.lookup.LookupServiceHelper;
 import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.model.archetype.AssertionDescriptor;
 import org.openvpms.component.model.archetype.NamedProperty;
+import org.openvpms.component.model.lookup.Lookup;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,13 +52,13 @@ class LookupHandler {
     /**
      * A mapping of lookup nodes to their corresponding lookup descriptors.
      */
-    Map<NodeDescriptor, LookupDescriptor> lookups = new HashMap<>();
+    private final Map<NodeDescriptor, LookupDescriptor> lookups = new HashMap<>();
 
     /**
      * A mapping of target lookup nodes to their corresponding lookup
      * relationship descriptors.
      */
-    Map<NodeDescriptor, LookupRelationshipDescriptor> relationships = new HashMap<>();
+    private final Map<NodeDescriptor, LookupRelationshipDescriptor> relationships = new HashMap<>();
 
     /**
      * The archetype service.
@@ -197,7 +197,7 @@ class LookupHandler {
      */
     public void commit() {
         if (!lookups.isEmpty() || !relationships.isEmpty()) {
-            List<IMObject> objects = new ArrayList<IMObject>();
+            List<IMObject> objects = new ArrayList<>();
             for (LookupDescriptor descriptor : lookups.values()) {
                 for (CodeName pair : descriptor.getLookups()) {
                     if (!exists(descriptor.getArchetype(), pair.getCode())) {
@@ -210,7 +210,7 @@ class LookupHandler {
                         }
                         lookup.setCode(pair.getCode());
                         lookup.setName(pair.getName());
-                        objects.add(lookup);
+                        objects.add((IMObject) lookup);
                         cache.add(lookup);
                     }
                 }
@@ -287,10 +287,8 @@ class LookupHandler {
      * @param target    the target lookup
      * @return <tt>true</tt> if it exists, otherwise <tt>false</tt>
      */
-    protected boolean exists(String archetype, Lookup source,
-                             Lookup target) {
-        return cache.exists(archetype, source.getObjectReference(),
-                            target.getObjectReference());
+    protected boolean exists(String archetype, Lookup source, Lookup target) {
+        return cache.exists(archetype, source.getObjectReference(), target.getObjectReference());
     }
 
     /**
