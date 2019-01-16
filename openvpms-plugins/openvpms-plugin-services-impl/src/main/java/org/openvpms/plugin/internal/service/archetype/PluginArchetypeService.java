@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.plugin.internal.service.archetype;
@@ -79,12 +79,12 @@ public class PluginArchetypeService implements ArchetypeService {
         this.practiceService = practiceService;
         writable = new DelegatingArchetypeService(service) {
             @Override
-            public void save(org.openvpms.component.business.domain.im.common.IMObject object) {
+            public void save(IMObject object) {
                 PluginArchetypeService.this.save(object);
             }
 
             @Override
-            public void save(Collection<? extends org.openvpms.component.business.domain.im.common.IMObject> objects) {
+            public void save(Collection<? extends IMObject> objects) {
                 PluginArchetypeService.this.save(objects);
             }
 

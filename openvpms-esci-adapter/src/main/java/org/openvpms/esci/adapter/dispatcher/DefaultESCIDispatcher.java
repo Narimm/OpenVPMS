@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.esci.adapter.dispatcher;
@@ -22,8 +22,7 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.esci.adapter.client.SupplierServiceLocator;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
@@ -54,11 +53,6 @@ public class DefaultESCIDispatcher implements ESCIDispatcher {
     private IArchetypeService service;
 
     /**
-     * The bean factory.
-     */
-    private IMObjectBeanFactory factory;
-
-    /**
      * The service locator.
      */
     private SupplierServiceLocator locator;
@@ -82,16 +76,6 @@ public class DefaultESCIDispatcher implements ESCIDispatcher {
     @Resource
     public void setArchetypeService(IArchetypeService service) {
         this.service = service;
-    }
-
-    /**
-     * Registers the bean factory.
-     *
-     * @param factory the bean factory
-     */
-    @Resource
-    public void setBeanFactory(IMObjectBeanFactory factory) {
-        this.factory = factory;
     }
 
     /**
@@ -238,7 +222,7 @@ public class DefaultESCIDispatcher implements ESCIDispatcher {
     private Inbox getInbox(Party supplier, EntityRelationship configuration, ErrorHandler handler) {
         Inbox result = null;
         if (configuration.getTarget() != null) {
-            IMObjectBean bean = factory.createBean(configuration);
+            IMObjectBean bean = service.getBean(configuration);
             String accountId = bean.getString("accountId");
             Party stockLocation = (Party) service.get(configuration.getTarget());
             if (stockLocation != null) {

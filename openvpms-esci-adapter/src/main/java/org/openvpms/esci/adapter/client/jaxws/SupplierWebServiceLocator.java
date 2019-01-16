@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.esci.adapter.client.jaxws;
@@ -21,10 +21,10 @@ import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.i18n.Message;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.esci.adapter.client.SupplierServiceLocator;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
@@ -72,9 +72,9 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator, Dispos
     private ServiceLocatorFactory locatorFactory;
 
     /**
-     * The bean factory
+     * The archetype service.
      */
-    private IMObjectBeanFactory factory;
+    private IArchetypeService service;
 
     /**
      * Supplier rules.
@@ -126,13 +126,13 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator, Dispos
     }
 
     /**
-     * Sets the bean factory.
+     * Sets the archetype service.
      *
-     * @param factory the bean factory
+     * @param service the archetype service
      */
     @Resource
-    public void setBeanFactory(IMObjectBeanFactory factory) {
-        this.factory = factory;
+    public void setArchetypeService(IArchetypeService service) {
+        this.service = service;
     }
 
     /**
@@ -234,7 +234,7 @@ public class SupplierWebServiceLocator implements SupplierServiceLocator, Dispos
                 throw new ESCIAdapterException(ESCIAdapterMessages.ESCINotConfigured(supplier, stockLocation));
             }
 
-            IMObjectBean bean = factory.createBean(config);
+            IMObjectBean bean = service.getBean(config);
             username = bean.getString("username");
             password = bean.getString("password");
 

@@ -1,17 +1,17 @@
 /*
- *  Version: 1.0
+ * Version: 1.0
  *
- *  The contents of this file are subject to the OpenVPMS License Version
- *  1.0 (the 'License'); you may not use this file except in compliance with
- *  the License. You may obtain a copy of the License at
- *  http://www.openvpms.org/license/
+ * The contents of this file are subject to the OpenVPMS License Version
+ * 1.0 (the 'License'); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.openvpms.org/license/
  *
- *  Software distributed under the License is distributed on an 'AS IS' basis,
- *  WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
- *  for the specific language governing rights and limitations under the
- *  License.
+ * Software distributed under the License is distributed on an 'AS IS' basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- *  Copyright 2010 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.dispatcher;
 
@@ -19,11 +19,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.workflow.MessageArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
 
 import javax.annotation.Resource;
 
@@ -36,9 +35,9 @@ import javax.annotation.Resource;
 public abstract class AbstractSystemMessageFactory {
 
     /**
-     * The bean factory.
+     * The archetype service.
      */
-    private IMObjectBeanFactory factory;
+    private IArchetypeService service;
 
     /**
      * The logger.
@@ -47,20 +46,20 @@ public abstract class AbstractSystemMessageFactory {
 
 
     /**
-     * Registers the bean factory.
+     * Registers the archetype service.
      *
-     * @param factory the bean factory
+     * @param service the archetype service
      */
     @Resource
-    public void setBeanFactory(IMObjectBeanFactory factory) {
-        this.factory = factory;
+    public void setArchetypeService(IArchetypeService service) {
+        this.service = service;
     }
 
     /**
      * Creates a system message linked to the supplied act and addressed to the act's author.
      * <p/>
-     * The act's author is determined using {@link #getAddressee}.
-     * If there is no author, no system message will be created.
+     * The act's author is determined using {@link #getAddressee}. If there is no author, no system message will be
+     * created.
      *
      * @param act     the act
      * @param subject the message subject
@@ -69,9 +68,9 @@ public abstract class AbstractSystemMessageFactory {
     protected void createMessage(Act act, String subject, String reason) {
         User user = getAddressee(act, reason);
         if (user != null) {
-            ActBean message = factory.createActBean(MessageArchetypes.SYSTEM);
-            message.addNodeRelationship("item", act);
-            message.addNodeParticipation("to", user);
+            IMObjectBean message = service.getBean(service.create(MessageArchetypes.SYSTEM));
+            message.addTarget("item", act);
+            message.setTarget("to", user);
             message.setValue("description", subject);
             message.setValue("reason", reason);
             message.save();
@@ -86,20 +85,20 @@ public abstract class AbstractSystemMessageFactory {
      *
      * @param act    the act
      * @param reason the reason, for logging purposes
-     * @return the author, or <tt>null</tt> if none is found
+     * @return the author, or {@code null} if none is found
      */
     protected User getAddressee(Act act, String reason) {
-        ActBean bean = factory.createActBean(act);
+        IMObjectBean bean = service.getBean(act);
         User result = null;
         if (bean.hasNode("author")) {
-            result = (User) bean.getNodeParticipant("author");
+            result = bean.getTarget("author", User.class);
         }
-        Party stockLocation = null;
+        Entity stockLocation = null;
         if (result == null && bean.hasNode("stockLocation")) {
-            stockLocation = (Party) bean.getNodeParticipant("stockLocation");
+            stockLocation = bean.getTarget("stockLocation", Entity.class);
             if (stockLocation != null) {
-                EntityBean locBean = factory.createEntityBean(stockLocation);
-                result = (User) locBean.getNodeTargetEntity("defaultAuthor");
+                IMObjectBean locBean = service.getBean(stockLocation);
+                result = (User) locBean.getTarget("defaultAuthor");
             }
         }
         if (result == null && log.isInfoEnabled()) {

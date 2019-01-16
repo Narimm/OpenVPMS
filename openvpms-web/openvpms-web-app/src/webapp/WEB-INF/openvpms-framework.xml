@@ -182,11 +182,6 @@
         <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
-    <bean id="imObjectBeanFactory"
-          class="org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory">
-        <constructor-arg index="0" ref="archetypeRuleService"/>
-    </bean>
-
     <bean id="archetypeServiceFunctions"
           class="org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions">
         <constructor-arg ref="archetypeRuleService"/>

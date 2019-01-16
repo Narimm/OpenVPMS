@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -65,7 +65,7 @@
     </bean>
 
     <bean id="supplierServiceLocator" class="org.openvpms.esci.adapter.client.jaxws.SupplierWebServiceLocator">
-        <property name="beanFactory" ref="imObjectBeanFactory"/>
+        <property name="archetypeService" ref="archetypeService"/>
         <property name="serviceLocatorFactory" ref="serviceLocatorFactory"/>
         <property name="supplierRules" ref="supplierRules"/>
     </bean>
@@ -73,11 +73,6 @@
     <!-- ================================================================== -->
     <!-- Business rules                                                     -->
     <!-- ================================================================== -->
-
-    <bean name="imObjectBeanFactory"
-          class="org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory">
-        <constructor-arg index="0" ref="archetypeService"/>
-    </bean>
 
     <bean id="currencies" class="org.openvpms.archetype.rules.math.Currencies">
         <constructor-arg ref="archetypeService"/>

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.dispatcher;
 
@@ -19,7 +19,6 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.workflow.SystemMessageReason;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.esci.FutureValue;
 import org.openvpms.esci.adapter.dispatcher.order.OrderResponseProcessor;
 import org.openvpms.esci.adapter.dispatcher.order.SystemMessageOrderResponseListener;
@@ -57,7 +56,7 @@ public class OrderResponseProcessorTestCase extends AbstractOrderResponseTest {
                 future.set(order);
             }
         };
-        listener.setBeanFactory(new IMObjectBeanFactory(getArchetypeService()));
+        listener.setArchetypeService(getArchetypeService());
 
         // set up the processor
         OrderResponseProcessor processor = createProcessor();

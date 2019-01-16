@@ -11,46 +11,27 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.map.order;
 
 import org.openvpms.archetype.rules.supplier.OrderStatus;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.component.i18n.Message;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
 import org.openvpms.esci.adapter.map.AbstractUBLMapper;
 import org.openvpms.esci.adapter.util.ESCIAdapterException;
 import org.openvpms.esci.ubl.order.OrderResponseSimpleType;
 
-import javax.annotation.Resource;
-
 
 /**
  * Maps UBL order responses to their corresponding orders.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @author Tim Anderson
  */
 public class OrderResponseMapperImpl extends AbstractUBLMapper implements OrderResponseMapper {
-
-    /**
-     * The bean factory.
-     */
-    private IMObjectBeanFactory factory;
-
-
-    /**
-     * Registers the bean factory.
-     *
-     * @param factory the bean factory
-     */
-    @Resource
-    public void setBeanFactory(IMObjectBeanFactory factory) {
-        this.factory = factory;
-    }
 
     /**
      * Maps an <tt>OrderResponseSimpleType</tt> to its corresponding order.
@@ -90,7 +71,7 @@ public class OrderResponseMapperImpl extends AbstractUBLMapper implements OrderR
                 message = ESCIAdapterMessages.orderRejectedNoReason();
             }
         }
-        ActBean bean = factory.createActBean(order);
+        IMObjectBean bean = getArchetypeService().getBean(order);
         bean.setValue("status", status);
         bean.setValue("supplierResponse", message.getMessage());
         return order;

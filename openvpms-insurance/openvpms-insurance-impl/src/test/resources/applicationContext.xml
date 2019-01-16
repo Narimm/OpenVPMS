@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -236,11 +236,6 @@
             <null/>
         </constructor-arg>
     </bean>
-
-    <bean id="imObjectBeanFactory" class="org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory">
-        <constructor-arg ref="archetypeService"/>
-    </bean>
-
 
     <!-- Document handlers -->
     <bean id="documentHandlers" class="org.openvpms.archetype.rules.doc.DocumentHandlers">

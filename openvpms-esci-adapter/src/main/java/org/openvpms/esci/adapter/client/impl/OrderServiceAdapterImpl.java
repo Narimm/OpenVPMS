@@ -11,15 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.client.impl;
 
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.esci.adapter.client.OrderServiceAdapter;
 import org.openvpms.esci.adapter.client.SupplierServiceLocator;
 import org.openvpms.esci.adapter.i18n.ESCIAdapterMessages;
@@ -36,8 +36,7 @@ import javax.annotation.Resource;
  * Implementation of {@link OrderServiceAdapter} that adapts <em>act.supplierOrder</em> and submits them to
  * the corresponding supplier's {@link OrderService}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class OrderServiceAdapterImpl implements OrderServiceAdapter {
 
@@ -52,13 +51,13 @@ public class OrderServiceAdapterImpl implements OrderServiceAdapter {
     private SupplierServiceLocator locator;
 
     /**
-     * The bean factory.
+     * The archetype service.
      */
-    private IMObjectBeanFactory factory;
+    private IArchetypeService service;
 
 
     /**
-     * Constructs an <tt>OrderWebServiceAdapter</tt>.
+     * Constructs an {@link OrderServiceAdapterImpl}.
      */
     public OrderServiceAdapterImpl() {
     }
@@ -84,13 +83,13 @@ public class OrderServiceAdapterImpl implements OrderServiceAdapter {
     }
 
     /**
-     * Sets the bean factory.
+     * Sets the archetype service.
      *
-     * @param factory the bean factory
+     * @param service the archetype service
      */
     @Resource
-    public void setFactory(IMObjectBeanFactory factory) {
-        this.factory = factory;
+    public void setService(IArchetypeService service) {
+        this.service = service;
     }
 
     /**
@@ -100,12 +99,12 @@ public class OrderServiceAdapterImpl implements OrderServiceAdapter {
      * @throws OpenVPMSException for any error
      */
     public void submitOrder(FinancialAct order) {
-        ActBean bean = factory.createActBean(order);
-        Party supplier = (Party) bean.getNodeParticipant("supplier");
+        IMObjectBean bean = service.getBean(order);
+        Party supplier = bean.getTarget("supplier", Party.class);
         if (supplier == null) {
             throw new IllegalStateException("Argument 'order' has no supplier participant");
         }
-        Party stockLocation = (Party) bean.getNodeParticipant("stockLocation");
+        Party stockLocation = bean.getTarget("stockLocation", Party.class);
         if (stockLocation == null) {
             throw new IllegalStateException("Argument 'order' has no stock location participant");
         }

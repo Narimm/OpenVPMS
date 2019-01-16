@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.esci.adapter.client;
 
@@ -20,7 +20,6 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBeanFactory;
 import org.openvpms.esci.FutureValue;
 import org.openvpms.esci.adapter.AbstractESCITest;
 import org.openvpms.esci.adapter.client.impl.OrderServiceAdapterImpl;
@@ -55,12 +54,6 @@ public class OrderServiceAdapterTestCase extends AbstractESCITest {
      */
     @Resource
     private OrderMapper mapper;
-
-    /**
-     * The bean factory.
-     */
-    @Resource
-    private IMObjectBeanFactory factory;
 
     /**
      * The delegating registry service.
@@ -114,7 +107,7 @@ public class OrderServiceAdapterTestCase extends AbstractESCITest {
     public void testOrderServiceAdapter() throws Exception {
         InVMSupplierServiceLocator vmLocator = createSupplierServiceLocator(0);
         OrderServiceAdapterImpl adapter = new OrderServiceAdapterImpl();
-        adapter.setFactory(factory);
+        adapter.setService(getArchetypeService());
         adapter.setOrderMapper(mapper);
         adapter.setSupplierServiceLocator(vmLocator);
 
@@ -139,7 +132,7 @@ public class OrderServiceAdapterTestCase extends AbstractESCITest {
     public void testConnectionTimeout() {
         InVMSupplierServiceLocator vmLocator = createSupplierServiceLocator(1);
         OrderServiceAdapterImpl adapter = new OrderServiceAdapterImpl();
-        adapter.setFactory(factory);
+        adapter.setService(getArchetypeService());
         adapter.setOrderMapper(mapper);
         adapter.setSupplierServiceLocator(vmLocator);
 
@@ -174,7 +167,7 @@ public class OrderServiceAdapterTestCase extends AbstractESCITest {
     private InVMSupplierServiceLocator createSupplierServiceLocator(int timeout) {
         InVMSupplierServiceLocator vmLocator = new InVMSupplierServiceLocator(timeout);
         vmLocator.setSupplierRules(new SupplierRules(getArchetypeService()));
-        vmLocator.setBeanFactory(factory);
+        vmLocator.setArchetypeService(getArchetypeService());
         vmLocator.setServiceLocatorFactory(serviceLocatorFactory);
         return vmLocator;
     }
