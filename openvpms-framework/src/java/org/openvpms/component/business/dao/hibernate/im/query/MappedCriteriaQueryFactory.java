@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.query;
@@ -777,6 +777,8 @@ public class MappedCriteriaQueryFactory {
                 } else {
                     result = builder.notEqual(lhsId, reference.getId());
                 }
+            } else if (comparison.getRHS() instanceof Long) {
+                result = builder.and(builder.equal(lhsId, comparison.getRHS()));
             } else {
                 throw new IllegalArgumentException("Cannot compare reference with " + comparison.getRHS());
             }

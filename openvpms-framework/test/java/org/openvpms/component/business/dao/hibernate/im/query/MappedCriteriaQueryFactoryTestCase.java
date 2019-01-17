@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.dao.hibernate.im.query;
@@ -749,7 +749,7 @@ public class MappedCriteriaQueryFactoryTestCase extends AbstractArchetypeService
     @Test
     public void testSelectReferenceInJoin() throws Exception {
         String expected = "select new " + IMObjectReference.class.getName()
-                          +"(patients.target.archetypeId, patients.target.id, patients.target.linkId) " +
+                          + "(patients.target.archetypeId, patients.target.id, patients.target.linkId) " +
                           "from PartyDOImpl as customer " +
                           "inner join customer.sourceEntityRelationships as patients " +
                           "with patients.archetypeId.shortName=:param0 " +
@@ -783,6 +783,49 @@ public class MappedCriteriaQueryFactoryTestCase extends AbstractArchetypeService
         query.orderBy(cb.asc(payments.get("startTime")), cb.asc(payments.get("id")));
         checkQuery(query, expected, "participation.customer", "party.customerperson", 1002L,
                    "act.customerAccountPayment");
+    }
+
+    /**
+     * Tests {@link Join#on(Expression)} method where the predicate is a reference.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testJoinOnReference() throws Exception {
+        String expected = "select payments from ActDOImpl as payments " +
+                          "inner join payments.participations as p " +
+                          "with ( p.archetypeId.shortName=:param0 ) " +
+                          "and ( ( p.entity.id=:param1 ) and ( p.entity.archetypeId.shortName=:param2 ) ) " +
+                          "where payments.archetypeId.shortName=:param3 " +
+                          "order by payments.activityStartTime asc, payments.id asc";
+        CriteriaQuery<Act> query = cb.createQuery(Act.class);
+        Root<Act> payments = query.from(Act.class, "act.customerAccountPayment").alias("payments");
+        Join<Act, IMObject> participants = payments.join("participants").alias("p");
+        participants.on(cb.equal(participants.get("entity"), new IMObjectReference("party.customerperson", 1002)));
+        query.orderBy(cb.asc(payments.get("startTime")), cb.asc(payments.get("id")));
+        checkQuery(query, expected, "participation.customer", 1002L, "party.customerperson",
+                   "act.customerAccountPayment");
+    }
+
+    /**
+     * Tests {@link Join#on(Expression)} method where the predicate is comparing a reference with an id.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testJoinOnReferenceWithId() throws Exception {
+        String expected = "select payments from ActDOImpl as payments " +
+                          "inner join payments.participations as p " +
+                          "with ( p.archetypeId.shortName=:param0 ) " +
+                          "and ( p.entity.id=:param1 ) " +
+                          "where payments.archetypeId.shortName=:param2 " +
+                          "order by payments.activityStartTime asc, payments.id asc";
+        CriteriaQuery<Act> query = cb.createQuery(Act.class);
+        Root<Act> payments = query.from(Act.class, "act.customerAccountPayment").alias("payments");
+        Join<Act, IMObject> participants = payments.join("participants").alias("p");
+        participants.on(cb.equal(participants.get("entity"), 1002L));
+        query.orderBy(cb.asc(payments.get("startTime")), cb.asc(payments.get("id")));
+        checkQuery(query, expected, "participation.customer", 1002L, "act.customerAccountPayment");
     }
 
     /**

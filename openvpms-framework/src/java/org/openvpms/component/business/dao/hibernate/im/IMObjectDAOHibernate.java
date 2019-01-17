@@ -290,6 +290,7 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
             Y target = adapt(source, type, criteriaQuery, context);
             result.add(target);
         }
+        context.resolveDeferredReferences();
         return result;
     }
 
@@ -307,7 +308,9 @@ public class IMObjectDAOHibernate implements IMObjectDAO, ContextHandler {
         javax.persistence.TypedQuery<X> typedQuery = session.createQuery(criteriaQuery.getQuery());
         Context context = Context.getContext(session, assembler);
         X source = typedQuery.getSingleResult();
-        return adapt(source, type, criteriaQuery, context);
+        Y result = adapt(source, type, criteriaQuery, context);
+        context.resolveDeferredReferences();
+        return result;
     }
 
     /**
