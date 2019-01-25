@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -22,7 +22,8 @@
               derivedValue="'Patient SMS Reminder'"/>
         <node name="description" type="java.lang.String" path="/description" hidden="true" minCardinality="0"/>
         <node name="startTime" displayName="Send" path="/activityStartTime" type="java.util.Date" minCardinality="1"/>
-        <node name="endTime" displayName="Due" path="/activityEndTime" type="java.util.Date" minCardinality="1"
+        <node name="endTime" displayName="Next Reminder" path="/activityEndTime" type="java.util.Date"
+              minCardinality="1"
               readOnly="true"/>
         <node name="count" path="/details/count" type="java.lang.Integer" minCardinality="1" defaultValue="0"
               readOnly="true"/>
