@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -414,7 +414,7 @@
         <constructor-arg value="org.openvpms.hl7.io.MessageDispatcher"/>
     </bean>
 
-    <bean class="org.openvpms.hl7.patient.PatientContextFactory">
+    <bean id="hl7PatientContextFactory" class="org.openvpms.hl7.patient.PatientContextFactory">
         <constructor-arg ref="patientRules"/>
         <constructor-arg ref="customerRules"/>
         <constructor-arg ref="medicalRecordRules"/>
@@ -436,6 +436,18 @@
 
     <bean id="hl7LaboratoryOrderService" class="org.mockito.Mockito" factory-method="mock">
         <constructor-arg value="org.openvpms.hl7.laboratory.LaboratoryOrderService"/>
+    </bean>
+
+
+    <bean class="org.openvpms.web.workspace.customer.charge.OrderServices">
+        <constructor-arg ref="hl7PharmacyOrderService"/>
+        <constructor-arg ref="hl7Parmacies"/>
+        <constructor-arg ref="hl7LaboratoryOrderService"/>
+        <constructor-arg ref="hl7Laboratories"/>
+        <constructor-arg ref="hl7PatientContextFactory"/>
+        <constructor-arg ref="hl7PatientInformationService"/>
+        <constructor-arg ref="medicalRecordRules"/>
+        <constructor-arg ref="practiceRules"/>
     </bean>
 
     <bean id="scheduleColours" class="org.mockito.Mockito" factory-method="mock">

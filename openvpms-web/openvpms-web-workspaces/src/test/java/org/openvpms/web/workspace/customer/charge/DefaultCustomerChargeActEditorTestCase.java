@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.finance.discount.DiscountRules;
 import org.openvpms.archetype.rules.finance.discount.DiscountTestHelper;
+import org.openvpms.archetype.rules.finance.invoice.InvoiceItemStatus;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
@@ -183,7 +184,15 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
      */
     @Test
     public void testInvoice() {
-        checkEditCharge((FinancialAct) create(CustomerAccountArchetypes.INVOICE));
+        checkEditCharge((FinancialAct) create(CustomerAccountArchetypes.INVOICE), true);
+    }
+
+    /**
+     * Tests invoicing.
+     */
+    @Test
+    public void testInvoiceWithDelayedOrderDiscontinuation() {
+        checkEditCharge((FinancialAct) create(CustomerAccountArchetypes.INVOICE), false);
     }
 
     /**
@@ -191,7 +200,7 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
      */
     @Test
     public void testCounterSale() {
-        checkEditCharge((FinancialAct) create(CustomerAccountArchetypes.COUNTER));
+        checkEditCharge((FinancialAct) create(CustomerAccountArchetypes.COUNTER), true);
     }
 
     /**
@@ -199,7 +208,7 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
      */
     @Test
     public void testCredit() {
-        checkEditCharge((FinancialAct) create(CustomerAccountArchetypes.CREDIT));
+        checkEditCharge((FinancialAct) create(CustomerAccountArchetypes.CREDIT), true);
     }
 
     /**
@@ -874,6 +883,7 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         CustomerChargeActItemEditor itemEditor = addItem(editor, patient, product, TEN, queue);
         Act item = itemEditor.getObject();
         assertTrue(SaveHelper.save(editor));
+        assertEquals(InvoiceItemStatus.ORDERED, item.getStatus());
 
         List<Order> orders = editor.getPharmacyOrderService().getOrders(true);
         assertEquals(1, orders.size());
@@ -888,6 +898,7 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         assertEquals(1, orders.size());
         checkOrder(orders.get(0), Order.Type.UPDATE, patient, product, ONE, item.getId(),
                    item.getActivityStartTime(), clinician, pharmacy);
+        assertEquals(InvoiceItemStatus.ORDERED, item.getStatus());
     }
 
     /**
@@ -1482,9 +1493,16 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
     /**
      * Tests editing of a charge.
      *
-     * @param charge the charge
+     * @param charge                          the charge
+     * @param discontinueOrdersOnFinalisation if {@code true}, discontinue orders on finalisation
      */
-    private void checkEditCharge(FinancialAct charge) {
+    private void checkEditCharge(FinancialAct charge, boolean discontinueOrdersOnFinalisation) {
+        if (discontinueOrdersOnFinalisation) {
+            setPharmacyOrderDiscontinuePeriod(0);
+        } else {
+            setPharmacyOrderDiscontinuePeriod(60);
+        }
+
         Party location = TestHelper.createLocation(true);   // enable stock control
         Party stockLocation = ProductTestHelper.createStockLocation(location);
         layoutContext.getContext().setLocation(location);
@@ -1539,6 +1557,17 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
 
         assertTrue(editor.isValid());
         assertTrue(SaveHelper.save(editor));
+
+        if (invoice) {
+            assertEquals(InvoiceItemStatus.ORDERED, item1.getStatus());
+            assertEquals(InvoiceItemStatus.ORDERED, item2.getStatus());
+            assertEquals(InvoiceItemStatus.ORDERED, item3.getStatus());
+        } else {
+            assertNull(item1.getStatus());
+            assertNull(item2.getStatus());
+            assertNull(item3.getStatus());
+        }
+
         BigDecimal balance = (charge.isCredit()) ? total.negate() : total;
         checkBalance(customer, balance, ZERO);
         editor.setStatus(ActStatus.POSTED);
@@ -1547,16 +1576,30 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
 
         if (invoice) {
             List<Order> orders = editor.getPharmacyOrderService().getOrders(true);
-            assertEquals(4, orders.size());
-            checkOrder(orders.get(0), Order.Type.CREATE, patient, product1, quantity, item1.getId(),
+            if (discontinueOrdersOnFinalisation) {
+                assertEquals(4, orders.size());
+            } else {
+                assertEquals(2, orders.size());
+            }
+            int index = 0;
+            checkOrder(orders.get(index++), Order.Type.CREATE, patient, product1, quantity, item1.getId(),
                        item1.getActivityStartTime(), clinician, pharmacy);
-            checkOrder(orders.get(1), Order.Type.DISCONTINUE, patient, product1, quantity, item1.getId(),
-                       item1.getActivityStartTime(), clinician, pharmacy);
-            checkOrder(orders.get(2), Order.Type.CREATE, patient, product2, quantity, item2.getId(),
+            if (discontinueOrdersOnFinalisation) {
+                checkOrder(orders.get(index++), Order.Type.DISCONTINUE, patient, product1, quantity, item1.getId(),
+                           item1.getActivityStartTime(), clinician, pharmacy);
+            }
+            checkOrder(orders.get(index++), Order.Type.CREATE, patient, product2, quantity, item2.getId(),
                        item2.getActivityStartTime(), clinician, pharmacy);
-            checkOrder(orders.get(3), Order.Type.DISCONTINUE, patient, product2, quantity, item2.getId(),
-                       item2.getActivityStartTime(), clinician, pharmacy);
+            if (discontinueOrdersOnFinalisation) {
+                checkOrder(orders.get(index), Order.Type.DISCONTINUE, patient, product2, quantity, item2.getId(),
+                           item2.getActivityStartTime(), clinician, pharmacy);
+            }
             editor.getPharmacyOrderService().clear();
+            String status = (discontinueOrdersOnFinalisation) ? InvoiceItemStatus.DISCONTINUED
+                                                              : InvoiceItemStatus.ORDERED;
+            assertEquals(status, item1.getStatus());
+            assertEquals(status, item2.getStatus());
+            assertEquals(status, item3.getStatus());
 
             List<LabOrder> labOrders = editor.getLaboratoryOrderService().getOrders();
             assertEquals(1, labOrders.size());
@@ -1568,6 +1611,9 @@ public class DefaultCustomerChargeActEditorTestCase extends AbstractCustomerChar
         } else {
             assertNull(editor.getPharmacyOrderService());
             assertNull(editor.getLaboratoryOrderService());
+            assertNull(item1.getStatus());
+            assertNull(item2.getStatus());
+            assertNull(item3.getStatus());
         }
 
         charge = get(charge);

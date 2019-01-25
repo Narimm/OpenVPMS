@@ -11,16 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
+import org.openvpms.component.model.object.IMObject;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.springframework.beans.factory.DisposableBean;
@@ -60,7 +60,7 @@ public abstract class AbstractMonitoringIMObjectCache<T extends IMObject> implem
      * @param shortName the short name to cache
      * @param type      the object types
      */
-    public AbstractMonitoringIMObjectCache(IArchetypeService service, String shortName, final Class<T> type) {
+    public AbstractMonitoringIMObjectCache(IArchetypeService service, String shortName, Class<T> type) {
         this(service, new String[]{shortName}, type);
     }
 
@@ -71,19 +71,19 @@ public abstract class AbstractMonitoringIMObjectCache<T extends IMObject> implem
      * @param shortNames the short name to cache
      * @param type       the object types
      */
-    public AbstractMonitoringIMObjectCache(IArchetypeService service, String[] shortNames, final Class<T> type) {
+    public AbstractMonitoringIMObjectCache(IArchetypeService service, String[] shortNames, Class<T> type) {
         this.service = service;
         this.shortNames = shortNames;
         this.type = type;
 
         listener = new AbstractArchetypeServiceListener() {
             @Override
-            public void saved(IMObject object) {
+            public void saved(org.openvpms.component.business.domain.im.common.IMObject object) {
                 AbstractMonitoringIMObjectCache.this.addObject(type.cast(object));
             }
 
             @Override
-            public void removed(IMObject object) {
+            public void removed(org.openvpms.component.business.domain.im.common.IMObject object) {
                 AbstractMonitoringIMObjectCache.this.removeObject(type.cast(object));
             }
         };
@@ -153,7 +153,7 @@ public abstract class AbstractMonitoringIMObjectCache<T extends IMObject> implem
      * @param reference the reference
      * @return the corresponding object or {@code null} if none is found
      */
-    protected T get(IMObjectReference reference) {
+    protected T get(Reference reference) {
         return type.cast(service.get(reference));
     }
 }

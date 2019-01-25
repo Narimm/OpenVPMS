@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -21,9 +21,9 @@ import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.v25.message.RDS_O13;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.user.UserRules;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.io.MessageDispatcher;
 import org.openvpms.hl7.pharmacy.Pharmacies;
@@ -80,7 +80,7 @@ public class PharmacyDispenseServiceImpl extends ServicesMessageReceiver {
      * @throws HL7Exception for any HL7 error
      */
     @Override
-    public void process(Message message, IMObjectReference location) throws HL7Exception {
+    public void process(Message message, Reference location) throws HL7Exception {
         process((RDS_O13) message, location);
     }
 
@@ -93,7 +93,7 @@ public class PharmacyDispenseServiceImpl extends ServicesMessageReceiver {
      * @return the pharmacy order acts
      * @throws HL7Exception any HL7 error
      */
-    protected List<Act> process(RDS_O13 message, IMObjectReference location) throws HL7Exception {
+    protected List<Act> process(RDS_O13 message, Reference location) throws HL7Exception {
         List<Act> order = processor.process(message, location);
         getService().save(order);
         return order;

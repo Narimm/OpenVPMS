@@ -11,22 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.party.Party;
+import org.openvpms.component.model.product.Product;
+import org.openvpms.component.model.user.User;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.pharmacy.PharmacyOrderService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -38,13 +36,6 @@ import java.util.List;
 public class TestPharmacyOrderService implements PharmacyOrderService {
 
     public static class Order {
-
-        enum Type {
-            CREATE,
-            UPDATE,
-            CANCEL,
-            DISCONTINUE
-        }
 
         private final Type type;
 
@@ -73,7 +64,6 @@ public class TestPharmacyOrderService implements PharmacyOrderService {
             this.clinician = clinician;
             this.pharmacy = pharmacy;
         }
-
 
         public Type getType() {
             return type;
@@ -106,9 +96,16 @@ public class TestPharmacyOrderService implements PharmacyOrderService {
         public Entity getPharmacy() {
             return pharmacy;
         }
+
+        enum Type {
+            CREATE,
+            UPDATE,
+            CANCEL,
+            DISCONTINUE
+        }
     }
 
-    private List<Order> orders = new ArrayList<Order>();
+    private List<Order> orders = new ArrayList<>();
 
     /**
      * Creates an order, placing it with the specified pharmacy.
@@ -199,15 +196,12 @@ public class TestPharmacyOrderService implements PharmacyOrderService {
      * @return the orders
      */
     public List<Order> getOrders(boolean sort) {
-        List<Order> result = new ArrayList<Order>(orders);
+        List<Order> result = new ArrayList<>(orders);
         if (sort) {
-            Collections.sort(result, new Comparator<Order>() {
-                @Override
-                public int compare(Order o1, Order o2) {
-                    long id1 = o1.getProduct().getId();
-                    long id2 = o2.getProduct().getId();
-                    return id1 < id2 ? -1 : (id1 == id2) ? o1.getType().compareTo(o2.getType()) : 1;
-                }
+            result.sort((o1, o2) -> {
+                long id1 = o1.getProduct().getId();
+                long id2 = o2.getProduct().getId();
+                return id1 < id2 ? -1 : (id1 == id2) ? o1.getType().compareTo(o2.getType()) : 1;
             });
         }
         return result;

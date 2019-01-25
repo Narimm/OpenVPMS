@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -24,9 +24,9 @@ import ca.uhn.hl7v2.model.Message;
 import org.mockito.Mockito;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.model.party.Party;
 import org.openvpms.hl7.io.MessageDispatcher;
 import org.openvpms.hl7.io.MessageService;
 
@@ -110,17 +110,6 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
     }
 
     /**
-     * Determines if message sends are simulated or not.
-     * <p/>
-     * Defaults to {@code true}
-     *
-     * @param simulate if {@code true} simulate sends, otherwise send them via TCP/IP
-     */
-    public void setSimulateSend(boolean simulate) {
-        simulateSend = simulate;
-    }
-
-    /**
      * Constructs a {@link TestMessageDispatcher}.
      *
      * @param service    the message service
@@ -142,6 +131,17 @@ public class TestMessageDispatcher extends MessageDispatcherImpl {
     public TestMessageDispatcher(MessageService service, ConnectorsImpl connectors, PracticeRules rules,
                                  HapiContext context) {
         super(service, connectors, rules, context);
+    }
+
+    /**
+     * Determines if message sends are simulated or not.
+     * <p/>
+     * Defaults to {@code true}
+     *
+     * @param simulate if {@code true} simulate sends, otherwise send them via TCP/IP
+     */
+    public void setSimulateSend(boolean simulate) {
+        simulateSend = simulate;
     }
 
     /**

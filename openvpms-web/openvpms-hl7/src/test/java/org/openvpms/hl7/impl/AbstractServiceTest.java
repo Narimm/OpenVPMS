@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -22,7 +22,8 @@ import org.junit.After;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.io.MessageService;
@@ -72,9 +73,9 @@ public abstract class AbstractServiceTest extends AbstractMessageTest {
         IMObjectReference senderRef = new IMObjectReference(HL7Archetypes.MLLP_SENDER, -1);
         sender = createSender();    // use an invalid port
         Entity service = (Entity) create(HL7Archetypes.PATIENT_EVENT_SERVICE);
-        EntityBean bean = new EntityBean(service);
-        bean.addNodeTarget("sender", senderRef);
-        bean.addNodeTarget("location", getContext().getLocation());
+        IMObjectBean bean = getBean(service);
+        bean.setTarget("sender", senderRef);
+        bean.setTarget("location", getContext().getLocation());
 
         connectors = new Connectors() {
 
@@ -84,7 +85,7 @@ public abstract class AbstractServiceTest extends AbstractMessageTest {
             }
 
             @Override
-            public Connector getConnector(IMObjectReference reference) {
+            public Connector getConnector(Reference reference) {
                 return sender;
             }
         };

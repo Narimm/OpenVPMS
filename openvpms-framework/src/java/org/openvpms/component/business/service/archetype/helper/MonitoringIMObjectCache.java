@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
 
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.model.object.IMObject;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,7 +35,7 @@ public class MonitoringIMObjectCache<T extends IMObject> extends AbstractMonitor
     /**
      * The cached objects, keyed on reference.
      */
-    private final Map<IMObjectReference, T> objects;
+    private final Map<Reference, T> objects;
 
     /**
      * Constructs a {@link MonitoringIMObjectCache}.
@@ -46,9 +46,8 @@ public class MonitoringIMObjectCache<T extends IMObject> extends AbstractMonitor
      * @param prefetch  if {@code true}, pre-load objects from the archetype service
      */
     public MonitoringIMObjectCache(IArchetypeService service, String shortName, Class<T> type, boolean prefetch) {
-        this(service, shortName, type, new HashMap<IMObjectReference, T>(), prefetch);
+        this(service, shortName, type, new HashMap<>(), prefetch);
     }
-
 
     /**
      * Constructs a {@link MonitoringIMObjectCache}.
@@ -59,8 +58,8 @@ public class MonitoringIMObjectCache<T extends IMObject> extends AbstractMonitor
      * @param cache     the cache to use
      * @param prefetch  if {@code true}, pre-load objects from the archetype service
      */
-    public MonitoringIMObjectCache(IArchetypeService service, String shortName, Class<T> type,
-                                   Map<IMObjectReference, T> cache, boolean prefetch) {
+    public MonitoringIMObjectCache(IArchetypeService service, String shortName, Class<T> type, Map<Reference, T> cache,
+                                   boolean prefetch) {
         super(service, shortName, type);
         this.objects = cache;
         if (prefetch) {
@@ -85,7 +84,7 @@ public class MonitoringIMObjectCache<T extends IMObject> extends AbstractMonitor
      * @param reference the object reference
      * @return the corresponding object, or {@code null} if none is found
      */
-    public T getObject(IMObjectReference reference) {
+    public T getObject(Reference reference) {
         return get(reference);
     }
 
@@ -144,7 +143,7 @@ public class MonitoringIMObjectCache<T extends IMObject> extends AbstractMonitor
      * @return the corresponding object or {@code null} if none is found or the object is inactive
      */
     @Override
-    protected T get(IMObjectReference reference) {
+    protected T get(Reference reference) {
         T result;
         synchronized (objects) {
             result = objects.get(reference);
@@ -173,7 +172,7 @@ public class MonitoringIMObjectCache<T extends IMObject> extends AbstractMonitor
         } else {
             T added = null;
             synchronized (objects) {
-                IMObjectReference ref = object.getObjectReference();
+                Reference ref = object.getObjectReference();
                 T current = objects.get(ref);
                 if (current == null || current.getVersion() < object.getVersion()) {
                     objects.put(ref, object);

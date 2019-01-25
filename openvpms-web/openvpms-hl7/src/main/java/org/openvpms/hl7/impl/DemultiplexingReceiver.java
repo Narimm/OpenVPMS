@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -29,7 +29,7 @@ import ca.uhn.hl7v2.protocol.Transportable;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.model.user.User;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.MessageService;
 
@@ -64,14 +64,14 @@ class DemultiplexingReceiver implements ReceivingApplication, ReceivingApplicati
     private Map<Connector, MessageReceiver> receivers = new HashMap<>();
 
     /**
-     * The logger.
-     */
-    private static final Log log = LogFactory.getLog(DemultiplexingReceiver.class);
-
-    /**
      * Key used to store the receiver in the meta-data, to be used by {@link #processException}
      */
     private static String META_DATA_KEY = DemultiplexingReceiver.class.getName();
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(DemultiplexingReceiver.class);
 
     /**
      * Constructs a {@link DemultiplexingReceiver}.

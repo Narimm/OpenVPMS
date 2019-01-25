@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -19,11 +19,11 @@ package org.openvpms.hl7.impl;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.MonitoringIMObjectCache;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.service.Services;
@@ -44,9 +44,9 @@ public abstract class ServicesImpl extends MonitoringIMObjectCache<Entity> imple
     private final Connectors connectors;
 
     /**
-     * Listeners to notify when a pharmacy changes.
+     * Listeners to notify when a service changes.
      */
-    private final List<Services.Listener> listeners = new ArrayList<Services.Listener>();
+    private final List<Services.Listener> listeners = new ArrayList<>();
 
     /**
      * The logger.
@@ -85,7 +85,7 @@ public abstract class ServicesImpl extends MonitoringIMObjectCache<Entity> imple
      * @return the service configuration, or {@code null} if none is found
      */
     @Override
-    public Entity getService(IMObjectReference reference) {
+    public Entity getService(Reference reference) {
         return getObject(reference);
     }
 
@@ -97,9 +97,9 @@ public abstract class ServicesImpl extends MonitoringIMObjectCache<Entity> imple
      * @return the service configuration, or {@code null} if none is found
      */
     @Override
-    public Entity getService(Entity group, IMObjectReference location) {
-        EntityBean bean = new EntityBean(group, getService());
-        for (IMObjectReference ref : bean.getNodeTargetEntityRefs("services")) {
+    public Entity getService(Entity group, Reference location) {
+        IMObjectBean bean = getService().getBean(group);
+        for (Reference ref : bean.getTargetRefs("services")) {
             Entity service = getService(ref);
             if (service != null && hasLocation(service, location)) {
                 return service;
@@ -116,8 +116,8 @@ public abstract class ServicesImpl extends MonitoringIMObjectCache<Entity> imple
      */
     @Override
     public Connector getSender(Entity service) {
-        EntityBean bean = new EntityBean(service, getService());
-        IMObjectReference ref = bean.getNodeTargetObjectRef("sender");
+        IMObjectBean bean = getService().getBean(service);
+        Reference ref = bean.getTargetRef("sender");
         return (ref != null) ? connectors.getConnector(ref) : null;
     }
 
@@ -183,7 +183,7 @@ public abstract class ServicesImpl extends MonitoringIMObjectCache<Entity> imple
     protected Services.Listener[] getListeners() {
         Services.Listener[] result;
         synchronized (listeners) {
-            result = listeners.toArray(new Services.Listener[listeners.size()]);
+            result = listeners.toArray(new Listener[0]);
         }
         return result;
     }
@@ -195,8 +195,8 @@ public abstract class ServicesImpl extends MonitoringIMObjectCache<Entity> imple
      * @param location the location
      * @return {@code true} if the service is used to for the location
      */
-    private boolean hasLocation(Entity service, IMObjectReference location) {
-        EntityBean bean = new EntityBean(service, getService());
-        return ObjectUtils.equals(location, bean.getNodeTargetObjectRef("location"));
+    private boolean hasLocation(Entity service, Reference location) {
+        IMObjectBean bean = getService().getBean(service);
+        return ObjectUtils.equals(location, bean.getTargetRef("location"));
     }
 }

@@ -11,29 +11,31 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.joda.time.Duration;
+import org.joda.time.Period;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.finance.invoice.InvoiceItemStatus;
 import org.openvpms.archetype.rules.patient.InvestigationActStatus;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.party.Party;
+import org.openvpms.component.model.user.User;
 import org.openvpms.component.system.common.cache.IMObjectCache;
 import org.openvpms.hl7.laboratory.LaboratoryOrderService;
 import org.openvpms.hl7.patient.PatientContext;
@@ -44,7 +46,6 @@ import org.openvpms.hl7.util.HL7Archetypes;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -81,11 +82,6 @@ public class OrderPlacer {
     private final IMObjectCache cache;
 
     /**
-     * The orders, keyed on act reference.
-     */
-    private Map<IMObjectReference, Order> orders = new HashMap<>();
-
-    /**
      * The order services.
      */
     private final OrderServices services;
@@ -95,6 +91,13 @@ public class OrderPlacer {
      */
     private final PharmacyProducts pharmacies;
 
+    private final boolean discontinueOnFinalisation;
+
+    /**
+     * The orders, keyed on act reference.
+     */
+    private Map<Reference, Order> orders = new HashMap<>();
+
 
     /**
      * Constructs an {@link OrderPlacer}.
@@ -102,15 +105,20 @@ public class OrderPlacer {
      * @param customer the customer
      * @param location the location
      * @param user     the user responsible for the orders
+     * @param practice the practice
      * @param cache    the object cache
      * @param services the order services
      */
-    public OrderPlacer(Party customer, Party location, User user, IMObjectCache cache, OrderServices services) {
+    public OrderPlacer(Party customer, Party location, User user, Party practice, IMObjectCache cache,
+                       OrderServices services) {
         this.customer = customer;
         this.location = location;
         this.user = user;
         this.cache = cache;
         this.services = services;
+        PracticeRules rules = services.getPracticeRules();
+        Period period = rules.getPharmacyOrderDiscontinuePeriod(practice);
+        discontinueOnFinalisation = period == null || period.toStandardDuration().compareTo(Duration.ZERO) < 0;
         this.pharmacies = new PharmacyProducts(services.getPharmacies(), location, cache);
     }
 
@@ -138,50 +146,36 @@ public class OrderPlacer {
     }
 
     /**
-     * Places any orders required by charge items.
+     * Places any orders required by invoice items and investigations.
      * <p/>
      * If items have been removed since initialisation, those items will be cancelled.
      *
-     * @param items   the charge and investigation items
+     * @param items   the invoice items and investigations
      * @param changes patient history changes, used to obtain patient events
      * @return the set of updated charge and investigation items
      */
     public Set<Act> order(List<Act> items, PatientHistoryChanges changes) {
-        Map<IMObjectReference, Act> charges = new HashMap<>();
-        for (Act item : items) {
-            if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
-                charges.put(item.getObjectReference(), item);
-            }
-        }
-        List<IMObjectReference> ids = new ArrayList<>(orders.keySet());
+        Map<Reference, Act> invoiceItems = getInvoiceItems(items);
+        List<Reference> ids = new ArrayList<>(orders.keySet());
         Set<Act> updated = new HashSet<>();
         Set<Party> patients = new HashSet<>();
-        for (Act act : items) {
-            Act charge;
-            if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
-                charge = act;
-            } else {
-                ActBean bean = new ActBean(act);
-                charge = charges.get(bean.getNodeSourceObjectRef("invoiceItem"));
-                if (charge == null) {
-                    throw new IllegalStateException("No invoice item found for " + act);
-                }
-            }
-            IMObjectReference id = act.getObjectReference();
+        for (Act item : items) {
+            Act invoiceItem = getInvoiceItem(item, invoiceItems);
+            Reference id = item.getObjectReference();
             ids.remove(id);
-            Order order = getOrder(act);
+            Order order = getOrder(item);
             Order existing = orders.get(id);
             if (order != null) {
                 if (existing != null) {
                     if (existing.needsCancel(order)) {
                         // TODO - need to prevent this, as PlacerOrderNumbers should not be reused.
                         cancelOrder(existing, changes, patients, updated);
-                        createOrder(charge, order, changes, patients, updated);
+                        createOrder(invoiceItem, order, changes, patients, updated);
                     } else if (existing.needsUpdate(order)) {
                         updateOrder(changes, order, patients);
                     }
                 } else {
-                    createOrder(charge, order, changes, patients, updated);
+                    createOrder(invoiceItem, order, changes, patients, updated);
                 }
                 orders.put(id, order);
             } else if (existing != null) {
@@ -189,7 +183,7 @@ public class OrderPlacer {
                 cancelOrder(existing, changes, patients, updated);
             }
         }
-        for (IMObjectReference id : ids) {
+        for (Reference id : ids) {
             Order existing = orders.remove(id);
             cancelOrder(existing, changes, patients, updated);
         }
@@ -200,31 +194,31 @@ public class OrderPlacer {
      * Cancel orders.
      */
     public void cancel() {
-        Map<IMObjectReference, Act> events = new HashMap<>();
+        Map<Reference, Act> events = new HashMap<>();
         for (Order order : orders.values()) {
             PatientContext context = getPatientContext(order, events);
             if (context != null) {
-                order.cancel(context, services, user, new HashSet<Act>());
+                order.cancel(context, services, user, new HashSet<>());
             }
         }
     }
 
     /**
-     * Cancels any orders where the associated charge has been deleted.
+     * Cancels any orders where the associated invoice item has been deleted.
      *
-     * @param current the set of current charges and investigations
+     * @param current the set of current invoice items and investigations
      * @param changes patient history changes, used to obtain patient events
      * @return the set of updated charge and investigation items
      */
     public Set<Act> cancelDeleted(List<Act> current, PatientHistoryChanges changes) {
         Set<Act> updated = new HashSet<>();
-        Map<IMObjectReference, Order> copy = new HashMap<>(orders);
+        Map<Reference, Order> copy = new HashMap<>(orders);
         for (Act act : current) {
             copy.remove(act.getObjectReference());
         }
         if (!copy.isEmpty()) {
             Set<Party> patients = new HashSet<>();
-            for (Map.Entry<IMObjectReference, Order> removed : copy.entrySet()) {
+            for (Map.Entry<Reference, Order> removed : copy.entrySet()) {
                 cancelOrder(removed.getValue(), changes, patients, updated);
                 orders.remove(removed.getKey());
             }
@@ -234,15 +228,40 @@ public class OrderPlacer {
 
     /**
      * Discontinue orders.
+     * <p/>
+     * For pharmacy orders, this sends an HL7 message indicating that dispensing should no longer occur.<br/>
+     * For laboratory orders, it is a no-op.<br/>
+     * In both cases, the associated invoice items will have their statuses updated to
+     * {@link InvoiceItemStatus#DISCONTINUED}, despite the fact that investigations will continue to be processed.
+     * <p/>
+     * This change in status for invoice items associated with investigations is required to ensure that the
+     * {@code PharmacyOrderDiscontinuationJob} doesn't continually process the same POSTED invoices.
+     *
+     * @param items the invoice items and investigations. These will have their status updated if it was previously
+     *              {@link InvoiceItemStatus#ORDERED}
+     * @return the updated items
      */
-    public void discontinue() {
-        Map<IMObjectReference, Act> events = new HashMap<>();
-        for (Order order : orders.values()) {
-            PatientContext context = getPatientContext(order, events);
-            if (context != null) {
-                order.discontinue(context, services, user);
+    public Set<Act> discontinue(List<Act> items) {
+        Set<Act> updated = new HashSet<>();
+        Map<Reference, Act> invoiceItems = getInvoiceItems(items);
+        Map<Reference, Act> ordersToInvoiceItems = getOrdersToInvoices(items, invoiceItems);
+        Map<Reference, Act> events = new HashMap<>();
+        for (Map.Entry<Reference, Order> entry : orders.entrySet()) {
+            Order order = entry.getValue();
+            if (order instanceof PharmacyOrder) {
+                PatientContext context = getPatientContext(order, events);
+                if (context != null) {
+                    order.discontinue(context, services, user);
+                }
+            }
+            Reference id = entry.getKey();
+            Act invoiceItem = ordersToInvoiceItems.get(id);
+            if (invoiceItem != null && InvoiceItemStatus.ORDERED.equals(invoiceItem.getStatus())) {
+                invoiceItem.setStatus(InvoiceItemStatus.DISCONTINUED);
+                updated.add(invoiceItem);
             }
         }
+        return updated;
     }
 
     /**
@@ -256,34 +275,107 @@ public class OrderPlacer {
     }
 
     /**
-     * Returns the order associated with a charge.
+     * Determines if pharmacy orders should be discontinued on finalisation of the invoice.
      *
-     * @param act the charge
-     * @return the order. May be {@code null}
+     * @return {@code true} if pharmacy orders should be discontinued on finalisation of the invoice, or {@code false}
+     * if they should be discontinued after a delay
      */
-    private Order getOrder(Act act) {
-        Order result = null;
-        if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
-            result = getPharmacyOrder(act);
-        } else if (TypeHelper.isA(act, InvestigationArchetypes.PATIENT_INVESTIGATION)) {
-            result = getInvestigationOrder(act);
+    public boolean discontinueOnFinalisation() {
+        return discontinueOnFinalisation;
+    }
+
+    /**
+     * Returns the references to the ordered acts with their corresponding invoice items.
+     *
+     * @param items        the invoice items and investigations
+     * @param invoiceItems the invoice items, keyed on reference
+     * @return references to the ordered acts with their corresponding invoice items
+     */
+    private Map<Reference, Act> getOrdersToInvoices(List<Act> items, Map<Reference, Act> invoiceItems) {
+        Map<Reference, Act> result = new HashMap<>();
+        for (Act item : items) {
+            if (item.isA(CustomerAccountArchetypes.INVOICE_ITEM)) {
+                result.put(item.getObjectReference(), item);
+            } else {
+                result.put(item.getObjectReference(), getInvoiceItem(item, invoiceItems));
+            }
         }
         return result;
     }
 
+    /**
+     * Returns the invoice item associated with an act.
+     *
+     * @param act          the act. If it is an invoice item, it will be returned
+     * @param invoiceItems invoice items, keyed on reference
+     * @return the invoice item
+     * @throws IllegalStateException if the invoice item is not found
+     */
+    private Act getInvoiceItem(Act act, Map<Reference, Act> invoiceItems) {
+        Act result;
+        if (act.isA(CustomerAccountArchetypes.INVOICE_ITEM)) {
+            result = act;
+        } else {
+            IMObjectBean bean = new IMObjectBean(act);
+            Reference reference = bean.getSourceRef("invoiceItem");
+            result = (reference != null) ? invoiceItems.get(reference) : null;
+            if (result == null) {
+                throw new IllegalStateException("No invoice item found for " + act);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the invoice items from a list of invoice items and investigations.
+     *
+     * @param items the invoice items and investigation acts
+     * @return the invoice items, keyed on reference
+     */
+    private Map<Reference, Act> getInvoiceItems(List<Act> items) {
+        Map<Reference, Act> result = new HashMap<>();
+        for (Act item : items) {
+            if (item.isA(CustomerAccountArchetypes.INVOICE_ITEM)) {
+                result.put(item.getObjectReference(), item);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the order for an act.
+     *
+     * @param act the invoice item or investigation
+     * @return the order. May be {@code null}
+     */
+    private Order getOrder(Act act) {
+        Order result = null;
+        if (act.isA(CustomerAccountArchetypes.INVOICE_ITEM)) {
+            result = getPharmacyOrder(act);
+        } else if (act.isA(InvestigationArchetypes.PATIENT_INVESTIGATION)) {
+            result = getLaboratory(act);
+        }
+        return result;
+    }
+
+    /**
+     * Returns a pharmacy order.
+     *
+     * @param act the invoice item
+     * @return a pharmacy order, or {@code null} if the product isn't ordered via a pharmacy
+     */
     private Order getPharmacyOrder(Act act) {
         Order order = null;
-        ActBean bean = new ActBean(act);
-        Product product = (Product) getObject(bean.getNodeParticipantRef("product"));
-        if (product != null && TypeHelper.isA(product, ProductArchetypes.MEDICATION,
-                                              ProductArchetypes.MERCHANDISE)) {
+        IMObjectBean bean = new IMObjectBean(act);
+        Product product = (Product) getObject(bean.getTargetRef("product"));
+        if (product != null && product.isA(ProductArchetypes.MEDICATION, ProductArchetypes.MERCHANDISE)) {
             Entity pharmacy = getPharmacy(product);
             if (pharmacy != null) {
-                Party patient = (Party) getObject(bean.getNodeParticipantRef("patient"));
+                Party patient = (Party) getObject(bean.getTargetRef("patient"));
                 if (patient != null) {
                     BigDecimal quantity = bean.getBigDecimal("quantity", BigDecimal.ZERO);
-                    User clinician = (User) getObject(bean.getNodeParticipantRef("clinician"));
-                    IMObjectReference event = bean.getNodeSourceObjectRef("event");
+                    User clinician = (User) getObject(bean.getTargetRef("clinician"));
+                    Reference event = bean.getSourceRef("event");
                     order = new PharmacyOrder(act, product, patient, quantity, clinician, pharmacy, event);
                 }
             }
@@ -291,19 +383,25 @@ public class OrderPlacer {
         return order;
     }
 
-    private Order getInvestigationOrder(Act act) {
+    /**
+     * Returns a laboratory order.
+     *
+     * @param act the investigation act
+     * @return a laboratory order, or {@code null} if the investigation isn't ordered via a laboratory
+     */
+    private Order getLaboratory(Act act) {
         Order order = null;
-        ActBean bean = new ActBean(act);
-        Entity investigationType = (Entity) getObject(bean.getNodeParticipantRef("investigationType"));
+        IMObjectBean bean = new IMObjectBean(act);
+        Entity investigationType = (Entity) getObject(bean.getTargetRef("investigationType"));
         if (investigationType != null) {
             IMObjectBean typeBean = new IMObjectBean(investigationType);
             String serviceId = typeBean.getString("universalServiceIdentifier");
             Entity lab = getLaboratory(investigationType);
             if (lab != null && serviceId != null) {
-                Party patient = (Party) getObject(bean.getNodeParticipantRef("patient"));
+                Party patient = (Party) getObject(bean.getTargetRef("patient"));
                 if (patient != null) {
-                    User clinician = (User) getObject(bean.getNodeParticipantRef("clinician"));
-                    IMObjectReference event = bean.getNodeSourceObjectRef("event");
+                    User clinician = (User) getObject(bean.getTargetRef("clinician"));
+                    Reference event = bean.getSourceRef("event");
                     order = new LaboratoryOrder(act, serviceId, patient, clinician, lab, event);
                 }
             }
@@ -320,17 +418,14 @@ public class OrderPlacer {
      */
     private PatientContext getPatientContext(Order order, PatientHistoryChanges changes) {
         PatientContext result = null;
-        List<Act> events = changes.getEvents(order.getPatient().getObjectReference());
+        Reference patient = order.getPatient().getObjectReference();
+        List<Act> events = changes.getEvents(patient);
         Act event;
         if (events == null || events.isEmpty()) {
             event = changes.getEvent(order.getEvent());
         } else {
-            event = Collections.max(events, new Comparator<Act>() {
-                @Override
-                public int compare(Act o1, Act o2) {
-                    return DateRules.compareDateTime(o1.getActivityStartTime(), o2.getActivityStartTime(), true);
-                }
-            });
+            event = Collections.max(events, (o1, o2) ->
+                    DateRules.compareDateTime(o1.getActivityStartTime(), o2.getActivityStartTime(), true));
         }
         if (event != null) {
             result = services.getFactory().createContext(order.getPatient(), customer, event, location,
@@ -346,7 +441,7 @@ public class OrderPlacer {
      * @param events the cache of clinical events
      * @return the patient context, or {@code null} if there is no corresponding patient event
      */
-    private PatientContext getPatientContext(Order order, Map<IMObjectReference, Act> events) {
+    private PatientContext getPatientContext(Order order, Map<Reference, Act> events) {
         PatientContext result = null;
         Act event = events.get(order.getEvent());
         if (event == null) {
@@ -382,8 +477,7 @@ public class OrderPlacer {
         if (context != null) {
             notifyPatientInformation(context, changes, patients);
             if (order.create(context, services, user, updated)) {
-                ActBean bean = new ActBean(act);
-                bean.setValue("ordered", true);
+                act.setStatus(InvoiceItemStatus.ORDERED);
                 result = true;
                 updated.add(act);
             }
@@ -471,7 +565,7 @@ public class OrderPlacer {
     private Entity getLaboratory(Entity investigationType) {
         IMObjectBean bean = new IMObjectBean(investigationType);
         Entity laboratory = (Entity) getObject(bean.getNodeTargetObjectRef("laboratory"));
-        if (laboratory != null && TypeHelper.isA(laboratory, HL7Archetypes.LABORATORY_GROUP)) {
+        if (laboratory != null && laboratory.isA(HL7Archetypes.LABORATORY_GROUP)) {
             laboratory = services.getService(laboratory, location);
         }
         return laboratory;
@@ -483,21 +577,23 @@ public class OrderPlacer {
      * @param reference the reference. May be {@code null}
      * @return the object, or {@code null} if none is found
      */
-    private IMObject getObject(IMObjectReference reference) {
+    private IMObject getObject(Reference reference) {
         return (reference != null) ? cache.get(reference) : null;
     }
 
     private static abstract class Order {
 
-        private final IMObjectReference actId;
+        private final Reference actId;
+
         private final Date startTime;
+
         private final Party patient;
 
         private final User clinician;
 
-        private final IMObjectReference event;
+        private final Reference event;
 
-        public Order(IMObjectReference actId, Date startTime, Party patient, User clinician, IMObjectReference event) {
+        Order(Reference actId, Date startTime, Party patient, User clinician, Reference event) {
             this.actId = actId;
             this.startTime = startTime;
             this.patient = patient;
@@ -505,7 +601,7 @@ public class OrderPlacer {
             this.event = event;
         }
 
-        public IMObjectReference getActId() {
+        public Reference getActId() {
             return actId;
         }
 
@@ -525,7 +621,7 @@ public class OrderPlacer {
             return clinician;
         }
 
-        public IMObjectReference getEvent() {
+        public Reference getEvent() {
             return event;
         }
 
@@ -557,15 +653,15 @@ public class OrderPlacer {
 
     private static class PharmacyOrder extends Order {
 
-        private Product product;
-
         private final BigDecimal quantity;
 
         private final Entity pharmacy;
 
+        private Product product;
 
-        public PharmacyOrder(Act act, Product product, Party patient, BigDecimal quantity, User clinician,
-                             Entity pharmacy, IMObjectReference event) {
+
+        PharmacyOrder(Act act, Product product, Party patient, BigDecimal quantity, User clinician, Entity pharmacy,
+                      Reference event) {
             super(act.getObjectReference(), act.getActivityStartTime(), patient, clinician, event);
             this.product = product;
             this.quantity = quantity;
@@ -634,12 +730,12 @@ public class OrderPlacer {
     private static class LaboratoryOrder extends Order {
 
         private final Act investigation;
+
         private final String serviceId;
 
         private final Entity lab;
 
-        public LaboratoryOrder(Act act, String serviceId, Party patient, User clinician, Entity lab,
-                               IMObjectReference event) {
+        LaboratoryOrder(Act act, String serviceId, Party patient, User clinician, Entity lab, Reference event) {
             super(act.getObjectReference(), act.getActivityStartTime(), patient, clinician, event);
             this.investigation = act;
             this.serviceId = serviceId;

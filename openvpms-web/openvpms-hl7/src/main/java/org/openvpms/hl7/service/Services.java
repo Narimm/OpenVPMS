@@ -11,13 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.service;
 
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.hl7.io.Connector;
 
 import java.util.List;
@@ -62,7 +62,7 @@ public interface Services {
      * @param reference the service reference
      * @return the service configuration, or {@code null} if none is found
      */
-    Entity getService(IMObjectReference reference);
+    Entity getService(Reference reference);
 
     /**
      * Returns the service for a practice location, given the service group.
@@ -71,7 +71,7 @@ public interface Services {
      * @param location the practice location
      * @return the service configuration, or {@code null} if none is found
      */
-    Entity getService(Entity group, IMObjectReference location);
+    Entity getService(Entity group, Reference location);
 
     /**
      * Returns the connector to send messages to the service.

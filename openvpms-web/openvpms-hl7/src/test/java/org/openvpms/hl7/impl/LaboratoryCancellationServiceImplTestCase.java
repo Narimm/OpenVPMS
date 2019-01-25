@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -27,15 +27,15 @@ import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.party.Party;
+import org.openvpms.component.model.user.User;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.io.MessageDispatcher;
@@ -66,11 +66,11 @@ public class LaboratoryCancellationServiceImplTestCase extends AbstractMessageTe
     public void testProcessMessage() throws Exception {
         ORM_O01 orm = createCancelORM();
         User user = TestHelper.createUser();
-        final Entity laboratory = (Entity) create(HL7Archetypes.LABORATORY);
-        EntityBean bean = new EntityBean(laboratory);
-        bean.addNodeTarget("user", user);
+        Entity laboratory = (Entity) create(HL7Archetypes.LABORATORY);
+        IMObjectBean bean = getBean(laboratory);
+        bean.setTarget("user", user);
         Party location = getContext().getLocation();
-        bean.addNodeTarget("location", location);
+        bean.setTarget("location", location);
 
         Connectors connectors = Mockito.mock(Connectors.class);
         Laboratories labs = createLaboratories(laboratory);
@@ -85,7 +85,7 @@ public class LaboratoryCancellationServiceImplTestCase extends AbstractMessageTe
                 labs, dispatcher, connectors, getArchetypeService(), rules, userRules) {
 
             @Override
-            protected List<Act> process(ORM_O01 message, IMObjectReference location) throws HL7Exception {
+            protected List<Act> process(ORM_O01 message, Reference location) throws HL7Exception {
                 List<Act> acts = super.process(message, location);
                 cancel.addAll(acts);
                 return acts;
@@ -105,8 +105,8 @@ public class LaboratoryCancellationServiceImplTestCase extends AbstractMessageTe
         assertEquals(2, cancel.size());
         assertTrue(TypeHelper.isA(cancel.get(0), OrderArchetypes.INVESTIGATION_RETURN));
         assertTrue(TypeHelper.isA(cancel.get(1), OrderArchetypes.INVESTIGATION_RETURN_ITEM));
-        ActBean orderBean = new ActBean(cancel.get(0));
-        assertEquals(location.getObjectReference(), orderBean.getNodeParticipantRef("location"));
+        IMObjectBean orderBean = getBean(cancel.get(0));
+        assertEquals(location.getObjectReference(), orderBean.getTargetRef("location"));
     }
 
     /**
@@ -123,12 +123,12 @@ public class LaboratoryCancellationServiceImplTestCase extends AbstractMessageTe
             }
 
             @Override
-            public Entity getService(IMObjectReference reference) {
+            public Entity getService(Reference reference) {
                 return laboratory;
             }
 
             @Override
-            public Entity getService(Entity group, IMObjectReference location) {
+            public Entity getService(Entity group, Reference location) {
                 return null;
             }
 

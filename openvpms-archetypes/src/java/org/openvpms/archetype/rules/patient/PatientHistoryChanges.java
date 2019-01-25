@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -20,21 +20,21 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.bean.Predicates;
+import org.openvpms.component.model.object.IMObject;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -75,27 +75,27 @@ public class PatientHistoryChanges {
     /**
      * The events, keyed on reference.
      */
-    private final Map<IMObjectReference, Act> events = new HashMap<>();
+    private final Map<Reference, Act> events = new HashMap<>();
 
     /**
      * Determines if events are linked to boarding appointments.
      */
-    private final Map<IMObjectReference, Boolean> boarding = new HashMap<>();
+    private final Map<Reference, Boolean> boarding = new HashMap<>();
 
     /**
      * The events for a patient, keyed on reference.
      */
-    private final Map<IMObjectReference, List<Act>> eventsByPatient = new HashMap<>();
+    private final Map<Reference, List<Act>> eventsByPatient = new HashMap<>();
 
     /**
      * The acts to save.
      */
-    private final Map<IMObjectReference, Act> toSave = new HashMap<>();
+    private final Map<Reference, Act> toSave = new HashMap<>();
 
     /**
      * Used to determine if an event was new, prior to {@link #save()} being invoked.
      */
-    private final Set<IMObjectReference> newEvents = new HashSet<>();
+    private final Set<Reference> newEvents = new HashSet<>();
 
     /**
      * The objects to remove.
@@ -122,7 +122,7 @@ public class PatientHistoryChanges {
      * @param reference the event reference. May be {@code null}
      * @return the corresponding event, or {@code null} if none is found
      */
-    public Act getEvent(IMObjectReference reference) {
+    public Act getEvent(Reference reference) {
         Act event = null;
         if (reference != null) {
             event = events.get(reference);
@@ -130,7 +130,7 @@ public class PatientHistoryChanges {
                 event = (Act) service.get(reference);
                 if (event != null) {
                     events.put(reference, event);
-                    IMObjectReference patient = getPatient(event);
+                    Reference patient = getPatient(event);
                     if (patient != null) {
                         List<Act> events = eventsByPatient.get(patient);
                         if (events == null) {
@@ -152,8 +152,8 @@ public class PatientHistoryChanges {
      * @param event the event
      * @return the event's patient reference, or {@code null} if none is found
      */
-    public IMObjectReference getPatient(Act event) {
-        ActBean bean = new ActBean(event, service);
+    public Reference getPatient(Act event) {
+        IMObjectBean bean = service.getBean(event);
         return getPatient(bean);
     }
 
@@ -163,7 +163,7 @@ public class PatientHistoryChanges {
      * @param patient the patient
      * @return the events, or {@code null} if none are found
      */
-    public List<Act> getEvents(IMObjectReference patient) {
+    public List<Act> getEvents(Reference patient) {
         return eventsByPatient.get(patient);
     }
 
@@ -175,25 +175,25 @@ public class PatientHistoryChanges {
      * @param event the event to add
      */
     public void addEvent(Act event) {
-        IMObjectReference ref = event.getObjectReference();
+        Reference ref = event.getObjectReference();
         if (!events.containsKey(ref)) {
             events.put(ref, event);
             if (event.isNew()) {
                 newEvents.add(ref);
             }
-            ActBean bean = new ActBean(event, service);
+            IMObjectBean bean = service.getBean(event);
             if (event.isNew()) {
                 // add author and location to new events
-                if (author != null && bean.getNodeParticipantRef("author") == null) {
-                    bean.addNodeParticipation("author", author);
+                if (author != null && bean.getTargetRef("author") == null) {
+                    bean.setTarget("author", author);
                 }
-                if (location != null && bean.getNodeParticipantRef("location") == null) {
-                    bean.addNodeParticipation("location", location);
+                if (location != null && bean.getTargetRef("location") == null) {
+                    bean.setTarget("location", location);
                 }
                 toSave.put(ref, event);
             }
 
-            IMObjectReference patient = getPatient(bean);
+            Reference patient = getPatient(bean);
             if (patient != null) {
                 List<Act> acts = eventsByPatient.get(patient);
                 if (acts == null) {
@@ -213,7 +213,7 @@ public class PatientHistoryChanges {
      * @return the linked event, or {@code null} if an event isn't linked to the act
      */
     public Act getLinkedEvent(Act act) {
-        IMObjectReference ref = getLinkedEventRef(act);
+        Reference ref = getLinkedEventRef(act);
         return getEvent(ref);
     }
 
@@ -223,16 +223,9 @@ public class PatientHistoryChanges {
      * @param act the act
      * @return the linked event reference, or {@code null} if an event isn't linked to the act
      */
-    public IMObjectReference getLinkedEventRef(Act act) {
-        IMObjectReference ref;
-        ActBean bean = new ActBean(act, service);
-        if (bean.isA(CustomerAccountArchetypes.INVOICE_ITEM)) {
-            ref = bean.getSourceObjectRef(act.getTargetActRelationships(),
-                                          PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM);
-        } else {
-            ref = bean.getSourceObjectRef(act.getTargetActRelationships(), PatientArchetypes.CLINICAL_EVENT_ITEM);
-        }
-        return ref;
+    public Reference getLinkedEventRef(Act act) {
+        IMObjectBean bean = service.getBean(act);
+        return bean.hasNode("event") ? bean.getSourceRef("event") : null;
     }
 
     /**
@@ -242,12 +235,10 @@ public class PatientHistoryChanges {
      * @param act   the act
      */
     public void addRelationship(Act event, Act act) {
-        ActBean bean = new ActBean(event, service);
-        if (TypeHelper.isA(act, CustomerAccountArchetypes.INVOICE_ITEM)) {
-            bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM, act);
-        } else {
-            bean.addRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM, act);
-        }
+        IMObjectBean bean = service.getBean(event);
+        String node = getRelationshipNode(act);
+        ActRelationship relationship = (ActRelationship) bean.addTarget(node, act);
+        act.addActRelationship(relationship);
         changed(event);
         changed(act);
     }
@@ -259,8 +250,9 @@ public class PatientHistoryChanges {
      * @param act   the act
      */
     public void removeRelationship(Act event, Act act) {
-        ActBean bean = new ActBean(event);
-        ActRelationship relationship = bean.getRelationship(act);
+        IMObjectBean bean = service.getBean(event);
+        String node = getRelationshipNode(act);
+        ActRelationship relationship = bean.getValue(node, ActRelationship.class, Predicates.targetEquals(act));
         if (relationship != null) {
             event.removeSourceActRelationship(relationship);
             act.removeTargetActRelationship(relationship);
@@ -277,13 +269,8 @@ public class PatientHistoryChanges {
      * @param act the act
      */
     public void removeRelationship(Act act) {
-        ActBean bean = new ActBean(act, service);
-        ActRelationship relationship;
-        if (bean.isA(CustomerAccountArchetypes.INVOICE_ITEM)) {
-            relationship = bean.getRelationship(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM);
-        } else {
-            relationship = bean.getRelationship(PatientArchetypes.CLINICAL_EVENT_ITEM);
-        }
+        IMObjectBean bean = service.getBean(act);
+        ActRelationship relationship = bean.getValue("event", ActRelationship.class, Predicates.targetEquals(act));
         if (relationship != null) {
             Act event = getEvent(relationship.getSource());
             if (event != null) {
@@ -301,8 +288,9 @@ public class PatientHistoryChanges {
      * @param document the document
      */
     public void addItemDocument(FinancialAct item, Act document) {
-        ActBean bean = new ActBean(item, service);
-        bean.addRelationship("actRelationship.invoiceItemDocument", document);
+        IMObjectBean bean = service.getBean(item);
+        ActRelationship relationship = (ActRelationship) bean.addTarget("documents", document);
+        document.addActRelationship(relationship);
         changed(item);
         changed(document);
     }
@@ -318,9 +306,9 @@ public class PatientHistoryChanges {
         changed(item);
         toRemove.add(document);
 
-        ActBean itemBean = new ActBean(item, service);
-        ActRelationship r = itemBean.getRelationship(document);
-        itemBean.removeRelationship(r);
+        IMObjectBean itemBean = service.getBean(item);
+        ActRelationship r = itemBean.getValue("documents", ActRelationship.class, Predicates.targetEquals(document));
+        item.removeActRelationship(r);
         document.removeActRelationship(r);
 
         removeRelationship(document); // remove the event relationship
@@ -406,15 +394,25 @@ public class PatientHistoryChanges {
      * @return {@code true} if the event is used for boarding
      */
     public boolean isBoarding(Act act) {
-        IMObjectReference reference = act.getObjectReference();
+        Reference reference = act.getObjectReference();
         Boolean result = boarding.get(reference);
         if (result == null) {
-            ActBean bean = new ActBean(act, service);
-            Act appointment = (Act) bean.getNodeSourceObject("appointment");
+            IMObjectBean bean = service.getBean(act);
+            Act appointment = bean.getSource("appointment", Act.class);
             result = appointment != null && rules.isBoardingAppointment(appointment);
             boarding.put(reference, result);
         }
         return result;
+    }
+
+    /**
+     * Returns the event relationship node name for a target act.
+     *
+     * @param act the act
+     * @return the event node name
+     */
+    private String getRelationshipNode(Act act) {
+        return act.isA(CustomerAccountArchetypes.INVOICE_ITEM) ? "chargeItems" : "items";
     }
 
     /**
@@ -424,11 +422,7 @@ public class PatientHistoryChanges {
      */
     private void sortEvents(List<Act> events) {
         if (events.size() > 1) {
-            Collections.sort(events, new Comparator<Act>() {
-                public int compare(Act o1, Act o2) {
-                    return DateRules.compareTo(o1.getActivityStartTime(), o2.getActivityStartTime());
-                }
-            });
+            events.sort((o1, o2) -> DateRules.compareTo(o1.getActivityStartTime(), o2.getActivityStartTime()));
         }
     }
 
@@ -438,8 +432,8 @@ public class PatientHistoryChanges {
      * @param bean the act bean
      * @return the patient reference, or {@code null} if none is found
      */
-    private IMObjectReference getPatient(ActBean bean) {
-        return bean.getParticipantRef(PatientArchetypes.PATIENT_PARTICIPATION);
+    private Reference getPatient(IMObjectBean bean) {
+        return bean.getTargetRef("patient");
     }
 
     /**

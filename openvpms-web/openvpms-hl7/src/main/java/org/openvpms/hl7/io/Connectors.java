@@ -11,12 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.io;
 
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.List;
 
@@ -40,6 +40,6 @@ public interface Connectors {
      * @param reference the connector reference
      * @return the connector, or {@code null} if none is found
      */
-    Connector getConnector(IMObjectReference reference);
+    Connector getConnector(Reference reference);
 
 }

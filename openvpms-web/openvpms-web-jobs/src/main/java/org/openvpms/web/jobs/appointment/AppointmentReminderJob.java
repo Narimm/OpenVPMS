@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.jobs.appointment;
@@ -34,10 +34,10 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.user.User;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NamedQuery;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -132,14 +132,19 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
     private final String subject;
 
     /**
-     * Determines if reminding should stop.
-     */
-    private volatile boolean stop;
-
-    /**
      * Used to send messages to users on completion or failure.
      */
     private final JobCompletionNotifier notifier;
+
+    /**
+     * The maximum no. of message parts supported by the provider.
+     */
+    private final int maxParts;
+
+    /**
+     * Determines if reminding should stop.
+     */
+    private volatile boolean stop;
 
     /**
      * Determines the minimum appointment start time.
@@ -160,11 +165,6 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
      * The no. of reminders sent.
      */
     private int sent;
-
-    /**
-     * The maximum no. of message parts supported by the provider.
-     */
-    private final int maxParts;
 
     /**
      * Schedules that failed to have reminders sent, and the corresponding dates, ordered on schedule name.

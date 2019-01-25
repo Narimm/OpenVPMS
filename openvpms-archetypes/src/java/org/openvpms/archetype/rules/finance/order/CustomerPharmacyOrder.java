@@ -11,18 +11,18 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.order;
 
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 
 /**
  * Manages state when processing customer pharmacy orders and returns.
@@ -40,7 +40,7 @@ public class CustomerPharmacyOrder extends CustomerOrder {
      * @param location the practice location. May be {@code null}
      * @param service  the archetype service
      */
-    public CustomerPharmacyOrder(Party patient, Party customer, String note, IMObjectReference location,
+    public CustomerPharmacyOrder(Party patient, Party customer, String note, Reference location,
                                  IArchetypeService service) {
         super(patient, customer, note, location, service);
     }
@@ -61,7 +61,7 @@ public class CustomerPharmacyOrder extends CustomerOrder {
      * @param product the product. May be {@code null}
      * @return the item. May be {@code null}
      */
-    public ActBean getItem(Product product) {
+    public IMObjectBean getItem(Product product) {
         String archetype = hasOrder() ? OrderArchetypes.PHARMACY_ORDER_ITEM : OrderArchetypes.PHARMACY_RETURN_ITEM;
         return getItem(archetype, product);
     }
@@ -72,7 +72,7 @@ public class CustomerPharmacyOrder extends CustomerOrder {
      * @return a new order item
      */
     @Override
-    public ActBean createOrderItem() {
+    public IMObjectBean createOrderItem() {
         return createItem(OrderArchetypes.PHARMACY_ORDER_ITEM, getOrder());
     }
 
@@ -82,7 +82,7 @@ public class CustomerPharmacyOrder extends CustomerOrder {
      * @return a new order return item
      */
     @Override
-    public ActBean createReturnItem() {
+    public IMObjectBean createReturnItem() {
         return createItem(OrderArchetypes.PHARMACY_RETURN_ITEM, getReturn());
     }
 
@@ -92,7 +92,7 @@ public class CustomerPharmacyOrder extends CustomerOrder {
      * @return the order
      */
     @Override
-    protected ActBean createOrder() {
+    protected IMObjectBean createOrder() {
         return createParent(OrderArchetypes.PHARMACY_ORDER);
     }
 
@@ -102,7 +102,7 @@ public class CustomerPharmacyOrder extends CustomerOrder {
      * @return the return
      */
     @Override
-    protected ActBean createReturn() {
+    protected IMObjectBean createReturn() {
         return createParent(OrderArchetypes.PHARMACY_RETURN);
     }
 

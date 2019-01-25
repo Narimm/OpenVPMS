@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -85,6 +85,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         bean.setValue("minimumQuantities", true);
         bean.setValue("minimumQuantitiesOverride", null);
         save(practice);
+        setPharmacyOrderDiscontinuePeriod(0);
         super.setUp();
     }
 
@@ -397,7 +398,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         Act medication = dispensing.get(0);
         ActBean bean = new ActBean(medication);
         assertEquals(item.getActivityStartTime(), medication.getActivityStartTime());
-        assertEquals(item.getActivityEndTime(), medication.getActivityEndTime());
+        assertNull(medication.getActivityEndTime());  // expiry date
         assertTrue(bean.isA(PatientArchetypes.PATIENT_MEDICATION));
         assertEquals(product.getObjectReference(), bean.getNodeParticipantRef("product"));
         assertEquals(patient.getObjectReference(), bean.getNodeParticipantRef("patient"));
@@ -829,6 +830,17 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
         IMObjectBean bean = getBean(entity);
         bean.addTarget("discounts", discount);
         bean.save();
+    }
+
+    /**
+     * Sets the pharmacy order discontinue period.
+     *
+     * @param period the period
+     */
+    protected void setPharmacyOrderDiscontinuePeriod(int period) {
+        IMObjectBean bean = getBean(practice);
+        bean.setValue("pharmacyOrderDiscontinuePeriod", period);
+        save(practice);
     }
 
 }

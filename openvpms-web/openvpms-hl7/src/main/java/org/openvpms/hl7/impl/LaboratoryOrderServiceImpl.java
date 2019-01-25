@@ -11,16 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
 
 import ca.uhn.hl7v2.model.Message;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.user.User;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.MessageDispatcher;
 import org.openvpms.hl7.laboratory.Laboratories;

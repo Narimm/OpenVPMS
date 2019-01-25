@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
 
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
 
 /**
  * Configures message population.
@@ -364,7 +364,7 @@ public class HL7Mapping {
      * @return a new mapping
      */
     public static HL7Mapping create(Entity mapping, IArchetypeService service) {
-        IMObjectBean bean = new IMObjectBean(mapping, service);
+        IMObjectBean bean = service.getBean(mapping);
         HL7Mapping result = new HL7Mapping();
         result.setSendADT(bean.getBoolean("sendADT", true));
         result.setSendUpdatePatient(bean.getBoolean("sendUpdatePatient", true));

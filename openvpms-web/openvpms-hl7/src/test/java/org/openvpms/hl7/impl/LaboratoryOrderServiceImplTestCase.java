@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -21,11 +21,11 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.user.User;
 import org.openvpms.hl7.laboratory.Laboratories;
 import org.openvpms.hl7.laboratory.LaboratoryOrderService;
 import org.openvpms.hl7.patient.PatientContext;
@@ -66,15 +66,15 @@ public class LaboratoryOrderServiceImplTestCase extends AbstractServiceTest {
     public void setUp() {
         super.setUp();
         lab = (Entity) create(HL7Archetypes.LABORATORY);
-        EntityBean bean = new EntityBean(lab);
-        bean.addNodeTarget("sender", getSender().getReference());
-        bean.addNodeTarget("location", getContext().getLocation());
+        IMObjectBean bean = getBean(lab);
+        bean.setTarget("sender", getSender().getReference());
+        bean.setTarget("location", getContext().getLocation());
 
         PatientEventServices eventServices = Mockito.mock(PatientEventServices.class);
         Laboratories labs = new LaboratoriesImpl(getArchetypeService(), getConnectors(), eventServices) {
 
             @Override
-            public Entity getService(Entity group, IMObjectReference location) {
+            public Entity getService(Entity group, Reference location) {
                 return lab;
             }
         };

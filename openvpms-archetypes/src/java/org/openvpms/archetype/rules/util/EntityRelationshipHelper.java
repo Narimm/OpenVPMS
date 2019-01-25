@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.util;
@@ -21,8 +21,8 @@ import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBeanException;
+import org.openvpms.component.model.bean.IMObjectBean;
 
 import java.util.List;
 
@@ -67,7 +67,7 @@ public class EntityRelationshipHelper {
      */
     public static IMObjectReference getDefaultTargetRef(Entity entity, String node, boolean useNonDefault,
                                                         IArchetypeService service) {
-        IMObjectBean bean = new IMObjectBean(entity, service);
+        IMObjectBean bean = service.getBean(entity);
         return getDefaultTargetRef(bean.getValues(node, EntityRelationship.class), useNonDefault, service);
     }
 
@@ -81,7 +81,8 @@ public class EntityRelationshipHelper {
      * @throws ArchetypeServiceException for any archetype service error
      * @throws IMObjectBeanException     if the node doesn't exist or an element is of the wrong type
      */
-    public static Entity getDefaultTarget(Entity entity, String node, IArchetypeService service) {
+    public static Entity getDefaultTarget(org.openvpms.component.model.entity.Entity entity, String node,
+                                          IArchetypeService service) {
         return getDefaultTarget(entity, node, true, service);
     }
 
@@ -97,8 +98,9 @@ public class EntityRelationshipHelper {
      * @throws ArchetypeServiceException for any archetype service error
      * @throws IMObjectBeanException     if the node doesn't exist or an element is of the wrong type
      */
-    public static Entity getDefaultTarget(Entity entity, String node, boolean useNonDefault, IArchetypeService service) {
-        IMObjectBean bean = new IMObjectBean(entity, service);
+    public static Entity getDefaultTarget(org.openvpms.component.model.entity.Entity entity, String node,
+                                          boolean useNonDefault, IArchetypeService service) {
+        IMObjectBean bean = service.getBean(entity);
         return getDefaultTarget(bean.getValues(node, EntityRelationship.class), useNonDefault, service);
     }
 
@@ -134,7 +136,7 @@ public class EntityRelationshipHelper {
                 if (result == null && useNonDefault) {
                     result = getEntity(relationship.getTarget(), service);
                 } else {
-                    IMObjectBean bean = new IMObjectBean(relationship, service);
+                    IMObjectBean bean = service.getBean(relationship);
                     if (bean.hasNode("default") && bean.getBoolean("default")) {
                         Entity entity = getEntity(relationship.getTarget(), service);
                         if (entity != null) {
@@ -160,14 +162,14 @@ public class EntityRelationshipHelper {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public static IMObjectReference getDefaultTargetRef(List<EntityRelationship> relationships, boolean useNonDefault,
-            IArchetypeService service) {
+                                                        IArchetypeService service) {
         IMObjectReference result = null;
         for (EntityRelationship relationship : relationships) {
             if (relationship.isActive()) {
                 if (result == null && useNonDefault) {
                     result = relationship.getTarget();
                 } else {
-                    IMObjectBean bean = new IMObjectBean(relationship, service);
+                    IMObjectBean bean = service.getBean(relationship);
                     if (bean.hasNode("default") && bean.getBoolean("default")) {
                         result = relationship.getTarget();
                         if (result != null) {
@@ -190,18 +192,18 @@ public class EntityRelationshipHelper {
      * @param service      the archetype service
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public static void setDefault(Entity entity, String node, EntityRelationship relationship,
-                                  IArchetypeService service) {
-        IMObjectBean bean = new IMObjectBean(entity, service);
+    public static void setDefault(org.openvpms.component.model.entity.Entity entity, String node,
+                                  EntityRelationship relationship, IArchetypeService service) {
+        IMObjectBean bean = service.getBean(entity);
         List<EntityRelationship> relationships
                 = bean.getValues(node, EntityRelationship.class);
         for (EntityRelationship r : relationships) {
             if (r != relationship) {
-                IMObjectBean relBean = new IMObjectBean(r, service);
+                IMObjectBean relBean = service.getBean(r);
                 relBean.setValue("default", false);
             }
         }
-        IMObjectBean relBean = new IMObjectBean(relationship, service);
+        IMObjectBean relBean = service.getBean(relationship);
         relBean.setValue("default", true);
     }
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.jobs.reminder;
@@ -33,11 +33,11 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.user.User;
 import org.openvpms.web.component.retry.AbstractRetryable;
 import org.openvpms.web.component.retry.Retryer;
 import org.openvpms.web.jobs.JobCompletionNotifier;
@@ -333,13 +333,6 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
         notifier.send(users, subject, reason, text.toString());
     }
 
-    enum QueueStatus {
-        SKIPPED,
-        QUEUED,
-        CANCELLED,
-        ERROR
-    }
-
     /**
      * Processes a reminder, optionally re-processing it if the first attempt fails.
      */
@@ -458,6 +451,13 @@ public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
             status = preCommitStatus; // action won't be updated if the transaction rolls back
             return result;
         }
+    }
+
+    enum QueueStatus {
+        SKIPPED,
+        QUEUED,
+        CANCELLED,
+        ERROR
     }
 
 }

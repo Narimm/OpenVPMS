@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -23,13 +23,12 @@ import ca.uhn.hl7v2.model.v25.segment.FT1;
 import ca.uhn.hl7v2.model.v25.segment.ORC;
 import ca.uhn.hl7v2.model.v25.segment.RXD;
 import ca.uhn.hl7v2.model.v25.segment.RXE;
-import ca.uhn.hl7v2.util.idgenerator.IDGenerator;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.product.Product;
 import org.openvpms.hl7.util.HL7Archetypes;
 
 import java.io.IOException;
@@ -68,12 +67,7 @@ public abstract class AbstractRDSTest extends AbstractMessageTest {
      */
     protected RDS_O13 createRDS(Product product) throws IOException, HL7Exception {
         ILookupService lookups = getLookupService();
-        HapiContext hapiContext = HapiContextFactory.create(new IDGenerator() {
-            @Override
-            public String getID() throws IOException {
-                return "1200022";
-            }
-        });
+        HapiContext hapiContext = HapiContextFactory.create(() -> "1200022");
 
         HL7Mapping config = new HL7Mapping();
         config.setPopulatePID2(true);

@@ -11,19 +11,21 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.finance.invoice.InvoiceItemStatus;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -38,6 +40,11 @@ import java.util.List;
 public class UndispensedOrderChecker {
 
     /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
      * The undispensed items.
      */
     private final List<Act> items;
@@ -49,6 +56,7 @@ public class UndispensedOrderChecker {
      * @param charge the charge
      */
     public UndispensedOrderChecker(Act charge) {
+        service = ServiceHelper.getBean(IArchetypeService.class);
         items = getUndispensedItems(charge);
     }
 
@@ -58,6 +66,7 @@ public class UndispensedOrderChecker {
      * @param editor the editor
      */
     public UndispensedOrderChecker(CustomerChargeActEditor editor) {
+        service = ServiceHelper.getBean(IArchetypeService.class);
         items = getUndispensedItems(editor);
     }
 
@@ -110,12 +119,12 @@ public class UndispensedOrderChecker {
      */
     private List<Act> getUndispensedItems(Act charge) {
         List<Act> items = Collections.emptyList();
-        if (TypeHelper.isA(charge, CustomerAccountArchetypes.INVOICE)) {
-            ActBean bean = new ActBean(charge);
-            items = new ArrayList<Act>();
-            for (Act item : bean.getNodeActs("items")) {
-                ActBean itemBean = new ActBean(item);
-                boolean ordered = itemBean.getBoolean("ordered");
+        if (charge.isA(CustomerAccountArchetypes.INVOICE)) {
+            IMObjectBean bean = service.getBean(charge);
+            items = new ArrayList<>();
+            for (Act item : bean.getTargets("items", Act.class)) {
+                IMObjectBean itemBean = service.getBean(item);
+                boolean ordered = InvoiceItemStatus.ORDERED.equalsIgnoreCase(item.getStatus());
                 if (ordered) {
                     BigDecimal quantity = itemBean.getBigDecimal("quantity", BigDecimal.ZERO);
                     BigDecimal received = itemBean.getBigDecimal("receivedQuantity", BigDecimal.ZERO);
@@ -136,8 +145,7 @@ public class UndispensedOrderChecker {
      */
     private List<Act> getUndispensedItems(CustomerChargeActEditor editor) {
         List<Act> items = Collections.emptyList();
-        if (TypeHelper.isA(editor.getObject(), CustomerAccountArchetypes.INVOICE)
-            && ActStatus.POSTED.equals(editor.getStatus())) {
+        if (editor.getObject().isA(CustomerAccountArchetypes.INVOICE) && ActStatus.POSTED.equals(editor.getStatus())) {
             items = editor.getNonDispensedItems();
         }
         return items;

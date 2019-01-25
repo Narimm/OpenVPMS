@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.invoice.ChargeItemEventLinker;
 import org.openvpms.archetype.rules.math.MathRules;
@@ -37,12 +36,6 @@ import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.exception.OpenVPMSException;
-import org.openvpms.hl7.laboratory.Laboratories;
-import org.openvpms.hl7.laboratory.LaboratoryOrderService;
-import org.openvpms.hl7.patient.PatientContextFactory;
-import org.openvpms.hl7.patient.PatientInformationService;
-import org.openvpms.hl7.pharmacy.Pharmacies;
-import org.openvpms.hl7.pharmacy.PharmacyOrderService;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.act.ActHelper;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditorFactory;
@@ -78,6 +71,11 @@ import java.util.Set;
 public abstract class CustomerChargeActEditor extends FinancialActEditor {
 
     /**
+     * The reminder rules.
+     */
+    private final ReminderRules reminderRules;
+
+    /**
      * Determines if a default item should added if no items are present.
      */
     private boolean addDefaultItem;
@@ -101,11 +99,6 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
      * Tracks unprinted documents.
      */
     private ChargeDocumentPrinter unprintedDocuments;
-
-    /**
-     * The reminder rules.
-     */
-    private final ReminderRules reminderRules;
 
     /**
      * Constructs an {@link CustomerChargeActEditor}.
@@ -141,8 +134,9 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
                 }
             });
 
-            orderPlacer = createOrderPlacer(customer, location, context.getContext().getUser());
-            List<Act> acts = getOrderActs();
+            orderPlacer = createOrderPlacer(customer, context.getContext().getPractice(), location,
+                                            context.getContext().getUser());
+            List<org.openvpms.component.model.act.Act> acts = getOrderActs();
             orderPlacer.initialise(acts);
         }
         unprintedDocuments = new ChargeDocumentPrinter(this, context);
@@ -383,16 +377,16 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
         try {
             ChargeItemRelationshipCollectionEditor items = getItems();
             List<Act> reminders = getNewReminders();
-            List<Act> alerts  = getNewAlerts();
+            List<Act> alerts = getNewAlerts();
 
             boolean invoice = TypeHelper.isA(getObject(), CustomerAccountArchetypes.INVOICE);
             PatientHistoryChanges changes = new PatientHistoryChanges(getLayoutContext().getContext().getUser(),
                                                                       getLayoutContext().getContext().getLocation(),
                                                                       ServiceHelper.getArchetypeService());
-            List<Act> orderActs = invoice ? getOrderActs() : Collections.<Act>emptyList();
+            List<org.openvpms.component.model.act.Act> orderActs = invoice ? getOrderActs() : Collections.emptyList();
             if (invoice) {
                 // cancel any orders associated with deleted invoice items prior to physical deletion
-                Set<Act> updated = orderPlacer.cancelDeleted(orderActs, changes);
+                Set<org.openvpms.component.model.act.Act> updated = orderPlacer.cancelDeleted(orderActs, changes);
                 if (!updated.isEmpty()) {
                     // need to save updated items before performing deletion
                     ServiceHelper.getArchetypeService().save(updated);
@@ -402,13 +396,19 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
             chargeContext = items.getSaveContext();
             chargeContext.setHistoryChanges(changes);
 
+            boolean posted = ActStatus.POSTED.equals(getStatus());
+            if (posted) {
+                // set the endTime (aka Completed Date)
+                setEndTime(new Date(), true);
+            }
+
             super.doSave();
 
             if (invoice) {
                 // link the items to their corresponding clinical events
                 linkToEvents(changes);
-                if (ActStatus.POSTED.equals(getStatus())) {
-                    changes.complete(new Date());
+                if (posted) {
+                    changes.complete(getEndTime());
                 }
             }
             chargeContext.save();
@@ -424,22 +424,23 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
             }
 
             if (invoice) {
-                Set<Act> updated = orderPlacer.order(orderActs, changes);
+                Set<org.openvpms.component.model.act.Act> updated = orderPlacer.order(orderActs, changes);
+                if (posted && orderPlacer.discontinueOnFinalisation()) {
+                    // need to discontinue orders as Cubex will leave them visible, even after patient check-out
+                    // TODO - should prevent placement of orders if an invoice is being finalised at the same time
+                    updated.addAll(orderPlacer.discontinue(orderActs));
+                }
                 if (!updated.isEmpty()) {
                     // need to save the items again. This time do it skipping rules
                     ServiceHelper.getArchetypeService(false).save(updated);
 
                     // notify the editors that orders have been placed
-                    for (Act item : updated) {
+                    for (org.openvpms.component.model.act.Act item : updated) {
                         if (TypeHelper.isA(item, CustomerAccountArchetypes.INVOICE_ITEM)) {
-                            CustomerChargeActItemEditor editor = getItems().getEditor(item);
+                            CustomerChargeActItemEditor editor = getItems().getEditor((Act) item);
                             editor.ordered();
                         }
                     }
-                }
-                if (FinancialActStatus.POSTED.equals(getStatus())) {
-                    // need to discontinue orders as Cubex will leave them visible, even after patient check-out
-                    orderPlacer.discontinue();
                 }
             }
         } finally {
@@ -556,19 +557,14 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
      * Creates a new {@link OrderPlacer}.
      *
      * @param customer the customer
+     * @param practice the practice
      * @param location the practice location
      * @param user     the user responsible for the orders
      * @return a new pharmacy order placer
      */
-    protected OrderPlacer createOrderPlacer(Party customer, Party location, User user) {
-        OrderServices services = new OrderServices(ServiceHelper.getBean(PharmacyOrderService.class),
-                                                   ServiceHelper.getBean(Pharmacies.class),
-                                                   ServiceHelper.getBean(LaboratoryOrderService.class),
-                                                   ServiceHelper.getBean(Laboratories.class),
-                                                   ServiceHelper.getBean(PatientContextFactory.class),
-                                                   ServiceHelper.getBean(PatientInformationService.class),
-                                                   ServiceHelper.getBean(MedicalRecordRules.class));
-        return new OrderPlacer(customer, location, user, getLayoutContext().getCache(), services);
+    protected OrderPlacer createOrderPlacer(Party customer, Party practice, Party location, User user) {
+        OrderServices services = ServiceHelper.getBean(OrderServices.class);
+        return new OrderPlacer(customer, location, user, practice, getLayoutContext().getCache(), services);
     }
 
     /**
@@ -581,12 +577,55 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
     }
 
     /**
+     * Creates <em>act.patientClinicalNote</em> acts for any notes associated with template products, linking them to
+     * the event.
+     *
+     * @param linker  the event linker
+     * @param changes the patient history changes
+     */
+    protected void addTemplateNotes(ChargeItemEventLinker linker, PatientHistoryChanges changes) {
+        List<TemplateChargeItems> templates = getItems().getTemplates();
+        if (!templates.isEmpty()) {
+            List<Act> items = getItems().getActs();
+            List<Act> notes = new ArrayList<>();
+            MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
+            for (TemplateChargeItems template : templates) {
+                Act item = template.findFirst(items);
+                if (item != null) {
+                    String visitNote = template.getVisitNote();
+                    if (!StringUtils.isEmpty(visitNote)) {
+                        ActBean bean = new ActBean(item);
+                        Party patient = (Party) getObject(bean.getNodeParticipantRef("patient"));
+                        if (patient != null) {
+                            Date itemStartTime = bean.getDate("startTime");
+                            Date startTime = getStartTime();
+                            if (DateRules.getDate(itemStartTime).compareTo(DateRules.getDate(startTime)) != 0) {
+                                // use the item start time if its date is different to that of the invoice
+                                startTime = itemStartTime;
+                            }
+                            User clinician = (User) getObject(bean.getNodeParticipantRef("clinician"));
+                            User author = (User) getObject(bean.getNodeParticipantRef("author"));
+                            Act note = rules.createNote(startTime, patient, visitNote, clinician, author);
+                            notes.add(note);
+                        }
+                    }
+                }
+            }
+            if (!notes.isEmpty()) {
+                ServiceHelper.getArchetypeService().save(notes);
+                linker.prepareNotes(notes, changes);
+            }
+            getItems().clearTemplates();
+        }
+    }
+
+    /**
      * Returns all acts that may be associated with pharmacy or laboratory orders.
      *
      * @return the acts
      */
-    private List<Act> getOrderActs() {
-        List<Act> acts = new ArrayList<>();
+    private List<org.openvpms.component.model.act.Act> getOrderActs() {
+        List<org.openvpms.component.model.act.Act> acts = new ArrayList<>();
         for (Act item : getItems().getActs()) {
             CustomerChargeActItemEditor editor = getItems().getEditor(item);
             acts.add(item);
@@ -695,48 +734,4 @@ public abstract class CustomerChargeActEditor extends FinancialActEditor {
             }
         }
     }
-
-    /**
-     * Creates <em>act.patientClinicalNote</em> acts for any notes associated with template products, linking them to
-     * the event.
-     *
-     * @param linker  the event linker
-     * @param changes the patient history changes
-     */
-    protected void addTemplateNotes(ChargeItemEventLinker linker, PatientHistoryChanges changes) {
-        List<TemplateChargeItems> templates = getItems().getTemplates();
-        if (!templates.isEmpty()) {
-            List<Act> items = getItems().getActs();
-            List<Act> notes = new ArrayList<>();
-            MedicalRecordRules rules = ServiceHelper.getBean(MedicalRecordRules.class);
-            for (TemplateChargeItems template : templates) {
-                Act item = template.findFirst(items);
-                if (item != null) {
-                    String visitNote = template.getVisitNote();
-                    if (!StringUtils.isEmpty(visitNote)) {
-                        ActBean bean = new ActBean(item);
-                        Party patient = (Party) getObject(bean.getNodeParticipantRef("patient"));
-                        if (patient != null) {
-                            Date itemStartTime = bean.getDate("startTime");
-                            Date startTime = getStartTime();
-                            if (DateRules.getDate(itemStartTime).compareTo(DateRules.getDate(startTime)) != 0) {
-                                // use the item start time if its date is different to that of the invoice
-                                startTime = itemStartTime;
-                            }
-                            User clinician = (User) getObject(bean.getNodeParticipantRef("clinician"));
-                            User author = (User) getObject(bean.getNodeParticipantRef("author"));
-                            Act note = rules.createNote(startTime, patient, visitNote, clinician, author);
-                            notes.add(note);
-                        }
-                    }
-                }
-            }
-            if (!notes.isEmpty()) {
-                ServiceHelper.getArchetypeService().save(notes);
-                linker.prepareNotes(notes, changes);
-            }
-            getItems().clearTemplates();
-        }
-    }
-
 }

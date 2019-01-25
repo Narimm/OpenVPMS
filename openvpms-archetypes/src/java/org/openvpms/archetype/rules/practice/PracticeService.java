@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.practice;
@@ -50,6 +50,7 @@ public class PracticeService {
     public static class Update {
 
         private final Party practice;
+
         private final String user;
 
         private Update(Party practice) {
@@ -78,11 +79,6 @@ public class PracticeService {
     }
 
     /**
-     * The practice;
-     */
-    private Party practice;
-
-    /**
      * The archetype service.
      */
     private final IArchetypeService service;
@@ -101,6 +97,11 @@ public class PracticeService {
      * Listeners to notify when the practice updates.
      */
     private final Listeners<Update> listeners;
+
+    /**
+     * The practice;
+     */
+    private Party practice;
 
     /**
      * Constructs a {@link PracticeService}.
@@ -213,6 +214,18 @@ public class PracticeService {
     public Period getRecordLockPeriod() {
         Party current = getPractice();
         return (current != null) ? rules.getRecordLockPeriod(current) : null;
+    }
+
+    /**
+     * Determines the period after an invoice is finalised that pharmacy orders are discontinued.
+     * <p/>
+     * If no period is defined, orders are discontinued when invoices are finalised.
+     *
+     * @return the period, or {@code null} if no period is defined
+     */
+    public Period getPharmacyOrderDiscontinuePeriod() {
+        Party current = getPractice();
+        return (current != null) ? rules.getPharmacyOrderDiscontinuePeriod(current) : null;
     }
 
     /**

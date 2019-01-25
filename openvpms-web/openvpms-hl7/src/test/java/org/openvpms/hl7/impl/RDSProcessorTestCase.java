@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -26,12 +26,12 @@ import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.user.User;
 import org.openvpms.hl7.patient.PatientContext;
 
 import java.math.BigDecimal;
@@ -82,9 +82,10 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         super.setUp();
         rules = new PatientRules(null, getArchetypeService(), getLookupService());
         userRules = new UserRules(getArchetypeService());
-        product = createProduct();
+        product = (Product) createProduct();
         List<FinancialAct> invoice = FinancialTestHelper.createChargesInvoice(
-                BigDecimal.TEN, getContext().getCustomer(), getContext().getPatient(), product, ActStatus.IN_PROGRESS);
+                BigDecimal.TEN, (Party) getContext().getCustomer(), (Party) getContext().getPatient(), product,
+                ActStatus.IN_PROGRESS);
         save(invoice);
         invoiceItem = invoice.get(1);
 
@@ -109,21 +110,21 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules, userRules);
         List<Act> acts = processor.process(rds, getContext().getLocation().getObjectReference());
         assertEquals(2, acts.size());
-        ActBean order = new ActBean(acts.get(0));
-        ActBean item = new ActBean(acts.get(1));
-        Party customer = getContext().getCustomer();
-        Party location = getContext().getLocation();
+        IMObjectBean order = getBean(acts.get(0));
+        IMObjectBean item = getBean(acts.get(1));
+        Party customer = (Party) getContext().getCustomer();
+        Party location = (Party) getContext().getLocation();
         User clinician = getContext().getClinician();
-        Party patient = getContext().getPatient();
-        assertEquals(customer.getObjectReference(), order.getNodeParticipantRef("customer"));
-        assertEquals(clinician.getObjectReference(), order.getNodeParticipantRef("clinician"));
-        assertEquals(location.getObjectReference(), order.getNodeParticipantRef("location"));
-        assertEquals(patient.getObjectReference(), item.getNodeParticipantRef("patient"));
-        assertEquals(product.getObjectReference(), item.getNodeParticipantRef("product"));
-        assertEquals(clinician.getObjectReference(), item.getNodeParticipantRef("clinician"));
+        Party patient = (Party) getContext().getPatient();
+        assertEquals(customer.getObjectReference(), order.getTargetRef("customer"));
+        assertEquals(clinician.getObjectReference(), order.getTargetRef("clinician"));
+        assertEquals(location.getObjectReference(), order.getTargetRef("location"));
+        assertEquals(patient.getObjectReference(), item.getTargetRef("patient"));
+        assertEquals(product.getObjectReference(), item.getTargetRef("product"));
+        assertEquals(clinician.getObjectReference(), item.getTargetRef("clinician"));
         checkEquals(BigDecimal.valueOf(2), item.getBigDecimal("quantity"));
         assertEquals("90032145", item.getString("reference"));
-        assertEquals(ActStatus.IN_PROGRESS, order.getStatus());
+        assertEquals(ActStatus.IN_PROGRESS, order.getString("status"));
         save(acts);
     }
 
@@ -139,11 +140,11 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         log("RDS: ", rds);
         List<Act> acts = processor.process(rds, getContext().getLocation().getObjectReference());
         assertEquals(2, acts.size());
-        ActBean order = new ActBean(acts.get(0));
-        ActBean item = new ActBean(acts.get(1));
-        assertNull(order.getNodeParticipantRef("customer"));
-        assertNull(item.getNodeParticipantRef("patient"));
-        assertEquals(product.getObjectReference(), item.getNodeParticipantRef("product"));
+        IMObjectBean order = getBean(acts.get(0));
+        IMObjectBean item = getBean(acts.get(1));
+        assertNull(order.getTargetRef("customer"));
+        assertNull(item.getTargetRef("patient"));
+        assertEquals(product.getObjectReference(), item.getTargetRef("product"));
         checkEquals(BigDecimal.valueOf(2), item.getBigDecimal("quantity"));
         assertEquals("90032145", item.getString("reference"));
         assertEquals("Unknown patient, Id='UNKNOWN', name='Fido Bar'", order.getString("notes"));
@@ -162,13 +163,13 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         log("RDS: ", rds);
         List<Act> acts = processor.process(rds, getContext().getLocation().getObjectReference());
         assertEquals(2, acts.size());
-        ActBean order = new ActBean(acts.get(0));
-        ActBean item = new ActBean(acts.get(1));
-        Party customer = getContext().getCustomer();
-        Party patient = getContext().getPatient();
-        assertEquals(customer.getObjectReference(), order.getNodeParticipantRef("customer"));
-        assertEquals(patient.getObjectReference(), item.getNodeParticipantRef("patient"));
-        assertNull(item.getNodeParticipantRef("product"));
+        IMObjectBean order = getBean(acts.get(0));
+        IMObjectBean item = getBean(acts.get(1));
+        Party customer = (Party) getContext().getCustomer();
+        Party patient = (Party) getContext().getPatient();
+        assertEquals(customer.getObjectReference(), order.getTargetRef("customer"));
+        assertEquals(patient.getObjectReference(), item.getTargetRef("patient"));
+        assertNull(item.getTargetRef("product"));
         checkEquals(BigDecimal.valueOf(2), item.getBigDecimal("quantity"));
         assertEquals("90032145", item.getString("reference"));
         assertEquals("Unknown Dispense Give Code, Id='UNKNOWN', name='Valium 2mg'", order.getString("notes"));
@@ -184,14 +185,14 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
     public void testDifferentPatient() throws HL7Exception {
         RDSProcessor processor = new RDSProcessor(getArchetypeService(), rules, userRules);
         PatientContext context = getContext();
-        Party patient1 = context.getPatient();
+        Party patient1 = (Party) context.getPatient();
         Party patient2 = TestHelper.createPatient();
-        ActBean bean = new ActBean(invoiceItem);
-        bean.setNodeParticipant("patient", patient2);
+        IMObjectBean bean = getBean(invoiceItem);
+        bean.setTarget("patient", patient2);
         bean.save();
         List<Act> acts = processor.process(rds, context.getLocation().getObjectReference());
         assertEquals(2, acts.size());
-        ActBean order = new ActBean(acts.get(0));
+        IMObjectBean order = getBean(acts.get(0));
         assertEquals("Patient is different to that in the original Customer Invoice Item. Was '" + patient2.getName()
                      + "' (" + patient2.getId() + "). Now '" + patient1.getName() + "' (" + patient1.getId() + ")",
                      order.getString("notes"));
@@ -212,7 +213,7 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         dispenseUnits.getText().setValue("Bottle");
         List<Act> acts = processor.process(rds, context.getLocation().getObjectReference());
         assertEquals(2, acts.size());
-        ActBean order = new ActBean(acts.get(0));
+        IMObjectBean order = getBean(acts.get(0));
         assertEquals("Dispense Units (Id='BOTTLE', name='Bottle') do not match selling units (TAB)",
                      order.getString("notes"));
         save(acts);
@@ -229,7 +230,7 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         rds.getORDER().getORC().getPlacerOrderNumber().getEntityIdentifier().setValue(null);
         List<Act> acts = processor.process(rds, getContext().getLocation().getObjectReference());
         assertEquals(2, acts.size());
-        ActBean order = new ActBean(acts.get(0));
+        IMObjectBean order = getBean(acts.get(0));
         assertEquals("No Placer Order Number specified. Order placed outside OpenVPMS", order.getString("notes"));
         save(acts);
     }
@@ -247,7 +248,7 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         placerOrderNumber.getNamespaceID().setValue(null);
         List<Act> acts = processor.process(rds, getContext().getLocation().getObjectReference());
         assertEquals(2, acts.size());
-        ActBean order = new ActBean(acts.get(0));
+        IMObjectBean order = getBean(acts.get(0));
         assertEquals("Order with Placer Order Number 'OVERRIDE' was placed outside OpenVPMS",
                      order.getString("notes"));
         save(acts);
@@ -268,7 +269,7 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         log("RDS", rds);
         List<Act> acts = processor.process(rds, getContext().getLocation().getObjectReference());
         assertEquals(2, acts.size());
-        ActBean order = new ActBean(acts.get(0));
+        IMObjectBean order = getBean(acts.get(0));
         assertEquals("Order with Placer Order Number '" + uuid + "' was placed outside OpenVPMS",
                      order.getString("notes"));
         save(acts);
@@ -288,7 +289,7 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         log("RDS", rds);
         List<Act> acts = processor.process(rds, getContext().getLocation().getObjectReference());
         assertEquals(2, acts.size());
-        ActBean order = new ActBean(acts.get(0));
+        IMObjectBean order = getBean(acts.get(0));
         assertEquals("Order with Placer Order Number '10231' has no corresponding Customer Invoice Item",
                      order.getString("notes"));
         save(acts);
@@ -308,7 +309,7 @@ public class RDSProcessorTestCase extends AbstractRDSTest {
         log("RDS", rds);
         List<Act> acts = processor.process(rds, getContext().getLocation().getObjectReference());
         assertEquals(2, acts.size());
-        ActBean order = new ActBean(acts.get(0));
+        IMObjectBean order = getBean(acts.get(0));
         assertEquals("Order with Placer Order Number '10231' submitted by ExternalApp has no corresponding "
                      + "Customer Invoice Item", order.getString("notes"));
         save(acts);

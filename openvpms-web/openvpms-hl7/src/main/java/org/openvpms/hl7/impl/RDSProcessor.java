@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -30,15 +30,14 @@ import org.openvpms.archetype.rules.finance.order.CustomerOrder;
 import org.openvpms.archetype.rules.finance.order.CustomerPharmacyOrder;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.user.UserRules;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -80,7 +79,7 @@ public class RDSProcessor extends OrderMessageProcessor {
      * @return the customer order and/or return
      * @throws HL7Exception for any HL7 error
      */
-    public List<Act> process(RDS_O13 message, IMObjectReference location) throws HL7Exception {
+    public List<Act> process(RDS_O13 message, Reference location) throws HL7Exception {
         if (message.getORDERReps() < 1) {
             throw new HL7Exception("RDS O13 message contains no order group");
         }
@@ -104,8 +103,8 @@ public class RDSProcessor extends OrderMessageProcessor {
      * @return a new {@link CustomerOrder}
      */
     @Override
-    protected CustomerPharmacyOrder createState(Party patient, Party customer, String note, IMObjectReference location,
-                                IArchetypeService service) {
+    protected CustomerPharmacyOrder createState(Party patient, Party customer, String note, Reference location,
+                                                IArchetypeService service) {
         return new CustomerPharmacyOrder(patient, customer, note, location, service);
     }
 
@@ -117,8 +116,8 @@ public class RDSProcessor extends OrderMessageProcessor {
      */
     private void addItem(RDS_O13_ORDER group, CustomerOrder state) {
         BigDecimal quantity = getQuantity(group);
-        ActBean bean;
-        ActBean itemBean;
+        IMObjectBean bean;
+        IMObjectBean itemBean;
         if (quantity.signum() >= 0) {
             bean = state.getOrder();
             itemBean = state.createOrderItem();
@@ -160,7 +159,7 @@ public class RDSProcessor extends OrderMessageProcessor {
      * @param itemBean the order item bean
      * @return the product or {@code null} if none is found
      */
-    private Product addProduct(RDS_O13_ORDER group, ActBean bean, ActBean itemBean) {
+    private Product addProduct(RDS_O13_ORDER group, IMObjectBean bean, IMObjectBean itemBean) {
         RXD rxd = group.getRXD();
         CE code = rxd.getDispenseGiveCode();
         long id = HL7MessageHelper.getId(code);
@@ -173,7 +172,7 @@ public class RDSProcessor extends OrderMessageProcessor {
             result = (iterator.hasNext()) ? iterator.next() : null;
         }
         if (result != null) {
-            itemBean.addNodeParticipation("product", result);
+            itemBean.setTarget("product", result);
         } else {
             addNote(bean, "Unknown Dispense Give Code, Id='" + code.getIdentifier().getValue()
                           + "', name='" + code.getText().getValue() + "'");
@@ -191,9 +190,9 @@ public class RDSProcessor extends OrderMessageProcessor {
      * @param itemBean    the order item bean
      * @param invoiceItem the original invoice item. May be {@code null}
      */
-    private void addClinician(RDS_O13_ORDER group, ActBean bean, ActBean itemBean, Act invoiceItem) {
+    private void addClinician(RDS_O13_ORDER group, IMObjectBean bean, IMObjectBean itemBean, Act invoiceItem) {
         XCN dispensingProvider = group.getRXD().getDispensingProvider(0);
-        IMObjectReference clinician = null;
+        Reference clinician = null;
         long id = HL7MessageHelper.getId(dispensingProvider.getIDNumber().getValue());
         if (id != -1) {
             User user = getClinician(id);
@@ -201,18 +200,18 @@ public class RDSProcessor extends OrderMessageProcessor {
                 clinician = user.getObjectReference();
             }
         } else if (invoiceItem != null) {
-            ActBean invoiceBean = new ActBean(invoiceItem, getService());
+            IMObjectBean invoiceBean = getService().getBean(invoiceItem);
             // propagate the clinician from original invoice item
-            clinician = invoiceBean.getNodeParticipantRef("clinician");
+            clinician = invoiceBean.getTargetRef("clinician");
             if (clinician == null) {
                 // else get it from the parent
-                clinician = bean.getNodeParticipantRef("clinician");
+                clinician = bean.getTargetRef("clinician");
             }
         }
         if (clinician != null) {
-            itemBean.addNodeParticipation("clinician", clinician);
-            if (bean.getNodeParticipantRef("clinician") == null) {
-                bean.addNodeParticipation("clinician", clinician);
+            itemBean.setTarget("clinician", clinician);
+            if (bean.getTargetRef("clinician") == null) {
+                bean.setTarget("clinician", clinician);
             }
         }
     }
@@ -225,7 +224,7 @@ public class RDSProcessor extends OrderMessageProcessor {
      * @param itemBean the item
      * @param state    the state
      */
-    private FinancialAct addInvoiceItem(ORC orc, ActBean bean, ActBean itemBean, CustomerOrder state) {
+    private FinancialAct addInvoiceItem(ORC orc, IMObjectBean bean, IMObjectBean itemBean, CustomerOrder state) {
         FinancialAct invoiceItem = (FinancialAct) getOrder(CustomerAccountArchetypes.INVOICE_ITEM, orc, bean, state);
         if (invoiceItem != null) {
             itemBean.setValue("sourceInvoiceItem", invoiceItem.getObjectReference());
@@ -240,11 +239,11 @@ public class RDSProcessor extends OrderMessageProcessor {
      * @param bean    the order bean
      * @param product the product
      */
-    private void checkSellingUnits(RDS_O13_ORDER group, ActBean bean, Product product) {
+    private void checkSellingUnits(RDS_O13_ORDER group, IMObjectBean bean, Product product) {
         RXD rxd = group.getRXD();
         CE dispenseUnits = rxd.getActualDispenseUnits();
         String units = dispenseUnits.getIdentifier().getValue();
-        IMObjectBean productBean = new IMObjectBean(product, getService());
+        IMObjectBean productBean = getService().getBean(product);
         String sellingUnits = productBean.getString("sellingUnits");
         if (!StringUtils.isEmpty(units) && !StringUtils.isEmpty(sellingUnits) && !units.equals(sellingUnits)) {
             String name = dispenseUnits.getText().getValue();

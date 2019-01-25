@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -36,7 +36,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopyHandler;
@@ -150,8 +149,7 @@ public class AppointmentRules {
      * @throws OpenVPMSException for any error
      */
     public Entity getDefaultAppointmentType(Entity schedule) {
-        return EntityRelationshipHelper.getDefaultTarget((org.openvpms.component.business.domain.im.common.Entity)
-                                                                 schedule, "appointmentTypes", false, service);
+        return EntityRelationshipHelper.getDefaultTarget(schedule, "appointmentTypes", false, service);
     }
 
     /**
@@ -180,8 +178,8 @@ public class AppointmentRules {
      * @throws OpenVPMSException for any error
      */
     public void updateTask(Act act) {
-        ActBean bean = new ActBean(act, service);
-        List<Act> tasks = bean.getNodeActs("tasks");
+        IMObjectBean bean = service.getBean(act);
+        List<Act> tasks = bean.getTargets("tasks", Act.class);
         if (!tasks.isEmpty()) {
             Act task = tasks.get(0);
             updateStatus(act, task);
@@ -197,8 +195,8 @@ public class AppointmentRules {
      * @throws OpenVPMSException for any error
      */
     public void updateAppointment(Act act) {
-        ActBean bean = new ActBean(act, service);
-        List<Act> appointments = bean.getNodeActs("appointments");
+        IMObjectBean bean = service.getBean(act);
+        List<Act> appointments = bean.getSources("appointments", Act.class);
         if (!appointments.isEmpty()) {
             Act appointment = appointments.get(0);
             updateStatus(act, appointment);
@@ -231,14 +229,14 @@ public class AppointmentRules {
      */
     public Act copy(Act appointment) {
         IMObjectCopyHandler handler = new DefaultActCopyHandler() {
-            @Override
-            protected boolean checkCopyable(ArchetypeDescriptor archetype, NodeDescriptor node) {
-                return true;
-            }
-
             {
                 setCopy(Act.class, Participation.class);
                 setExclude(ActRelationship.class);
+            }
+
+            @Override
+            protected boolean checkCopyable(ArchetypeDescriptor archetype, NodeDescriptor node) {
+                return true;
             }
         };
         IMObjectCopier copier = new IMObjectCopier(handler, service);
@@ -284,10 +282,10 @@ public class AppointmentRules {
      * @param appointment the appointment
      * @return {@code true} if the appointment is a boarding appointment
      */
-    public boolean isBoardingAppointment(Act appointment) {
+    public boolean isBoardingAppointment(org.openvpms.component.model.act.Act appointment) {
         boolean result = false;
-        ActBean bean = new ActBean(appointment, service);
-        Entity schedule = bean.getNodeParticipant("schedule");
+        IMObjectBean bean = service.getBean(appointment);
+        Entity schedule = bean.getTarget("schedule", Entity.class);
         if (schedule != null) {
             IMObjectBean scheduleBean = service.getBean(schedule);
             if (scheduleBean.getTargetRef("cageType") != null) {
@@ -345,8 +343,8 @@ public class AppointmentRules {
      * @return the event, or {@code null} if none exists
      */
     public Act getEvent(Act appointment) {
-        ActBean bean = new ActBean(appointment, service);
-        return (Act) bean.getNodeTargetObject("event");
+        IMObjectBean bean = service.getBean(appointment);
+        return bean.getTarget("event", Act.class);
     }
 
     /**

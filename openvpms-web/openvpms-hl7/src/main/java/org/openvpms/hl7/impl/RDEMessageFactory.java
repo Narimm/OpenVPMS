@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -22,10 +22,10 @@ import ca.uhn.hl7v2.model.v25.datatype.EI;
 import ca.uhn.hl7v2.model.v25.message.RDE_O11;
 import ca.uhn.hl7v2.model.v25.segment.ORC;
 import ca.uhn.hl7v2.model.v25.segment.RXO;
-import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.product.Product;
 import org.openvpms.hl7.patient.PatientContext;
 
 import java.math.BigDecimal;
@@ -164,7 +164,7 @@ public class RDEMessageFactory extends AbstractMessageFactory {
             }
             RXO rxo = rde.getORDER().getORDER_DETAIL().getRXO();
             PopulateHelper.populateProduct(rxo.getRequestedGiveCode(), product);
-            IMObjectBean bean = new IMObjectBean(product, getArchetypeService());
+            IMObjectBean bean = getArchetypeService().getBean(product);
             String dispensingCode = getOptional(bean, DISPENSING_UNITS);
             if (dispensingCode != null) {
                 String dispensingName = getLookupService().getName(product, DISPENSING_UNITS);

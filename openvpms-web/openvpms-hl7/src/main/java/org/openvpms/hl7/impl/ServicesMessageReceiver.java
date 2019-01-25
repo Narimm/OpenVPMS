@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -23,12 +23,11 @@ import ca.uhn.hl7v2.protocol.ReceivingApplicationException;
 import ca.uhn.hl7v2.protocol.Transportable;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.user.User;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.io.MessageDispatcher;
@@ -76,7 +75,7 @@ public abstract class ServicesMessageReceiver implements DisposableBean {
     /**
      * The services that are being listened to.
      */
-    private final Map<Long, Connector> listening = Collections.synchronizedMap(new HashMap<Long, Connector>());
+    private final Map<Long, Connector> listening = Collections.synchronizedMap(new HashMap<>());
 
     /**
      * The logger.
@@ -139,7 +138,7 @@ public abstract class ServicesMessageReceiver implements DisposableBean {
      * @param location the practice location
      * @throws HL7Exception for any HL7 error
      */
-    public abstract void process(Message message, IMObjectReference location) throws HL7Exception;
+    public abstract void process(Message message, Reference location) throws HL7Exception;
 
     /**
      * Listen to services.
@@ -180,10 +179,10 @@ public abstract class ServicesMessageReceiver implements DisposableBean {
      * @param message   the message
      * @param reference the service reference
      * @return the response
-     * @throws ReceivingApplicationException
+     * @throws ReceivingApplicationException if a service is not found
      * @throws HL7Exception                  for any HL7 error
      */
-    protected Message processMessage(Message message, IMObjectReference reference)
+    protected Message processMessage(Message message, Reference reference)
             throws ReceivingApplicationException, HL7Exception {
         log(message);
 
@@ -193,8 +192,8 @@ public abstract class ServicesMessageReceiver implements DisposableBean {
             throw new ReceivingApplicationException("Service not found: " + reference);
         }
 
-        IMObjectBean bean = new IMObjectBean(entity, service);
-        IMObjectReference location = bean.getNodeTargetObjectRef("location");
+        IMObjectBean bean = service.getBean(entity);
+        Reference location = bean.getTargetRef("location");
 
         Message response;
 
@@ -220,7 +219,7 @@ public abstract class ServicesMessageReceiver implements DisposableBean {
      */
     private void listen(Entity service, boolean start) {
         Connector current = listening.get(service.getId());
-        EntityBean bean = new EntityBean(service, this.service);
+        IMObjectBean bean = this.service.getBean(service);
         Connector connector = getConnector(bean);
         User user = getUser(bean);
         boolean listen = true;
@@ -273,8 +272,8 @@ public abstract class ServicesMessageReceiver implements DisposableBean {
      * @param service the service
      * @return the dispense connector, or {@code null} if none is defined
      */
-    private Connector getConnector(EntityBean service) {
-        IMObjectReference ref = service.getNodeTargetObjectRef("receiver");
+    private Connector getConnector(IMObjectBean service) {
+        Reference ref = service.getTargetRef("receiver");
         return (ref != null) ? connectors.getConnector(ref) : null;
     }
 
@@ -284,8 +283,8 @@ public abstract class ServicesMessageReceiver implements DisposableBean {
      * @param service the service
      * @return the user. May be {@code null}
      */
-    private User getUser(EntityBean service) {
-        return (User) service.getNodeTargetEntity("user");
+    private User getUser(IMObjectBean service) {
+        return service.getTarget("user", User.class);
     }
 
     /**
@@ -308,9 +307,9 @@ public abstract class ServicesMessageReceiver implements DisposableBean {
 
     private class Receiver implements ReceivingApplication {
 
-        private final IMObjectReference reference;
+        private final Reference reference;
 
-        public Receiver(Entity entity) {
+        Receiver(Entity entity) {
             reference = entity.getObjectReference();
         }
 

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.jobs.scheduledreport;
@@ -28,10 +28,10 @@ import org.openvpms.archetype.rules.workflow.SystemMessageReason;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.bean.Policies;
+import org.openvpms.component.model.user.User;
 import org.openvpms.report.DocFormats;
 import org.openvpms.report.ParameterType;
 import org.openvpms.report.ReportFactory;
@@ -205,7 +205,8 @@ public class ScheduledReportJob implements InterruptableJob {
         Context context = new LocalContext();
         context.setPractice(practiceService.getPractice());
         context.setLocation(config.getTarget("location", Party.class));
-        context.setUser(config.getTarget("runAs", User.class));
+        context.setUser((org.openvpms.component.business.domain.im.security.User)
+                                config.getTarget("runAs", User.class));
         state.setTemplate(template);
         SQLReportPrinter printer = new SQLReportPrinter(template, context, reportFactory, formatter, dataSource,
                                                         service);

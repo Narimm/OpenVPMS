@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -26,11 +26,12 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.user.User;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -95,9 +96,9 @@ public class MessageServiceImpl implements MessageService {
     @Override
     public DocumentAct save(Message message, Connector connector, User user) throws HL7Exception {
         DocumentAct act = (DocumentAct) service.create(HL7Archetypes.MESSAGE);
-        ActBean bean = new ActBean(act, service);
-        bean.addNodeParticipation("connector", connector.getReference());
-        bean.addNodeParticipation("author", user);
+        IMObjectBean bean = service.getBean(act);
+        bean.setTarget("connector", connector.getReference());
+        bean.setTarget("author", user);
         bean.setValue("hl7Version", message.getVersion());
         MSH header = (MSH) message.get("MSH");
         String name = HL7MessageHelper.getMessageName(header);
@@ -124,7 +125,7 @@ public class MessageServiceImpl implements MessageService {
     public void accepted(DocumentAct message, Date timestamp) {
         message.setActivityEndTime(timestamp);
         message.setStatus(HL7MessageStatuses.ACCEPTED);
-        ActBean bean = new ActBean(message, service);
+        IMObjectBean bean = service.getBean(message);
         bean.setValue("error", null);
         bean.save();
     }
@@ -144,7 +145,7 @@ public class MessageServiceImpl implements MessageService {
         }
         message.setActivityEndTime(timestamp);
         message.setStatus(status);
-        ActBean bean = new ActBean(message, service);
+        IMObjectBean bean = service.getBean(message);
         bean.setValue("error", error);
         bean.save();
     }
@@ -197,13 +198,13 @@ public class MessageServiceImpl implements MessageService {
         if (!HL7MessageStatuses.ERROR.equals(message.getStatus())) {
             throw new IllegalArgumentException("Cannot resubmit messages with status " + message.getStatus());
         }
-        ActBean bean = new ActBean(message, service);
-        IMObjectReference ref = bean.getNodeParticipantRef("connector");
+        IMObjectBean bean = service.getBean(message);
+        Reference ref = bean.getTargetRef("connector");
         if (!TypeHelper.isA(ref, HL7Archetypes.SENDERS)) {
-            throw new IllegalArgumentException("Cannot resubmit messages using " + ref.getArchetypeId());
+            throw new IllegalArgumentException("Cannot resubmit messages using " + ref.getArchetype());
         }
-        bean.setStatus(HL7MessageStatuses.PENDING);
-        bean.save();
+        message.setStatus(HL7MessageStatuses.PENDING);
+        service.save(message);
     }
 
     /**

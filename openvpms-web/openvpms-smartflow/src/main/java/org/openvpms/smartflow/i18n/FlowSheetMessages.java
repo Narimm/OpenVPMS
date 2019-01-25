@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.i18n;
 
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.i18n.Message;
 import org.openvpms.component.i18n.Messages;
+import org.openvpms.component.model.party.Party;
 
 /**
  * Messages reported by the Smart Flow Sheet interface.

@@ -209,6 +209,17 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
     }
 
     /**
+     * Invoked when the parent charge is POSTED.
+     * <p/>
+     * This updates the endTime (i.e. the Completed Date) on each of the items.
+     */
+    public void posted(Date date) {
+        for (Act act : getCurrentActs()) {
+            act.setActivityEndTime(date);
+        }
+    }
+
+    /**
      * Invoked when the "Add" button is pressed. Creates a new instance of the selected archetype, and displays it in
      * an editor.
      *

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -20,12 +20,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.user.User;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.pharmacy.Pharmacies;
 import org.openvpms.hl7.pharmacy.PharmacyOrderService;
@@ -71,14 +70,14 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
     public void setUp() {
         super.setUp();
         pharmacy = (Entity) create(HL7Archetypes.PHARMACY);
-        EntityBean bean = new EntityBean(pharmacy);
-        bean.addNodeTarget("sender", getSender().getReference());
-        bean.addNodeTarget("location", getContext().getLocation());
+        IMObjectBean bean = getBean(pharmacy);
+        bean.setTarget("sender", getSender().getReference());
+        bean.setTarget("location", getContext().getLocation());
 
         Pharmacies pharmacies = new PharmaciesImpl(getArchetypeService(), getConnectors(), getEventServices()) {
 
             @Override
-            public Entity getService(Entity group, IMObjectReference location) {
+            public Entity getService(Entity group, Reference location) {
                 return pharmacy;
             }
         };
@@ -89,7 +88,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
 
         product = TestHelper.createProduct();
         product.setName("Valium 2mg");
-        IMObjectBean productBean = new IMObjectBean(product);
+        IMObjectBean productBean = getBean(product);
         productBean.setValue("dispensingUnits", TestHelper.getLookup("lookup.uom", "TAB", "Tablets", true).getCode());
         productBean.setValue("sellingUnits", TestHelper.getLookup("lookup.uom", "BOX", "Box", true).getCode());
         productBean.setValue("dispInstructions", "Give 1 tablet once daily");
@@ -102,7 +101,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
     }
 
     /**
-     * Tests the {@link PharmacyOrderService#createOrder(PatientContext, Product, BigDecimal, long, Date, Entity, org.openvpms.component.business.domain.im.security.User)}
+     * Tests the {@link PharmacyOrderService#createOrder}
      * method.
      *
      * @throws Exception for any error
@@ -125,7 +124,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
 
 
     /**
-     * Tests the {@link PharmacyOrderService#updateOrder(PatientContext, Product, BigDecimal, long, Date, Entity, org.openvpms.component.business.domain.im.security.User)}
+     * Tests the {@link PharmacyOrderService#updateOrder}
      * method.
      *
      * @throws Exception for any error
@@ -147,7 +146,7 @@ public class PharmacyOrderServiceImplTestCase extends AbstractServiceTest {
     }
 
     /**
-     * Tests the {@link PharmacyOrderService#updateOrder(PatientContext, Product, BigDecimal, long, Date, Entity, org.openvpms.component.business.domain.im.security.User)}
+     * Tests the {@link PharmacyOrderService#updateOrder}
      * method.
      *
      * @throws Exception for any error

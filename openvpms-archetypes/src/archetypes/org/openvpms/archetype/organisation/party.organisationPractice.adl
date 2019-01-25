@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -153,6 +153,17 @@
         </node>
         <node name="restrictOrdering" minCardinality="0" maxCardinality="1" path="/details/restrictOrdering"
               type="java.lang.Boolean" defaultValue="false()"/>
+        <node name="pharmacyOrderDiscontinuePeriod" path="/details/pharmacyOrderDiscontinuePeriod" minCardinality="0"
+              type="java.lang.Integer" defaultValue="0"/>
+        <node name="pharmacyOrderDiscontinuePeriodUnits" path="/details/pharmacyOrderDiscontinuePeriodUnits"
+              minCardinality="0" type="java.lang.String" defaultValue="'MINUTES'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="MINUTES" value="minutes"/>
+                    <property name="HOURS" value="hours"/>
+                </propertyList>
+            </assertion>
+        </node>
         <node name="appointmentCacheMaxElements" type="java.lang.Long" minCardinality="0"
               path="/details/appointmentCacheMaxElements" defaultValue="30" hidden="true"/>
         <node name="calendarCacheMaxElements" type="java.lang.Long" minCardinality="0"

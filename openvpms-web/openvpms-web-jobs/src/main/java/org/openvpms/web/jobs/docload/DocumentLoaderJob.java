@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.jobs.docload;
@@ -20,10 +20,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.workflow.SystemMessageReason;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.user.User;
 import org.openvpms.etl.tools.doc.DefaultLoadContext;
 import org.openvpms.etl.tools.doc.DefaultLoaderListener;
 import org.openvpms.etl.tools.doc.FileLoaderListener;
@@ -72,9 +72,9 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
     private final PlatformTransactionManager transactionManager;
 
     /**
-     * The logger.
+     * Used to send messages to users on completion or failure.
      */
-    private static final Log log = LogFactory.getLog(DocumentLoaderJob.class);
+    private final JobCompletionNotifier notifier;
 
     /**
      * Determines if loading should stop.
@@ -82,9 +82,9 @@ public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
     private volatile boolean stop;
 
     /**
-     * Used to send messages to users on completion or failure.
+     * The logger.
      */
-    private final JobCompletionNotifier notifier;
+    private static final Log log = LogFactory.getLog(DocumentLoaderJob.class);
 
     /**
      * Constructs a {@link DocumentLoaderJob}.

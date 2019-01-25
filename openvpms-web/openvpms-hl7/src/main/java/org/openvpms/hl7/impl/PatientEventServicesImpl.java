@@ -11,18 +11,18 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.MonitoringIMObjectCache;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.party.Party;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.patient.PatientEventServices;
@@ -94,12 +94,12 @@ public class PatientEventServicesImpl extends MonitoringIMObjectCache<Entity> im
      * @return the connections
      */
     @Override
-    public Collection<Connector> getConnections(IMObjectReference location) {
-        Map<IMObjectReference, Connector> result = new HashMap<IMObjectReference, Connector>();
+    public Collection<Connector> getConnections(Reference location) {
+        Map<Reference, Connector> result = new HashMap<>();
         for (Entity object : getObjects()) {
-            EntityBean bean = new EntityBean(object, getService());
-            if (ObjectUtils.equals(bean.getNodeTargetObjectRef("location"), location)) {
-                IMObjectReference sender = bean.getNodeTargetObjectRef("sender");
+            IMObjectBean bean = getService().getBean(object);
+            if (ObjectUtils.equals(bean.getTargetRef("location"), location)) {
+                Reference sender = bean.getTargetRef("sender");
                 if (sender != null && !result.containsKey(sender)) {
                     Connector connector = connectors.getConnector(sender);
                     if (connector != null) {

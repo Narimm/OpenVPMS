@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.event.impl;
@@ -29,7 +29,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.smartflow.model.Medic;
 import org.openvpms.smartflow.model.Treatment;
 import org.openvpms.smartflow.model.Treatments;
@@ -296,7 +296,8 @@ public class TreatmentEventProcessorTestCase extends ArchetypeServiceTest {
         assertEquals(2, order2.size());
         checkOrder(order2.get(0), customer, patient, product, TEN, location, clinician); // the original order
 
-        ActBean returnItem = checkReturn(order2.get(1), customer, patient, product, BigDecimal.valueOf(9), location);
+        IMObjectBean returnItem = checkReturn(order2.get(1), customer, patient, product, BigDecimal.valueOf(9),
+                                              location);
         // the new order return
 
         // change the return quantity and post it, to simulate a user editing it
@@ -508,8 +509,8 @@ public class TreatmentEventProcessorTestCase extends ArchetypeServiceTest {
      * @param order the order to post
      */
     private void post(CustomerPharmacyOrder order) {
-        ActBean bean = (order.hasOrder()) ? order.getOrder() : order.getReturn();
-        bean.setStatus(ActStatus.POSTED);
+        IMObjectBean bean = (order.hasOrder()) ? order.getOrder() : order.getReturn();
+        bean.setValue("status", ActStatus.POSTED);
         bean.save();
     }
 
@@ -527,16 +528,16 @@ public class TreatmentEventProcessorTestCase extends ArchetypeServiceTest {
     private void checkOrder(CustomerPharmacyOrder order, Party customer, Party patient, Product product,
                             BigDecimal quantity, Party location, User clinician) {
         assertTrue(order.hasOrder());
-        ActBean act = order.getOrder();
-        assertEquals(customer, act.getNodeParticipant("customer"));
-        ActBean item = order.getItem(product);
+        IMObjectBean act = order.getOrder();
+        assertEquals(customer, act.getTarget("customer"));
+        IMObjectBean item = order.getItem(product);
         assertNotNull(item);
         assertTrue(item.isA(OrderArchetypes.PHARMACY_ORDER_ITEM));
-        assertEquals(patient, item.getNodeParticipant("patient"));
+        assertEquals(patient, item.getTarget("patient"));
         checkEquals(quantity, item.getBigDecimal("quantity"));
-        assertEquals(clinician, item.getNodeParticipant("clinician"));
-        assertEquals(location, act.getNodeParticipant("location"));
-        assertEquals(clinician, act.getNodeParticipant("clinician"));
+        assertEquals(clinician, item.getTarget("clinician"));
+        assertEquals(location, act.getTarget("location"));
+        assertEquals(clinician, act.getTarget("clinician"));
     }
 
     /**
@@ -550,19 +551,19 @@ public class TreatmentEventProcessorTestCase extends ArchetypeServiceTest {
      * @param location    the expected practice location
      * @return the return item
      */
-    private ActBean checkReturn(CustomerPharmacyOrder orderReturn, Party customer, Party patient, Product product,
-                                BigDecimal quantity, Party location) {
+    private IMObjectBean checkReturn(CustomerPharmacyOrder orderReturn, Party customer, Party patient, Product product,
+                                     BigDecimal quantity, Party location) {
         assertFalse(orderReturn.hasOrder());
-        ActBean act = orderReturn.getReturn();
-        assertEquals(customer, act.getNodeParticipant("customer"));
-        ActBean item = orderReturn.getItem(product);
+        IMObjectBean act = orderReturn.getReturn();
+        assertEquals(customer, act.getTarget("customer"));
+        IMObjectBean item = orderReturn.getItem(product);
         assertNotNull(item);
         assertTrue(item.isA(OrderArchetypes.PHARMACY_RETURN_ITEM));
-        assertEquals(patient, item.getNodeParticipant("patient"));
+        assertEquals(patient, item.getTarget("patient"));
         checkEquals(quantity, item.getBigDecimal("quantity"));
-        assertEquals(clinician, item.getNodeParticipant("clinician"));
-        assertEquals(location, act.getNodeParticipant("location"));
-        assertEquals(clinician, act.getNodeParticipant("clinician"));
+        assertEquals(clinician, item.getTarget("clinician"));
+        assertEquals(location, act.getTarget("location"));
+        assertEquals(clinician, act.getTarget("clinician"));
         return item;
     }
 

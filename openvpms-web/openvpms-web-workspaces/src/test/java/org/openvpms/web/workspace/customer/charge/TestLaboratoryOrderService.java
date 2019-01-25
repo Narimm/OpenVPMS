@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.party.Party;
+import org.openvpms.component.model.user.User;
 import org.openvpms.hl7.laboratory.LaboratoryOrderService;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.pharmacy.PharmacyOrderService;
@@ -35,11 +35,6 @@ import java.util.List;
 public class TestLaboratoryOrderService implements LaboratoryOrderService {
 
     public static class LabOrder {
-
-        enum Type {
-            CREATE,
-            CANCEL
-        }
 
         private final Type type;
 
@@ -61,7 +56,6 @@ public class TestLaboratoryOrderService implements LaboratoryOrderService {
             this.clinician = clinician;
             this.laboratory = laboratory;
         }
-
 
         public Type getType() {
             return type;
@@ -86,7 +80,14 @@ public class TestLaboratoryOrderService implements LaboratoryOrderService {
         public Entity getLaboratory() {
             return laboratory;
         }
+
+        enum Type {
+            CREATE,
+            CANCEL
+        }
     }
+
+    private List<LabOrder> orders = new ArrayList<>();
 
     /**
      * Creates an order, placing it with the specified laboratory.
@@ -107,11 +108,10 @@ public class TestLaboratoryOrderService implements LaboratoryOrderService {
         return true;
     }
 
-    private List<LabOrder> orders = new ArrayList<>();
-
     /**
      * Cancels an order.
-     *  @param context           the patient context
+     *
+     * @param context           the patient context
      * @param placerOrderNumber the placer order number, to uniquely identify the order
      * @param serviceId         the universal service identifier
      * @param date              the order date

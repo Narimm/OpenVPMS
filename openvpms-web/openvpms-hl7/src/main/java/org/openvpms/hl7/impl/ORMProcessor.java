@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -25,11 +25,12 @@ import org.openvpms.archetype.rules.finance.order.OrderArchetypes;
 import org.openvpms.archetype.rules.patient.InvestigationArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.user.UserRules;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.List;
 
@@ -61,7 +62,7 @@ public class ORMProcessor extends OrderMessageProcessor {
      * @return the customer order and/or return
      * @throws HL7Exception for any HL7 error
      */
-    public List<Act> process(ORM_O01 message, IMObjectReference location) throws HL7Exception {
+    public List<Act> process(ORM_O01 message, Reference location) throws HL7Exception {
         PID pid = message.getPATIENT().getPID();
         CustomerOrder state = createState(pid, location);
         ORC orc = message.getORDER().getORC();
@@ -73,6 +74,12 @@ public class ORMProcessor extends OrderMessageProcessor {
         return state.getActs();
     }
 
+    @Override
+    protected CustomerOrder createState(Party patient, Party customer, String note, Reference location,
+                                        IArchetypeService service) {
+        return new State(patient, customer, note, location, service);
+    }
+
     /**
      * Adds an order item.
      *
@@ -80,23 +87,16 @@ public class ORMProcessor extends OrderMessageProcessor {
      * @param state the state
      */
     private void addItem(ORC item, CustomerOrder state) {
-        ActBean bean = state.getReturn();
-        ActBean itemBean = state.createReturnItem();
+        IMObjectBean bean = state.getReturn();
+        IMObjectBean itemBean = state.createReturnItem();
         Act investigation = getOrder(InvestigationArchetypes.PATIENT_INVESTIGATION, item, bean, state);
         if (investigation != null) {
             itemBean.setValue("sourceInvestigation", investigation.getObjectReference());
-            ActBean investigationBean = new ActBean(investigation, getService());
-            itemBean.setNodeParticipant("product", investigationBean.getNodeParticipantRef("product"));
-            itemBean.setNodeParticipant("investigationType",
-                                        investigationBean.getNodeParticipantRef("investigationType"));
-            itemBean.setValue("sourceInvoiceItem", investigationBean.getNodeSourceObjectRef("invoiceItem"));
+            IMObjectBean investigationBean = getService().getBean(investigation);
+            itemBean.setTarget("product", investigationBean.getTargetRef("product"));
+            itemBean.setTarget("investigationType", investigationBean.getTargetRef("investigationType"));
+            itemBean.setValue("sourceInvoiceItem", investigationBean.getSourceRef("invoiceItem"));
         }
-    }
-
-    @Override
-    protected CustomerOrder createState(Party patient, Party customer, String note, IMObjectReference location,
-                                     IArchetypeService service) {
-        return new State(patient, customer, note, location, service);
     }
 
     private class State extends CustomerOrder {
@@ -110,7 +110,7 @@ public class ORMProcessor extends OrderMessageProcessor {
          * @param location the practice location. May be {@code null}
          * @param service  the archetype service
          */
-        public State(Party patient, Party customer, String note, IMObjectReference location, IArchetypeService service) {
+        State(Party patient, Party customer, String note, Reference location, IArchetypeService service) {
             super(patient, customer, note, location, service);
         }
 
@@ -118,17 +118,17 @@ public class ORMProcessor extends OrderMessageProcessor {
             throw new UnsupportedOperationException("Orders aren't supported");
         }
 
-        public ActBean createReturnItem() {
+        public IMObjectBean createReturnItem() {
             return createItem(OrderArchetypes.INVESTIGATION_RETURN_ITEM, getReturn());
         }
 
         @Override
-        protected ActBean createOrder() {
+        protected IMObjectBean createOrder() {
             throw new UnsupportedOperationException("Orders aren't supported");
         }
 
         @Override
-        protected ActBean createReturn() {
+        protected IMObjectBean createReturn() {
             return createParent(OrderArchetypes.INVESTIGATION_RETURN);
         }
 

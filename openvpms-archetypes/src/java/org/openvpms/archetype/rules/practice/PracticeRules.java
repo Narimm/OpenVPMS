@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.practice;
@@ -24,12 +24,10 @@ import org.openvpms.archetype.rules.math.CurrencyException;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -78,11 +76,11 @@ public class PracticeRules {
      * @param practice the practice
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public boolean isActivePractice(Party practice) {
+    public boolean isActivePractice(org.openvpms.component.model.party.Party practice) {
         if (practice.isActive()) {
             ArchetypeQuery query = new ArchetypeQuery(PracticeArchetypes.PRACTICE, true, true);
             IMObjectQueryIterator<Party> iter = new IMObjectQueryIterator<>(service, query);
-            IMObjectReference practiceRef = practice.getObjectReference();
+            Reference practiceRef = practice.getObjectReference();
             while (iter.hasNext()) {
                 Party party = iter.next();
                 if (!party.getObjectReference().equals(practiceRef)) {
@@ -111,7 +109,7 @@ public class PracticeRules {
      * @return the locations associated with the user
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public List<Party> getLocations(Party practice) {
+    public List<Party> getLocations(org.openvpms.component.model.party.Party practice) {
         IMObjectBean bean = service.getBean(practice);
         return bean.getTargets("locations", Party.class);
     }
@@ -122,9 +120,9 @@ public class PracticeRules {
      * @param practice the practice
      * @return the service user
      */
-    public User getServiceUser(Party practice) {
-        EntityBean bean = new EntityBean(practice, service);
-        return (User) bean.getNodeTargetEntity("serviceUser");
+    public User getServiceUser(org.openvpms.component.model.party.Party practice) {
+        IMObjectBean bean = service.getBean(practice);
+        return bean.getTarget("serviceUser", User.class);
     }
 
     /**
@@ -135,7 +133,7 @@ public class PracticeRules {
      * @throws CurrencyException if the currency code is invalid or no <em>lookup.currency</em> is defined for the
      *                           currency
      */
-    public Currency getCurrency(Party practice) {
+    public Currency getCurrency(org.openvpms.component.model.party.Party practice) {
         IMObjectBean bean = service.getBean(practice);
         String code = bean.getString("currency");
         return currencies.getCurrency(code);
@@ -149,7 +147,7 @@ public class PracticeRules {
      * default location or {@code null} if none is found
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Party getDefaultLocation(Party practice) {
+    public Party getDefaultLocation(org.openvpms.component.model.party.Party practice) {
         return (Party) EntityRelationshipHelper.getDefaultTarget(practice, "locations", service);
     }
 
@@ -159,17 +157,8 @@ public class PracticeRules {
      * @param practice the practice
      * @return the period, or {@code null} if no period is defined
      */
-    public Period getRecordLockPeriod(Party practice) {
-        Period result = null;
-        IMObjectBean bean = service.getBean(practice);
-        int period = bean.getInt("recordLockPeriod", -1);
-        if (period > 0) {
-            DateUnits units = DateUnits.fromString(bean.getString("recordLockPeriodUnits"), null);
-            if (units != null) {
-                result = units.toPeriod(period);
-            }
-        }
-        return result;
+    public Period getRecordLockPeriod(org.openvpms.component.model.party.Party practice) {
+        return getPeriod(practice, "recordLockPeriod", "recordLockPeriodUnits");
     }
 
     /**
@@ -180,7 +169,7 @@ public class PracticeRules {
      * @param practice  the practice configuration
      * @return the estimate expiry date, or {@code null} if there are no default expiry settings
      */
-    public Date getEstimateExpiryDate(Date startDate, Party practice) {
+    public Date getEstimateExpiryDate(Date startDate, org.openvpms.component.model.party.Party practice) {
         Date result = null;
         IMObjectBean bean = service.getBean(practice);
         int period = bean.getInt("estimateExpiryPeriod");
@@ -199,7 +188,7 @@ public class PracticeRules {
      * @param practice  the practice configuration
      * @return the prescription expiry date, or {@code startDate} if there are no default expiry settings
      */
-    public Date getPrescriptionExpiryDate(Date startDate, Party practice) {
+    public Date getPrescriptionExpiryDate(Date startDate, org.openvpms.component.model.party.Party practice) {
         IMObjectBean bean = service.getBean(practice);
         int period = bean.getInt("prescriptionExpiryPeriod");
         String units = bean.getString("prescriptionExpiryUnits");
@@ -215,7 +204,7 @@ public class PracticeRules {
      * @param practice the practice
      * @return the field separator
      */
-    public char getExportFileFieldSeparator(Party practice) {
+    public char getExportFileFieldSeparator(org.openvpms.component.model.party.Party practice) {
         char separator = ',';
         IMObjectBean bean = service.getBean(practice);
         if ("TAB".equals(bean.getString("fileExportFormat"))) {
@@ -230,7 +219,7 @@ public class PracticeRules {
      * @param practice the practice
      * @return {@code true} if SMS is configured, otherwise {@code false}
      */
-    public boolean isSMSEnabled(Party practice) {
+    public boolean isSMSEnabled(org.openvpms.component.model.party.Party practice) {
         boolean enabled = false;
         IMObjectBean bean = service.getBean(practice);
         List<Reference> refs = bean.getTargetRefs("sms");
@@ -249,7 +238,7 @@ public class PracticeRules {
      * @param practice the practice
      * @return {@code true} if products should be filtered by location
      */
-    public boolean useLocationProducts(Party practice) {
+    public boolean useLocationProducts(org.openvpms.component.model.party.Party practice) {
         IMObjectBean bean = service.getBean(practice);
         return bean.getBoolean("useLocationProducts");
     }
@@ -260,9 +249,21 @@ public class PracticeRules {
      * @param practice the practice
      * @return {@code true} if only clinicians can finalize and send ESCI orders.
      */
-    public boolean isOrderingRestricted(Party practice) {
+    public boolean isOrderingRestricted(org.openvpms.component.model.party.Party practice) {
         IMObjectBean bean = service.getBean(practice);
         return bean.getBoolean("restrictOrdering");
+    }
+
+    /**
+     * Determines the period after an invoice is finalised that pharmacy orders are discontinued.
+     * <p/>
+     * If no period is defined, orders are discontinued when invoices are finalised.
+     *
+     * @param practice the practice
+     * @return the period, or {@code null} if no period is defined
+     */
+    public Period getPharmacyOrderDiscontinuePeriod(org.openvpms.component.model.party.Party practice) {
+        return getPeriod(practice, "pharmacyOrderDiscontinuePeriod", "pharmacyOrderDiscontinuePeriodUnits");
     }
 
     /**
@@ -296,6 +297,27 @@ public class PracticeRules {
             return set.getBoolean("o.active");
         }
         return false;
+    }
+
+    /**
+     * Returns a configured period.
+     *
+     * @param practice   the practice configuration
+     * @param periodName the period node name
+     * @param unitsName  the period units node name
+     * @return the period, or {@code null} if none is defined
+     */
+    private Period getPeriod(org.openvpms.component.model.party.Party practice, String periodName, String unitsName) {
+        Period result = null;
+        IMObjectBean bean = service.getBean(practice);
+        int period = bean.getInt(periodName, -1);
+        if (period > 0) {
+            DateUnits units = DateUnits.fromString(bean.getString(unitsName), null);
+            if (units != null) {
+                result = units.toPeriod(period);
+            }
+        }
+        return result;
     }
 
 }

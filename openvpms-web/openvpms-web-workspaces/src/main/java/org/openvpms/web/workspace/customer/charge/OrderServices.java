@@ -11,15 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.party.Party;
 import org.openvpms.hl7.laboratory.Laboratories;
 import org.openvpms.hl7.laboratory.LaboratoryOrderService;
 import org.openvpms.hl7.patient.PatientContextFactory;
@@ -70,10 +71,27 @@ public class OrderServices {
      */
     private final MedicalRecordRules rules;
 
+    /**
+     * The practice rules.
+     */
+    private final PracticeRules practiceRules;
+
+    /**
+     * Constructs an {@link OrderServices}.
+     *
+     * @param pharmacyService    the pharmacy service
+     * @param pharmacies         the pharmacies
+     * @param laboratoryService  the laboratory service
+     * @param laboratories       the laboratories
+     * @param factory            the factory
+     * @param informationService the patient information service
+     * @param rules              the medical record rules
+     * @param practiceRules      the practice rules
+     */
     public OrderServices(PharmacyOrderService pharmacyService, Pharmacies pharmacies,
                          LaboratoryOrderService laboratoryService, Laboratories laboratories,
                          PatientContextFactory factory, PatientInformationService informationService,
-                         MedicalRecordRules rules) {
+                         MedicalRecordRules rules, PracticeRules practiceRules) {
         this.pharmacyService = pharmacyService;
         this.pharmacies = pharmacies;
         this.laboratoryService = laboratoryService;
@@ -81,6 +99,7 @@ public class OrderServices {
         this.factory = factory;
         this.informationService = informationService;
         this.rules = rules;
+        this.practiceRules = practiceRules;
     }
 
     public PharmacyOrderService getPharmacyService() {
@@ -106,6 +125,10 @@ public class OrderServices {
 
     public Pharmacies getPharmacies() {
         return pharmacies;
+    }
+
+    public PracticeRules getPracticeRules() {
+        return practiceRules;
     }
 
     public Entity getService(Entity group, Party location) {

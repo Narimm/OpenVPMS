@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.jobs.appointment;
@@ -66,7 +66,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 /**
- * Tests the {@link ArchetypeServiceTest}.
+ * Tests the {@link AppointmentReminderJob}.
  *
  * @author Tim Anderson
  */
@@ -213,7 +213,7 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
         }
 
         Mockito.verify(smsService, Mockito.times(6)).send(Mockito.eq("Reminder: Vets R Us"), Mockito.<Contact>any(),
-                                                          Mockito.<Party>any(), Mockito.eq("SMS appointment reminder"),
+                                                          Mockito.any(), Mockito.eq("SMS appointment reminder"),
                                                           Mockito.eq("APPOINTMENT_REMINDER"), Mockito.eq(location1));
         practiceService.dispose();
     }
@@ -254,7 +254,7 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
         }
 
         Mockito.verify(smsService, Mockito.times(6)).send(Mockito.eq("Reminder: Vets Be Us"), Mockito.<Contact>any(),
-                                                          Mockito.<Party>any(), Mockito.eq("SMS appointment reminder"),
+                                                          Mockito.any(), Mockito.eq("SMS appointment reminder"),
                                                           Mockito.eq("APPOINTMENT_REMINDER"), Mockito.eq(location2));
     }
 
@@ -658,7 +658,7 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
          */
         private Entity template;
 
-        public TestPracticeService(Entity template, Party... locations) {
+        TestPracticeService(Entity template, Party... locations) {
             super(getArchetypeService(), practiceRules, createPool());
             this.locations = Arrays.asList(locations);
             setAppointmentSMSTemplate(template);

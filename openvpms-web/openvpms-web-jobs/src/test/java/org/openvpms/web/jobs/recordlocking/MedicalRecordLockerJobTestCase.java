@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.jobs.recordlocking;
 
 import org.hibernate.SessionFactory;
 import org.joda.time.Period;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
@@ -72,6 +73,16 @@ public class MedicalRecordLockerJobTestCase extends ArchetypeServiceTest {
     private MedicalRecordLockerJob job;
 
     /**
+     * The practice service.
+     */
+    private PracticeService practiceService;
+
+    /**
+     * The thread pool.
+     */
+    private ThreadPoolTaskExecutor threadPool;
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -79,12 +90,11 @@ public class MedicalRecordLockerJobTestCase extends ArchetypeServiceTest {
         Entity configuration = (Entity) create(MedicalRecordLockingScheduler.JOB_SHORT_NAME);
         IArchetypeService service = getArchetypeService();
         MedicalRecordRules rules = new MedicalRecordRules(service);
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.afterPropertiesSet();
+        threadPool = new ThreadPoolTaskExecutor();
+        threadPool.afterPropertiesSet();
 
         // lock records after 36 hours
-        PracticeService practiceService = new PracticeService(service, applicationContext.getBean(PracticeRules.class),
-                                                              executor) {
+        practiceService = new PracticeService(service, applicationContext.getBean(PracticeRules.class), threadPool) {
             @Override
             public Period getRecordLockPeriod() {
                 return Period.hours(36);
@@ -92,6 +102,15 @@ public class MedicalRecordLockerJobTestCase extends ArchetypeServiceTest {
         };
         job = new MedicalRecordLockerJob(configuration, (IArchetypeRuleService) service, practiceService, factory,
                                          rules, transactionManager);
+    }
+
+    /**
+     * Cleans up after the test.
+     */
+    @After
+    public void tearDown() {
+        practiceService.dispose();
+        threadPool.destroy();
     }
 
     /**

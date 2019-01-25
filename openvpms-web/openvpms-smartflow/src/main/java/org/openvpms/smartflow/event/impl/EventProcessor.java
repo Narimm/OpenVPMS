@@ -11,18 +11,18 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.event.impl;
 
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.act.ActIdentity;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.smartflow.model.event.Event;
 
 /**
@@ -58,6 +58,16 @@ public abstract class EventProcessor<T extends Event> {
      */
     public abstract void process(T event);
 
+    /**
+     * Returns an object given its identifier.
+     *
+     * @param identifier the identifier. May be {@code null}
+     * @param archetype  the archetype
+     * @return the corresponding object, or {@code null} if none is found
+     */
+    public IMObject getObject(String identifier, String archetype) {
+        return SmartFlowSheetHelper.getObject(archetype, identifier, service);
+    }
 
     /**
      * Returns the archetype service.
@@ -85,19 +95,8 @@ public abstract class EventProcessor<T extends Event> {
      * @return the patient. May be {@code null}
      */
     protected Party getPatient(Act visit) {
-        ActBean bean = new ActBean(visit, service);
-        return (Party) bean.getNodeParticipant("patient");
-    }
-
-    /**
-     * Returns an object given its identifier.
-     *
-     * @param identifier the identifier. May be {@code null}
-     * @param archetype  the archetype
-     * @return the corresponding object, or {@code null} if none is found
-     */
-    public IMObject getObject(String identifier, String archetype) {
-        return SmartFlowSheetHelper.getObject(archetype, identifier, service);
+        IMObjectBean bean = service.getBean(visit);
+        return bean.getTarget("patient", Party.class);
     }
 
     /**

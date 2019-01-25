@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -259,4 +259,31 @@
         <constructor-arg ref="practiceRules"/>
         <constructor-arg ref="txnManager"/>
     </bean>
+
+    <!-- =========================================================================================================== -->
+    <!-- Pharmacy/Laboratory Ordering                                                                                -->
+    <!-- =========================================================================================================== -->
+
+    <bean id="orderServices" class="org.openvpms.web.workspace.customer.charge.OrderServices">
+        <constructor-arg ref="hl7PharmacyOrderService"/>
+        <constructor-arg ref="hl7Parmacies"/>
+        <constructor-arg ref="hl7LaboratoryOrderService"/>
+        <constructor-arg ref="hl7Laboratories"/>
+        <constructor-arg ref="hl7PatientContextFactory"/>
+        <constructor-arg ref="hl7PatientInformationService"/>
+        <constructor-arg ref="medicalRecordRules"/>
+        <constructor-arg ref="practiceRules"/>
+    </bean>
+
+    <bean class="org.openvpms.web.jobs.pharmacy.OrderDiscontinuer">
+        <constructor-arg ref="orderServices"/>
+        <constructor-arg ref="archetypeService"/>
+    </bean>
+
+    <bean class="org.openvpms.web.jobs.pharmacy.PharmacyOrderDiscontinuationScheduler">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="practiceService"/>
+        <constructor-arg ref="practiceRules"/>
+    </bean>
+
 </beans>

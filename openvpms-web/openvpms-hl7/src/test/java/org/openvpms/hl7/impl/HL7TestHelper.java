@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -22,12 +22,12 @@ import ca.uhn.hl7v2.model.v25.message.RDE_O11;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.lookup.LookupRelationship;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -201,15 +201,15 @@ public class HL7TestHelper {
     public static void removeRelationships(Lookup species) {
         IMObjectBean bean = new IMObjectBean(species);
         List<LookupRelationship> mappings = bean.getValues("mapping", LookupRelationship.class);
-        List<IMObject> toSave = new ArrayList<IMObject>();
+        List<IMObject> toSave = new ArrayList<>();
         for (LookupRelationship mapping : mappings) {
             species.removeLookupRelationship(mapping);
             Lookup target = (Lookup) ArchetypeServiceHelper.getArchetypeService().get(mapping.getTarget());
             target.removeLookupRelationship(mapping);
-            toSave.add(target);
+            toSave.add((IMObject) target);
         }
         if (!toSave.isEmpty()) {
-            toSave.add(species);
+            toSave.add((IMObject) species);
             TestHelper.save(toSave);
         }
     }
@@ -227,6 +227,6 @@ public class HL7TestHelper {
         relationship.setTarget(idexxSpecies.getObjectReference());
         species.addLookupRelationship(relationship);
         idexxSpecies.addLookupRelationship(relationship);
-        TestHelper.save(species, idexxSpecies);
+        TestHelper.save((IMObject) species, (IMObject) idexxSpecies);
     }
 }

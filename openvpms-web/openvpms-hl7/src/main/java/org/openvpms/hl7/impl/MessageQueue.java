@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -25,7 +25,7 @@ import ca.uhn.hl7v2.model.v25.segment.MSH;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.model.user.User;
 import org.openvpms.hl7.io.MessageService;
 import org.openvpms.hl7.io.Statistics;
 import org.openvpms.hl7.util.HL7MessageStatuses;

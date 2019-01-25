@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -419,12 +419,13 @@ public abstract class CustomerChargeActItemEditor extends PriceActItemEditor {
 
     /**
      * Determines if an order has been placed for the item.
+     * <p/>
+     * This is determined from the status. If non-null, an order has been placed.
      *
      * @return {@code true} if an order has been placed
      */
     public boolean isOrdered() {
-        Property ordered = getProperty("ordered");
-        return ordered != null && ordered.getBoolean();
+        return getStatus() != null;
     }
 
     /**

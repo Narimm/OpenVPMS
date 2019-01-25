@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -110,8 +110,16 @@
         </node>
         <node name="credit" path="/credit" type="java.lang.Boolean"
               defaultValue="false()" readOnly="true" hidden="true"/>
-        <node name="ordered" path="/details/ordered" type="java.lang.Boolean" hidden="true" readOnly="true"
-              minCardinality="0"/>
+        <node name="status" path="/status" type="java.lang.String"
+              minCardinality="0" hidden="true" readOnly="true">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="ORDERED" value="Ordered"/>
+                    <property name="DISCONTINUED" value="Discontinued"/>
+                </propertyList>
+                <errorMessage>Invalid Status</errorMessage>
+            </assertion>
+        </node>
         <node name="receivedQuantity" path="/details/receivedQuantity" type="java.math.BigDecimal" hidden="true"
               readOnly="true" minCardinality="0"/>
         <node name="returnedQuantity" path="/details/returnedQuantity" type="java.math.BigDecimal" hidden="true"

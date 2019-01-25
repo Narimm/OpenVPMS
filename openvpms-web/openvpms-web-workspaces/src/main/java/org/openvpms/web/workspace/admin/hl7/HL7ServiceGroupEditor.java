@@ -11,16 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.hl7;
 
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.hl7.service.Services;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -79,15 +79,15 @@ abstract class HL7ServiceGroupEditor extends AbstractIMObjectEditor {
      */
     private boolean validateServices(Validator validator) {
         boolean result = true;
-        Map<IMObjectReference, Entity> locations = new HashMap<>();
+        Map<Reference, Entity> locations = new HashMap<>();
         CollectionProperty property = getCollectionProperty("services");
         for (Object value : property.getValues()) {
             IMObjectRelationship relationship = (IMObjectRelationship) value;
             Entity service = (relationship.getTarget() != null) ?
-                             services.getService(relationship.getTarget()) : null;
+                             (Entity) services.getService(relationship.getTarget()) : null;
             if (service != null) {
-                EntityBean bean = new EntityBean(service);
-                IMObjectReference location = bean.getNodeTargetObjectRef("location");
+                IMObjectBean bean = getBean(service);
+                Reference location = bean.getTargetRef("location");
                 if (location != null) {
                     Entity existing = locations.get(location);
                     if (existing != null) {

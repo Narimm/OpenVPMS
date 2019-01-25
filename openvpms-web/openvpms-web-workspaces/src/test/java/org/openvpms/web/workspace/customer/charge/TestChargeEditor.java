@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
 
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -139,19 +140,21 @@ public class TestChargeEditor extends DefaultCustomerChargeActEditor {
      * Creates a new {@link OrderPlacer}.
      *
      * @param customer the customer
+     * @param practice the practice
      * @param location the practice location
      * @param user     the user responsible for the orders
      * @return a new pharmacy order placer
      */
     @Override
-    protected OrderPlacer createOrderPlacer(Party customer, Party location, User user) {
+    protected OrderPlacer createOrderPlacer(Party customer, Party practice, Party location, User user) {
         pharmacyOrderService = new TestPharmacyOrderService();
         laboratoryOrderService = new TestLaboratoryOrderService();
         OrderServices services = new OrderServices(pharmacyOrderService, ServiceHelper.getBean(Pharmacies.class),
                                                    laboratoryOrderService, ServiceHelper.getBean(Laboratories.class),
                                                    ServiceHelper.getBean(PatientContextFactory.class),
                                                    ServiceHelper.getBean(PatientInformationService.class),
-                                                   ServiceHelper.getBean(MedicalRecordRules.class));
-        return new OrderPlacer(customer, location, user, getLayoutContext().getCache(), services);
+                                                   ServiceHelper.getBean(MedicalRecordRules.class),
+                                                   ServiceHelper.getBean(PracticeRules.class));
+        return new OrderPlacer(customer, location, user, practice, getLayoutContext().getCache(), services);
     }
 }

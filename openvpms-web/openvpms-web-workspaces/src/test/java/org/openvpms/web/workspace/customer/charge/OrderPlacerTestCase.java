@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.charge;
@@ -26,24 +26,23 @@ import org.openvpms.archetype.rules.patient.InvestigationActStatus;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientHistoryChanges;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
+import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.system.common.cache.MapIMObjectCache;
 import org.openvpms.hl7.impl.LaboratoriesImpl;
 import org.openvpms.hl7.impl.PharmaciesImpl;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.laboratory.Laboratories;
-import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientEventServices;
 import org.openvpms.hl7.patient.PatientInformationService;
@@ -147,12 +146,14 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         Laboratories laboratories = new LaboratoriesImpl(getArchetypeService(), connectors, patientEventServices);
         PatientContextFactory factory = ServiceHelper.getBean(PatientContextFactory.class);
         informationService = Mockito.mock(PatientInformationService.class);
-        MapIMObjectCache cache = new MapIMObjectCache(ServiceHelper.getArchetypeService());
+        MapIMObjectCache cache = new MapIMObjectCache(getArchetypeService());
+        PracticeRules practiceRules = ServiceHelper.getBean(PracticeRules.class);
+        Party practice = TestHelper.getPractice();
 
         OrderServices services = new OrderServices(pharmacyOrderService, pharmacies, laboratoryOrderService,
                                                    laboratories, factory, informationService,
-                                                   ServiceHelper.getBean(MedicalRecordRules.class));
-        placer = new OrderPlacer(customer, location, user, cache, services);
+                                                   ServiceHelper.getBean(MedicalRecordRules.class), practiceRules);
+        placer = new OrderPlacer(customer, location, user, practice, cache, services);
     }
 
     /**
@@ -181,7 +182,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
                    clinician, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
+        verify(informationService, times(0)).updated(Mockito.any(), eq(user));
     }
 
     /**
@@ -194,8 +195,8 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         Act event = PatientTestHelper.createEvent(patient, clinician);
         FinancialAct item1 = createItem(product, ONE, event);
         Act investigation = createInvestigation(investigationType, event);
-        ActBean bean = new ActBean(item1);
-        bean.addNodeRelationship("investigations", investigation);
+        IMObjectBean bean = getBean(item1);
+        bean.addTarget("investigations", investigation, "invoiceItem");
         save(item1, investigation);
         assertEquals(InvestigationActStatus.PENDING, investigation.getStatus2());
 
@@ -209,7 +210,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         assertEquals(InvestigationActStatus.SENT, investigation.getStatus2());
 
         // patient information updates should not be sent
-        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
+        verify(informationService, times(0)).updated(Mockito.any(), eq(user));
     }
 
     /**
@@ -226,7 +227,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
         item.setQuantity(TEN);
 
-        placer.order(Collections.<Act>singletonList(item), changes);
+        placer.order(Collections.singletonList(item), changes);
 
         List<TestPharmacyOrderService.Order> orders = pharmacyOrderService.getOrders();
         assertEquals(1, orders.size());
@@ -234,7 +235,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
                    item.getActivityStartTime(), clinician, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
+        verify(informationService, times(0)).updated(Mockito.any(), eq(user));
     }
 
     /**
@@ -247,12 +248,12 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         FinancialAct item = createItem(product, ONE, event1);
         Party patient2 = TestHelper.createPatient(true);
 
-        List<Act> items = Collections.<Act>singletonList(item);
+        List<Act> items = Collections.singletonList(item);
         placer.initialise(item);
 
         PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
-        ActBean bean = new ActBean(item);
-        bean.setNodeParticipant("patient", patient2);
+        IMObjectBean bean = getBean(item);
+        bean.setTarget("patient", patient2);
 
         Act event2 = PatientTestHelper.createEvent(patient2, clinician);
         addChargeItem(event2, item);
@@ -268,7 +269,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
                    item.getActivityStartTime(), clinician, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
+        verify(informationService, times(0)).updated(Mockito.any(), eq(user));
     }
 
     /**
@@ -281,12 +282,12 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         Act event = PatientTestHelper.createEvent(patient, clinician);
         FinancialAct item = createItem(product1, ONE, event);
 
-        List<Act> items = Collections.<Act>singletonList(item);
+        List<Act> items = Collections.singletonList(item);
         placer.initialise(item);
 
         PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
-        ActBean bean = new ActBean(item);
-        bean.setNodeParticipant("product", product2);
+        IMObjectBean bean = getBean(item);
+        bean.setTarget("product", product2);
 
         placer.order(items, changes);
 
@@ -298,7 +299,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
                    item.getActivityStartTime(), clinician, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
+        verify(informationService, times(0)).updated(Mockito.any(), eq(user));
     }
 
     /**
@@ -314,12 +315,12 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         Act event = PatientTestHelper.createEvent(patient, clinician);
         FinancialAct item = createItem(product1, ONE, event);
 
-        List<Act> items = Collections.<Act>singletonList(item);
+        List<Act> items = Collections.singletonList(item);
         placer.initialise(item);
 
         PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
-        ActBean bean = new ActBean(item);
-        bean.setNodeParticipant("product", product2);
+        IMObjectBean bean = getBean(item);
+        bean.setTarget("product", product2);
 
         placer.order(items, changes);
 
@@ -329,7 +330,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
                    item.getActivityStartTime(), clinician, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
+        verify(informationService, times(0)).updated(Mockito.any(), eq(user));
     }
 
     /**
@@ -345,14 +346,14 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         Act event = PatientTestHelper.createEvent(patient, clinician);
         FinancialAct item = createItem(product1, ONE, event);
 
-        List<Act> items = Collections.<Act>singletonList(item);
+        List<Act> items = Collections.singletonList(item);
         placer.initialise(item);
 
         Entity pharmacy2 = CustomerChargeTestHelper.createPharmacy(location);
         Product product2 = createPharmacyProduct(pharmacy2);
 
-        ActBean bean = new ActBean(item);
-        bean.setNodeParticipant("product", product2);
+        IMObjectBean bean = getBean(item);
+        bean.setTarget("product", product2);
 
         PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
         placer.order(items, changes);
@@ -365,7 +366,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
                    item.getActivityStartTime(), clinician, pharmacy2);
 
         // patient information updates should not be sent
-        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
+        verify(informationService, times(0)).updated(Mockito.any(), eq(user));
     }
 
     /**
@@ -378,12 +379,12 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         Act event = PatientTestHelper.createEvent(patient, clinician);
         FinancialAct item = createItem(product, ONE, event);
 
-        List<Act> items = Collections.<Act>singletonList(item);
+        List<Act> items = Collections.singletonList(item);
         placer.initialise(item);
 
         PatientHistoryChanges changes = new PatientHistoryChanges(clinician, location, getArchetypeService());
-        ActBean bean = new ActBean(item);
-        bean.setNodeParticipant("clinician", clinician2);
+        IMObjectBean bean = getBean(item);
+        bean.setTarget("clinician", clinician2);
         bean.save();
 
         placer.order(items, changes);
@@ -394,7 +395,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
                    item.getActivityStartTime(), clinician2, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
+        verify(informationService, times(0)).updated(Mockito.any(), eq(user));
     }
 
     /**
@@ -421,7 +422,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
                    item1.getActivityStartTime(), clinician, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
+        verify(informationService, times(0)).updated(Mockito.any(), eq(user));
     }
 
     /**
@@ -451,11 +452,11 @@ public class OrderPlacerTestCase extends AbstractAppTest {
                    clinician, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(0)).updated(Mockito.<PatientContext>any(), eq(user));
+        verify(informationService, times(0)).updated(Mockito.any(), eq(user));
     }
 
     /**
-     * Verifies that {@link PatientInformationService#updated(PatientContext, User)} is invoked if a visit is created
+     * Verifies that {@link PatientInformationService#updated} is invoked if a visit is created
      * during charging.
      */
     @Test
@@ -466,7 +467,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         ChargeItemEventLinker linker = new ChargeItemEventLinker(getArchetypeService());
         linker.prepare(Collections.singletonList(item), changes);
         changes.save();
-        placer.order(Collections.<Act>singletonList(item), changes);
+        placer.order(Collections.singletonList(item), changes);
 
         List<TestPharmacyOrderService.Order> orders = pharmacyOrderService.getOrders();
         assertEquals(1, orders.size());
@@ -474,11 +475,11 @@ public class OrderPlacerTestCase extends AbstractAppTest {
                    clinician, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(1)).updated(Mockito.<PatientContext>any(), eq(user));
+        verify(informationService, times(1)).updated(Mockito.any(), eq(user));
     }
 
     /**
-     * Verifies that {@link PatientInformationService#updated(PatientContext, User)} is invoked if a completed visit is
+     * Verifies that {@link PatientInformationService#updated} is invoked if a completed visit is
      * linked to during charging.
      */
     @Test
@@ -493,7 +494,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
         ChargeItemEventLinker linker = new ChargeItemEventLinker(getArchetypeService());
         linker.prepare(Collections.singletonList(item), changes);
         changes.save();
-        placer.order(Collections.<Act>singletonList(item), changes);
+        placer.order(Collections.singletonList(item), changes);
 
         List<TestPharmacyOrderService.Order> orders = pharmacyOrderService.getOrders();
         assertEquals(1, orders.size());
@@ -501,7 +502,7 @@ public class OrderPlacerTestCase extends AbstractAppTest {
                    clinician, pharmacy);
 
         // patient information updates should not be sent
-        verify(informationService, times(1)).updated(Mockito.<PatientContext>any(), eq(user));
+        verify(informationService, times(1)).updated(Mockito.any(), eq(user));
     }
 
     /**
@@ -527,8 +528,8 @@ public class OrderPlacerTestCase extends AbstractAppTest {
      */
     private Act createInvestigation(Entity investigationType, Act event) {
         Act investigation = PatientTestHelper.createInvestigation(patient, clinician, investigationType);
-        ActBean bean = new ActBean(event);
-        bean.addNodeRelationship("items", investigation);
+        IMObjectBean bean = getBean(event);
+        bean.addTarget("items", investigation, "event");
         save(event, investigation);
         return investigation;
     }
@@ -540,12 +541,12 @@ public class OrderPlacerTestCase extends AbstractAppTest {
      * @param item  the charge item
      */
     private void addChargeItem(Act event, FinancialAct item) {
-        ActBean itemBean = new ActBean(item);
+        IMObjectBean itemBean = getBean(item);
         for (IMObject object : itemBean.getValues("event", IMObject.class)) {
             itemBean.removeValue("event", object);
         }
-        ActBean bean = new ActBean(event);
-        bean.addNodeRelationship("chargeItems", item);
+        IMObjectBean bean = getBean(event);
+        bean.addTarget("chargeItems", item, "event");
         save(event, item);
     }
 
@@ -559,8 +560,8 @@ public class OrderPlacerTestCase extends AbstractAppTest {
     private FinancialAct createItem(Product product, BigDecimal quantity) {
         FinancialAct item = FinancialTestHelper.createChargeItem(CustomerAccountArchetypes.INVOICE_ITEM, patient,
                                                                  product, BigDecimal.ONE);
-        ActBean bean = new ActBean(item);
-        bean.setNodeParticipant("clinician", clinician);
+        IMObjectBean bean = getBean(item);
+        bean.setTarget("clinician", clinician);
         item.setQuantity(quantity);
         save(item);
         return item;
@@ -574,8 +575,8 @@ public class OrderPlacerTestCase extends AbstractAppTest {
      */
     private Product createPharmacyProduct(Entity pharmacy) {
         Product product = TestHelper.createProduct();
-        EntityBean bean = new EntityBean(product);
-        bean.addNodeTarget("pharmacy", pharmacy);
+        IMObjectBean bean = getBean(product);
+        bean.setTarget("pharmacy", pharmacy);
         bean.save();
         return product;
     }
@@ -588,8 +589,8 @@ public class OrderPlacerTestCase extends AbstractAppTest {
      */
     private Product createLaboratoryProduct(Entity investigationType) {
         Product product = TestHelper.createProduct(ProductArchetypes.SERVICE, null);
-        EntityBean bean = new EntityBean(product);
-        bean.addNodeTarget("investigationTypes", investigationType);
+        IMObjectBean bean = getBean(product);
+        bean.setTarget("investigationTypes", investigationType);
         bean.save();
         return product;
     }
@@ -602,8 +603,8 @@ public class OrderPlacerTestCase extends AbstractAppTest {
      */
     private Entity createProductType(Entity pharmacy) {
         Entity productType = ProductTestHelper.createProductType("ZTestProductType");
-        EntityBean bean = new EntityBean(productType);
-        bean.addNodeTarget("pharmacy", pharmacy);
+        IMObjectBean bean = getBean(productType);
+        bean.setTarget("pharmacy", pharmacy);
         bean.save();
         return productType;
     }

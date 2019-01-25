@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.event.impl;
@@ -20,12 +20,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActIdentity;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.act.ActIdentity;
+import org.openvpms.component.model.act.ActRelationship;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.IMObject;
+import org.openvpms.component.model.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -127,19 +128,20 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
                 }
             }
         } else {
-            ActBean bean = null;
+            IMObjectBean bean = null;
             Party patient = getPatient(visit);
             if (act == null) {
                 if (!exclude(note, config)) {
                     act = (Act) service.create(PatientArchetypes.CLINICAL_NOTE);
 
-                    bean = new ActBean(act, service);
-                    bean.addNodeParticipation("patient", patient);
+                    bean = service.getBean(act);
+                    bean.setTarget("patient", patient);
                     ActIdentity identity = createIdentity(note.getNoteGuid());
                     act.addIdentity(identity);
 
-                    ActBean visitBean = new ActBean(visit, service);
-                    visitBean.addNodeRelationship("items", act);
+                    IMObjectBean visitBean = service.getBean(visit);
+                    ActRelationship relationship = (ActRelationship) visitBean.addTarget("items", act);
+                    act.addActRelationship(relationship);
                     toSave.add(visit);
                 } else {
                     if (log.isDebugEnabled()) {
@@ -147,7 +149,7 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
                     }
                 }
             } else {
-                bean = new ActBean(act, service);
+                bean = service.getBean(act);
             }
             if (bean != null) {
                 if (ActStatus.POSTED.equals(act.getStatus())) {
@@ -204,12 +206,15 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
      */
     private void addAddendum(Act visit, Act note, Party patient, String text, List<IMObject> toSave) {
         IArchetypeService service = getService();
-        ActBean bean = new ActBean(note, service);
+        IMObjectBean bean = service.getBean(note);
         Act addendum = createAddendum(patient, text);
 
-        bean.addNodeRelationship("addenda", addendum);
-        ActBean visitBean = new ActBean(visit, service);
-        visitBean.addNodeRelationship("items", addendum);
+        ActRelationship relationship1 = (ActRelationship) bean.addTarget("addenda", addendum);
+        addendum.addActRelationship(relationship1);
+
+        IMObjectBean visitBean = service.getBean(visit);
+        ActRelationship relationship2 = (ActRelationship) visitBean.addTarget("items", addendum);
+        addendum.addActRelationship(relationship2);
 
         toSave.add(note);
         toSave.add(addendum);
@@ -226,8 +231,8 @@ public class NotesEventProcessor extends EventProcessor<NotesEvent> {
     private Act createAddendum(Party patient, String note) {
         IArchetypeService service = getService();
         Act addendum = (Act) service.create(PatientArchetypes.CLINICAL_ADDENDUM);
-        ActBean addendumBean = new ActBean(addendum, service);
-        addendumBean.setNodeParticipant("patient", patient);
+        IMObjectBean addendumBean = service.getBean(addendum);
+        addendumBean.setTarget("patient", patient);
         addendumBean.setValue("note", note);
         return addendum;
     }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.patient;
@@ -21,14 +21,15 @@ import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.party.Party;
+import org.openvpms.component.model.user.User;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -42,17 +43,17 @@ public class PatientContext {
     /**
      * The patient.
      */
-    private final Party patient;
+    private final org.openvpms.component.business.domain.im.party.Party patient;
 
     /**
      * The customer.
      */
-    private final Party customer;
+    private final org.openvpms.component.business.domain.im.party.Party customer;
 
     /**
      * The visit.
      */
-    private final Act visit;
+    private final org.openvpms.component.business.domain.im.act.Act visit;
 
     /**
      * The practice location.
@@ -75,36 +76,6 @@ public class PatientContext {
     private final CustomerRules customerRules;
 
     /**
-     * The clinician first name.
-     */
-    private String clinicianFirstName;
-
-    /**
-     * The clinician last name.
-     */
-    private String clinicianLastName;
-
-    /**
-     * The most recent patient weight, if any.
-     */
-    private Act weight;
-
-    /**
-     * Determines if alerts have been initialised.
-     */
-    private boolean initAlerts = false;
-
-    /**
-     * The patient allergies.
-     */
-    private List<Act> allergies = null;
-
-    /**
-     * Determines if the patient is aggressive.
-     */
-    private boolean aggressive = false;
-
-    /**
      * The patient bean.
      */
     private final IMObjectBean patientBean;
@@ -118,6 +89,36 @@ public class PatientContext {
      * The lookup service.
      */
     private final ILookupService lookups;
+
+    /**
+     * The clinician first name.
+     */
+    private String clinicianFirstName;
+
+    /**
+     * The clinician last name.
+     */
+    private String clinicianLastName;
+
+    /**
+     * The most recent patient weight, if any.
+     */
+    private org.openvpms.component.business.domain.im.act.Act weight;
+
+    /**
+     * Determines if alerts have been initialised.
+     */
+    private boolean initAlerts = false;
+
+    /**
+     * The patient allergies.
+     */
+    private List<org.openvpms.component.business.domain.im.act.Act> allergies = null;
+
+    /**
+     * Determines if the patient is aggressive.
+     */
+    private boolean aggressive = false;
 
     /**
      * Constructs an {@link PatientContext}.
@@ -135,9 +136,9 @@ public class PatientContext {
     public PatientContext(Party patient, Party customer, Act visit, Party location, User clinician,
                           PatientRules patientRules, CustomerRules customerRules, IArchetypeService service,
                           ILookupService lookups) {
-        this.patient = patient;
-        this.customer = customer;
-        this.visit = visit;
+        this.patient = (org.openvpms.component.business.domain.im.party.Party) patient;
+        this.customer = (org.openvpms.component.business.domain.im.party.Party) customer;
+        this.visit = (org.openvpms.component.business.domain.im.act.Act) visit;
         this.location = location;
         this.clinician = clinician;
         this.patientRules = patientRules;
@@ -422,7 +423,7 @@ public class PatientContext {
      */
     public List<Act> getAllergies() {
         getAlerts();
-        return allergies;
+        return new ArrayList<>(allergies);
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.smartflow.client;
@@ -27,19 +27,19 @@ import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.i18n.Message;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.act.ActRelationship;
+import org.openvpms.component.model.archetype.NodeDescriptor;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.IMObject;
+import org.openvpms.component.model.party.Party;
+import org.openvpms.component.model.user.User;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.smartflow.i18n.FlowSheetMessages;
 import org.openvpms.smartflow.model.Anesthetic;
@@ -155,7 +155,7 @@ public class HospitalizationService extends FlowSheetService {
     public Hospitalization getHospitalization(final PatientContext context) {
         Call<Hospitalization, Hospitalizations> call = new Call<Hospitalization, Hospitalizations>() {
             @Override
-            public Hospitalization call(Hospitalizations resource) throws Exception {
+            public Hospitalization call(Hospitalizations resource) {
                 Hospitalization result = null;
                 try {
                     result = resource.get(Long.toString(context.getVisitId()));
@@ -213,13 +213,13 @@ public class HospitalizationService extends FlowSheetService {
         }
         String reason = lookups.getName(context.getVisit(), "reason");
         if (reason != null) {
-            String diseases[] = new String[]{reason};
+            String[] diseases = new String[]{reason};
             hospitalization.setDiseases(diseases);
         }
 
         Call<Void, Hospitalizations> call = new Call<Void, Hospitalizations>() {
             @Override
-            public Void call(Hospitalizations resource) throws Exception {
+            public Void call(Hospitalizations resource) {
                 resource.add(hospitalization);
                 return null;
             }
@@ -244,7 +244,7 @@ public class HospitalizationService extends FlowSheetService {
         final String hospitalizationId = Long.toString(visit.getId());
         Call<Anesthetics, Hospitalizations> call = new Call<Anesthetics, Hospitalizations>() {
             @Override
-            public Anesthetics call(Hospitalizations resource) throws Exception {
+            public Anesthetics call(Hospitalizations resource) {
                 return resource.getAnesthetics(hospitalizationId);
             }
 
@@ -269,7 +269,7 @@ public class HospitalizationService extends FlowSheetService {
 
         Call<List<Form>, Hospitalizations> call = new Call<List<Form>, Hospitalizations>() {
             @Override
-            public List<Form> call(Hospitalizations resource) throws Exception {
+            public List<Form> call(Hospitalizations resource) {
                 return resource.getForms(hospitalizationId);
             }
 
@@ -292,7 +292,7 @@ public class HospitalizationService extends FlowSheetService {
         final String hospitalizationId = Long.toString(visit.getId());
         Call<Void, Hospitalizations> call = new Call<Void, Hospitalizations>() {
             @Override
-            public Void call(Hospitalizations resource) throws Exception {
+            public Void call(Hospitalizations resource) {
                 resource.discharge(hospitalizationId, "");
                 return null;
             }
@@ -617,8 +617,9 @@ public class HospitalizationService extends FlowSheetService {
                 DocumentRules rules = new DocumentRules(service);
                 Document document = documentHandler.create(fileName, stream, APPLICATION_PDF, -1);
                 if (act.isNew()) {
-                    ActBean visitBean = new ActBean(visit, service);
-                    visitBean.addNodeRelationship("items", act);
+                    IMObjectBean visitBean = service.getBean(visit);
+                    ActRelationship relationship = (ActRelationship) visitBean.addTarget("items", act);
+                    act.addActRelationship(relationship);
                     objects.add(visit);
                 }
                 objects.addAll(rules.addDocument(act, document));
@@ -657,9 +658,9 @@ public class HospitalizationService extends FlowSheetService {
                 id.setIdentity(identity);
                 act.addIdentity(id);
             }
-            ActBean bean = new ActBean(act, service);
-            bean.setNodeParticipant("patient", patient);
-            bean.setNodeParticipant("clinician", clinician);
+            IMObjectBean bean = service.getBean(act);
+            bean.setTarget("patient", patient);
+            bean.setTarget("clinician", clinician);
         }
         return act;
     }
@@ -684,7 +685,7 @@ public class HospitalizationService extends FlowSheetService {
      */
     private Patient createPatient(PatientContext context) {
         Patient result = new Patient();
-        IMObjectBean bean = new IMObjectBean(context.getPatient(), service);
+        IMObjectBean bean = service.getBean(context.getPatient());
         result.setPatientId(Long.toString(context.getPatientId()));
         result.setName(context.getPatientFirstName());
         Date dateOfBirth = context.getDateOfBirth();
@@ -747,7 +748,7 @@ public class HospitalizationService extends FlowSheetService {
      */
     private Client createClient(PatientContext context) {
         Client result = new Client();
-        IMObjectBean bean = new IMObjectBean(context.getCustomer(), service);
+        IMObjectBean bean = service.getBean(context.getCustomer());
         result.setOwnerId(Long.toString(context.getCustomer().getId()));
         result.setNameFirst(bean.getString("firstName"));
         result.setNameLast(bean.getString("lastName"));
@@ -776,7 +777,7 @@ public class HospitalizationService extends FlowSheetService {
      * @return the patient colour
      */
     private String getColour(IMObjectBean bean) {
-        NodeDescriptor node = bean.getDescriptor(COLOUR);
+        NodeDescriptor node = bean.getNode(COLOUR);
         return (node.isLookup()) ? lookups.getName(bean.getObject(), COLOUR) : bean.getString(COLOUR);
     }
 

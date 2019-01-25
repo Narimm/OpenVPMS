@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.jobs;
@@ -19,16 +19,16 @@ package org.openvpms.web.jobs;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.rules.workflow.MessageArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.user.User;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -79,8 +79,10 @@ public class JobCompletionNotifier {
      * @return the users
      */
     public Set<User> getUsers(Entity configuration) {
-        EntityBean bean = new EntityBean(configuration, service);
-        return rules.getUsers(bean.getNodeTargetEntities("notify"));
+        IMObjectBean bean = service.getBean(configuration);
+        Set<org.openvpms.component.business.domain.im.security.User> users
+                = rules.getUsers(bean.getTargets("notify", Entity.class));
+        return new HashSet<>(users);
     }
 
     /**
@@ -111,8 +113,8 @@ public class JobCompletionNotifier {
      */
     protected void send(User user, String subject, String reason, String text) {
         Act act = (Act) service.create(MessageArchetypes.SYSTEM);
-        ActBean message = new ActBean(act);
-        message.addNodeParticipation("to", user);
+        IMObjectBean message = service.getBean(act);
+        message.setTarget("to", user);
         message.setValue("reason", reason);
         message.setValue("description", subject);
         message.setValue("message", text);

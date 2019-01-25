@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -29,8 +29,8 @@ import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.security.RunAs;
+import org.openvpms.component.model.user.User;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.io.MessageDispatcher;
@@ -118,6 +118,10 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      */
     private final ConnectorsImpl.Listener listener;
 
+    /**
+     * Used to wait if errors have occurred sending messages. This waits until a time expires or a message is queued.
+     */
+    private final Semaphore waiter = new Semaphore(0);
 
     /**
      * Used to restricted the number of tasks that can be scheduled via the executor.
@@ -128,11 +132,6 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
      * Used to indicate that the dispatcher has been shut down.
      */
     private volatile boolean shutdown = false;
-
-    /**
-     * Used to wait if errors have occurred sending messages. This waits until a time expires or a message is queued.
-     */
-    private final Semaphore waiter = new Semaphore(0);
 
     /**
      * The user to initialise the security context in the dispatch thread.
@@ -489,6 +488,49 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
     }
 
     /**
+     * Sends the first message in a queue, if any are present.
+     *
+     * @param queue the queue
+     * @return {@code true} if there was a message
+     */
+    protected boolean sendFirst(MessageQueue queue) {
+        log.debug("sendFirst() - " + queue.getConnector());
+        boolean processed = false;
+        Message message = queue.peekFirst();
+        if (message != null) {
+            send(queue, message, queue.peekFirstAct());
+            processed = true;
+        } else {
+            log.debug("sendFirst() - nothing to send");
+        }
+        return processed;
+    }
+
+    /**
+     * Sends a message.
+     *
+     * @param queue   the message queue
+     * @param message the message
+     * @param act     the persistent act
+     */
+    protected void send(MessageQueue queue, Message message, DocumentAct act) {
+        MLLPSender connector = queue.getConnector();
+        try {
+            Message response = send(message, connector);
+            queue.sent(response);
+        } catch (Throwable exception) {
+            log.error("Failed to send message, act Id=" + act.getId(), exception);
+            int retryInterval = connector.getRetryInterval();
+            if (retryInterval <= 0) {
+                retryInterval = MLLPSender.DEFAULT_RETRY_INTERVAL;
+            }
+            // failed to send the message, so don't queue for another retryInterval seconds
+            queue.setWaitUntil(System.currentTimeMillis() + retryInterval * 1000);
+            queue.error(exception);
+        }
+    }
+
+    /**
      * Populates the header of a message.
      *
      * @param message the message
@@ -599,49 +641,6 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
             schedule();
         }
         log.debug("dispatch() - end");
-    }
-
-    /**
-     * Sends the first message in a queue, if any are present.
-     *
-     * @param queue the queue
-     * @return {@code true} if there was a message
-     */
-    protected boolean sendFirst(MessageQueue queue) {
-        log.debug("sendFirst() - " + queue.getConnector());
-        boolean processed = false;
-        Message message = queue.peekFirst();
-        if (message != null) {
-            send(queue, message, queue.peekFirstAct());
-            processed = true;
-        } else {
-            log.debug("sendFirst() - nothing to send");
-        }
-        return processed;
-    }
-
-    /**
-     * Sends a message.
-     *
-     * @param queue   the message queue
-     * @param message the message
-     * @param act     the persistent act
-     */
-    protected void send(MessageQueue queue, Message message, DocumentAct act) {
-        MLLPSender connector = queue.getConnector();
-        try {
-            Message response = send(message, connector);
-            queue.sent(response);
-        } catch (Throwable exception) {
-            log.error("Failed to send message, act Id=" + act.getId(), exception);
-            int retryInterval = connector.getRetryInterval();
-            if (retryInterval <= 0) {
-                retryInterval = MLLPSender.DEFAULT_RETRY_INTERVAL;
-            }
-            // failed to send the message, so don't queue for another retryInterval seconds
-            queue.setWaitUntil(System.currentTimeMillis() + retryInterval * 1000);
-            queue.error(exception);
-        }
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -20,14 +20,11 @@ import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.v25.segment.MSH;
-import ca.uhn.hl7v2.util.idgenerator.IDGenerator;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.model.act.Act;
 import org.openvpms.hl7.patient.PatientContext;
-
-import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 import static org.openvpms.hl7.impl.PopulateHelper.populateDTM;
@@ -51,12 +48,7 @@ public class ADTMessageFactoryTestCase extends AbstractMessageTest {
     public void setUp() {
         super.setUp();
 
-        HapiContext hapiContext = HapiContextFactory.create(new IDGenerator() {
-            @Override
-            public String getID() throws IOException {
-                return "1200022";
-            }
-        });
+        HapiContext hapiContext = HapiContextFactory.create(() -> "1200022");
         messageFactory = new ADTMessageFactory(hapiContext, getArchetypeService(), getLookupService());
 
         PatientContext context = getContext();

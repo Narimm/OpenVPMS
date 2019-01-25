@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.patient;
@@ -19,12 +19,12 @@ package org.openvpms.hl7.patient;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.MedicalRecordRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.party.Party;
+import org.openvpms.component.model.user.User;
 
 import java.util.Date;
 
@@ -89,10 +89,10 @@ public class PatientContextFactory {
      */
     public PatientContext createContext(Act visit, Party location) {
         PatientContext result = null;
-        ActBean bean = new ActBean(visit, service);
-        Party patient = (Party) bean.getNodeParticipant("patient");
+        IMObjectBean bean = service.getBean(visit);
+        Party patient = bean.getTarget("patient", Party.class);
         if (patient != null) {
-            Party visitLocation = (Party) bean.getNodeParticipant("location");
+            Party visitLocation = bean.getTarget("location", Party.class);
             if (visitLocation != null) {
                 location = visitLocation;
             }
@@ -149,7 +149,8 @@ public class PatientContextFactory {
      * @return a new context
      */
     public PatientContext createContext(Party patient, Act visit, Party location) {
-        Party customer = patientRules.getOwner(patient, visit.getActivityStartTime(), false);
+        Party customer = patientRules.getOwner((org.openvpms.component.business.domain.im.party.Party) patient,
+                                               visit.getActivityStartTime(), false);
         return createContext(patient, customer, visit, location);
     }
 
@@ -165,8 +166,8 @@ public class PatientContextFactory {
      * @return a new context
      */
     public PatientContext createContext(Party patient, Party customer, Act visit, Party location) {
-        ActBean bean = new ActBean(visit, service);
-        User clinician = (User) bean.getNodeParticipant("clinician");
+        IMObjectBean bean = service.getBean(visit);
+        User clinician = bean.getTarget("clinician", User.class);
         return createContext(patient, customer, visit, location, clinician);
     }
 

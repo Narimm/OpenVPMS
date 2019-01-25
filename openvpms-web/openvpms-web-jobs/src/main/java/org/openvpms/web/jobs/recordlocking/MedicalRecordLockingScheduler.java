@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.jobs.recordlocking;
@@ -113,12 +113,7 @@ public class MedicalRecordLockingScheduler {
         } else {
             log.error("Medical record locking cannot be enabled until a Practice is configured");
         }
-        listener = new Listener<PracticeService.Update>() {
-            @Override
-            public void onEvent(PracticeService.Update update) {
-                init(update.getPractice(), update.getUser(), false);
-            }
-        };
+        listener = update -> init(update.getPractice(), update.getUser(), false);
         practiceService.addListener(listener);
     }
 
@@ -137,17 +132,12 @@ public class MedicalRecordLockingScheduler {
      * @param updatedBy the user that updated the practice. May be {@code null}
      * @param audit     if {@code true}, send an audit message, even if nothing has changed
      */
-    private void init(final Party practice, final String updatedBy, final boolean audit) {
-        final User user = practiceService.getServiceUser();
+    private void init(Party practice, String updatedBy, boolean audit) {
+        User user = practiceService.getServiceUser();
         if (user == null) {
             log.error("Medical record locking cannot be enabled until a Practice Service User is configured");
         } else {
-            RunAs.run(user, new Runnable() {
-                @Override
-                public void run() {
-                    init(practice, updatedBy, user, audit);
-                }
-            });
+            RunAs.run(user, () -> init(practice, updatedBy, user, audit));
         }
     }
 

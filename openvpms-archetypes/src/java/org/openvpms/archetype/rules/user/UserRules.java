@@ -11,23 +11,23 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.user;
 
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
@@ -176,8 +176,8 @@ public class UserRules {
      */
     @SuppressWarnings("unchecked")
     public List<Party> getLocations(User user) {
-        IMObjectBean bean = new IMObjectBean(user, service);
-        return bean.getNodeTargetObjects("locations", Party.class);
+        IMObjectBean bean = service.getBean(user);
+        return bean.getTargets("locations", Party.class);
     }
 
     /**
@@ -193,12 +193,12 @@ public class UserRules {
      */
     public List<Party> getLocations(User user, Party practice) {
         List<Party> locations = getLocations(user);
-        IMObjectBean bean = new IMObjectBean(practice, service);
+        IMObjectBean bean = service.getBean(practice);
         if (locations.isEmpty()) {
-            locations = bean.getNodeTargetObjects("locations", Party.class);
+            locations = bean.getTargets("locations", Party.class);
         } else {
             // exclude any locations not linked to the practice
-            List<IMObjectReference> references = bean.getNodeTargetObjectRefs("locations");
+            List<Reference> references = bean.getTargetRefs("locations");
             for (Party location : new ArrayList<>(locations)) {
                 if (!references.contains(location.getObjectReference())) {
                     locations.remove(location);
@@ -226,10 +226,10 @@ public class UserRules {
      * @param usersOrGroups the list of users and groups
      * @return the users in the list
      */
-    public Set<User> getUsers(List<Entity> usersOrGroups) {
+    public Set<User> getUsers(List<org.openvpms.component.model.entity.Entity> usersOrGroups) {
         Set<User> result = new HashSet<>();
-        Set<Entity> groups = new HashSet<>();
-        for (Entity entity : usersOrGroups) {
+        Set<org.openvpms.component.model.entity.Entity> groups = new HashSet<>();
+        for (org.openvpms.component.model.entity.Entity entity : usersOrGroups) {
             if (entity instanceof User) {
                 result.add((User) entity);
             } else if (entity != null) {
@@ -249,9 +249,9 @@ public class UserRules {
      * @param group the <em>entity.userGroup</em>.
      * @return the users
      */
-    public List<User> getUsers(Entity group) {
-        IMObjectBean bean = new IMObjectBean(group, service);
-        return bean.getNodeTargetObjects("users", User.class);
+    public List<User> getUsers(org.openvpms.component.model.entity.Entity group) {
+        IMObjectBean bean = service.getBean(group);
+        return bean.getTargets("users", User.class);
     }
 
     /**

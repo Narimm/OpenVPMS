@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -36,6 +36,8 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.ArchetypeQueryHelper;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 
 import static org.openvpms.archetype.rules.finance.order.CustomerOrder.addNote;
 
@@ -82,7 +84,7 @@ abstract class OrderMessageProcessor {
      * @param state          the state
      * @return the original order
      */
-    protected Act getOrder(String orderShortName, ORC orc, ActBean bean, CustomerOrder state) {
+    protected Act getOrder(String orderShortName, ORC orc, IMObjectBean bean, CustomerOrder state) {
         Act result = null;
         EI placerOrderNumber = orc.getPlacerOrderNumber();
         String entityIdentifier = placerOrderNumber.getEntityIdentifier().getValue();
@@ -152,7 +154,7 @@ abstract class OrderMessageProcessor {
      * @return a new state
      * @throws HL7Exception if the patient does not exist
      */
-    protected CustomerOrder createState(PID pid, IMObjectReference location) throws HL7Exception {
+    protected CustomerOrder createState(PID pid, Reference location) throws HL7Exception {
         Party patient = null;
         Party customer = null;
         long id;
@@ -198,7 +200,7 @@ abstract class OrderMessageProcessor {
      * @return a new {@link CustomerOrder}
      */
     protected abstract CustomerOrder createState(Party patient, Party customer, String note,
-                                              IMObjectReference location, IArchetypeService service);
+                                                 Reference location, IArchetypeService service);
 
     /**
      * Returns the archetype service.

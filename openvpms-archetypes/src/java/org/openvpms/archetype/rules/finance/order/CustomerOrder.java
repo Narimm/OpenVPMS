@@ -11,20 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.order;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.act.ActRelationship;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.product.Product;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,17 +54,7 @@ public abstract class CustomerOrder {
     /**
      * The practice location.
      */
-    private final IMObjectReference location;
-
-    /**
-     * The order bean.
-     */
-    private ActBean orderBean;
-
-    /**
-     * The return bean.
-     */
-    private ActBean returnBean;
+    private final Reference location;
 
     /**
      * The order/return acts.
@@ -77,9 +67,19 @@ public abstract class CustomerOrder {
     private final IArchetypeService service;
 
     /**
+     * The order bean.
+     */
+    private IMObjectBean orderBean;
+
+    /**
+     * The return bean.
+     */
+    private IMObjectBean returnBean;
+
+    /**
      * The notes node name.
      */
-    protected static final String NOTES = "notes";
+    private static final String NOTES = "notes";
 
     /**
      * Constructs a {@link CustomerOrder}.
@@ -90,8 +90,7 @@ public abstract class CustomerOrder {
      * @param location the practice location. May be {@code null}
      * @param service  the archetype service
      */
-    public CustomerOrder(Party patient, Party customer, String note, IMObjectReference location,
-                         IArchetypeService service) {
+    public CustomerOrder(Party patient, Party customer, String note, Reference location, IArchetypeService service) {
         this.patient = patient;
         this.customer = customer;
         this.note = note;
@@ -107,19 +106,19 @@ public abstract class CustomerOrder {
      * @param service the archetype service
      */
     public CustomerOrder(Act act, boolean isOrder, IArchetypeService service) {
-        ActBean bean = new ActBean(act, service);
+        IMObjectBean bean = service.getBean(act);
         if (isOrder) {
             orderBean = bean;
         } else {
             returnBean = bean;
         }
-        List<Act> items = bean.getNodeActs("items");
-        customer = (Party) bean.getNodeParticipant("customer");
+        List<Act> items = bean.getTargets("items", Act.class);
+        customer = bean.getTarget("customer", Party.class);
         note = bean.getString(NOTES);
-        location = bean.getNodeParticipantRef("location");
+        location = bean.getTargetRef("location");
         if (!items.isEmpty()) {
-            ActBean itemBean = new ActBean(items.get(0), service);
-            patient = (Party) itemBean.getNodeParticipant("patient");
+            IMObjectBean itemBean = service.getBean(items.get(0));
+            patient = itemBean.getTarget("patient", Party.class);
         } else {
             patient = null;
         }
@@ -142,7 +141,7 @@ public abstract class CustomerOrder {
      *
      * @return the order
      */
-    public ActBean getOrder() {
+    public IMObjectBean getOrder() {
         if (orderBean == null) {
             orderBean = createOrder();
         }
@@ -154,7 +153,7 @@ public abstract class CustomerOrder {
      *
      * @return the order return
      */
-    public ActBean getReturn() {
+    public IMObjectBean getReturn() {
         if (returnBean == null) {
             returnBean = createReturn();
         }
@@ -175,14 +174,14 @@ public abstract class CustomerOrder {
      *
      * @return a new order item
      */
-    public abstract ActBean createOrderItem();
+    public abstract IMObjectBean createOrderItem();
 
     /**
      * Creates a new order return item.
      *
      * @return a new order return item
      */
-    public abstract ActBean createReturnItem();
+    public abstract IMObjectBean createReturnItem();
 
     /**
      * Returns the acts.
@@ -218,7 +217,7 @@ public abstract class CustomerOrder {
      * @param bean  the act bean
      * @param value the note to add
      */
-    public static void addNote(ActBean bean, String value) {
+    public static void addNote(IMObjectBean bean, String value) {
         String notes = bean.getString(NOTES);
         if (!StringUtils.isEmpty(notes)) {
             notes += "\n" + value;
@@ -233,14 +232,14 @@ public abstract class CustomerOrder {
      *
      * @return the order
      */
-    protected abstract ActBean createOrder();
+    protected abstract IMObjectBean createOrder();
 
     /**
      * Creates a new order return.
      *
      * @return the return
      */
-    protected abstract ActBean createReturn();
+    protected abstract IMObjectBean createReturn();
 
     /**
      * Creates the parent act.
@@ -248,14 +247,14 @@ public abstract class CustomerOrder {
      * @param archetype the act archetype
      * @return a new act
      */
-    protected ActBean createParent(String archetype) {
+    protected IMObjectBean createParent(String archetype) {
         Act act = (Act) service.create(archetype);
-        ActBean bean = new ActBean(act, service);
+        IMObjectBean bean = service.getBean(act);
         if (customer != null) {
-            bean.addNodeParticipation("customer", customer);
+            bean.setTarget("customer", customer);
         }
         if (location != null) {
-            bean.addNodeParticipation("location", location);
+            bean.setTarget("location", location);
         }
         if (note != null) {
             addNote(bean, note);
@@ -271,13 +270,14 @@ public abstract class CustomerOrder {
      * @param parent    the parent act
      * @return a new act
      */
-    protected ActBean createItem(String archetype, ActBean parent) {
+    protected IMObjectBean createItem(String archetype, IMObjectBean parent) {
         Act act = (Act) service.create(archetype);
-        ActBean bean = new ActBean(act, service);
+        IMObjectBean bean = service.getBean(act);
         if (patient != null) {
-            bean.addNodeParticipation("patient", patient);
+            bean.setTarget("patient", patient);
         }
-        parent.addNodeRelationship("items", act);
+        ActRelationship relationship = (ActRelationship) parent.addTarget("items", act);
+        act.addActRelationship(relationship);
         acts.add(act);
         return bean;
     }
@@ -289,12 +289,12 @@ public abstract class CustomerOrder {
      * @param product   the product. May be {@code null}
      * @return the item, or {@code null} if none is found
      */
-    protected ActBean getItem(String archetype, Product product) {
-        IMObjectReference reference = (product != null) ? product.getObjectReference() : null;
+    protected IMObjectBean getItem(String archetype, Product product) {
+        Reference reference = (product != null) ? product.getObjectReference() : null;
         for (Act act : acts) {
-            if (TypeHelper.isA(act, archetype)) {
-                ActBean bean = new ActBean(act, service);
-                if (ObjectUtils.equals(reference, bean.getNodeParticipantRef("product"))) {
+            if (act.isA(archetype)) {
+                IMObjectBean bean = service.getBean(act);
+                if (ObjectUtils.equals(reference, bean.getTargetRef("product"))) {
                     return bean;
                 }
             }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -33,8 +33,8 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.security.RunAs;
+import org.openvpms.component.model.user.User;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.MessageService;
 import org.openvpms.hl7.io.Statistics;
@@ -101,14 +101,14 @@ class MessageReceiver implements ReceivingApplication, ReceivingApplicationExcep
     private String lastErrorMessage;
 
     /**
-     * The logger.
-     */
-    private static final Log log = LogFactory.getLog(MessageReceiver.class);
-
-    /**
      * Key used to store the message act in the meta-data.
      */
     private static String META_DATA_KEY = MessageReceiver.class.getName() + ".act";
+
+    /**
+     * The logger.
+     */
+    private static final Log log = LogFactory.getLog(MessageReceiver.class);
 
 
     /**

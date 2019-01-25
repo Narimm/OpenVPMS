@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.order;
@@ -528,7 +528,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
             for (Act act : acts) {
                 if (!exclusions.contains(act)) {
                     IMObjectBean bean = new IMObjectBean(act);
-                    if (!bean.getBoolean("ordered") && item.samePatientAndProduct(bean)) {
+                    if (!isOrdered(act) && item.samePatientAndProduct(bean)) {
                         patientAndProductMatch = true;
                         if (item.getQuantity().compareTo(bean.getBigDecimal("quantity")) <= 0) {
                             invoiceItem = (FinancialAct) act;
@@ -574,6 +574,16 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
             result = Status.invalid(reason.toString());
         }
         return result;
+    }
+
+    /**
+     * Determines if an invoice item has been ordered.
+     *
+     * @param item the invoice item
+     * @return {@code true} if the item has been ordered, otherwise {@code false}
+     */
+    private boolean isOrdered(Act item) {
+        return item.getStatus() != null;
     }
 
     /**

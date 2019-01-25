@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
@@ -20,7 +20,7 @@ import ca.uhn.hl7v2.model.Message;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.model.user.User;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientInformationService;
@@ -62,9 +62,9 @@ public class PatientInformationServiceImplTestCase extends AbstractServiceTest {
     }
 
     /**
-     * Tests the {@link PatientInformationService#admitted(PatientContext, org.openvpms.component.business.domain.im.security.User)} method.
+     * Tests the {@link PatientInformationService#admitted} method.
      *
-     * @throws Exception
+     * @throws Exception for any error
      */
     @Test
     public void testAdmitted() throws Exception {
@@ -82,9 +82,9 @@ public class PatientInformationServiceImplTestCase extends AbstractServiceTest {
     }
 
     /**
-     * Tests the {@link PatientInformationService#admissionCancelled(PatientContext, org.openvpms.component.business.domain.im.security.User)} method.
+     * Tests the {@link PatientInformationService#admissionCancelled} method.
      *
-     * @throws Exception
+     * @throws Exception for any error
      */
     @Test
     public void testAdmissionCancelled() throws Exception {
@@ -100,9 +100,9 @@ public class PatientInformationServiceImplTestCase extends AbstractServiceTest {
     }
 
     /**
-     * Tests the {@link PatientInformationService#discharged(PatientContext, org.openvpms.component.business.domain.im.security.User)} method.
+     * Tests the {@link PatientInformationService#discharged} method.
      *
-     * @throws Exception
+     * @throws Exception for any error
      */
     @Test
     public void testDischarged() throws Exception {
@@ -120,9 +120,9 @@ public class PatientInformationServiceImplTestCase extends AbstractServiceTest {
     }
 
     /**
-     * Tests the {@link PatientInformationService#updated(PatientContext, org.openvpms.component.business.domain.im.security.User)} method.
+     * Tests the {@link PatientInformationService#updated} method.
      *
-     * @throws Exception
+     * @throws Exception for any error
      */
     @Test
     public void testUpdated() throws Exception {

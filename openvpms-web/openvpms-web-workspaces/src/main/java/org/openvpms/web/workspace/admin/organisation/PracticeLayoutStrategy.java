@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.organisation;
@@ -71,6 +71,11 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
     private static final String RECORD_LOCK_PERIOD_UNITS = "recordLockPeriodUnits";
 
     /**
+     * Pharmacy order discontinue period units.
+     */
+    private static final String PHARMACY_ORDER_DISCONTINUE_PERIOD_UNITS = "pharmacyOrderDiscontinuePeriodUnits";
+
+    /**
      * Minimum quantities override.
      */
     private static final String MINIMUM_QUANTITIES_OVERRIDE = "minimumQuantitiesOverride";
@@ -81,6 +86,7 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
     private static final ArchetypeNodes NODES = new ArchetypeNodes().exclude(ESTIMATE_EXPIRY_UNITS,
                                                                              PRESCRIPTION_EXPIRY_UNITS,
                                                                              RECORD_LOCK_PERIOD_UNITS,
+                                                                             PHARMACY_ORDER_DISCONTINUE_PERIOD_UNITS,
                                                                              MINIMUM_QUANTITIES_OVERRIDE);
 
     /**
@@ -121,6 +127,7 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
         addAutoLogout(object, properties, factory);
         addSchedulingRefresh(object, properties, factory);
         addRecordLockPeriod(object, properties, factory);
+        addPharmacyOrderDiscontinuePeriod(object, properties, factory);
         addMinimumQuantities(object, properties, factory);
         if (subscription == null) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
@@ -188,6 +195,19 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
      */
     private void addRecordLockPeriod(IMObject object, PropertySet properties, IMObjectComponentFactory factory) {
         addPeriod(object, "recordLockPeriod", RECORD_LOCK_PERIOD_UNITS, properties, factory);
+    }
+
+    /**
+     * Registers a component to render the pharmacy order discontinue period and units.
+     *
+     * @param object     the practice object
+     * @param properties the properties
+     * @param factory    the component factory
+     */
+    private void addPharmacyOrderDiscontinuePeriod(IMObject object, PropertySet properties,
+                                                   IMObjectComponentFactory factory) {
+        addPeriod(object, "pharmacyOrderDiscontinuePeriod", PHARMACY_ORDER_DISCONTINUE_PERIOD_UNITS, properties,
+                  factory);
     }
 
     /**

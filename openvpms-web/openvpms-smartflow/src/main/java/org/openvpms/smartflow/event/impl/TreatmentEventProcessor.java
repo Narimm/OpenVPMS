@@ -27,16 +27,16 @@ import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.archetype.rules.user.UserArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.act.ActIdentity;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -51,7 +51,6 @@ import org.openvpms.smartflow.model.event.TreatmentEvent;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -120,7 +119,7 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
         if (list != null && list.getTreatments() != null) {
             List<Treatment> treatments = new ArrayList<>(list.getTreatments());
             // sort treatments to process removals first, as a workaround for OVPMS-2028
-            Collections.sort(treatments, (o1, o2) -> {
+            treatments.sort((o1, o2) -> {
                 Comparator<Object> comparator = ComparatorUtils.nullLowComparator(null);
                 int result = comparator.compare(o1.getTreatmentGuid(), o2.getTreatmentGuid());
                 if (result == 0) {
@@ -339,7 +338,7 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
             if (inProgress == null) {
                 createOrder(treatment, visit, patient, customer, product, diff, null, clinician);
             } else if (inProgress.hasOrder()) {
-                ActBean item = inProgress.getItem(product);
+                IMObjectBean item = inProgress.getItem(product);
                 if (item == null) {
                     item = inProgress.createOrderItem();
                 }
@@ -360,7 +359,7 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
                 inProgress.remove();
                 createReturn(treatment, visit, patient, customer, product, diff, null, clinician);
             } else {
-                ActBean item = inProgress.getItem(product);
+                IMObjectBean item = inProgress.getItem(product);
                 if (item == null) {
                     item = inProgress.createReturnItem();
                 }
@@ -425,10 +424,10 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
      * @param note      a note. May be {@code null}
      * @param clinician the clinician. May be {@code null}
      */
-    private void populate(ActBean act, Treatment treatment, Act visit, Party patient, Party customer, String note,
+    private void populate(IMObjectBean act, Treatment treatment, Act visit, Party patient, Party customer, String note,
                           IMObjectReference clinician) {
         ActIdentity identity = createIdentity(treatment.getTreatmentGuid());
-        act.getAct().addIdentity(identity);
+        ((Act) act.getObject()).addIdentity(identity);
 
         if (!StringUtils.isEmpty(note)) {
             addNote(act, note);
@@ -446,7 +445,7 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
         }
 
         if (clinician != null) {
-            act.setNodeParticipant("clinician", clinician);
+            act.setTarget("clinician", clinician);
         }
     }
 
@@ -460,11 +459,11 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
      * @param quantity  the quantity
      * @param clinician the clinician. May be {@code null}
      */
-    private void populateItem(ActBean order, ActBean item, Treatment treatment, Product product, BigDecimal quantity,
-                              IMObjectReference clinician) {
+    private void populateItem(IMObjectBean order, IMObjectBean item, Treatment treatment, Product product,
+                              BigDecimal quantity, Reference clinician) {
         item.setValue("quantity", quantity);
         if (product != null) {
-            item.setNodeParticipant("product", product);
+            item.setTarget("product", product);
 
             String units = treatment.getUnits();
             IMObjectBean productBean = getService().getBean(product);
@@ -492,7 +491,7 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
                            + "', name='" + treatment.getName() + "'");
         }
         if (clinician != null) {
-            item.setNodeParticipant("clinician", clinician);
+            item.setTarget("clinician", clinician);
         }
     }
 
@@ -581,12 +580,12 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
          * @param orders  the orders
          * @param product the treatment product. May be {@code null}
          */
-        public ChargedState(List<CustomerPharmacyOrder> orders, Product product) {
+        ChargedState(List<CustomerPharmacyOrder> orders, Product product) {
             for (CustomerPharmacyOrder order : orders) {
                 boolean isOrder = order.hasOrder();
-                ActBean bean = isOrder ? order.getOrder() : order.getReturn();
-                String status = bean.getStatus();
-                ActBean item = order.getItem(product);
+                IMObjectBean bean = isOrder ? order.getOrder() : order.getReturn();
+                String status = bean.getString("status");
+                IMObjectBean item = order.getItem(product);
                 BigDecimal itemQty = BigDecimal.ZERO;
                 if (item != null) {
                     itemQty = item.getBigDecimal("quantity", BigDecimal.ZERO);

@@ -11,16 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.impl;
 
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.AbstractMonitoringIMObjectCache;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.hl7.io.Connector;
 import org.openvpms.hl7.io.Connectors;
 import org.openvpms.hl7.util.HL7Archetypes;
@@ -100,7 +100,7 @@ public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> impl
      * @return the connector, or {@code null} if none is found
      */
     @Override
-    public Connector getConnector(IMObjectReference reference) {
+    public Connector getConnector(Reference reference) {
         Connector connector = null;
         State state;
         synchronized (connectors) {
@@ -182,7 +182,7 @@ public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> impl
     protected Listener[] getListeners() {
         Listener[] result;
         synchronized (listeners) {
-            result = listeners.toArray(new Listener[listeners.size()]);
+            result = listeners.toArray(new Listener[0]);
         }
         return result;
     }
@@ -227,7 +227,7 @@ public class ConnectorsImpl extends AbstractMonitoringIMObjectCache<Entity> impl
 
         private final Connector connector;
 
-        public State(Connector connector, long version) {
+        State(Connector connector, long version) {
             this.connector = connector;
             this.version = version;
         }

@@ -11,14 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.hl7.patient;
 
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.party.Party;
 import org.openvpms.hl7.io.Connector;
 
 import java.util.Collection;
@@ -58,6 +58,6 @@ public interface PatientEventServices {
      * @param location the practice location reference
      * @return the connections
      */
-    Collection<Connector> getConnections(IMObjectReference location);
+    Collection<Connector> getConnections(Reference location);
 
 }
