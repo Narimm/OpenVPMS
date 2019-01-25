@@ -363,7 +363,6 @@ public abstract class ChargeRemoveConfirmationHandler extends AbstractRemoveConf
             this.name = name;
             this.objects = objects;
             this.context = context;
-            getButtons().setEnabled(OK_ID, false);
         }
 
         /**
@@ -410,11 +409,12 @@ public abstract class ChargeRemoveConfirmationHandler extends AbstractRemoveConf
             Column preamble = ColumnFactory.create(CELL_SPACING, content, table.getComponent());
             Column column = ColumnFactory.create(WIDE_CELL_SPACING, preamble, buttons);
             getLayout().add(ColumnFactory.create(Styles.LARGE_INSET, column));
+            delete.setSelected(true); // delete all is the default
+            setDeleteAll(true);
         }
 
         private void setDeleteAll(boolean deleteAll) {
             this.deleteAll = deleteAll;
-            getButtons().setEnabled(OK_ID, true);
         }
 
     }
