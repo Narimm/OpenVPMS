@@ -17,24 +17,23 @@
 package org.openvpms.web.workspace.workflow.worklist;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.practice.LocationRules;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.app.Context;
-import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.edit.act.SingleParticipationCollectionEditor;
+import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.DefaultLayoutStrategy;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
@@ -49,17 +48,17 @@ import java.util.Set;
  *
  * @author Tim Anderson
  */
-public class FollowUpTaskEditor extends AbstractTaskActEditor {
+public class FollowUpTaskEditor extends RestrictedWorkListTaskEditor {
 
     /**
-     * The work lists.
+     * The available work lists, ordered on name.
      */
     private final List<Entity> workLists;
 
     /**
-     * The work list participation editor.
+     * The default work list. May be {@code null}
      */
-    private final SingleParticipationCollectionEditor workListEditor;
+    private final Entity defaultWorkList;
 
     /**
      * Constructs a {@link FollowUpTaskEditor}.
@@ -70,13 +69,11 @@ public class FollowUpTaskEditor extends AbstractTaskActEditor {
      */
     public FollowUpTaskEditor(Act act, List<Entity> workLists, LayoutContext context) {
         super(act, null, context);
-        this.workLists = new ArrayList<>(workLists); // copy as these will be ordered alphabetically
-        workListEditor = createWorkListEditor();
-        addEditor(workListEditor);
-        initWorkList();
-
+        defaultWorkList = (!workLists.isEmpty()) ? workLists.get(0) : null;
+        this.workLists = new ArrayList<>(workLists);
+        IMObjectSorter.sort(workLists, "name");
         setStartTime(new Date());
-        workListEditor.addModifiableListener(modifiable -> onWorkListChanged());
+        initWorkListEditor();
     }
 
     /**
@@ -115,6 +112,39 @@ public class FollowUpTaskEditor extends AbstractTaskActEditor {
     }
 
     /**
+     * Returns a default work list.
+     *
+     * @return a default work list, or {@code null} if there is no default
+     */
+    @Override
+    protected Entity getDefaultWorkList() {
+        return defaultWorkList;
+    }
+
+    /**
+     * Creates an editor to edit a work list participation.
+     *
+     * @param participation the participation to edit
+     * @return a new editor
+     */
+    @Override
+    protected ParticipationEditor<Entity> createWorkListEditor(Participation participation) {
+        return new RestrictedWorkListParticipationEditor(participation, getObject(), getLayoutContext()) {
+            @Override
+            protected Query<Entity> createWorkListQuery(String name) {
+                RestrictedWorkListQuery query = new RestrictedWorkListQuery(workLists);
+                if (name != null) {
+                    Entity entity = getEntity();
+                    if (entity == null || !StringUtils.equals(entity.getName(), name)) {
+                        query.setValue(name);
+                    }
+                }
+                return query;
+            }
+        };
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy
@@ -124,44 +154,10 @@ public class FollowUpTaskEditor extends AbstractTaskActEditor {
         ArchetypeNodes nodes = new ArchetypeNodes(true, true).simple("worklist").order("worklist", "startTime")
                 .order("taskType", "startTime").exclude("patient").hidden(true);
         DefaultLayoutStrategy strategy = new DefaultLayoutStrategy(nodes);
-        strategy.addComponent(new ComponentState(workListEditor));
+        strategy.addComponent(new ComponentState(getWorkListCollectionEditor()));
         strategy.addComponent(new ComponentState(getStartTimeEditor()));
         strategy.addComponent(new ComponentState(getEndTimeEditor()));
         return strategy;
-    }
-
-    /**
-     * Invoked to update the task type when the work list changes.
-     */
-    protected void onWorkListChanged() {
-        getTaskTypeEditor().setWorkList(getWorkList());
-    }
-
-    /**
-     * Creates the work list editor.
-     *
-     * @return a new work-list editor
-     */
-    private SingleParticipationCollectionEditor createWorkListEditor() {
-        CollectionProperty property = getCollectionProperty("worklist");
-        return new SingleParticipationCollectionEditor(property, getObject(), getLayoutContext()) {
-            @Override
-            protected IMObjectEditor createEditor(IMObject object, LayoutContext context) {
-                return new FollowUpWorkListParticipationEditor((Participation) object, (Act) getObject(), getContext(),
-                                                               workLists);
-            }
-        };
-    }
-
-    /**
-     * Initialises the work list, if one isn't already set.
-     */
-    private void initWorkList() {
-        if (!workLists.isEmpty() && getWorkList() == null) {
-            Entity defaultWorkList = workLists.get(0);
-            IMObjectSorter.sort(workLists, "name");
-            setWorkList(defaultWorkList);
-        }
     }
 
 }

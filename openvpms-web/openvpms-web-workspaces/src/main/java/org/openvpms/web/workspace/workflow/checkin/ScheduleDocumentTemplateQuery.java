@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -55,7 +55,6 @@ class ScheduleDocumentTemplateQuery extends DocumentTemplateQuery {
      */
     private final Entity workList;
 
-
     /**
      * Constructs a {@link ScheduleDocumentTemplateQuery}.
      *
@@ -63,7 +62,8 @@ class ScheduleDocumentTemplateQuery extends DocumentTemplateQuery {
      * @param workList the work list. May be {@code null}
      */
     public ScheduleDocumentTemplateQuery(Entity schedule, Entity workList) {
-        if (useAllTemplates(schedule) || useAllTemplates(workList)) {
+        if ((schedule != null && useAllTemplates(schedule))
+            || (workList != null && useAllTemplates(workList))) {
             // don't constrain to either a schedule or work list.
             this.schedule = null;
             this.workList = null;

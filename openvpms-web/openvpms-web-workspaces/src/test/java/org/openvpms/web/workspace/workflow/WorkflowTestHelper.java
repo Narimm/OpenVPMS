@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow;
@@ -65,7 +65,22 @@ public class WorkflowTestHelper extends TestHelper {
      * @return a new appointment
      */
     public static Act createAppointment(Date startTime, Party customer, Party patient, User clinician, Party location) {
-        Party schedule = ScheduleTestHelper.createSchedule(location);
+        Entity schedule = ScheduleTestHelper.createSchedule(location);
+        return createAppointment(startTime, schedule, customer, patient, clinician);
+    }
+
+    /**
+     * Helper to create an appointment.
+     *
+     * @param startTime the appointment start time
+     * @param schedule  the schedule
+     * @param customer  the customer
+     * @param patient   the patient. May be {@code null}
+     * @param clinician the clinician. May be {@code null}
+     * @return a new appointment
+     */
+    public static Act createAppointment(Date startTime, Entity schedule, Party customer, Party patient,
+                                        User clinician) {
         Entity appointmentType = ScheduleTestHelper.createAppointmentType();
 
         Act act = ScheduleTestHelper.createAppointment(startTime, startTime, schedule, appointmentType, customer,

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -20,17 +20,20 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.edit.act.SingleParticipationCollectionEditor;
 import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.property.CollectionProperty;
+import org.openvpms.web.component.im.query.EntityQuery;
+import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -39,7 +42,9 @@ import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.workflow.worklist.TaskActEditor;
+import org.openvpms.web.workspace.workflow.worklist.RestrictedWorkListParticipationEditor;
+import org.openvpms.web.workspace.workflow.worklist.RestrictedWorkListTaskEditor;
+import org.openvpms.web.workspace.workflow.worklist.ScheduleWorkListQuery;
 
 import java.util.Date;
 
@@ -131,7 +136,7 @@ class TaskPanel {
      */
     public FocusGroup layout(ComponentGrid grid) {
         editor.getComponent();
-        IMObjectCollectionEditor workListEditor = editor.getWorkListEditor();
+        IMObjectCollectionEditor workListEditor = editor.getWorkListCollectionEditor();
         workListEditor.addModifiableListener(modifiable -> onWorkListChanged());
         IMObjectCollectionEditor taskTypeEditor = editor.getTypeEditor();
         String taskTypeDisplayName = taskTypeEditor.getProperty().getDisplayName();
@@ -172,7 +177,7 @@ class TaskPanel {
      *
      * @param worklist the work list. May be {@code null}
      */
-    public void setWorkList(Party worklist) {
+    public void setWorkList(Entity worklist) {
         editor.setWorkList(worklist);
     }
 
@@ -182,7 +187,7 @@ class TaskPanel {
      * @return the editor
      */
     Editor getWorkListEditor() {
-        return editor.getWorkListEditor();
+        return editor.getWorkListCollectionEditor();
     }
 
     /**
@@ -201,19 +206,26 @@ class TaskPanel {
     /**
      * Editor for the task.
      */
-    private static class TaskEditor extends TaskActEditor {
+    private static class TaskEditor extends RestrictedWorkListTaskEditor {
+
+        /**
+         * The schedule associated with the appointment, if an appointment was supplied.
+         */
+        private final Entity schedule;
 
         /**
          * Constructs a {@link TaskEditor}.
          *
          * @param task        the task
          * @param appointment the current appointment. May be {@code null}
-         * @param context the context
+         * @param context     the context
          */
         TaskEditor(Act task, Act appointment, LayoutContext context) {
             super(task, null, context);
             ArchetypeServiceFunctions functions = ServiceHelper.getBean(ArchetypeServiceFunctions.class);
             if (appointment != null) {
+                IMObjectBean bean = getBean(appointment);
+                schedule = bean.getTarget("schedule", Entity.class);
                 String reason = functions.lookup(appointment, "reason", "Appointment");
                 String notes = appointment.getDescription();
                 if (notes == null) {
@@ -223,15 +235,43 @@ class TaskPanel {
                 Property property = getProperty("description");
                 int maxLength = property.getMaxLength();
                 property.setValue(StringUtils.abbreviate(description, maxLength));
+            } else {
+                schedule = null;
             }
+            initWorkListEditor();
+        }
 
-            SingleParticipationCollectionEditor workListEditor = createWorkListEditor();
-            addEditor(workListEditor);
-            workListEditor.addModifiableListener(modifiable -> getTaskTypeEditor().setWorkList(getWorkList()));
+        /**
+         * Returns the work list editor.
+         *
+         * @return the work list editor
+         */
+        @Override
+        public SingleParticipationCollectionEditor getWorkListCollectionEditor() {
+            return super.getWorkListCollectionEditor();
         }
 
         public boolean isEmpty() {
             return isNull("worklist") && isNull("taskType");
+        }
+
+        /**
+         * Creates an editor to edit a work list participation.
+         *
+         * @param participation the participation to edit
+         * @return a new editor
+         */
+        @Override
+        protected ParticipationEditor<Entity> createWorkListEditor(Participation participation) {
+            final LayoutContext layoutContext = getLayoutContext();
+            return new RestrictedWorkListParticipationEditor(participation, getObject(), layoutContext) {
+                @Override
+                protected Query<Entity> createWorkListQuery(String name) {
+                    Party location = layoutContext.getContext().getLocation();
+                    ScheduleWorkListQuery query = new ScheduleWorkListQuery(schedule, location);
+                    return new EntityQuery<>(query, layoutContext.getContext());
+                }
+            };
         }
 
         /**
@@ -241,13 +281,10 @@ class TaskPanel {
         protected void onLayoutCompleted() {
             super.onLayoutCompleted();
             // need to remove the parent component layout data as the components are being used outside of the editor
-            getWorkListEditor().getComponent().setLayoutData(null);
+            getWorkListCollectionEditor().getComponent().setLayoutData(null);
             getTaskTypeEditor().getComponent().setLayoutData(null);
         }
 
-        IMObjectCollectionEditor getWorkListEditor() {
-            return (IMObjectCollectionEditor) getEditor("worklist");
-        }
 
         IMObjectCollectionEditor getTypeEditor() {
             return ((IMObjectCollectionEditor) getEditor("taskType"));
@@ -258,15 +295,6 @@ class TaskPanel {
             return editor == null || editor.isNull();
         }
 
-        /**
-         * Creates the work list editor.
-         *
-         * @return a new work-list editor
-         */
-        private SingleParticipationCollectionEditor createWorkListEditor() {
-            CollectionProperty property = getCollectionProperty("worklist");
-            return new SingleParticipationCollectionEditor(property, getObject(), getLayoutContext());
-        }
     }
 
 }

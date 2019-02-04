@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -35,7 +35,6 @@ import org.openvpms.web.component.edit.Editor;
 import org.openvpms.web.component.im.edit.EditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.PatientReferenceEditor;
-import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workflow.Task;
@@ -115,18 +114,6 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
     }
 
     /**
-     * Selects the specified patient in the current patient selection browser.
-     *
-     * @param patient the patient
-     */
-    public void selectPatient(Party patient) {
-        BrowserDialog<Party> dialog = getSelectionDialog();
-        Browser<Party> browser = dialog.getBrowser();
-        fireSelection(browser, patient);
-        assertEquals(patient, getContext().getPatient());
-    }
-
-    /**
      * Displays the patient browser in the check-in editor.
      *
      * @return the browser dialog
@@ -201,7 +188,7 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
      * @param status    the expected status
      * @return the task
      */
-    public Act checkTask(Party workList, Party customer, Party patient, User clinician, String status) {
+    public Act checkTask(Entity workList, Party customer, Party patient, User clinician, String status) {
         Act task = (Act) getContext().getObject(ScheduleArchetypes.TASK);
         assertNotNull(task);
         assertTrue(!task.isNew());  // has been saved
@@ -290,7 +277,7 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
      * @param location    the location
      * @return the event
      */
-    public Act runWorkflow(Party patient, Party customer, Party workList, Date arrivalTime, User clinician, Party location) {
+    public Act runWorkflow(Party patient, Party customer, Entity workList, Date arrivalTime, User clinician, Party location) {
 
         setArrivalTime(arrivalTime);
         start();
@@ -364,16 +351,6 @@ public class CheckInWorkflowRunner extends FinancialWorkflowRunner<CheckInWorkfl
          * The context.
          */
         private Context context;
-
-        /**
-         * The patient to pre-populate the patient selection browser with.
-         */
-        private Party patient;
-
-        /**
-         * The work-list to pre-populate the work-list selection browser with.
-         */
-        private Party workList;
 
         /**
          * The customer arrival time.

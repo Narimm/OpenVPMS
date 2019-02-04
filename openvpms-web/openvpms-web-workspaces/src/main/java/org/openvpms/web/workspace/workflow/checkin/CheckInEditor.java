@@ -324,7 +324,12 @@ public class CheckInEditor extends AbstractSaveableEditor {
         patientProperty.setValue((patient != null) ? patient.getObjectReference() : patient);
     }
 
-    public void setWorkList(Party worklist) {
+    /**
+     * Sets the work list.
+     *
+     * @param worklist the work list. May be {@code null}
+     */
+    public void setWorkList(Entity worklist) {
         taskPanel.setWorkList(worklist);
     }
 

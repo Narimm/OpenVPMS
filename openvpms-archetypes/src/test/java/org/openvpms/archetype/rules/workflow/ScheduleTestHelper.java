@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -221,6 +221,24 @@ public class ScheduleTestHelper extends TestHelper {
     }
 
     /**
+     * Adds work lists to a schedule.
+     * <p/>
+     * This sets the {@code useAllWorkLists} flog to {@code false}.
+     *
+     * @param schedule  the schedule
+     * @param worklists the work lists
+     */
+    public static void addWorkLists(Entity schedule, Entity... worklists) {
+        IMObjectBean bean = new IMObjectBean(schedule);
+        bean.setValue("useAllWorkLists", false);
+        for (Entity worklist : worklists) {
+            EntityRelationship relationship = (EntityRelationship) bean.addTarget("workLists", worklist);
+            worklist.addEntityRelationship(relationship);
+        }
+        bean.save(worklists);
+    }
+
+    /**
      * Helper to create an <em>act.customerAppointment</em>.
      *
      * @param startTime the act start time
@@ -313,14 +331,15 @@ public class ScheduleTestHelper extends TestHelper {
      * @param workLists the work lists
      * @return a new work list view
      */
-    public static Entity createWorkListView(Party... workLists) {
+    public static Entity createWorkListView(Entity... workLists) {
         Entity view = (Entity) create("entity.organisationWorkListView");
         view.setName("XWorkListView");
-        EntityBean bean = new EntityBean(view);
-        for (Party workList : workLists) {
-            bean.addNodeRelationship("workLists", workList);
+        IMObjectBean bean = new IMObjectBean(view);
+        for (Entity workList : workLists) {
+            EntityRelationship relationship = (EntityRelationship) bean.addTarget("workLists", workList);
+            workList.addEntityRelationship(relationship);
         }
-        bean.save();
+        bean.save(workLists);
         return view;
     }
 

@@ -86,6 +86,30 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     private Context context;
 
+    private Entity workList;
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        super.setUp();
+        customer = TestHelper.createCustomer();
+        patient = TestHelper.createPatient(customer);
+        clinician = TestHelper.createClinician();
+        context = new LocalContext();
+        location = TestHelper.createLocation();
+        context.setLocation(location);
+        context.setUser(TestHelper.createUser());
+
+        Entity taskType = ScheduleTestHelper.createTaskType();
+        workList = createWorkList(taskType, 1);
+
+        // make the work list available at the location by adding it to a view.
+        Entity workListView = ScheduleTestHelper.createWorkListView(workList);
+        ScheduleTestHelper.addWorkListView(location, workListView, true);
+    }
+
     /**
      * Tests running a consult from an appointment.
      */
@@ -100,8 +124,6 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         previousEvent.setStatus(ActStatus.COMPLETED);
         save(previousEvent);
 
-        Entity taskType = ScheduleTestHelper.createTaskType();
-        Party workList = createWorkList(taskType, 1);
         CheckInWorkflowRunner runner = new CheckInWorkflowRunner(appointment, getPractice(), context);
 
         Act event = runner.runWorkflow(patient, customer, workList, date, clinician, location);
@@ -125,8 +147,6 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         save(previousEvent);
 
         Act appointment = createAppointment(date, customer, patient, clinician, location);
-        Entity taskType = ScheduleTestHelper.createTaskType();
-        Party workList = createWorkList(taskType, 1);
         CheckInWorkflowRunner runner = new CheckInWorkflowRunner(appointment, getPractice(), context);
 
         Act event = runner.runWorkflow(patient, customer, workList, date, clinician, location);
@@ -269,21 +289,6 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     }
 
     /**
-     * Sets up the test case.
-     */
-    @Before
-    public void setUp() {
-        super.setUp();
-        customer = TestHelper.createCustomer();
-        patient = TestHelper.createPatient(customer);
-        clinician = TestHelper.createClinician();
-        context = new LocalContext();
-        location = TestHelper.createLocation();
-        context.setLocation(location);
-        context.setUser(TestHelper.createUser());
-    }
-
-    /**
      * Tests the effects of the practice useLoggedInClinician option during the Consult workflow.
      *
      * @param enabled              if {@code true}, enable the option, otherwise disable it
@@ -309,8 +314,6 @@ public class ConsultWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         previousEvent.setStatus(ActStatus.COMPLETED);
         save(previousEvent);
 
-        Entity taskType = ScheduleTestHelper.createTaskType();
-        Party workList = createWorkList(taskType, 1);
         CheckInWorkflowRunner runner = new CheckInWorkflowRunner(appointment, getPractice(), context);
 
         Act event = runner.runWorkflow(patient, customer, workList, date, expectedClinician, location);

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -68,7 +68,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.test.TestHelper.getDatetime;
 import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
-import static org.openvpms.web.workspace.workflow.WorkflowTestHelper.createAppointment;
 import static org.openvpms.web.workspace.workflow.WorkflowTestHelper.createWorkList;
 
 
@@ -105,6 +104,11 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     private Party location;
 
     /**
+     * The schedule.
+     */
+    private Entity schedule;
+
+    /**
      * The work list.
      */
     private Party workList;
@@ -120,14 +124,21 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     @Before
     public void setUp() {
         super.setUp();
+        location = TestHelper.createLocation();
         customer = TestHelper.createCustomer();
         patient = TestHelper.createPatient(customer);
         clinician = TestHelper.createClinician();
         User user = TestHelper.createUser();
         Entity taskType = ScheduleTestHelper.createTaskType();
+
+        schedule = ScheduleTestHelper.createSchedule(location);
         workList = createWorkList(taskType, 1);
+
+        // make the work list available at the location by adding it to a view.
+        Entity workListView = ScheduleTestHelper.createWorkListView(workList);
+        ScheduleTestHelper.addWorkListView(location, workListView, true);
+
         context = new LocalContext();
-        location = TestHelper.createLocation();
         context.setLocation(location);
         context.setUser(user);
 
@@ -142,7 +153,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     public void testCheckInFromAppointmentNoPatient() {
         Date startTime = TestHelper.getDatetime("2013-01-01 09:00:00");
         Date arrivalTime = TestHelper.getDatetime("2013-01-01 08:50:00"); // arrived early
-        Act appointment = createAppointment(startTime, customer, null, clinician, location);
+        Act appointment = createAppointment(startTime, customer, null, clinician);
 
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setArrivalTime(arrivalTime);
@@ -179,7 +190,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     public void testCheckInFromAppointmentWithPatient() {
         Date startTime = TestHelper.getDatetime("2013-01-01 09:00:00");
         Date arrivalTime = TestHelper.getDatetime("2013-01-01 09:33:00"); // arrived late
-        Act appointment = createAppointment(startTime, customer, patient, clinician, location);
+        Act appointment = createAppointment(startTime, customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setArrivalTime(arrivalTime);
         runCheckInToVisit(workflow);
@@ -196,7 +207,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testCreatePatient() {
-        Act appointment = createAppointment(customer, null, clinician, location);
+        Act appointment = createAppointment(customer, null, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.start();
 
@@ -225,7 +236,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testCancelCreatePatient() {
-        Act appointment = createAppointment(customer, null, clinician, location);
+        Act appointment = createAppointment(customer, null, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.start();
 
@@ -245,7 +256,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testCancelCreatePatientByUserClose() {
-        Act appointment = createAppointment(customer, null, clinician, location);
+        Act appointment = createAppointment(customer, null, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.start();
 
@@ -282,7 +293,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     @Test
     public void testCancelSelectWorkList() {
         Date startTime = TestHelper.getDatetime("2013-01-01 09:00:00");
-        Act appointment = createAppointment(startTime, customer, patient, clinician, location);
+        Act appointment = createAppointment(startTime, customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setArrivalTime(startTime);
         workflow.start();
@@ -311,7 +322,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testNoDefaultClinicianFromContext() {
-        Act appointment = createAppointment(customer, patient, null, location);  // no clinician on appointment
+        Act appointment = createAppointment(customer, patient, null);  // no clinician on appointment
         context.setClinician(clinician);
         checkClinician(appointment, null, false, context);
     }
@@ -321,7 +332,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testNoClinician() {
-        Act appointment = createAppointment(customer, patient, null, location);  // no clinician on appointment
+        Act appointment = createAppointment(customer, patient, null);  // no clinician on appointment
         checkClinician(appointment, null, false, context);
     }
 
@@ -331,9 +342,10 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testSetClincianInCheckInEditor() {
-        Act appointment = createAppointment(customer, patient, TestHelper.createClinician(), location);
+        Act appointment = createAppointment(customer, patient, TestHelper.createClinician());
         checkClinician(appointment, clinician, true, context);
     }
+
     /**
      * Tests the behaviour of cancelling the clinical event edit using the cancel button.
      */
@@ -355,7 +367,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      */
     @Test
     public void testSkipPatientWeight() {
-        Act appointment = createAppointment(customer, patient, clinician, location);
+        Act appointment = createAppointment(customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.start();
 
@@ -417,7 +429,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         event1.setStatus(ActStatus.COMPLETED);
         save(event1);
 
-        Act appointment = createAppointment(date2, customer, patient, clinician, location);
+        Act appointment = createAppointment(date2, customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setArrivalTime(date2);
 
@@ -456,7 +468,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     @Test
     public void testChangeClinicianOnInvoiceItem() {
         Date startTime = TestHelper.getDatetime("2013-01-01 09:00:00");
-        Act appointment = createAppointment(startTime, customer, patient, clinician, location);
+        Act appointment = createAppointment(startTime, customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.setArrivalTime(startTime);
         workflow.start();
@@ -531,6 +543,31 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
     }
 
     /**
+     * Helper to create an appointment.
+     *
+     * @param customer  the customer
+     * @param patient   the patient. May be {@code null}
+     * @param clinician the clinician. May be {@code null}
+     * @return a new appointment
+     */
+    private Act createAppointment(Party customer, Party patient, User clinician) {
+        return createAppointment(new Date(), customer, patient, clinician);
+    }
+
+    /**
+     * Helper to create an appointment.
+     *
+     * @param startTime the appointment start time
+     * @param customer  the customer
+     * @param patient   the patient. May be {@code null}
+     * @param clinician the clinician. May be {@code null}
+     * @return a new appointment
+     */
+    private Act createAppointment(Date startTime, Party customer, Party patient, User clinician) {
+        return WorkflowTestHelper.createAppointment(startTime, schedule, customer, patient, clinician);
+    }
+
+    /**
      * Tests the effects of the practice useLoggedInClinician option during the Check-In workflow.
      *
      * @param enabled              if {@code true}, enable the option, otherwise disable it
@@ -544,7 +581,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
         bean.setValue("useLoggedInClinician", enabled);
         Date startTime = TestHelper.getDatetime("2018-01-01 09:00:00");
         Date arrivalTime = TestHelper.getDatetime("2018-01-01 09:33:00"); // arrived late
-        Act appointment = createAppointment(startTime, customer, patient, appointmentClinician, location);
+        Act appointment = createAppointment(startTime, customer, patient, appointmentClinician);
         context.setUser(user);
         context.setClinician(TestHelper.createClinician()); // should not be used, as the appointment has a clinician
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
@@ -565,7 +602,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      * @param userClose if {@code true} cancel via the 'user close' button, otherwise use the 'cancel' button
      */
     private void checkCancelCheckInEditDialog(boolean userClose) {
-        Act appointment = createAppointment(customer, null, clinician, location);
+        Act appointment = createAppointment(customer, null, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         workflow.start();
 
@@ -583,7 +620,7 @@ public class CheckInWorkflowTestCase extends AbstractCustomerChargeActEditorTest
      * @param userClose if <tt>true</tt> cancel the edit by the 'user close' button otherwise via the cancel button
      */
     private void checkCancelEditEvent(boolean userClose) {
-        Act appointment = createAppointment(customer, patient, clinician, location);
+        Act appointment = createAppointment(customer, patient, clinician);
         CheckInWorkflowRunner workflow = new CheckInWorkflowRunner(appointment, getPractice(), context);
         runCheckInToVisit(workflow);
 
