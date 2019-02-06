@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.insurance.claim;
@@ -113,8 +113,8 @@ class AttachmentGenerator {
         boolean result = true;
 
         context.setLocation(location);
-        addMissingHistory(attachments);
-        addMissingInvoices(attachments);
+        updateHistory(attachments);
+        updateInvoices(attachments);
 
         for (Act attachment : attachments.getCurrentActs()) {
             if (!generate(attachment, claim)) {
@@ -130,35 +130,34 @@ class AttachmentGenerator {
     }
 
     /**
-     * Adds the history attachment, if none is present.
+     * Updates the patient history.
+     * <p/>
+     * Any existing history attachment is regenerated, to ensure it contains the latest history.
      *
      * @param attachments the attachments editor
      */
-    private void addMissingHistory(AttachmentCollectionEditor attachments) {
+    private void updateHistory(AttachmentCollectionEditor attachments) {
         Act history = attachments.getHistory();
-        if (history == null) {
-            attachments.add(attachments.createHistory());
+        if (history != null) {
+            attachments.remove(history);
         }
+        attachments.add(attachments.createHistory());
     }
 
     /**
-     * Adds missing invoice attachments, and removes those that are no longer relevant.
+     * Updates existing invoice attachments, and removes those that are no longer relevant.
+     * <p/>
+     * Existing attachments are regenerated to ensure that they reflect the current claimed items and customer balance.
      *
      * @param attachments the attachments editor
      */
-    private void addMissingInvoices(AttachmentCollectionEditor attachments) {
+    private void updateInvoices(AttachmentCollectionEditor attachments) {
         Set<Reference> expectedInvoices = charges.getInvoiceRefs();
         for (Act attachment : attachments.getCurrentActs()) {
             if (isInvoice(attachment)) {
-                ActBean bean = new ActBean(attachment);
-                Reference invoice = bean.getTargetRef("original");
-                boolean present = false;
-                if (invoice != null) {
-                    present = expectedInvoices.remove(invoice);
-                }
-                if (!present) {
-                    attachments.remove(attachment);
-                }
+                // for invoices that are in the final claim, it is easiest to just remove the attachment and
+                // recreate, as it handles document deletion
+                attachments.remove(attachment);
             }
         }
         for (Reference ref : expectedInvoices) {
