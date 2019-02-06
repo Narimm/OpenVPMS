@@ -16,23 +16,30 @@
 
 package org.openvpms.web.workspace.reporting.reminder;
 
+import au.com.bytecode.opencsv.CSVReader;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.openvpms.archetype.rules.doc.DocumentHandlers;
+import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
+import org.openvpms.archetype.rules.patient.reminder.ReminderCSVExporter;
 import org.openvpms.archetype.rules.patient.reminder.ReminderConfiguration;
 import org.openvpms.archetype.rules.patient.reminder.ReminderEvent;
+import org.openvpms.archetype.rules.patient.reminder.ReminderExporter;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemQueryFactory;
 import org.openvpms.archetype.rules.patient.reminder.ReminderItemStatus;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTestHelper;
 import org.openvpms.archetype.rules.patient.reminder.ReminderTypes;
+import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -40,11 +47,14 @@ import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.web.workspace.customer.communication.CommunicationLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.openvpms.component.system.common.query.Constraints.in;
 
 /**
@@ -82,9 +92,32 @@ public class ReminderExportBatchProcessorTestCase extends ArchetypeServiceTest {
     private PatientRules patientRules;
 
     /**
+     * The party rules.
+     */
+    @Autowired
+    private PartyRules partyRules;
+
+    /**
+     * The document handlers.
+     */
+    @Autowired
+    private DocumentHandlers documentHandlers;
+
+    /**
      * The reminder configuration.
      */
     private ReminderConfiguration config;
+
+    /**
+     * The practice service.
+     */
+    private PracticeService practiceService;
+
+    /**
+     * The generated document.
+     */
+    private Document document;
+
 
     /**
      * Sets up the test.
@@ -95,14 +128,18 @@ public class ReminderExportBatchProcessorTestCase extends ArchetypeServiceTest {
         location = TestHelper.createLocation();
         IArchetypeService service = getArchetypeService();
         reminderTypes = new ReminderTypes(service);
+        practiceService = Mockito.mock(PracticeService.class);
+        Mockito.when(practiceService.getPractice()).thenReturn(practice);
         config = new ReminderConfiguration(create(ReminderArchetypes.CONFIGURATION), service);
     }
 
     /**
      * Tests export.
+     *
+     * @throws Exception for any error
      */
     @Test
-    public void testExport() {
+    public void testExport() throws Exception {
         Contact contact1 = TestHelper.createLocationContact("103 Stafford Drive", "SALE", "VIC", "3085");
         Party customer1 = TestHelper.createCustomer("MS", "J", "Smith", contact1);
         Party patient1A = TestHelper.createPatient("Fido", customer1, true);
@@ -150,6 +187,10 @@ public class ReminderExportBatchProcessorTestCase extends ArchetypeServiceTest {
             @Override
             protected void export(List<ReminderEvent> reminders) {
                 exported.addAll(reminders);
+                ReminderExporter exporter = new ReminderCSVExporter(practiceService, partyRules, patientRules,
+                                                                    getArchetypeService(), getLookupService(),
+                                                                    documentHandlers);
+                document = exporter.export(reminders);
             }
         };
         ReminderExportBatchProcessor batchProcessor = new ReminderExportBatchProcessor(source, processor);
@@ -162,6 +203,12 @@ public class ReminderExportBatchProcessorTestCase extends ArchetypeServiceTest {
         check(exported.get(1), reminder1A1, item1A1, patient1A, customer1, contact1);
         check(exported.get(2), reminder1A2, item1A2, patient1A, customer1, contact1);
         check(exported.get(3), reminder1B1, item1B1, patient1B, customer1, contact1);
+
+        assertNotNull(document);
+        InputStream content = documentHandlers.get(document).getContent(document);
+        CSVReader reader = new CSVReader(new InputStreamReader(content), ',');
+        List<String[]> lines = reader.readAll();
+        assertEquals(5, lines.size());
     }
 
     /**
