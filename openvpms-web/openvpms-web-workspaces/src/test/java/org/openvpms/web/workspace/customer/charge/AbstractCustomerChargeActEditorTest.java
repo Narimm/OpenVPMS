@@ -840,6 +840,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     protected void setPharmacyOrderDiscontinuePeriod(int period) {
         IMObjectBean bean = getBean(practice);
         bean.setValue("pharmacyOrderDiscontinuePeriod", period);
+        bean.setValue("pharmacyOrderDiscontinuePeriodUnits", DateUnits.MINUTES.toString());
         save(practice);
     }
 
