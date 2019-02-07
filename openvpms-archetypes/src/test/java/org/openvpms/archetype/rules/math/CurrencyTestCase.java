@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.math;
@@ -125,6 +125,9 @@ public class CurrencyTestCase {
         checkRoundPrice(halfUp, "1.97", "1.95");
         checkRoundPrice(halfUp, "1.975", "2.00");
         checkRoundPrice(halfUp, "1.98", "2.00");
+        checkRoundPrice(halfUp, "0.00", "0.00");
+        checkRoundPrice(halfUp, "0.01", "0.05"); // round to minimum as non-zero and less than minimum
+        checkRoundPrice(halfUp, "0.06", "0.05");
 
         Currency halfDown = new Currency(AUD, RoundingMode.HALF_DOWN, minDenomination, minPrice);
         checkRoundPrice(halfDown, "1.925", "1.90");
@@ -133,6 +136,9 @@ public class CurrencyTestCase {
         checkRoundPrice(halfDown, "1.97", "1.95");
         checkRoundPrice(halfDown, "1.975", "1.95");
         checkRoundPrice(halfDown, "1.98", "2.00");
+        checkRoundPrice(halfDown, "0.00", "0.00");
+        checkRoundPrice(halfDown, "0.01", "0.05"); // round to minimum as non-zero and less than minimum
+        checkRoundPrice(halfDown, "0.06", "0.05");
 
         Currency halfEven = new Currency(AUD, RoundingMode.HALF_EVEN, minDenomination, minPrice);
         checkRoundPrice(halfEven, "1.925", "1.90"); // round down to nearest even
@@ -141,6 +147,17 @@ public class CurrencyTestCase {
         checkRoundPrice(halfEven, "1.97", "1.95");
         checkRoundPrice(halfEven, "1.975", "2.00");
         checkRoundPrice(halfEven, "1.98", "2.00");
+        checkRoundPrice(halfEven, "0.00", "0.00");
+        checkRoundPrice(halfEven, "0.01", "0.05"); // round to minimum as non-zero and less than minimum
+        checkRoundPrice(halfEven, "0.06", "0.05");
+
+        // verify negative prices are handled correctly
+        checkRoundPrice(halfUp, "-1.925", "-1.95");
+        checkRoundPrice(halfUp, "-0.01", "-0.05");
+        checkRoundPrice(halfDown, "-1.925", "-1.90");
+        checkRoundPrice(halfDown, "-0.01", "-0.05");
+        checkRoundPrice(halfEven, "-1.925", "-1.90");
+        checkRoundPrice(halfEven, "-0.01", "-0.05");
     }
 
     /**

@@ -190,12 +190,24 @@ public class Currency {
     /**
      * Rounds a price to the nearest minimum price, or {@code defaultFractionDigits} if the minimum price is not
      * specified.
+     * <p/>
+     * If the price is less than the minimum price, but non-zero, it will be set to the minimum price.
      *
-     * @param price the value to round
+     * @param price the value to round. May be negative
      * @return the rounded value
      */
     public BigDecimal roundPrice(BigDecimal price) {
-        return roundTo(price, minPrice);
+        BigDecimal result;
+        BigDecimal abs = price.abs();
+        if (!MathRules.isZero(price) && abs.compareTo(minPrice) <= 0) {
+            result = minPrice;
+        } else {
+            result = roundTo(abs, minPrice);
+        }
+        if (price.signum() != result.signum()) {
+            result = result.negate();
+        }
+        return result;
     }
 
     /**
