@@ -170,6 +170,10 @@
               path="/details/calendarCacheMaxElements" defaultValue="30" hidden="true"/>
         <node name="taskCacheMaxElements" type="java.lang.Long" minCardinality="0"
               path="/details/taskCacheMaxElements" defaultValue="30" hidden="true"/>
+        <node name="rosterAreaCacheMaxElements" type="java.lang.Long" minCardinality="0"
+              path="/details/rosterAreaCacheMaxElements" defaultValue="30" hidden="true"/>
+        <node name="rosterUserCacheMaxElements" type="java.lang.Long" minCardinality="0"
+              path="/details/rosterUserCacheMaxElements" defaultValue="30" hidden="true"/>
         <node name="lookupCacheMaxElements" type="java.lang.Long" minCardinality="0"
               path="/details/lookupCacheMaxElements" defaultValue="3000" hidden="true"/>
         <node name="contacts" path="/contacts"

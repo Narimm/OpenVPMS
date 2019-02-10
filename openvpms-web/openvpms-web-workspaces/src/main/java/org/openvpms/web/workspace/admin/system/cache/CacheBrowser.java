@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.system.cache;
@@ -22,8 +22,11 @@ import nextapp.echo2.app.event.ActionListener;
 import org.ehcache.core.spi.service.StatisticsService;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.workflow.CalendarService;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
+import org.openvpms.archetype.rules.workflow.roster.RosterArchetypes;
+import org.openvpms.archetype.rules.workflow.roster.RosterService;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -51,7 +54,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Browser for appointment, task, calendar and lookup caches.
+ * Browser for appointment, task, calendar, roster and lookup caches.
  *
  * @author Tim Anderson
  */
@@ -106,6 +109,16 @@ class CacheBrowser {
     private static final String CALENDAR_CACHE = "calendarCache";
 
     /**
+     * The roster area cache name.
+     */
+    private static final String ROSTER_AREA_CACHE = "rosterAreaCache";
+
+    /**
+     * The roster user cache name.
+     */
+    private static final String ROSTER_USER_CACHE = "rosterUserCache";
+
+    /**
      * The lookup cache name.
      */
     private static final String LOOKUP_CACHE = "lookupCache";
@@ -116,6 +129,17 @@ class CacheBrowser {
     private static final int SCHEDULE_MULTIPLIER = 2 * 30;
 
     /**
+     * Multiplier for roster area cache sizes. 2 weeks per area * double the no. of current areas.
+     */
+    private static final int ROSTER_AREA_MULTIPLIER = 2 * 7 * 2;
+
+    /**
+     * Multiplier for roster user cache sizes. 2 weeks per user * double the no. of current users.
+     * Roster events by user is cached on a weekly basis.
+     */
+    private static final int ROSTER_USER_MULTIPLIER = 2 * 2;
+
+    /**
      * Multiplier for lookup cache size. 2 * no. of frequently used lookups
      */
     private static final int LOOKUP_MULTIPLIER = 2;
@@ -124,13 +148,18 @@ class CacheBrowser {
     /**
      * Constructs a {@link CacheBrowser}.
      */
-    public CacheBrowser() {
+    CacheBrowser() {
         caches = new ArrayList<>();
         statistics = ServiceHelper.getBean(StatisticsService.class);
-        addCache((EhCacheable) ServiceHelper.getAppointmentService(), "appointmentCache",
+        addCache((EhCacheable) ServiceHelper.getAppointmentService(), APPOINTMENT_CACHE,
                  "admin.system.cache.appointment", caches);
-        addCache((EhCacheable) ServiceHelper.getTaskService(), "taskCache", "admin.system.cache.task", caches);
-        addCache(ServiceHelper.getBean(CalendarService.class), "calendarCache", "admin.system.cache.calendar", caches);
+        addCache((EhCacheable) ServiceHelper.getTaskService(), TASK_CACHE, "admin.system.cache.task", caches);
+        addCache(ServiceHelper.getBean(CalendarService.class), CALENDAR_CACHE, "admin.system.cache.calendar", caches);
+
+        RosterService rosterService = ServiceHelper.getBean(RosterService.class);
+        addCache(rosterService, ROSTER_AREA_CACHE, "admin.system.cache.rosterarea", caches);
+        addCache(rosterService.getUserCache(), ROSTER_USER_CACHE, "admin.system.cache.rosteruser", caches);
+
         addCache((EhCacheable) ServiceHelper.getLookupService(), "lookupCache", "admin.system.cache.lookup", caches);
 
         table = new PagedIMTable<>(new CacheTableModel());
@@ -244,6 +273,10 @@ class CacheBrowser {
             result = getSuggestedCacheSize(SCHEDULE_MULTIPLIER, ScheduleArchetypes.ORGANISATION_WORKLIST);
         } else if (CALENDAR_CACHE.equals(cache.getName())) {
             result = getSuggestedCacheSize(SCHEDULE_MULTIPLIER, ProductArchetypes.SERVICE_RATIO_CALENDAR);
+        } else if (ROSTER_AREA_CACHE.equals(cache.getName())) {
+            result = getSuggestedCacheSize(ROSTER_AREA_MULTIPLIER, RosterArchetypes.ROSTER_AREA);
+        } else if (ROSTER_USER_CACHE.equals(cache.getName())) {
+            result = getSuggestedCacheSize(ROSTER_USER_MULTIPLIER, UserArchetypes.USER);
         } else if (LOOKUP_CACHE.equals(cache.getName())) {
             result = getSuggestedCacheSize(LOOKUP_MULTIPLIER, PatientArchetypes.SPECIES, PatientArchetypes.BREED,
                                            "lookup.state", "lookup.suburb", "lookup.diagnosis*",

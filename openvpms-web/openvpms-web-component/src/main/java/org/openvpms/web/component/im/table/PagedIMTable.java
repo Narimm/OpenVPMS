@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -22,7 +22,6 @@ import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.web.component.im.query.ResultSet;
-import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
@@ -32,6 +31,7 @@ import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.PageListener;
 import org.openvpms.web.echo.table.SortableTableHeaderRenderer;
 import org.openvpms.web.echo.table.TableNavigator;
+import org.openvpms.web.echo.util.StyleSheetHelper;
 
 
 /**

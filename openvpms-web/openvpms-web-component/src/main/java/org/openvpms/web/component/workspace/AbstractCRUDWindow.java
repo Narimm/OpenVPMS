@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -311,7 +311,6 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
     /**
      * Deletes the current object.
      */
-    @SuppressWarnings("unchecked")
     public void delete() {
         T object = IMObjectHelper.reload(getObject());
         if (object == null) {

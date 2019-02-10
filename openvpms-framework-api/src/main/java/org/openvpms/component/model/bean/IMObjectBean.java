@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.model.bean;
@@ -410,6 +410,17 @@ public interface IMObjectBean {
      * @return the target object, or {@code null} if none is found
      */
     <T extends IMObject, R extends Relationship> T getTarget(String name, Class<T> type, Policy<R> policy);
+
+    /**
+     * Determines if there is n {@link Relationship} with {@code object} as its target, for the specified node.
+     * <p/>
+     * The relationships may be active or inactive.
+     *
+     * @param name   the relationship node name
+     * @param object the target object
+     * @return {@code true} if there is an active relationship to {@code object}
+     */
+    boolean hasTarget(String name, IMObject object);
 
     /**
      * Returns the source objects from each {@link Relationship} for the specified node.

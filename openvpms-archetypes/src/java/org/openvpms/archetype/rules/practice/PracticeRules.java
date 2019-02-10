@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.math.CurrencyException;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
+import org.openvpms.archetype.rules.util.PeriodHelper;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
@@ -308,16 +309,7 @@ public class PracticeRules {
      * @return the period, or {@code null} if none is defined
      */
     private Period getPeriod(org.openvpms.component.model.party.Party practice, String periodName, String unitsName) {
-        Period result = null;
-        IMObjectBean bean = service.getBean(practice);
-        int period = bean.getInt(periodName, -1);
-        if (period > 0) {
-            DateUnits units = DateUnits.fromString(bean.getString(unitsName), null);
-            if (units != null) {
-                result = units.toPeriod(period);
-            }
-        }
-        return result;
+        return PeriodHelper.getPeriod(service.getBean(practice), periodName, unitsName);
     }
 
 }

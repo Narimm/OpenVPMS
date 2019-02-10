@@ -26,6 +26,7 @@ import org.openvpms.component.business.service.archetype.helper.DescriptorHelper
 import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.system.common.util.Variables;
 import org.openvpms.web.component.edit.AlertListener;
 import org.openvpms.web.component.edit.Cancellable;
 import org.openvpms.web.component.edit.Deletable;
@@ -55,6 +56,7 @@ import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.PropertySetBuilder;
 import org.openvpms.web.component.property.PropertyTransformer;
 import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.property.ValidationHelper;
@@ -177,7 +179,7 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
         context.setLayoutDepth(layoutContext.getLayoutDepth());
 
         archetype = context.getArchetypeDescriptor(object);
-        properties = new PropertySet(object, archetype, context.getVariables());
+        properties = createPropertySet(object, archetype, context.getVariables());
         editors = new Editors(properties, listeners);
 
         IMObjectLayoutStrategyFactory strategyFactory = context.getLayoutStrategyFactory();
@@ -520,6 +522,18 @@ public abstract class AbstractIMObjectEditor extends AbstractModifiable
     @Override
     public IMObjectEditor newInstance() {
         return null;
+    }
+
+    /**
+     * Creates the property set.
+     *
+     * @param object    the object being edited
+     * @param archetype the object archetype
+     * @param variables the variables for macro expansion. May be {@code null}
+     * @return the property set
+     */
+    protected PropertySet createPropertySet(IMObject object, ArchetypeDescriptor archetype, Variables variables) {
+        return new PropertySetBuilder(object, archetype, variables).build();
     }
 
     /**

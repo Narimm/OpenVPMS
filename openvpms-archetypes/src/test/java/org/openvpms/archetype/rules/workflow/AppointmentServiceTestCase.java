@@ -21,13 +21,13 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.cache.BasicEhcacheManager;
+import org.openvpms.component.model.act.Act;
 import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.party.Party;
+import org.openvpms.component.model.user.User;
 import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.Arrays;
@@ -579,11 +579,11 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
      * @param events the overlapping events
      * @param times  the expected times
      */
-    private void checkOverlappingEvents(OverlappingEvents events, Times... times) {
-        assertEquals(times.length, events.getEvents().size());
+    private void checkOverlappingEvents(List<Times> events, Times... times) {
+        assertEquals(times.length, events.size());
         for (int i = 0; i < times.length; ++i) {
             Times expected = times[i];
-            Times actual = events.getEvents().get(i);
+            Times actual = events.get(i);
             assertEquals(expected.getStartTime(), actual.getStartTime());
             assertEquals(expected.getEndTime(), actual.getEndTime());
         }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.calendar;
@@ -20,6 +20,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.workspace.workflow.appointment.repeat.ScheduleEventSeries;
 
 /**
@@ -73,6 +74,7 @@ public class CalendarEventSeries extends ScheduleEventSeries {
         EventState eventState = (EventState) state;
         bean.setValue("name", eventState.getName());
         bean.setValue("description", eventState.getDescription());
+        bean.setTarget("location", eventState.getLocation());
     }
 
     private static class EventState extends State {
@@ -86,6 +88,11 @@ public class CalendarEventSeries extends ScheduleEventSeries {
          * The description.
          */
         private String description;
+
+        /**
+         * The location reference.
+         */
+        private Reference location;
 
         /**
          * Initialises the state from an event.
@@ -105,6 +112,7 @@ public class CalendarEventSeries extends ScheduleEventSeries {
             super(state);
             name = state.getName();
             description = state.getDescription();
+            location = state.getLocation();
         }
 
         /**
@@ -117,6 +125,7 @@ public class CalendarEventSeries extends ScheduleEventSeries {
             super.update(event);
             name = event.getString("name");
             description = event.getString("description");
+            location = event.getTargetRef("location");
         }
 
         /**
@@ -138,6 +147,15 @@ public class CalendarEventSeries extends ScheduleEventSeries {
         }
 
         /**
+         * Returns the event location.
+         *
+         * @return the event location. May be {@code null}
+         */
+        public Reference getLocation() {
+            return location;
+        }
+
+        /**
          * Indicates whether some other object is "equal to" this one.
          *
          * @param obj the reference object with which to compare.
@@ -149,7 +167,8 @@ public class CalendarEventSeries extends ScheduleEventSeries {
             if (obj instanceof EventState && super.equals(obj)) {
                 EventState other = (EventState) obj;
                 result = ObjectUtils.equals(name, other.name)
-                         && ObjectUtils.equals(description, other.description);
+                         && ObjectUtils.equals(description, other.description)
+                         && ObjectUtils.equals(location, other.location);
             }
             return result;
         }

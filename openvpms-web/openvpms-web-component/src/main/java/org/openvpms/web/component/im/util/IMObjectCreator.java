@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.util;
@@ -27,11 +27,11 @@ import org.openvpms.web.component.im.archetype.Archetypes;
 import org.openvpms.web.component.im.list.ShortNameListCellRenderer;
 import org.openvpms.web.component.im.list.ShortNameListModel;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.echo.dialog.SelectionDialog;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ListBoxFactory;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.util.StyleSheetHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 

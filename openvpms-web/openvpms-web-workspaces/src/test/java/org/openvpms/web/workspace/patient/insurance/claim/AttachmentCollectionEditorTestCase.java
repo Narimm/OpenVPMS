@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.insurance.claim;
@@ -37,6 +37,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.PropertySetBuilder;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.test.AbstractAppTest;
 
@@ -74,7 +75,7 @@ public class AttachmentCollectionEditorTestCase extends AbstractAppTest {
         FinancialAct claim = InsuranceTestHelper.createClaim(policy, location, clinician, clinician, item);
         save(claim, item);
 
-        PropertySet set = new PropertySet(claim);
+        PropertySet set = new PropertySetBuilder(claim).build();
         LayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
 
         FinancialAct invoice = createInvoice(customer, patient);

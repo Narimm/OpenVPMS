@@ -11,27 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
 
-import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.system.common.util.Variables;
-import org.openvpms.macro.Macros;
-import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.util.ObjectHelper;
-import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 
@@ -50,7 +43,7 @@ public class PropertySet {
     /**
      * The properties.
      */
-    private Map<String, Property> properties = new HashMap<String, Property>();
+    private Map<String, Property> properties = new HashMap<>();
 
     /**
      * The editable properties.
@@ -60,57 +53,17 @@ public class PropertySet {
     /**
      * Derived property values.
      */
-    private Map<Property, Object> derived = new HashMap<Property, Object>();
-
-
-    /**
-     * Constructs a {@link PropertySet} from an object.
-     *
-     * @param object the object
-     */
-    public PropertySet(IMObject object) {
-        this(object, null);
-    }
+    private Map<Property, Object> derived = new HashMap<>();
 
     /**
-     * Constructs a {@link PropertySet} from an object.
+     * Constructs a {@link PropertySet} for an object and list of properties.
      *
-     * @param object  the object
-     * @param context the layout context. May be {@code null}
+     * @param object     the object
+     * @param properties the properties
      */
-    public PropertySet(IMObject object, LayoutContext context) {
-        this(object, getArchetypeDescriptor(object, context), (context != null) ? context.getVariables() : null);
-    }
-
-    /**
-     * Constructs a {@link PropertySet} for an object and descriptor.
-     *
-     * @param object    the object
-     * @param archetype the archetype descriptor
-     * @param variables the variables for macro expansion. May be {@code null}
-     */
-    public PropertySet(IMObject object, ArchetypeDescriptor archetype, Variables variables) {
+    public PropertySet(IMObject object, Collection<Property> properties) {
         this.object = object;
-
-        if (archetype == null) {
-            throw new IllegalStateException(
-                    "No archetype descriptor for object, id=" + object.getId() + ", archetypeId="
-                    + object.getArchetypeIdAsString());
-        }
-
-        List<NodeDescriptor> descriptors = archetype.getAllNodeDescriptors();
-        Property[] list = new Property[descriptors.size()];
-        for (int i = 0; i < descriptors.size(); ++i) {
-            list[i] = new IMObjectProperty(object, descriptors.get(i));
-        }
-        for (Property property : list) {
-            // for editable string properties, register a transformer that supports macro expansion with variables
-            if (property.isString() && !property.isDerived() && !property.isReadOnly()) {
-                Macros macros = ServiceHelper.getMacros();
-                property.setTransformer(new StringPropertyTransformer(property, true, macros, object, variables));
-            }
-        }
-        setProperties(list);
+        setProperties(properties.toArray(new Property[0]));
     }
 
     /**
@@ -119,7 +72,7 @@ public class PropertySet {
      * @param properties the properties
      */
     public PropertySet(Collection<Property> properties) {
-        this(properties.toArray(new Property[properties.size()]));
+        this(properties.toArray(new Property[0]));
     }
 
     /**
@@ -170,7 +123,7 @@ public class PropertySet {
      */
     public Collection<Property> getEditable() {
         if (editable == null) {
-            editable = new HashMap<String, Property>();
+            editable = new HashMap<>();
             for (Property property : getProperties()) {
                 if (!property.isHidden() && !property.isReadOnly() && !property.isDerived()) {
                     editable.put(property.getName(), property);
@@ -238,11 +191,7 @@ public class PropertySet {
             }
         }
         if (object != null && !derived.isEmpty()) {
-            ModifiableListener listener = new ModifiableListener() {
-                public void modified(Modifiable modifiable) {
-                    updateDerivedProperties(modifiable);
-                }
-            };
+            ModifiableListener listener = this::updateDerivedProperties;
             for (Property property : properties) {
                 property.addModifiableListener(listener);
             }
@@ -258,18 +207,6 @@ public class PropertySet {
         if (source instanceof Property && !((Property) source).isDerived()) {
             updateDerivedProperties();
         }
-    }
-
-    /**
-     * Returns the archetype descriptor for an object.
-     *
-     * @param object  the object
-     * @param context the layout context. May be {@code null}
-     * @return the archetype descriptor for the object
-     */
-    private static ArchetypeDescriptor getArchetypeDescriptor(IMObject object, LayoutContext context) {
-        return (context != null) ? context.getArchetypeDescriptor(object)
-                                 : DescriptorHelper.getArchetypeDescriptor(object);
     }
 
 }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.alert;
@@ -118,7 +118,6 @@ public class AlertsViewer extends ModalDialog {
             @Override
             public void onAction(ActionEvent event) {
                 onEdit();
-                ;
             }
         });
         buttons = ColumnFactory.create(Styles.INSET);
@@ -165,7 +164,7 @@ public class AlertsViewer extends ModalDialog {
         selected = alert;
         getButtons().setEnabled(EDIT_ID, alert.getAlert() != null);
         container.removeAll();
-        DefaultLayoutContext layout = new DefaultLayoutContext(AlertsViewer.this.context, getHelpContext());
+        DefaultLayoutContext layout = new DefaultLayoutContext(context, getHelpContext());
         AccountType accountType = (alert instanceof AccountTypeAlert)
                                   ? ((AccountTypeAlert) alert).getAccountType() : null;
         IMObjectViewer viewer = new IMObjectViewer((IMObject) alert.getAlert(), null,

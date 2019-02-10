@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.booking.impl;
@@ -36,8 +36,8 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.user.User;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,11 +110,11 @@ public class BookingServiceImplTestCase extends ArchetypeServiceTest {
         location = TestHelper.createLocation();
         appointmentType = ScheduleTestHelper.createAppointmentType();
         userRules = new UserRules(getArchetypeService());
-        IMObjectBean appointmentTypeBean = new IMObjectBean(appointmentType);
+        IMObjectBean appointmentTypeBean = getBean(appointmentType);
         appointmentTypeBean.setValue("sendReminders", true);
         appointmentTypeBean.save();
         schedule = ScheduleTestHelper.createSchedule(15, DateUnits.MINUTES.toString(), 1, appointmentType, location);
-        IMObjectBean scheduleBean = new IMObjectBean(schedule);
+        IMObjectBean scheduleBean = getBean(schedule);
         scheduleBean.setValue("onlineBooking", true);
         scheduleBean.setValue("sendReminders", true);
         scheduleBean.save();
@@ -129,9 +129,10 @@ public class BookingServiceImplTestCase extends ArchetypeServiceTest {
         Party customer = TestHelper.createCustomer();
         customer.addContact(TestHelper.createEmailContact("foo@bar.com"));
         Party patient = TestHelper.createPatient(customer, false);
+        User clinician = TestHelper.createClinician();
         patient.setName("Fido");
         save(customer, patient);
-        IMObjectBean customerBean = new IMObjectBean(customer);
+        IMObjectBean customerBean = getBean(customer);
         Booking booking = new Booking();
         booking.setLocation(location.getId());
         booking.setSchedule(schedule.getId());
@@ -140,6 +141,7 @@ public class BookingServiceImplTestCase extends ArchetypeServiceTest {
         Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
         booking.setStart(startTime);
         booking.setEnd(endTime);
+        booking.setUser(clinician.getId());
         booking.setTitle("Mr");
         booking.setFirstName(customerBean.getString("firstName"));
         booking.setLastName(customerBean.getString("lastName"));
@@ -148,7 +150,8 @@ public class BookingServiceImplTestCase extends ArchetypeServiceTest {
         booking.setNotes("Some notes");
 
         Act appointment = createBooking(booking);
-        checkAppointment(appointment, startTime, endTime, customer, patient, false, "Notes: " + booking.getNotes());
+        checkAppointment(appointment, startTime, endTime, customer, patient, clinician, false,
+                         "Notes: " + booking.getNotes());
     }
 
     /**
@@ -176,7 +179,7 @@ public class BookingServiceImplTestCase extends ArchetypeServiceTest {
                               "Last Name: " + booking.getLastName() + "\n" +
                               "Email: foo@bar.com\n" +
                               "Patient: Fido";
-        checkAppointment(appointment, startTime, endTime, null, null, false, bookingNotes);
+        checkAppointment(appointment, startTime, endTime, null, null, null, false, bookingNotes);
     }
 
     /**
@@ -190,7 +193,7 @@ public class BookingServiceImplTestCase extends ArchetypeServiceTest {
         Party patient = TestHelper.createPatient(customer, false);
         patient.setName("Fido");
         save(customer, patient);
-        IMObjectBean customerBean = new IMObjectBean(customer);
+        IMObjectBean customerBean = getBean(customer);
         Booking booking = new Booking();
         booking.setLocation(location.getId());
         booking.setSchedule(schedule.getId());
@@ -206,7 +209,7 @@ public class BookingServiceImplTestCase extends ArchetypeServiceTest {
         booking.setPatientName(patient.getName());
 
         Act appointment = createBooking(booking);
-        checkAppointment(appointment, startTime, endTime, customer, patient, true, null);
+        checkAppointment(appointment, startTime, endTime, customer, patient, null, true, null);
     }
 
     /**
@@ -339,18 +342,20 @@ public class BookingServiceImplTestCase extends ArchetypeServiceTest {
      * @param endTime      the expected end time
      * @param customer     the expected customer
      * @param patient      the expected patient
+     * @param clinician    the expected clinician
      * @param sendReminder the expected 'send reminder' flag
      * @param bookingNotes the expected booking notes
      */
     private void checkAppointment(Act appointment, Date startTime, Date endTime, Party customer, Party patient,
-                                  boolean sendReminder, String bookingNotes) {
-        ActBean bean = new ActBean(appointment);
+                                  User clinician, boolean sendReminder, String bookingNotes) {
+        IMObjectBean bean = getBean(appointment);
         assertEquals(startTime, bean.getDate("startTime"));
         assertEquals(endTime, bean.getDate("endTime"));
-        assertEquals(customer, bean.getNodeParticipant("customer"));
-        assertEquals(patient, bean.getNodeParticipant("patient"));
-        assertEquals(schedule, bean.getNodeParticipant("schedule"));
-        assertEquals(appointmentType, bean.getNodeParticipant("appointmentType"));
+        assertEquals(customer, bean.getTarget("customer"));
+        assertEquals(patient, bean.getTarget("patient"));
+        assertEquals(schedule, bean.getTarget("schedule"));
+        assertEquals(appointmentType, bean.getTarget("appointmentType"));
+        assertEquals(clinician, bean.getTarget("clinician"));
         assertEquals(sendReminder, bean.getBoolean("sendReminder"));
         assertEquals(bookingNotes, bean.getString("bookingNotes"));
         assertTrue(bean.getBoolean("onlineBooking"));
@@ -361,10 +366,10 @@ public class BookingServiceImplTestCase extends ArchetypeServiceTest {
         ArchetypeQuery query = new ArchetypeQuery("entity.jobAppointmentReminder", true);
         IMObjectQueryIterator<Entity> iterator = new IMObjectQueryIterator<>(query);
         if (!iterator.hasNext()) {
-            bean = new IMObjectBean(create("entity.jobAppointmentReminder"));
-            bean.addNodeTarget("runAs", TestHelper.createUser());
+            bean = getBean(create("entity.jobAppointmentReminder"));
+            bean.setTarget("runAs", TestHelper.createUser());
         } else {
-            bean = new IMObjectBean(iterator.next());
+            bean = getBean(iterator.next());
         }
         bean.setValue("smsFrom", 3);
         bean.setValue("smsFromUnits", DateUnits.DAYS);
@@ -383,7 +388,7 @@ public class BookingServiceImplTestCase extends ArchetypeServiceTest {
      */
     private Contact createSMSContact(String phoneNumber) {
         Contact contact = TestHelper.createPhoneContact(null, phoneNumber);
-        IMObjectBean bean = new IMObjectBean(contact);
+        IMObjectBean bean = getBean(contact);
         bean.setValue("sms", true);
         return contact;
     }
@@ -424,9 +429,10 @@ public class BookingServiceImplTestCase extends ArchetypeServiceTest {
         return new BookingServiceImpl(getArchetypeService(), customerRules, appointmentRules,
                                       userRules, transactionManager) {
             @Override
-            protected void save(Act act, Entity schedule) {
+            protected void save(org.openvpms.component.model.act.Act act,
+                                org.openvpms.component.model.entity.Entity schedule) {
                 super.save(act, schedule);
-                acts.add(act);
+                acts.add((Act) act);
             }
         };
     }

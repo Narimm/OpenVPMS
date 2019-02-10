@@ -11,21 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.booking;
+package org.openvpms.booking.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.openvpms.booking.impl.BadRequestExceptionMapper;
-import org.openvpms.booking.impl.BookingServiceImpl;
-import org.openvpms.booking.impl.LocationServiceImpl;
-import org.openvpms.booking.impl.NotFoundExceptionMapper;
-import org.openvpms.booking.impl.ScheduleServiceImpl;
 import org.openvpms.smartflow.client.ObjectMapperContextResolver;
 
 import javax.ws.rs.ApplicationPath;
@@ -37,7 +32,7 @@ import java.util.logging.Logger;
  *
  * @author Tim Anderson
  */
-@ApplicationPath("ws/booking/v1")
+@ApplicationPath("ws/booking/v2")
 public class BookingApplication extends ResourceConfig {
 
     /**
@@ -55,6 +50,7 @@ public class BookingApplication extends ResourceConfig {
         register(NotFoundExceptionMapper.class);
         register(LocationServiceImpl.class);
         register(ScheduleServiceImpl.class);
+        register(UserServiceImpl.class);
         register(BookingServiceImpl.class);
         if (log.isDebugEnabled()) {
             register(new LoggingFilter(new DebugLog(log), true));

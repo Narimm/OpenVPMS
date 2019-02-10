@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.system;
@@ -55,8 +55,8 @@ import org.openvpms.web.echo.text.TextField;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;
-import org.openvpms.web.workspace.admin.system.smartflow.SmartFlowSheetAdminDialog;
 import org.openvpms.web.workspace.admin.system.cache.CacheDialog;
+import org.openvpms.web.workspace.admin.system.smartflow.SmartFlowSheetAdminDialog;
 import org.springframework.web.util.Log4jWebConfigurer;
 
 import javax.servlet.ServletContext;
@@ -165,9 +165,9 @@ public class SessionBrowser extends AbstractTabComponent {
             Label label = LabelFactory.create();
             label.setText(search.getDisplayName());
             Row row = RowFactory.create(Styles.CELL_SPACING, label, field, buttons);
-            component = ColumnFactory.create(Styles.INSET,
-                                             ColumnFactory.create(Styles.WIDE_CELL_SPACING, row,
-                                                                  sessions.getComponent()));
+            Component column = ColumnFactory.create(Styles.INSET,
+                                                    ColumnFactory.create(Styles.WIDE_CELL_SPACING, row,
+                                                                         sessions.getComponent()));
             focus.add(sessions.getComponent());
             getButtonSet().add(SFS_ID, new ActionListener() {
                 @Override
@@ -189,12 +189,10 @@ public class SessionBrowser extends AbstractTabComponent {
                 }
             });
             focus.add(getButtonSet().getFocusGroup());
+            component = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP, "SplitPaneWithButtonRow",
+                                                getButtons(), column);
         }
-        // Cannot cache the SplitPane for some reason. Get a:
-        // "Cannot process ServerMessage (Phase 2) Error: Element c_246 already exists in document; cannot add"
-        // message.
-        return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP, "SplitPaneWithButtonRow",
-                                       getButtons(), component);
+        return component;
     }
 
     /**

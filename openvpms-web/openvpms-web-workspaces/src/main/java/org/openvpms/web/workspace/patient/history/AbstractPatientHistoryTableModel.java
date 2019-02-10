@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -67,13 +67,13 @@ import org.openvpms.web.component.im.util.LookupNameHelper;
 import org.openvpms.web.component.im.view.IMObjectReferenceViewer;
 import org.openvpms.web.component.im.view.IMObjectViewerDialog;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.ComponentFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.util.StyleSheetHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.system.ServiceHelper;

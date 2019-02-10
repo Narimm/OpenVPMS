@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -138,15 +138,14 @@ public class Times implements Comparable<Times> {
      */
     @Override
     public int compareTo(Times object) {
-        Date startTime2 = object.getStartTime();
-        Date endTime2 = object.getEndTime();
-        if (DateRules.compareTo(startTime, startTime2) < 0 && DateRules.compareTo(endTime, startTime2) <= 0) {
-            return -1;
+        int result = DateRules.compareTo(startTime, object.getStartTime());
+        if (result == 0) {
+            result = DateRules.compareTo(endTime, object.getEndTime());
         }
-        if (DateRules.compareTo(startTime, endTime2) >= 0 && DateRules.compareTo(endTime, endTime2) > 0) {
-            return 1;
+        if (result == 0) {
+            result = Long.compare(getId(), object.getId());
         }
-        return Long.compare(getId(), object.getId());
+        return result;
     }
 
     /**

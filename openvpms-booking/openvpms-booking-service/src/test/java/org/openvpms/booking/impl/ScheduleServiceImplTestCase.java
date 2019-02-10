@@ -11,35 +11,30 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.booking.impl;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.AppointmentService;
-import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
-import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.booking.api.ScheduleService;
 import org.openvpms.booking.domain.FreeBusy;
 import org.openvpms.booking.domain.Range;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.cache.BasicEhcacheManager;
-import org.openvpms.component.business.service.lookup.ILookupService;
 
 import java.sql.Time;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
-import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 
@@ -48,19 +43,37 @@ import static org.junit.Assert.assertEquals;
  *
  * @author Tim Anderson
  */
-public class ScheduleServiceImplTestCase extends ArchetypeServiceTest {
+public class ScheduleServiceImplTestCase extends AbstractBookingServiceTest {
 
     /**
-     * The appointment rules.
+     * The schedule service.
      */
-    private AppointmentRules rules;
+    private ScheduleService service;
+
+    /**
+     * The appointment service.
+     */
+    private AppointmentService appointmentService;
 
     /**
      * Sets up the test case.
      */
     @Before
     public void setUp() {
-        rules = new AppointmentRules(getArchetypeService());
+        AppointmentRules rules = new AppointmentRules(getArchetypeService());
+        appointmentService = new AppointmentService(getArchetypeService(), getLookupService(),
+                                                    new BasicEhcacheManager(30));
+        service = new ScheduleServiceImpl(getArchetypeService(), appointmentService, rules);
+    }
+
+    /**
+     * Cleans up after the test.
+     *
+     * @throws Exception for any error
+     */
+    @After
+    public void tearDown() throws Exception {
+        appointmentService.destroy();
     }
 
     /**
@@ -69,7 +82,6 @@ public class ScheduleServiceImplTestCase extends ArchetypeServiceTest {
     @Test
     public void testFreeDayFor24HourSchedule() {
         Entity schedule = createSchedule(null, null);
-        ScheduleService service = new ScheduleServiceImpl(getArchetypeService(), createAppointmentService(), rules);
         List<Range> free = service.getFree(schedule.getId(), getISODate("2016-05-14"), getISODate("2016-05-15"),
                                            false);
         List<Range> busy = service.getBusy(schedule.getId(), getISODate("2016-05-14"), getISODate("2016-05-15"), false);
@@ -89,7 +101,6 @@ public class ScheduleServiceImplTestCase extends ArchetypeServiceTest {
     @Test
     public void testScheduleAppointmentsFor24HourSchedule() {
         Entity schedule = createSchedule(null, null);
-        ScheduleService service = new ScheduleServiceImpl(getArchetypeService(), createAppointmentService(), rules);
         createAppointment("2016-05-14 09:00:00", "2016-05-14 10:00:00", schedule);
         createAppointment("2016-05-14 10:00:00", "2016-05-14 11:00:00", schedule);
         createAppointment("2016-05-14 12:00:00", "2016-05-14 13:00:00", schedule);
@@ -119,7 +130,6 @@ public class ScheduleServiceImplTestCase extends ArchetypeServiceTest {
     public void testSlots() {
         // create a schedule with 4 hours slots
         Entity schedule = createSchedule(null, null, 4, DateUnits.HOURS);
-        ScheduleService service = new ScheduleServiceImpl(getArchetypeService(), createAppointmentService(), rules);
         createAppointment("2016-05-14 08:00:00", "2016-05-14 12:00:00", schedule);
         createAppointment("2016-05-14 16:00:00", "2016-05-14 20:00:00", schedule);
         String from = getISODate("2016-05-14");
@@ -149,7 +159,6 @@ public class ScheduleServiceImplTestCase extends ArchetypeServiceTest {
     @Test
     public void testQueryOpeningHoursRange() {
         Entity schedule = createSchedule("9:00:00", "17:00:00");
-        ScheduleService service = new ScheduleServiceImpl(getArchetypeService(), createAppointmentService(), rules);
         createAppointment("2016-05-14 09:00:00", "2016-05-14 10:00:00", schedule);
         createAppointment("2016-05-14 10:00:00", "2016-05-14 11:00:00", schedule);
         createAppointment("2016-05-14 12:00:00", "2016-05-14 13:00:00", schedule);
@@ -179,7 +188,6 @@ public class ScheduleServiceImplTestCase extends ArchetypeServiceTest {
     @Test
     public void testQueryOutsideOpeningHoursRange() {
         Entity schedule = createSchedule("9:00:00", "17:00:00");
-        ScheduleService service = new ScheduleServiceImpl(getArchetypeService(), createAppointmentService(), rules);
         createAppointment("2016-05-14 09:00:00", "2016-05-14 10:00:00", schedule);
         createAppointment("2016-05-14 10:00:00", "2016-05-14 11:00:00", schedule);
         createAppointment("2016-05-14 12:00:00", "2016-05-14 13:00:00", schedule);
@@ -207,7 +215,6 @@ public class ScheduleServiceImplTestCase extends ArchetypeServiceTest {
     @Test
     public void testQueryIntersectsAppointments() {
         Entity schedule = createSchedule("9:00:00", "17:00:00");
-        ScheduleService service = new ScheduleServiceImpl(getArchetypeService(), createAppointmentService(), rules);
         createAppointment("2016-05-14 09:00:00", "2016-05-14 10:00:00", schedule);
         createAppointment("2016-05-14 10:00:00", "2016-05-14 11:00:00", schedule);
         createAppointment("2016-05-14 12:00:00", "2016-05-14 13:00:00", schedule);
@@ -235,7 +242,6 @@ public class ScheduleServiceImplTestCase extends ArchetypeServiceTest {
     @Test
     public void testCancelAppointment() {
         Entity schedule = createSchedule("9:00:00", "17:00:00");
-        ScheduleService service = new ScheduleServiceImpl(getArchetypeService(), createAppointmentService(), rules);
         Act appointment = createAppointment("2016-05-14 09:00:00", "2016-05-14 10:00:00", schedule);
 
         String from = getISODate("2016-05-14", "09:00");
@@ -276,7 +282,6 @@ public class ScheduleServiceImplTestCase extends ArchetypeServiceTest {
         timesBean.setValue("wedEndTime", Time.valueOf("17:00:00"));
         save(schedule, times);
 
-        ScheduleService service = new ScheduleServiceImpl(getArchetypeService(), createAppointmentService(), rules);
         String from = getISODate("2016-08-22", "00:00");
         String to = getISODate("2016-08-25", "00:00");
         List<Range> free = service.getFree(schedule.getId(), from, to, false);
@@ -300,7 +305,6 @@ public class ScheduleServiceImplTestCase extends ArchetypeServiceTest {
         createAppointment("2016-06-14 20:00:00", "2016-06-14 20:15:00", schedule);
         createAppointment("2016-06-14 20:30:00", "2016-06-14 21:00:00", schedule);
 
-        ScheduleService service = new ScheduleServiceImpl(getArchetypeService(), createAppointmentService(), rules);
         String from = getISODate("2016-06-14", "00:00");
         String to = getISODate("2016-06-15", "00:00");
         List<Range> free = service.getFree(schedule.getId(), from, to, false);
@@ -320,7 +324,6 @@ public class ScheduleServiceImplTestCase extends ArchetypeServiceTest {
 
         createAppointment("2016-06-14 16:00:00", "2016-06-14 20:00:00", schedule);
 
-        ScheduleService service = new ScheduleServiceImpl(getArchetypeService(), createAppointmentService(), rules);
         String from = getISODate("2016-06-14", "00:00");
         String to = getISODate("2016-06-15", "00:00");
         List<Range> free = service.getFree(schedule.getId(), from, to, false);
@@ -341,7 +344,6 @@ public class ScheduleServiceImplTestCase extends ArchetypeServiceTest {
         createAppointment("2016-06-13 09:00:00", "2016-06-14 10:00:00", schedule);
         createAppointment("2016-06-14 15:00:00", "2016-06-15 11:00:00", schedule);
 
-        ScheduleService service = new ScheduleServiceImpl(getArchetypeService(), createAppointmentService(), rules);
         String from = getISODate("2016-06-14", "00:00"); // query 2 days
         String to = getISODate("2016-06-16", "00:00");
         List<Range> free = service.getFree(schedule.getId(), from, to, false);
@@ -357,7 +359,6 @@ public class ScheduleServiceImplTestCase extends ArchetypeServiceTest {
     @Test
     public void testQueryPartialMultiDateRange() {
         Entity schedule = createSchedule("9:00:00", "17:00:00");
-        ScheduleService service = new ScheduleServiceImpl(getArchetypeService(), createAppointmentService(), rules);
         createAppointment("2016-05-14 09:00:00", "2016-05-14 10:00:00", schedule);
         createAppointment("2016-05-14 10:00:00", "2016-05-14 11:00:00", schedule);
         createAppointment("2016-05-14 12:00:00", "2016-05-14 13:00:00", schedule);
@@ -378,90 +379,6 @@ public class ScheduleServiceImplTestCase extends ArchetypeServiceTest {
         FreeBusy freeBusy = service.getFreeBusy(schedule.getId(), from, to, false);
         checkRanges(freeBusy.getFree(), free1, free2);
         checkRanges(freeBusy.getBusy(), busy1, busy2);
-    }
-
-    /**
-     * Creates an appointment.
-     *
-     * @param startTime the appointment start time
-     * @param endTime   the appointment end time
-     * @param schedule  the schedule
-     * @return a new appointment
-     */
-    private Act createAppointment(String startTime, String endTime, Entity schedule) {
-        Act appointment = ScheduleTestHelper.createAppointment(TestHelper.getDatetime(startTime),
-                                                               TestHelper.getDatetime(endTime),
-                                                               schedule);
-        save(appointment);
-        return appointment;
-    }
-
-    /**
-     * Verifies ranges match those expected.
-     *
-     * @param ranges   the ranges
-     * @param expected the expected ranges
-     */
-    private void checkRanges(List<Range> ranges, Range... expected) {
-        assertEquals(expected.length, ranges.size());
-        for (int i = 0; i < expected.length; ++i) {
-            checkRange(expected[i], ranges.get(i));
-        }
-    }
-
-    /**
-     * Verifies a range matches that expected.
-     *
-     * @param range the range
-     * @param start the expected start time
-     * @param end   the expected end time
-     */
-    private void checkRange(Range range, String start, String end) {
-        assertEquals(range.getStart(), TestHelper.getDatetime(start));
-        assertEquals(range.getEnd(), TestHelper.getDatetime(end));
-    }
-
-    /**
-     * Verifies a range matches that expected.
-     *
-     * @param expected the expected range
-     * @param range    the range
-     */
-    private void checkRange(Range expected, Range range) {
-        assertEquals(expected.getStart(), range.getStart());
-        assertEquals(expected.getEnd(), range.getEnd());
-    }
-
-    /**
-     * Creates a new range.
-     *
-     * @param start the start of the range
-     * @param end   the end of the range
-     * @return a new range
-     */
-    private Range createRange(String start, String end) {
-        return new Range(TestHelper.getDatetime(start), TestHelper.getDatetime(end));
-    }
-
-    /**
-     * Creates a new {@link org.openvpms.archetype.rules.workflow.ScheduleService}.
-     *
-     * @return the new service
-     */
-    protected AppointmentService createAppointmentService() {
-        return new AppointmentService(getArchetypeService(), applicationContext.getBean(ILookupService.class),
-                                      new BasicEhcacheManager(30));
-    }
-
-    /**
-     * Creates a new schedule with 15 minute slots.
-     *
-     * @param startTime the schedule start time. May be {@code null}
-     * @param endTime   the schedule end time. May be {@code null}
-     * @return a new schedule
-     */
-    private Entity createSchedule(String startTime, String endTime) {
-        return createSchedule(startTime, endTime, 15, DateUnits.MINUTES);
     }
 
     /**
@@ -495,58 +412,6 @@ public class ScheduleServiceImplTestCase extends ArchetypeServiceTest {
         timesBean.setValue("satStartTime", start);
         timesBean.setValue("satEndTime", end);
         return times;
-    }
-
-    /**
-     * Creates a new schedule.
-     *
-     * @param startTime the schedule start time. May be {@code null}
-     * @param endTime   the schedule end time. May be {@code null}
-     * @param slotSize  the slot size
-     * @param units     the slot size units
-     * @return a new schedule
-     */
-    private Entity createSchedule(String startTime, String endTime, int slotSize, DateUnits units) {
-        Party location = TestHelper.createLocation();
-        Entity schedule = ScheduleTestHelper.createSchedule(slotSize, units.toString(), 1, null, location);
-        IMObjectBean bean = new IMObjectBean(schedule);
-        bean.setValue("startTime", startTime != null ? Time.valueOf(startTime) : null);
-        bean.setValue("endTime", endTime != null ? Time.valueOf(endTime) : null);
-        bean.setValue("onlineBooking", true);
-        bean.save();
-        return schedule;
-    }
-
-    /**
-     * Returns an ISO date/time, with the current timezone offset.
-     *
-     * @param date a date string, yyyy-mm-dd format
-     * @return the ISO date/time
-     */
-    private String getISODate(String date) {
-        return getISODate(date, "00:00");
-    }
-
-    /**
-     * Returns an ISO date/time, with the current timezone offset.
-     *
-     * @param date a date string, yyyy-mm-dd format
-     * @param time a time string, hh:mm format
-     * @return the ISO date/time
-     */
-    private String getISODate(String date, String time) {
-        Date value = TestHelper.getDate(date);
-        TimeZone tz = TimeZone.getDefault();
-        int offset = tz.getOffset(value.getTime()); // to allow for daylight savings
-        long hours = TimeUnit.MILLISECONDS.toHours(offset);
-        long minutes = Math.abs(TimeUnit.MILLISECONDS.toMinutes(offset) - TimeUnit.HOURS.toMinutes(hours));
-        StringBuilder result = new StringBuilder();
-        result.append(date).append('T').append(time).append(":00");
-        if (hours > 0) {
-            result.append('+');
-        }
-        result.append(String.format("%d:%02d", hours, minutes));
-        return result.toString();
     }
 
 }

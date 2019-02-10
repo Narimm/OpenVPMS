@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -22,9 +22,9 @@ import nextapp.echo2.app.table.TableColumn;
 import nextapp.echo2.app.table.TableColumnModel;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.echo.table.AbstractTableModel;
+import org.openvpms.web.echo.table.TableColumnFactory;
 import org.openvpms.web.echo.table.TableHelper;
 import org.openvpms.web.echo.text.TextHelper;
-import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -427,10 +427,7 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel impleme
      * @return a new table column
      */
     protected static TableColumn createTableColumn(int index, String headerKey) {
-        TableColumn column = new TableColumn(index);
-        String label = Messages.get(headerKey);
-        column.setHeaderValue(label);
-        return column;
+        return TableColumnFactory.createKey(index, headerKey);
     }
 
     /**
@@ -442,9 +439,7 @@ public abstract class AbstractIMTableModel<T> extends AbstractTableModel impleme
      * @return a new table column
      */
     protected static TableColumn createTableColumn(int index, String headerKey, TableCellRenderer renderer) {
-        TableColumn column = createTableColumn(index, headerKey);
-        column.setCellRenderer(renderer);
-        return column;
+        return TableColumnFactory.createKey(index, headerKey, null, renderer);
     }
 
 }

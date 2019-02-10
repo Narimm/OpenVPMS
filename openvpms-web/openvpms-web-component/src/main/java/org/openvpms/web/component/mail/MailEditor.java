@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.mail;
@@ -57,7 +57,6 @@ import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.property.StringPropertyTransformer;
 import org.openvpms.web.component.property.Validator;
-import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
@@ -71,6 +70,7 @@ import org.openvpms.web.echo.table.DefaultTableCellRenderer;
 import org.openvpms.web.echo.text.MacroExpander;
 import org.openvpms.web.echo.text.RichTextArea;
 import org.openvpms.web.echo.util.DoubleClickMonitor;
+import org.openvpms.web.echo.util.StyleSheetHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.NumberFormatter;
 import org.openvpms.web.system.ServiceHelper;

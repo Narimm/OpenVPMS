@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.booking.impl;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
-import org.joda.time.format.ISODateTimeFormat;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -34,14 +33,13 @@ import org.openvpms.booking.domain.Schedule;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.object.IMObject;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.NotFoundException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -154,12 +152,12 @@ public class ScheduleServiceImpl implements ScheduleService {
     public List<AppointmentType> getAppointmentTypes(long scheduleId) {
         List<AppointmentType> result = new ArrayList<>();
         Entity schedule = getScheduleEntity(scheduleId);
-        IMObjectBean bean = new IMObjectBean(schedule, service);
+        IMObjectBean bean = service.getBean(schedule);
         for (IMObject relationship : bean.getValues("appointmentTypes")) {
-            IMObjectBean relationshipBean = new IMObjectBean(relationship, service);
+            IMObjectBean relationshipBean = service.getBean(relationship);
             IMObject appointmentType = relationshipBean.getObject("target");
             if (appointmentType != null) {
-                IMObjectBean appointmentTypeBean = new IMObjectBean(appointmentType, service);
+                IMObjectBean appointmentTypeBean = service.getBean(appointmentType);
                 int slots = relationshipBean.getInt("noSlots");
                 if (appointmentTypeBean.getBoolean("onlineBooking") && slots > 0) {
                     result.add(new AppointmentType(appointmentType.getId(), appointmentType.getName(), slots));
@@ -180,12 +178,12 @@ public class ScheduleServiceImpl implements ScheduleService {
      * @param slots      if {@code true}, split ranges into slots
      */
     protected void query(long scheduleId, String from, String to, List<Range> free, List<Range> busy, boolean slots) {
-        Date fromTime = getDate("from", from);
-        Date toTime = getDate("to", to);
+        Date fromTime = DateHelper.getDate("from", from);
+        Date toTime = DateHelper.getDate("to", to);
         Entity schedule = getScheduleEntity(scheduleId);
-        IMObjectBean bean = new IMObjectBean(schedule, service);
-        IMObject times = bean.getNodeTargetObject("onlineBookingTimes");
-        IMObjectBean timesBean = (times != null) ? new IMObjectBean(times, service) : null;
+        IMObjectBean bean = service.getBean(schedule);
+        IMObject times = bean.getTarget("onlineBookingTimes");
+        IMObjectBean timesBean = (times != null) ? service.getBean(times) : null;
         int slotSize = rules.getSlotSize(schedule);
         for (Date date = fromTime; date.compareTo(toTime) <= 0; date = DateRules.getDate(date, 1, DateUnits.DAYS)) {
             Date startTime = getStartTime(timesBean, bean, date);
@@ -363,9 +361,9 @@ public class ScheduleServiceImpl implements ScheduleService {
      * @param min    the minimum
      * @param max    the maximum
      */
-    private void addRange(List<Range> ranges, Date from, Date to, Date min, Date max) {
-        from = convert(from); // make sure Timestamps are converted to Dates in the local timezone
-        to = convert(to);
+    private static void addRange(List<Range> ranges, Date from, Date to, Date min, Date max) {
+        from = DateHelper.convert(from); // make sure Timestamps are converted to Dates in the local timezone
+        to = DateHelper.convert(to);
         if (DateRules.compareTo(to, min) >= 0) {
             if (DateRules.compareTo(from, min) <= 0) {
                 from = min;
@@ -408,18 +406,6 @@ public class ScheduleServiceImpl implements ScheduleService {
     }
 
     /**
-     * Ensures a {code Timestamp} date instances are converted to {@code Date}.
-     * <p/>
-     * This is so all dates appear in the server's timezone.
-     *
-     * @param date the date
-     * @return the date, converted if necessary
-     */
-    private Date convert(Date date) {
-        return (date instanceof Timestamp) ? new Date(date.getTime()) : date;
-    }
-
-    /**
      * Returns a schedule given its identifier.
      *
      * @param id the schedule identifier
@@ -432,36 +418,11 @@ public class ScheduleServiceImpl implements ScheduleService {
         if (schedule == null) {
             throw new NotFoundException("Schedule not found");
         }
-        IMObjectBean bean = new IMObjectBean(schedule, service);
+        IMObjectBean bean = service.getBean(schedule);
         if (!bean.getBoolean("onlineBooking")) {
             throw new BadRequestException("Schedule is not available for online booking");
         }
         return schedule;
-    }
-
-    /**
-     * Helper to convert a string query parameter to an ISO 8601 date.
-     *
-     * @param name  the parameter name
-     * @param value the parameter value
-     * @return the corresponding date
-     * @throws BadRequestException if the value is invalid
-     */
-    private Date getDate(String name, String value) {
-        if (value == null) {
-            throw new BadRequestException("Missing '" + name + "' parameter");
-        }
-        DateTime result;
-        try {
-            result = ISODateTimeFormat.dateTimeNoMillis().parseDateTime(value);
-        } catch (IllegalArgumentException e) {
-            try {
-                result = ISODateTimeFormat.dateTime().parseDateTime(value);
-            } catch (IllegalArgumentException nested) {
-                throw new BadRequestException("Parameter '" + name + "' is not a valid ISO date/time: " + value);
-            }
-        }
-        return result.toDate();
     }
 
 }

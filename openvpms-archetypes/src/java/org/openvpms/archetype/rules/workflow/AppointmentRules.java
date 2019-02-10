@@ -25,6 +25,7 @@ import org.openvpms.archetype.rules.act.DefaultActCopyHandler;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
+import org.openvpms.archetype.rules.util.PeriodHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
@@ -44,7 +45,6 @@ import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.bean.Predicates;
 import org.openvpms.component.model.entity.Entity;
-import org.openvpms.component.model.object.Relationship;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -111,7 +111,7 @@ public class AppointmentRules {
         EntityBean bean = new EntityBean(location, service);
         for (Entity view : bean.getNodeTargetEntities("scheduleViews", SequenceComparator.INSTANCE)) {
             IMObjectBean viewBean = service.getBean(view);
-            if (viewBean.getValue("schedules", Relationship.class, Predicates.targetEquals(schedule)) != null) {
+            if (viewBean.hasTarget("schedules", schedule)) {
                 return view;
             }
         }
@@ -334,6 +334,52 @@ public class AppointmentRules {
     public int getBoardingNights(Date startTime, Date endTime) {
         int days = getBoardingDays(startTime, endTime);
         return days > 1 ? days - 1 : days;
+    }
+
+    /**
+     * Determines if the roster should be checked for an appointment.
+     * <br/>
+     * This is to avoid checking the clinician roster for appointments dated into the future where the roster is
+     * unlikely to be determined.
+     * <p/>
+     * This uses the supplied location's <em>rosterCheckPeriod</em> to determine if the appointment needs to be checked.
+     * <p/>
+     * If the appointment start time is dated on or after today, and is prior to {@code now + rosterCheckPeriod},
+     * then the roster should be checked to ensure that the clinician is available.
+     *
+     * @param appointment the appointment
+     * @param location    the appointment's practice location
+     * @return {@code true} if the roster should be checked, {@code false} if no check should be performed
+     */
+    public boolean checkRoster(Act appointment, Party location) {
+        boolean check = false;
+        Date startTime = appointment.getActivityStartTime();
+        Date endTime = appointment.getActivityEndTime();
+        if (startTime != null && endTime != null && DateRules.compareDateToToday(startTime) >= 0) {
+            IMObjectBean bean = service.getBean(location);
+            if (bean.getBoolean("rostering")) {
+                Date now = new Date();
+                Period period = PeriodHelper.getPeriod(bean, "rosterCheckPeriod");
+                if (period != null) {
+                    if (DateRules.compareTo(startTime, DateRules.plus(now, period)) < 0) {
+                        check = true;
+                    }
+                }
+            }
+        }
+        return check;
+    }
+
+    /**
+     * Determines if a roster area has a schedule.
+     *
+     * @param rosterArea the roster area
+     * @param schedule   the schedule
+     * @return {@code true} if the roster area has the schedule, otherwise {@code false}
+     */
+    public boolean rosterAreaHasSchedule(Entity rosterArea, Entity schedule) {
+        IMObjectBean bean = service.getBean(rosterArea);
+        return bean.hasTarget("schedules", schedule);
     }
 
     /**

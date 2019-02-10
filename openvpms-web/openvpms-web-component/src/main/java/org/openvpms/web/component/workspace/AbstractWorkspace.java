@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -25,10 +25,10 @@ import org.openvpms.web.component.help.HelpDialog;
 import org.openvpms.web.component.help.HelpTopics;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.mail.MailContext;
-import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.help.HelpListener;
+import org.openvpms.web.echo.util.StyleSheetHelper;
 import org.openvpms.web.system.ServiceHelper;
 
 import java.beans.PropertyChangeListener;

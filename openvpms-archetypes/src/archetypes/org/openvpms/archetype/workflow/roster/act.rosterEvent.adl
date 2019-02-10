@@ -1,0 +1,37 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="act.rosterEvent.1.0" latest="true"
+               type="org.openvpms.component.business.domain.im.act.Act" displayName="Shift">
+        <node name="id" path="/id" type="java.lang.Long" hidden="true" readOnly="true"/>
+        <node name="name" type="java.lang.String" path="/name" minCardinality="0" hidden="true"/>
+        <node name="startTime" path="/activityStartTime" type="java.util.Date" minCardinality="1"/>
+        <node name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="1"/>
+        <node name="reason" path="/reason" type="java.lang.String" minCardinality="0" hidden="true" readOnly="true"/>
+        <node displayName="Notes" name="description" type="java.lang.String" path="/description" hidden="true"/>
+        <node name="status" path="/status" type="java.lang.String" minCardinality="0" readOnly="true" hidden="true"/>
+        <node displayName="Employee" name="user" path="/participations" type="java.util.HashSet" minCardinality="0"
+              maxCardinality="1" filter="participation.user"/>
+        <node name="schedule" displayName="Area" path="/participations" type="java.util.HashSet" minCardinality="1"
+              maxCardinality="1"
+              filter="participation.rosterArea"/>
+        <node name="location" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
+              filter="participation.location" hidden="true"/>
+        <node name="author" path="/participations" type="java.util.HashSet" minCardinality="0" maxCardinality="1"
+              filter="participation.author" readOnly="true"/>
+    </archetype>
+</archetypes>

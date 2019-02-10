@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -140,8 +140,13 @@ public abstract class AbstractCalendarEventEditDialog extends EditDialog {
         startTime = event.getActivityStartTime();
         endTime = event.getActivityEndTime();
         ScheduleEventSeries series = getEditor().getSeries();
-        expression = series.getExpression();
-        condition = series.getCondition();
+        if (series != null) {
+            expression = series.getExpression();
+            condition = series.getCondition();
+        } else {
+            expression = null;
+            condition = null;
+        }
     }
 
     /**
@@ -200,10 +205,12 @@ public abstract class AbstractCalendarEventEditDialog extends EditDialog {
     protected boolean timeSeriesModified() {
         ScheduleEventSeries series = getEditor().getSeries();
         Act act = getEvent();
+        RepeatExpression otherExpression = (series != null) ? series.getExpression() : null;
+        RepeatCondition otherCondition = (series != null) ? series.getCondition() : null;
         return DateRules.compareTo(startTime, act.getActivityStartTime()) != 0
                || DateRules.compareTo(endTime, act.getActivityEndTime()) != 0
-               || !ObjectUtils.equals(expression, series.getExpression())
-               || !ObjectUtils.equals(condition, series.getCondition());
+               || !ObjectUtils.equals(expression, otherExpression)
+               || !ObjectUtils.equals(condition, otherCondition);
     }
 
     /**

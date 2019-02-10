@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -281,7 +281,7 @@ public class PartyRules {
      * @param party the party. May be {@code null}
      * @return the preferred contact, or {@code null} if there is no corresponding <em>contact.phoneNumber</em> contact
      */
-    public Contact getTelephoneContact(Party party) {
+    public Contact getTelephoneContact(org.openvpms.component.model.party.Party party) {
         return getContact(party, ContactArchetypes.PHONE, false, ContactArchetypes.FAX_PURPOSE);
     }
 
@@ -294,7 +294,7 @@ public class PartyRules {
      * @param purpose the contact purpose
      * @return the preferred contact, or {@code null} if there is no corresponding <em>contact.phoneNumber</em> contact
      */
-    public Contact getTelephoneContact(Party party, String purpose) {
+    public Contact getTelephoneContact(org.openvpms.component.model.party.Party party, String purpose) {
         return getTelephoneContact(party, false, purpose);
     }
 
@@ -306,7 +306,7 @@ public class PartyRules {
      * @param purpose the contact purpose
      * @return the preferred contact, or {@code null} if there is no corresponding <em>contact.phoneNumber</em> contact
      */
-    public Contact getTelephoneContact(Party party, boolean exact, String purpose) {
+    public Contact getTelephoneContact(org.openvpms.component.model.party.Party party, boolean exact, String purpose) {
         return getContact(party, ContactArchetypes.PHONE, exact, ContactArchetypes.FAX_PURPOSE, purpose);
     }
 
@@ -317,7 +317,7 @@ public class PartyRules {
      * @return a formatted telephone number for the party. May be empty if there is no corresponding
      * <em>contact.phoneNumber</em> contact
      */
-    public String getTelephone(Party party) {
+    public String getTelephone(org.openvpms.component.model.party.Party party) {
         return getTelephone(party, false);
     }
 
@@ -329,7 +329,7 @@ public class PartyRules {
      * @return a formatted telephone number for the party. May be empty if there is no corresponding
      * <em>contact.phoneNumber</em> contact
      */
-    public String getTelephone(Party party, boolean withName) {
+    public String getTelephone(org.openvpms.component.model.party.Party party, boolean withName) {
         Contact contact = getTelephoneContact(party);
         return (contact != null) ? formatPhone(contact, withName) : "";
     }
@@ -343,7 +343,7 @@ public class PartyRules {
      * @return a formatted home telephone number for the party. May be empty if there is no corresponding
      * <em>contact.phoneNumber</em> contact
      */
-    public String getHomeTelephone(Party party) {
+    public String getHomeTelephone(org.openvpms.component.model.party.Party party) {
         Contact contact = getTelephoneContact(party, ContactArchetypes.HOME_PURPOSE);
         return (contact != null) ? formatPhone(contact, false) : "";
     }
@@ -355,7 +355,7 @@ public class PartyRules {
      * @return a formatted mobile telephone number for the party. May be empty if there is no corresponding
      * <em>contact.phoneNumber</em> contact
      */
-    public String getMobileTelephone(Party party) {
+    public String getMobileTelephone(org.openvpms.component.model.party.Party party) {
         Contact contact = getTelephoneContact(party, true, ContactArchetypes.MOBILE_PURPOSE);
         return (contact != null) ? formatPhone(contact, false) : "";
     }
@@ -368,7 +368,7 @@ public class PartyRules {
      * there is no corresponding <em>contact.phoneNumber</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getWorkTelephone(Party party) {
+    public String getWorkTelephone(org.openvpms.component.model.party.Party party) {
         Contact contact = getTelephoneContact(party, true, ContactArchetypes.WORK_PURPOSE);
         return (contact != null) ? formatPhone(contact, false) : "";
     }
@@ -381,7 +381,7 @@ public class PartyRules {
      * there is no corresponding <em>contact.phoneNumber</em> contact with sms set {@code true}
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getSMSTelephone(Party party) {
+    public String getSMSTelephone(org.openvpms.component.model.party.Party party) {
         Contact contact = getSMSContact(party);
         return (contact != null) ? formatPhone(contact, false) : "";
     }
@@ -393,7 +393,7 @@ public class PartyRules {
      * @return a <em>contact.phoneNumber</em> contact with sms set {@code true}, or {@code} null if none exists
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Contact getSMSContact(Party party) {
+    public Contact getSMSContact(org.openvpms.component.model.party.Party party) {
         return (party != null) ? getContact(party, new SMSMatcher(service)) : null;
     }
 
@@ -406,7 +406,7 @@ public class PartyRules {
      * with a purpose as FAX
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getFaxNumber(Party party) {
+    public String getFaxNumber(org.openvpms.component.model.party.Party party) {
         Contact contact = getContact(party, ContactArchetypes.PHONE, true, null, ContactArchetypes.FAX_PURPOSE);
         return (contact != null) ? formatPhone(contact, false) : "";
     }
@@ -419,7 +419,7 @@ public class PartyRules {
      * there is no corresponding <em>contact.email</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getEmailAddress(Party party) {
+    public String getEmailAddress(org.openvpms.component.model.party.Party party) {
         Contact contact = getEmailContact(party);
         if (contact != null) {
             IMObjectBean bean = new IMObjectBean(contact, service);
@@ -434,7 +434,7 @@ public class PartyRules {
      * @param party the party. May be {@code null}
      * @return the preferred contact, or {@code null} if there is no corresponding <em>contact.email</em> contact
      */
-    public Contact getEmailContact(Party party) {
+    public Contact getEmailContact(org.openvpms.component.model.party.Party party) {
         return getContact(party, ContactArchetypes.EMAIL, null);
     }
 
@@ -445,7 +445,7 @@ public class PartyRules {
      * @return the website URL of the party. May be empty if there is no corresponding <em>contact.website</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getWebsite(Party party) {
+    public String getWebsite(org.openvpms.component.model.party.Party party) {
         Contact contact = getContact(party, ContactArchetypes.WEBSITE, null);
         if (contact != null) {
             IMObjectBean bean = new IMObjectBean(contact, service);
@@ -460,7 +460,7 @@ public class PartyRules {
      * @param party the party
      * @return a formatted string of the party's identities
      */
-    public String getIdentities(Party party) {
+    public String getIdentities(org.openvpms.component.model.party.Party party) {
         StringBuilder result = new StringBuilder();
         for (EntityIdentity identity : party.getIdentities()) {
             IMObjectBean bean = new IMObjectBean(identity, service);
@@ -491,7 +491,7 @@ public class PartyRules {
      * @return the corresponding contact, or {@code null}
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Contact getContact(Party party, String type, String purpose) {
+    public Contact getContact(org.openvpms.component.model.party.Party party, String type, String purpose) {
         Contact result = null;
         if (party != null) {
             if (purpose != null) {
@@ -547,7 +547,7 @@ public class PartyRules {
      * @param party the party
      * @return string bpay id
      */
-    public String getBpayId(Party party) {
+    public String getBpayId(org.openvpms.component.model.party.Party party) {
         // this will be a running total
         int sum = 0;
         // Get string value of party uid
@@ -602,7 +602,8 @@ public class PartyRules {
      * @param purposes  the purposes to match, if any
      * @return the matching contact or {@code null}
      */
-    public Contact getContact(Party party, String type, boolean exact, String exclusion, String... purposes) {
+    public Contact getContact(org.openvpms.component.model.party.Party party, String type, boolean exact,
+                              String exclusion, String... purposes) {
         Contact contact = null;
         if (party != null) {
             PurposeMatcher matcher = new PurposeMatcher(type, exact, service, purposes);
@@ -732,7 +733,7 @@ public class PartyRules {
      * @param matcher the contact matcher
      * @return the matching contact or {@code null}
      */
-    private Contact getContact(Party party, ContactMatcher matcher) {
+    private Contact getContact(org.openvpms.component.model.party.Party party, ContactMatcher matcher) {
         return Contacts.find(Contacts.sort(party.getContacts()), matcher);
     }
 

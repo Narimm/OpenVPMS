@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -42,8 +42,33 @@ class TaskQuery extends ScheduleEventQuery {
      * @param statusNames the status names, keyed on status code
      * @param service     the archetype service
      */
-    public TaskQuery(Entity workList, Date from, Date to, Map<String, String> statusNames, IArchetypeService service) {
+    TaskQuery(Entity workList, Date from, Date to, Map<String, String> statusNames, IArchetypeService service) {
         super(workList, from, to, statusNames, Collections.emptyMap(), service);
+    }
+
+    /**
+     * Populates a set with participation relationship details.
+     *
+     * @param set        the set to populate
+     * @param archetype  the participation archetype
+     * @param entityRef  the entity reference
+     * @param entityName the entity name
+     * @param version    the participation version
+     * @return {@code true} if the set was populated
+     */
+    @Override
+    protected boolean populateParticipation(ObjectSet set, String archetype, Reference entityRef, String entityName,
+                                            long version) {
+        boolean result;
+        if (ScheduleArchetypes.WORKLIST_PARTICIPATION.equals(archetype)) {
+            set.set(ScheduleEvent.SCHEDULE_REFERENCE, entityRef);
+            set.set(ScheduleEvent.SCHEDULE_NAME, entityName);
+            set.set(ScheduleEvent.SCHEDULE_PARTICIPATION_VERSION, version);
+            result = true;
+        } else {
+            result = super.populateParticipation(set, archetype, entityRef, entityName, version);
+        }
+        return result;
     }
 
     /**

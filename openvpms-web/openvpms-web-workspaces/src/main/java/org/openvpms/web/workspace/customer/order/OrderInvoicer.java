@@ -39,6 +39,7 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.property.DefaultValidator;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.PropertySetBuilder;
 import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.property.ValidatorError;
 import org.openvpms.web.resource.i18n.Messages;
@@ -152,7 +153,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
         }
 
         invoice = (invoices.size() == 1) ? invoices.values().iterator().next() : null;
-        properties = new PropertySet(act);
+        properties = new PropertySetBuilder(act).build();
     }
 
     /**
@@ -700,7 +701,7 @@ public abstract class OrderInvoicer extends AbstractInvoicer {
                 returnedQty = ZERO;
             }
             posted = (invoice != null) && ActStatus.POSTED.equals(invoice.getStatus());
-            properties = new PropertySet(orderItem);
+            properties = new PropertySetBuilder(orderItem).build();
         }
 
         /**

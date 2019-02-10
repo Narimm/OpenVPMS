@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -21,6 +21,7 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ActionEvent;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.exception.OpenVPMSException;
@@ -87,6 +88,11 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * The current component.
      */
     private Component current;
+
+    /**
+     * The last archetype edited. Used to determine if resizing is required.
+     */
+    private String lastArchetype;
 
     /**
      * The current component focus group.
@@ -266,6 +272,28 @@ public abstract class AbstractEditDialog extends PopupDialog {
     @Override
     public HelpContext getHelpContext() {
         return (helpContext != null) ? helpContext : super.getHelpContext();
+    }
+
+    /**
+     * Resizes the dialog if required.
+     * <p/>
+     * This looks for a style sheet property name {@code <styleName>.size.<archetype>} with a value of the format
+     * {@code <width>x<height>}<br/>
+     * The width and height are expressed in terms of the font units that will be converted to pixels using the font
+     * size.
+     */
+    @Override
+    protected void resize() {
+        IMObjectEditor editor = getEditor();
+        if (editor != null) {
+            String archetype = editor.getObject().getArchetype();
+            if (!StringUtils.equals(archetype, lastArchetype)) {
+                String property = getStyleName() + ".size." + archetype;
+                if (resize(property)) {
+                    lastArchetype = archetype;
+                }
+            }
+        }
     }
 
     /**
@@ -461,6 +489,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
 
         // register a listener to handle alerts
         editor.setAlertListener(getAlertListener());
+        resize();
     }
 
     /**

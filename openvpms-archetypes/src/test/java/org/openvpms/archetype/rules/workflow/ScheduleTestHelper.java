@@ -16,10 +16,7 @@
 
 package org.openvpms.archetype.rules.workflow;
 
-import org.openvpms.archetype.rules.customer.CustomerArchetypes;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
-import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
@@ -30,8 +27,6 @@ import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.sql.Time;
@@ -66,8 +61,9 @@ public class ScheduleTestHelper extends TestHelper {
      * @param defaultView determines if the view is the default for the location
      */
     public static void addScheduleView(Party location, Entity view, boolean defaultView) {
-        EntityBean bean = new EntityBean(location);
-        EntityRelationship relationship = bean.addNodeRelationship("scheduleViews", view);
+        IMObjectBean bean = new IMObjectBean(location);
+        EntityRelationship relationship = (EntityRelationship) bean.addTarget("scheduleViews", view);
+        view.addEntityRelationship(relationship);
         IMObjectBean relBean = new IMObjectBean(relationship);
         relBean.setValue("default", defaultView);
         save(location, view);
@@ -81,8 +77,9 @@ public class ScheduleTestHelper extends TestHelper {
      * @param defaultView determines if the view is the default for the location
      */
     public static void addWorkListView(Party location, Entity view, boolean defaultView) {
-        EntityBean bean = new EntityBean(location);
-        EntityRelationship relationship = bean.addNodeRelationship("workListViews", view);
+        IMObjectBean bean = new IMObjectBean(location);
+        EntityRelationship relationship = (EntityRelationship) bean.addTarget("workListViews", view);
+        view.addEntityRelationship(relationship);
         IMObjectBean relBean = new IMObjectBean(relationship);
         relBean.setValue("default", defaultView);
         save(location, view);
@@ -109,9 +106,10 @@ public class ScheduleTestHelper extends TestHelper {
      * @param schedules the schedules to add
      */
     public static void addSchedules(Entity view, Entity... schedules) {
-        EntityBean bean = new EntityBean(view);
+        IMObjectBean bean = new IMObjectBean(view);
         for (Entity schedule : schedules) {
-            bean.addNodeRelationship("schedules", schedule);
+            EntityRelationship relationship = (EntityRelationship) bean.addTarget("schedules", schedule);
+            schedule.addEntityRelationship(relationship);
         }
         List<Entity> list = new ArrayList<>();
         list.add(view);
@@ -150,7 +148,7 @@ public class ScheduleTestHelper extends TestHelper {
      * @param location the practice location
      * @return a new schedule
      */
-    public static Party createSchedule(Party location) {
+    public static Party createSchedule(org.openvpms.component.model.party.Party location) {
         return createSchedule(15, "MINUTES", 2, createAppointmentType(), location);
     }
 
@@ -164,10 +162,11 @@ public class ScheduleTestHelper extends TestHelper {
      * @param location        the practice location
      * @return a new schedule
      */
-    public static Party createSchedule(int slotSize, String slotUnits,
-                                       int noSlots, Entity appointmentType, Party location) {
+    public static Party createSchedule(int slotSize, String slotUnits, int noSlots,
+                                       org.openvpms.component.model.entity.Entity appointmentType,
+                                       org.openvpms.component.model.party.Party location) {
         Party schedule = (Party) create(ScheduleArchetypes.ORGANISATION_SCHEDULE);
-        EntityBean bean = new EntityBean(schedule);
+        IMObjectBean bean = new IMObjectBean(schedule);
         bean.setValue("name", "XSchedule");
         bean.setValue("slotSize", slotSize);
         bean.setValue("slotUnits", slotUnits);
@@ -176,7 +175,7 @@ public class ScheduleTestHelper extends TestHelper {
         if (appointmentType != null) {
             addAppointmentType(schedule, appointmentType, noSlots, true);
         }
-        bean.addNodeTarget("location", location);
+        bean.setTarget("location", location);
         bean.save();
         return schedule;
     }
@@ -207,11 +206,12 @@ public class ScheduleTestHelper extends TestHelper {
      * @param isDefault       determines if the appointment type is the default
      * @return the new <em>entityRelationship.scheduleAppointmentType</em>
      */
-    public static EntityRelationship addAppointmentType(Entity schedule, Entity appointmentType, int noSlots,
-                                                        boolean isDefault) {
-        EntityBean bean = new EntityBean(schedule);
-        EntityRelationship relationship = bean.addRelationship(
-                ScheduleArchetypes.SCHEDULE_APPOINTMENT_TYPE_RELATIONSHIP, appointmentType);
+    public static EntityRelationship addAppointmentType(Entity schedule,
+                                                        org.openvpms.component.model.entity.Entity appointmentType,
+                                                        int noSlots, boolean isDefault) {
+        IMObjectBean bean = new IMObjectBean(schedule);
+        EntityRelationship relationship = (EntityRelationship) bean.addTarget("appointmentTypes", appointmentType);
+        appointmentType.addEntityRelationship(relationship);
         IMObjectBean relBean = new IMObjectBean(relationship);
         relBean.setValue("noSlots", noSlots);
         if (isDefault) {
@@ -246,7 +246,8 @@ public class ScheduleTestHelper extends TestHelper {
      * @param schedule  the schedule
      * @return a new act
      */
-    public static Act createAppointment(Date startTime, Date endTime, Entity schedule) {
+    public static Act createAppointment(Date startTime, Date endTime,
+                                        org.openvpms.component.model.entity.Entity schedule) {
         Party customer = TestHelper.createCustomer();
         Party patient = TestHelper.createPatient();
         return createAppointment(startTime, endTime, schedule, customer, patient);
@@ -262,7 +263,10 @@ public class ScheduleTestHelper extends TestHelper {
      * @param patient   the patient. May be {@code null}
      * @return a new act
      */
-    public static Act createAppointment(Date startTime, Date endTime, Entity schedule, Party customer, Party patient) {
+    public static Act createAppointment(Date startTime, Date endTime,
+                                        org.openvpms.component.model.entity.Entity schedule,
+                                        org.openvpms.component.model.party.Party customer,
+                                        org.openvpms.component.model.party.Party patient) {
         Entity appointmentType = createAppointmentType();
         appointmentType.setName("XAppointmentType");
         save(appointmentType);
@@ -299,27 +303,32 @@ public class ScheduleTestHelper extends TestHelper {
      * @param author          the author. May be {@code null}
      * @return a new act
      */
-    public static Act createAppointment(Date startTime, Date endTime, Entity schedule, Entity appointmentType,
-                                        Party customer, Party patient, User clinician, User author) {
+    public static Act createAppointment(Date startTime, Date endTime,
+                                        org.openvpms.component.model.entity.Entity schedule,
+                                        org.openvpms.component.model.entity.Entity appointmentType,
+                                        org.openvpms.component.model.party.Party customer,
+                                        org.openvpms.component.model.party.Party patient,
+                                        org.openvpms.component.model.user.User clinician,
+                                        org.openvpms.component.model.user.User author) {
         Act act = (Act) create(ScheduleArchetypes.APPOINTMENT);
         Lookup reason = TestHelper.getLookup(ScheduleArchetypes.VISIT_REASON, "XREASON", "Reason X", true);
 
-        ActBean bean = new ActBean(act);
+        IMObjectBean bean = new IMObjectBean(act);
         bean.setValue("startTime", startTime);
         bean.setValue("endTime", endTime);
         bean.setValue("reason", reason.getCode());
         bean.setValue("status", AppointmentStatus.IN_PROGRESS);
-        bean.setParticipant("participation.customer", customer);
+        bean.setTarget("customer", customer);
         if (patient != null) {
-            bean.setParticipant("participation.patient", patient);
+            bean.setTarget("patient", patient);
         }
-        bean.setParticipant("participation.schedule", schedule);
-        bean.setParticipant("participation.appointmentType", appointmentType);
+        bean.setTarget("schedule", schedule);
+        bean.setTarget("appointmentType", appointmentType);
         if (clinician != null) {
-            bean.setParticipant("participation.clinician", clinician);
+            bean.setTarget("clinician", clinician);
         }
         if (author != null) {
-            bean.setParticipant("participation.author", author);
+            bean.setTarget("author", author);
         }
         return act;
     }
@@ -406,9 +415,9 @@ public class ScheduleTestHelper extends TestHelper {
      * @return the new <em>entityRelationship.scheduleAppointmentType</em>
      */
     public static EntityRelationship addTaskType(Party workList, Entity taskType, int noSlots, boolean isDefault) {
-        EntityBean bean = new EntityBean(workList);
-        EntityRelationship relationship = bean.addRelationship(ScheduleArchetypes.WORKLIST_TASK_TYPE_RELATIONSHIP,
-                                                               taskType);
+        IMObjectBean bean = new IMObjectBean(workList);
+        EntityRelationship relationship = (EntityRelationship) bean.addTarget("taskTypes", taskType);
+        taskType.addEntityRelationship(relationship);
         IMObjectBean relBean = new IMObjectBean(relationship);
         relBean.setValue("noSlots", noSlots);
         if (isDefault) {
@@ -457,8 +466,11 @@ public class ScheduleTestHelper extends TestHelper {
      * @param author    the author. May be {@code null}
      * @return a new act
      */
-    public static Act createTask(Date startTime, Date endTime, Entity worklist, Party customer, Party patient,
-                                 User clinician, User author) {
+    public static Act createTask(Date startTime, Date endTime, org.openvpms.component.model.entity.Entity worklist,
+                                 org.openvpms.component.model.party.Party customer,
+                                 org.openvpms.component.model.party.Party patient,
+                                 org.openvpms.component.model.user.User clinician,
+                                 org.openvpms.component.model.user.User author) {
         return createTask(startTime, endTime, worklist, customer, patient, createTaskType(), clinician, author);
     }
 
@@ -475,25 +487,30 @@ public class ScheduleTestHelper extends TestHelper {
      * @param author    the author. May be {@code null}
      * @return a new act
      */
-    public static Act createTask(Date startTime, Date endTime, Entity worklist, Party customer, Party patient,
-                                 Entity taskType, User clinician, User author) {
+    public static Act createTask(Date startTime, Date endTime,
+                                 org.openvpms.component.model.entity.Entity worklist,
+                                 org.openvpms.component.model.party.Party customer,
+                                 org.openvpms.component.model.party.Party patient,
+                                 org.openvpms.component.model.entity.Entity taskType,
+                                 org.openvpms.component.model.user.User clinician,
+                                 org.openvpms.component.model.user.User author) {
         Act act = (Act) create(ScheduleArchetypes.TASK);
 
-        ActBean bean = new ActBean(act);
+        IMObjectBean bean = new IMObjectBean(act);
         bean.setValue("startTime", startTime);
         bean.setValue("endTime", endTime);
         bean.setValue("status", TaskStatus.IN_PROGRESS);
-        bean.setParticipant(CustomerArchetypes.CUSTOMER_PARTICIPATION, customer);
+        bean.setTarget("customer", customer);
         if (patient != null) {
-            bean.setParticipant(PatientArchetypes.PATIENT_PARTICIPATION, patient);
+            bean.setTarget("patient", patient);
         }
-        bean.setParticipant(ScheduleArchetypes.WORKLIST_PARTICIPATION, worklist);
-        bean.setParticipant(ScheduleArchetypes.TASK_TYPE_PARTICIPATION, taskType);
+        bean.setTarget("worklist", worklist);
+        bean.setTarget("taskType", taskType);
         if (clinician != null) {
-            bean.setParticipant(UserArchetypes.CLINICIAN_PARTICIPATION, clinician);
+            bean.setTarget("clinician", clinician);
         }
         if (author != null) {
-            bean.setParticipant(UserArchetypes.AUTHOR_PARTICIPATION, author);
+            bean.setTarget("author", author);
         }
         return act;
     }
@@ -598,14 +615,75 @@ public class ScheduleTestHelper extends TestHelper {
     public static Act createCalendarBlock(Date startTime, Date endTime, Entity schedule, Entity blockType,
                                           User author) {
         Act act = (Act) create(ScheduleArchetypes.CALENDAR_BLOCK);
-        ActBean bean = new ActBean(act);
+        IMObjectBean bean = new IMObjectBean(act);
         bean.setValue("startTime", startTime);
         bean.setValue("endTime", endTime);
-        bean.addNodeParticipation("schedule", schedule);
-        bean.addNodeParticipation("type", blockType);
+        bean.setTarget("schedule", schedule);
+        bean.setTarget("type", blockType);
         if (author != null) {
-            bean.addNodeParticipation("author", author);
+            bean.setTarget("author", author);
         }
+        return act;
+    }
+
+    /**
+     * Helper to create a new <em>act.calendarEvent</em>.
+     *
+     * @param startTime the act start time
+     * @param endTime   the act end time
+     * @param schedule  the schedule
+     * @param location  the practice location. May be {@code null}
+     * @return a new event
+     */
+    public static Act createCalendarEvent(Date startTime, Date endTime, Entity schedule, Party location) {
+        Act act = (Act) create(ScheduleArchetypes.CALENDAR_EVENT);
+        IMObjectBean bean = new IMObjectBean(act);
+        bean.setValue("startTime", startTime);
+        bean.setValue("endTime", endTime);
+        bean.setTarget("schedule", schedule);
+        if (location != null) {
+            bean.setTarget("location", location);
+        }
+        return act;
+    }
+
+    /**
+     * Creates a roster area.
+     *
+     * @param location  the practice location
+     * @param schedules the schedules
+     * @return a new roster area
+     */
+    public static Entity createRosterArea(Party location, Entity... schedules) {
+        Entity area = (Entity) create(ScheduleArchetypes.ROSTER_AREA);
+        IMObjectBean bean = new IMObjectBean(area);
+        bean.setValue("name", "XArea");
+        bean.setTarget("location", location);
+        for (Entity schedule : schedules) {
+            bean.addTarget("schedules", schedule);
+        }
+        bean.save();
+        return area;
+    }
+
+    /**
+     * Helper to create a new <em>act.rosterEvent</em>.
+     *
+     * @param startTime the act start time
+     * @param endTime   the act end time
+     * @param user      the rostered employee. May be {@code null}
+     * @param area      the area
+     * @param location  the location
+     * @return a new event
+     */
+    public static Act createRosterEvent(Date startTime, Date endTime, User user, Entity area, Party location) {
+        Act act = (Act) create(ScheduleArchetypes.ROSTER_EVENT);
+        IMObjectBean bean = new IMObjectBean(act);
+        bean.setValue("startTime", startTime);
+        bean.setValue("endTime", endTime);
+        bean.setTarget("user", user);
+        bean.setTarget("schedule", area);
+        bean.setTarget("location", location);
         return act;
     }
 

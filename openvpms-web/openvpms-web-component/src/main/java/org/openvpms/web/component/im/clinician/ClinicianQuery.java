@@ -11,15 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.clinician;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
-import org.openvpms.archetype.rules.user.ClinicianQueryFactory;
 import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.archetype.rules.user.UserQueryFactory;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
@@ -139,7 +139,7 @@ public class ClinicianQuery extends EntityQuery<User> {
         protected boolean hasMultipleLocations(Party practice) {
             if (practice != null) {
                 IMObjectBean bean = new IMObjectBean(practice);
-                return bean.getNodeTargetObjectRefs("locations").size() > 1;
+                return bean.getTargetRefs("locations").size() > 1;
             }
             return false;
         }
@@ -216,9 +216,9 @@ public class ClinicianQuery extends EntityQuery<User> {
         @Override
         protected ArchetypeQuery createQuery() {
             ArchetypeQuery query = super.createQuery();
-            ClinicianQueryFactory.addClinicianConstraint(query);
+            UserQueryFactory.addClinicianConstraint(query);
             if (location != null) {
-                ClinicianQueryFactory.addLocationConstraint(location, query);
+                UserQueryFactory.addLocationConstraint(location, query);
             }
             return query;
         }

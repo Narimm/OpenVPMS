@@ -11,20 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
 
-import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.Collections;
@@ -83,22 +82,18 @@ class AppointmentFactory extends ScheduleEventFactory {
      * @param source the source act
      */
     @Override
-    protected void assemble(PropertySet target, ActBean source) {
+    protected void assemble(PropertySet target, IMObjectBean source) {
         super.assemble(target, source);
 
-        Participation schedule = source.getParticipation(ScheduleArchetypes.SCHEDULE_PARTICIPATION);
-        IMObjectReference scheduleRef = (schedule != null) ? schedule.getEntity() : null;
-        String scheduleName = getName(scheduleRef);
-        target.set(ScheduleEvent.SCHEDULE_REFERENCE, scheduleRef);
-        target.set(ScheduleEvent.SCHEDULE_NAME, scheduleName);
-        target.set(ScheduleEvent.SCHEDULE_PARTICIPATION_VERSION, (schedule != null) ? schedule.getVersion() : -1);
+        populate(target, source, "schedule");
+        Act object = (Act) source.getObject();
 
         if (source.isA(ScheduleArchetypes.APPOINTMENT)) {
-            String reason = source.getAct().getReason();
+            String reason = object.getReason();
             target.set(ScheduleEvent.ACT_REASON, reason);
             target.set(ScheduleEvent.ACT_REASON_NAME, reasonNames.get(reason));
 
-            IMObjectReference typeRef = source.getNodeParticipantRef("appointmentType");
+            Reference typeRef = source.getTargetRef("appointmentType");
             String typeName = getName(typeRef);
             target.set(ScheduleEvent.SCHEDULE_TYPE_REFERENCE, typeRef);
             target.set(ScheduleEvent.SCHEDULE_TYPE_NAME, typeName);
@@ -109,25 +104,21 @@ class AppointmentFactory extends ScheduleEventFactory {
             target.set(ScheduleEvent.ONLINE_BOOKING, source.getBoolean(ScheduleEvent.ONLINE_BOOKING));
             target.set(ScheduleEvent.BOOKING_NOTES, source.getString(ScheduleEvent.BOOKING_NOTES));
         } else {
-            IMObjectReference typeRef = source.getNodeParticipantRef("type");
-            String typeName = getName(typeRef);
-            target.set(ScheduleEvent.ACT_NAME, source.getAct().getName());
-            target.set(ScheduleEvent.SCHEDULE_TYPE_REFERENCE, typeRef);
-            target.set(ScheduleEvent.SCHEDULE_TYPE_NAME, typeName);
+            target.set(ScheduleEvent.ACT_NAME, object.getName());
+            populate(target, source, "type");
         }
     }
 
     /**
-     * Creates a query to query events for a particular schedule and day.
+     * Creates a query to query events for a particular entity between two times.
      *
-     * @param schedule the schedule
-     * @param day      the day
+     * @param entity    the entity
+     * @param startTime the start time, inclusive
+     * @param endTime   the end time, exclusive
      * @return a new query
      */
     @Override
-    protected ScheduleEventQuery createQuery(Entity schedule, Date day) {
-        return new AppointmentQuery(schedule, DateRules.getDate(day), getEnd(day), getStatusNames(), reasonNames,
-                                    getService()
-        );
+    protected ScheduleEventQuery createQuery(Entity entity, Date startTime, Date endTime) {
+        return new AppointmentQuery(entity, startTime, endTime, getStatusNames(), reasonNames, getService());
     }
 }

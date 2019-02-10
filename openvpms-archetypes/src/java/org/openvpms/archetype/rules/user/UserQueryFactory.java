@@ -21,7 +21,6 @@ import org.openvpms.component.system.common.query.ArchetypeIdConstraint;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.Constraints;
-import org.openvpms.component.system.common.query.IArchetypeQuery;
 
 import static org.openvpms.archetype.rules.user.UserArchetypes.USER;
 import static org.openvpms.component.system.common.query.Constraints.eq;
@@ -33,23 +32,42 @@ import static org.openvpms.component.system.common.query.Constraints.or;
 import static org.openvpms.component.system.common.query.Constraints.subQuery;
 
 /**
- * Clinician query factory.
+ * User query factory.
  *
  * @author Tim Anderson
  */
-public class ClinicianQueryFactory {
+public class UserQueryFactory {
+
+    /**
+     * Creates a query to return users, sorted by id.
+     *
+     * @param location if non-null, return all users that have a link to the location or no link to any location
+     * @param sort     sort constraints. If not specified, the query results will be unsorted
+     * @return a new query
+     */
+    public static ArchetypeQuery createUserQuery(Party location, String... sort) {
+        ArchetypeQuery query = new ArchetypeQuery(USER, true, true);
+        addLocationConstraint(location, query);
+        if (sort.length != 0) {
+            addSort(query, sort);
+        }
+        return query;
+    }
 
     /**
      * Creates a query to return clinicians.
      *
      * @param location if non-null, return all clinicians that have a link to the location or no link to any location
+     * @param sort     sort constraints. If not specified, the query results will be unsorted
      * @return a new query
      */
-    public static IArchetypeQuery create(Party location) {
+    public static ArchetypeQuery createClinicianQuery(Party location, String... sort) {
         ArchetypeQuery query = new ArchetypeQuery(USER, true, true);
         addClinicianConstraint(query);
         addLocationConstraint(location, query);
-        query.add(Constraints.sort("id"));
+        if (sort.length != 0) {
+            addSort(query, sort);
+        }
         return query;
     }
 
@@ -88,6 +106,18 @@ public class ClinicianQueryFactory {
                          notExists(subQuery(USER, "u2").add(join("locations", "l2").add(idEq(alias, "u2"))))));
         }
         return query;
+    }
+
+    /**
+     * Adds ascending sort constraints to a query.
+     *
+     * @param query the query
+     * @param sort  the nodes to sort on
+     */
+    private static void addSort(ArchetypeQuery query, String[] sort) {
+        for (String node : sort) {
+            query.add(Constraints.sort(node));
+        }
     }
 
 }

@@ -11,19 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.clinician;
 
 import nextapp.echo2.app.SelectField;
-import org.openvpms.archetype.rules.user.ClinicianQueryFactory;
-import org.openvpms.archetype.rules.user.UserArchetypes;
+import org.openvpms.archetype.rules.user.UserQueryFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.web.component.im.list.IMObjectListCellRenderer;
 import org.openvpms.web.component.im.list.IMObjectListModel;
 import org.openvpms.web.component.im.query.QueryHelper;
@@ -111,10 +109,7 @@ public class ClinicianSelectField extends SelectField {
      * @return a new model
      */
     private static IMObjectListModel createModel(boolean all) {
-        ArchetypeQuery query = new ArchetypeQuery(UserArchetypes.USER, true, true);
-        ClinicianQueryFactory.addClinicianConstraint(query);
-        query.add(Constraints.sort("name"));
-        query.add(Constraints.sort("id"));
+        ArchetypeQuery query = UserQueryFactory.createClinicianQuery(null, "name", "id");
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
 
         List<IMObject> clinicians = QueryHelper.query(query);

@@ -11,13 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.booking.api;
 
-import org.openvpms.booking.domain.Location;
-import org.openvpms.booking.domain.Schedule;
+import org.openvpms.booking.api.v1.LocationServiceV1;
+import org.openvpms.booking.domain.User;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -31,36 +31,17 @@ import java.util.List;
  * @author Tim Anderson
  */
 @Path("locations")
-public interface LocationService {
+public interface LocationService extends LocationServiceV1 {
 
     /**
-     * Returns the practice locations.
-     *
-     * @return the practice locations
-     */
-    @GET
-    @Produces({"application/json"})
-    List<Location> getLocations();
-
-    /**
-     * Returns a practice location given its identifier.
-     *
-     * @param locationId the location identifier
-     * @return the practice location
-     */
-    @GET
-    @Produces({"application/json"})
-    @Path("/{id}")
-    Location getLocation(@PathParam("id") long locationId);
-
-    /**
-     * Returns the schedules associated with a location.
+     * Returns the users associated with a location.
      *
      * @param locationId the location id
-     * @return the location
+     * @return the users
      */
     @GET
     @Produces({"application/json"})
-    @Path("/{id}/schedules")
-    List<Schedule> getSchedules(@PathParam("id") long locationId);
+    @Path("/{id}/users")
+    List<User> getUsers(@PathParam("id") long locationId);
+
 }

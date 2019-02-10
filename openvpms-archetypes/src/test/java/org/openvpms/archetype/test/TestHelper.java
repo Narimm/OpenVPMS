@@ -910,10 +910,11 @@ public class TestHelper {
      * @param node   the lookup node
      * @return the corresponding lookup's name. May be {@code null}
      */
-    public static String getLookupName(IMObject object, String node) {
+    public static String getLookupName(org.openvpms.component.model.object.IMObject object, String node) {
         IMObjectBean bean = new IMObjectBean(object);
         return LookupHelper.getName(ArchetypeServiceHelper.getArchetypeService(),
-                                    LookupServiceHelper.getLookupService(), bean.getDescriptor(node), object);
+                                    LookupServiceHelper.getLookupService(), bean.getDescriptor(node),
+                                    (IMObject) object);
     }
 
     /**
@@ -958,13 +959,19 @@ public class TestHelper {
 
     /**
      * Helper to create a date-time given a string of the form
-     * <em>yyyy-mm-dd hh:mm:ss</em>.
+     * <em>yyyy-mm-dd hh:mm:ss</em> or <em>yyyy-mm-dd hh:mm</em>
      *
      * @param value the value. May be {@code null}
      * @return the corresponding date-time or {@code null} if {@code value} is null
      */
     public static Date getDatetime(String value) {
-        return value != null ? new Date(Timestamp.valueOf(value).getTime()) : null; // use Date, for easy comparison
+        if (value != null) {
+            if (StringUtils.countMatches(value, ":") != 2) {
+                value = value + ":00";
+            }
+            return new Date(Timestamp.valueOf(value).getTime()); // use Date, for easy comparison
+        }
+        return null;
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -104,8 +104,7 @@ public class ScheduleEvent {
     /**
      * The schedule type reference.
      */
-    public static final String SCHEDULE_TYPE_REFERENCE
-            = "scheduleType.objectReference";
+    public static final String SCHEDULE_TYPE_REFERENCE = "scheduleType.objectReference";
 
     /**
      * The schedule type name.
@@ -115,8 +114,7 @@ public class ScheduleEvent {
     /**
      * The clinician reference.
      */
-    public static final String CLINICIAN_REFERENCE
-            = "clinician.objectReference";
+    public static final String CLINICIAN_REFERENCE = "clinician.objectReference";
 
     /**
      * The clinician name.
@@ -159,6 +157,7 @@ public class ScheduleEvent {
     public static final String BOOKING_NOTES = "bookingNotes";
 
     public static final String ACT_VERSION = "act.version";
+
     public static final String CUSTOMER_PARTICIPATION_VERSION = "customerParticipation.version";
 
     public static final String PATIENT_PARTICIPATION_VERSION = "patientParticipation.version";
@@ -167,4 +166,5 @@ public class ScheduleEvent {
 
     public static final String CLINICIAN_PARTICIPATION_VERSION = "clinicianParticipation.version";
 
+    public static final String SCHEDULE_TYPE_PARTICIPATION_VERSION = "scheduleTypeParticipation.version";
 }

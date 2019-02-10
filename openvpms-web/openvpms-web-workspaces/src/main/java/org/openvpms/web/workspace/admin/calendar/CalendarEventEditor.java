@@ -88,7 +88,7 @@ public class CalendarEventEditor extends AbstractCalendarEventEditor {
      * Returns the slot size for the specified schedule.
      *
      * @param schedule the schedule. May be {@code null}
-     * @return the slot size, in mintes
+     * @return the slot size, in minutes
      */
     @Override
     protected int getSlotSize(Entity schedule) {

@@ -11,21 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
 
-import org.openvpms.archetype.rules.customer.CustomerArchetypes;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.archetype.rules.user.UserArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.act.Participation;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -37,7 +33,6 @@ import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
 import org.openvpms.component.system.common.util.PropertySet;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -55,7 +50,7 @@ import java.util.Map;
  * @author Tim Anderson
  * @see ScheduleEvent
  */
-abstract class ScheduleEventFactory {
+public abstract class ScheduleEventFactory {
 
     /**
      * The archetype service.
@@ -90,29 +85,31 @@ abstract class ScheduleEventFactory {
     }
 
     /**
-     * Returns all events for a schedule on the given day.
+     * Returns all events for an entity on the given day.
      *
-     * @param schedule the schedule reference
-     * @param day      the day
+     * @param reference the entity reference
+     * @param startTime the start time, inclusive
+     * @param endTime   the end time exclusive
      * @return all events on the specified day for the schedule
      */
-    public List<PropertySet> getEvents(Reference schedule, Date day) {
-        Entity entity = (Entity) service.get(schedule);
+    public List<PropertySet> getEvents(Reference reference, Date startTime, Date endTime) {
+        Entity entity = (Entity) service.get(reference);
         if (entity == null) {
-            throw new IllegalStateException("Cannot locate schedule with reference=" + schedule);
+            throw new IllegalStateException("Cannot locate entity with reference=" + reference);
         }
-        return getEvents(entity, day);
+        return getEvents(entity, startTime, endTime);
     }
 
     /**
-     * Returns all events for a schedule on the given day.
+     * Returns all events for an entity between two times.
      *
-     * @param schedule the schedule
-     * @param day      the day
+     * @param entity    the entity
+     * @param startTime the start time, inclusive
+     * @param endTime   the end time, exclusive
      * @return all events on the specified day for the schedule
      */
-    public List<PropertySet> getEvents(Entity schedule, Date day) {
-        ScheduleEventQuery query = createQuery(schedule, day);
+    public List<PropertySet> getEvents(Entity entity, Date startTime, Date endTime) {
+        ScheduleEventQuery query = createQuery(entity, startTime, endTime);
         IPage<ObjectSet> page = query.query();
         return new ArrayList<>(page.getResults());
     }
@@ -125,7 +122,7 @@ abstract class ScheduleEventFactory {
      */
     public PropertySet createEvent(Act act) {
         ObjectSet set = new ObjectSet();
-        ActBean bean = new ActBean(act, service);
+        IMObjectBean bean = service.getBean(act);
         assemble(set, bean);
         return set;
     }
@@ -136,8 +133,8 @@ abstract class ScheduleEventFactory {
      * @param target the target set
      * @param source the source act
      */
-    protected void assemble(PropertySet target, ActBean source) {
-        Act event = source.getAct();
+    protected void assemble(PropertySet target, IMObjectBean source) {
+        Act event = (Act) source.getObject();
         String status = event.getStatus();
         target.set(ScheduleEvent.ACT_VERSION, event.getVersion());
         target.set(ScheduleEvent.ACT_REFERENCE, event.getObjectReference());
@@ -147,37 +144,43 @@ abstract class ScheduleEventFactory {
         target.set(ScheduleEvent.ACT_STATUS_NAME, statusNames.get(status));
         target.set(ScheduleEvent.ACT_DESCRIPTION, event.getDescription());
 
-        Participation customer = source.getParticipation(CustomerArchetypes.CUSTOMER_PARTICIPATION);
-        IMObjectReference customerRef = (customer != null) ? customer.getEntity() : null;
+        populate(target, source, "customer");
+        populate(target, source, "patient");
+        populate(target, source, "clinician");
+    }
 
-        String customerName = getName(customerRef);
-        target.set(ScheduleEvent.CUSTOMER_REFERENCE, customerRef);
-        target.set(ScheduleEvent.CUSTOMER_NAME, customerName);
-        target.set(ScheduleEvent.CUSTOMER_PARTICIPATION_VERSION, (customer != null) ? customer.getVersion() : -1);
+    protected void populate(PropertySet target, IMObjectBean source, String node) {
+        Participation participation = null;
+        if (source.hasNode(node)) {
+            participation = source.getObject(node, Participation.class);
+        }
+        populate(target, participation, node);
+    }
 
-        Participation patient = source.getParticipation(PatientArchetypes.PATIENT_PARTICIPATION);
-        IMObjectReference patientRef = (patient != null) ? patient.getEntity() : null;
-        String patientName = getName(patientRef);
-        target.set(ScheduleEvent.PATIENT_REFERENCE, patientRef);
-        target.set(ScheduleEvent.PATIENT_NAME, patientName);
-        target.set(ScheduleEvent.PATIENT_PARTICIPATION_VERSION, patient != null ? patient.getVersion() : -1);
+    protected void populate(PropertySet target, Participation source, String node) {
+        Reference reference = null;
+        String name = null;
+        long version = -1;
 
-        Participation clinician = source.getParticipation(UserArchetypes.CLINICIAN_PARTICIPATION);
-        IMObjectReference clinicianRef = (clinician != null) ? clinician.getEntity() : null;
-        String clinicianName = getName(clinicianRef);
-        target.set(ScheduleEvent.CLINICIAN_REFERENCE, clinicianRef);
-        target.set(ScheduleEvent.CLINICIAN_NAME, clinicianName);
-        target.set(ScheduleEvent.CLINICIAN_PARTICIPATION_VERSION, (clinician != null) ? clinician.getVersion() : -1);
+        if (source != null) {
+            reference = source.getEntity();
+            name = getName(reference);
+            version = source.getVersion();
+        }
+        target.set(node + ".objectReference", reference);
+        target.set(node + ".name", name);
+        target.set(node + "Participation.version", version);
     }
 
     /**
-     * Creates a query to query events for a particular schedule and day.
+     * Creates a query to query events for a particular entity between two times.
      *
-     * @param schedule the schedule
-     * @param day      the day
+     * @param entity    the entity
+     * @param startTime the start time, inclusive
+     * @param endTime   the end time, exclusive
      * @return a new query
      */
-    protected abstract ScheduleEventQuery createQuery(Entity schedule, Date day);
+    protected abstract ScheduleEventQuery createQuery(Entity entity, Date startTime, Date endTime);
 
     /**
      * Returns the archetype service.
@@ -216,22 +219,6 @@ abstract class ScheduleEventFactory {
      */
     protected Map<String, String> getStatusNames() {
         return statusNames;
-    }
-
-    /**
-     * Returns the end of the day for the specified date-time.
-     *
-     * @param datetime the date-time
-     * @return one millisecond to midnight for the specified date
-     */
-    protected Date getEnd(Date datetime) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(datetime);
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        calendar.set(Calendar.MINUTE, 59);
-        calendar.set(Calendar.SECOND, 59);
-        calendar.set(Calendar.MILLISECOND, 999);
-        return calendar.getTime();
     }
 
 }

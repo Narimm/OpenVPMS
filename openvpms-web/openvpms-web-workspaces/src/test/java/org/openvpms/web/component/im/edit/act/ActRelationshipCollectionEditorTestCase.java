@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -35,6 +35,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.PropertySetBuilder;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
@@ -237,7 +238,7 @@ public class ActRelationshipCollectionEditorTestCase extends AbstractAppTest {
         context.setEdit(true);
         context.getContext().setPractice(TestHelper.getPractice());
         context.getContext().setUser(user);
-        PropertySet set = new PropertySet(parent, context);
+        PropertySet set = new PropertySetBuilder(parent, context).build();
         CollectionProperty items = (CollectionProperty) set.get("items");
         assertNotNull(items);
         assertEquals(minCardinality, items.getMinCardinality());

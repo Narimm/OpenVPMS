@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -27,6 +27,11 @@ import org.openvpms.web.echo.util.DoubleClickMonitor;
  * @author Tim Anderson
  */
 public class BrowserCRUDWindow<T extends IMObject> {
+
+    /**
+     * Determines if double clicks should trigger {@link #onDoubleClick()}.
+     */
+    private final boolean trackClick;
 
     /**
      * The browser.
@@ -48,7 +53,7 @@ public class BrowserCRUDWindow<T extends IMObject> {
      * Constructs a {@code BrowserCRUDWindow}.
      */
     protected BrowserCRUDWindow() {
-
+        trackClick = true;
     }
 
     /**
@@ -58,6 +63,18 @@ public class BrowserCRUDWindow<T extends IMObject> {
      * @param window  the window
      */
     public BrowserCRUDWindow(Browser<T> browser, AbstractCRUDWindow<T> window) {
+        this(browser, window, true);
+    }
+
+    /**
+     * Constructs a {@link BrowserCRUDWindow}.
+     *
+     * @param browser    the browser
+     * @param window     the window
+     * @param trackClick if {@code true}, double selection of an object triggers {@link #onDoubleClick()}
+     */
+    public BrowserCRUDWindow(Browser<T> browser, AbstractCRUDWindow<T> window, boolean trackClick) {
+        this.trackClick = trackClick;
         setBrowser(browser);
         setWindow(window);
     }
@@ -99,7 +116,19 @@ public class BrowserCRUDWindow<T extends IMObject> {
      */
     protected void setBrowser(Browser<T> browser) {
         this.browser = browser;
-        browser.addBrowserListener(new BrowserListener<T>() {
+        browser.addBrowserListener(createListener());
+        if (window != null) {
+            select(browser.getSelected());
+        }
+    }
+
+    /**
+     * Creates a new listener to register on the browser.
+     *
+     * @return a new listener
+     */
+    protected BrowserListener<T> createListener() {
+        return new BrowserListener<T>() {
             @Override
             public void query() {
                 onQuery();
@@ -113,11 +142,7 @@ public class BrowserCRUDWindow<T extends IMObject> {
             public void browsed(T object) {
                 onBrowsed(object);
             }
-
-        });
-        if (window != null) {
-            select(browser.getSelected());
-        }
+        };
     }
 
     /**
@@ -161,7 +186,7 @@ public class BrowserCRUDWindow<T extends IMObject> {
      */
     protected void onSelected(T object) {
         select(object);
-        if (click.isDoubleClick(object.getId())) {
+        if (trackClick && click.isDoubleClick(object.getId())) {
             onDoubleClick();
         }
     }

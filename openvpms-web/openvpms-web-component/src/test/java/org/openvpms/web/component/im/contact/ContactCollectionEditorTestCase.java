@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.contact;
@@ -29,6 +29,7 @@ import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.PropertySetBuilder;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.test.AbstractAppTest;
 
@@ -60,7 +61,7 @@ public class ContactCollectionEditorTestCase extends AbstractAppTest {
         customer.addContact(phone1);
         save(customer);
 
-        PropertySet set = new PropertySet(customer);
+        PropertySet set = new PropertySetBuilder(customer).build();
         CollectionProperty property = (CollectionProperty) set.get("contacts");
         DefaultLayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
         ContactCollectionEditor editor = new ContactCollectionEditor(property, customer, context);
@@ -124,7 +125,7 @@ public class ContactCollectionEditorTestCase extends AbstractAppTest {
         bean.setValue("firstName", "Foo");
         bean.setValue("lastName", "Bar");
 
-        PropertySet set = new PropertySet(customer);
+        PropertySet set = new PropertySetBuilder(customer).build();
         CollectionProperty property = (CollectionProperty) set.get("contacts");
         DefaultLayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
         ContactCollectionEditor editor = new ContactCollectionEditor(property, customer, context);
@@ -168,7 +169,7 @@ public class ContactCollectionEditorTestCase extends AbstractAppTest {
         customer.addContact(phone1);
         save(customer);
 
-        PropertySet set = new PropertySet(customer);
+        PropertySet set = new PropertySetBuilder(customer).build();
         CollectionProperty property = (CollectionProperty) set.get("contacts");
         DefaultLayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
         ContactCollectionEditor editor = new ContactCollectionEditor(property, customer, context);
@@ -204,7 +205,7 @@ public class ContactCollectionEditorTestCase extends AbstractAppTest {
         customer.addContact(phone1);
         save(customer);
 
-        PropertySet set = new PropertySet(customer);
+        PropertySet set = new PropertySetBuilder(customer).build();
         CollectionProperty property = (CollectionProperty) set.get("contacts");
         DefaultLayoutContext context = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
         ContactCollectionEditor editor = new ContactCollectionEditor(property, customer, context);

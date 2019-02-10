@@ -11,29 +11,39 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
 
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
+import com.google.common.collect.TreeRangeSet;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Row;
 import org.joda.time.Period;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
+import org.openvpms.archetype.rules.workflow.AppointmentService;
 import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
+import org.openvpms.archetype.rules.workflow.Times;
+import org.openvpms.archetype.rules.workflow.roster.RosterService;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.component.alert.Alert;
 import org.openvpms.web.component.alert.AlertManager;
 import org.openvpms.web.component.bound.BoundCheckBox;
 import org.openvpms.web.component.bound.BoundDateTimeField;
 import org.openvpms.web.component.bound.BoundDateTimeFieldFactory;
+import org.openvpms.web.component.edit.AlertListener;
+import org.openvpms.web.component.im.clinician.ClinicianParticipationEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
@@ -42,6 +52,7 @@ import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.patient.PatientParticipationEditor;
 import org.openvpms.web.component.im.sms.SMSHelper;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.PropertySet;
@@ -49,6 +60,7 @@ import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.alert.AlertSummary;
 import org.openvpms.web.workspace.workflow.appointment.repeat.AppointmentSeries;
@@ -77,6 +89,16 @@ public class AppointmentEditor extends AbstractCalendarEventEditor {
     private final AppointmentRules rules;
 
     /**
+     * Determines if SMS is enabled at the practice.
+     */
+    private final boolean smsPractice;
+
+    /**
+     * Determines if the sendReminder checkbox should be enabled.
+     */
+    private final Period noReminder;
+
+    /**
      * The alerts row.
      */
     private Row alerts;
@@ -87,15 +109,9 @@ public class AppointmentEditor extends AbstractCalendarEventEditor {
     private ModifiableListener patientListener;
 
     /**
-     * Determines if SMS is enabled at the practice.
-     */
-    private boolean smsPractice;
-
-    /**
      * Determines if reminders are enabled on the schedule.
      */
     private boolean scheduleReminders;
-
 
     /**
      * Determines if reminders are enabled on the appointment type.
@@ -103,14 +119,14 @@ public class AppointmentEditor extends AbstractCalendarEventEditor {
     private boolean appointmentTypeReminders;
 
     /**
-     * Determines if the sendReminder checkbox should be enabled.
-     */
-    private Period noReminder;
-
-    /**
      * The send reminder flag.
      */
     private BoundCheckBox sendReminder;
+
+    /**
+     * The roster alert identifier, used to cancel any existing alert.
+     */
+    private long rosterAlert;
 
     /**
      * The online booking notes.
@@ -166,6 +182,7 @@ public class AppointmentEditor extends AbstractCalendarEventEditor {
         if (act.isNew()) {
             updateSendReminder(true);
         }
+        checkRoster();
     }
 
     /**
@@ -187,6 +204,21 @@ public class AppointmentEditor extends AbstractCalendarEventEditor {
     }
 
     /**
+     * Returns the location associated with the schedule.
+     *
+     * @return the location. May be {@code null}
+     */
+    public Party getLocation() {
+        Party location = null;
+        Entity schedule = getSchedule();
+        if (schedule != null) {
+            IMObjectBean bean = getBean(schedule);
+            location = (Party) getObject(bean.getTargetRef("location"));
+        }
+        return location;
+    }
+
+    /**
      * Creates a new instance of the editor, with the latest instance of the object to edit.
      *
      * @return {@code null}
@@ -205,6 +237,17 @@ public class AppointmentEditor extends AbstractCalendarEventEditor {
     @Override
     public AppointmentSeries getSeries() {
         return (AppointmentSeries) super.getSeries();
+    }
+
+    /**
+     * Registers a listener to be notified of alerts.
+     *
+     * @param listener the listener. May be {@code null}
+     */
+    @Override
+    public void setAlertListener(AlertListener listener) {
+        super.setAlertListener(listener);
+        checkRoster();
     }
 
     /**
@@ -238,6 +281,7 @@ public class AppointmentEditor extends AbstractCalendarEventEditor {
         getAppointmentTypeEditor().addModifiableListener(
                 modifiable -> onAppointmentTypeChanged());
         getPatientEditor().addModifiableListener(getPatientListener());
+        getClinicianEditor().addModifiableListener(modifiable -> checkRoster());
 
         if (getEndTime() == null) {
             calculateEndTime();
@@ -252,6 +296,16 @@ public class AppointmentEditor extends AbstractCalendarEventEditor {
     protected void onStartTimeChanged() {
         super.onStartTimeChanged();
         updateSendReminder(sendReminder.isSelected());
+        checkRoster();
+    }
+
+    /**
+     * Invoked when the end time changes. Recalculates the end time if it is less than the start time.
+     */
+    @Override
+    protected void onEndTimeChanged() {
+        super.onEndTimeChanged();
+        checkRoster();
     }
 
     /**
@@ -294,6 +348,7 @@ public class AppointmentEditor extends AbstractCalendarEventEditor {
     protected void onScheduleChanged(Entity schedule) {
         super.onScheduleChanged(schedule);
         updateSendReminder(sendReminder.isSelected());
+        checkRoster();
     }
 
     /**
@@ -318,6 +373,88 @@ public class AppointmentEditor extends AbstractCalendarEventEditor {
     @Override
     protected boolean doValidation(Validator validator) {
         return validateCustomer(validator) && super.doValidation(validator);
+    }
+
+    /**
+     * Checks that the clinician is rostered on.
+     * <p/>
+     * If rostering is enabled, and the selected clinician isn't rostered on during the appointment period,
+     * or is rostered on to another schedule, this raises an alert.
+     */
+    private void checkRoster() {
+        AlertListener listener = getAlertListener();
+        Party location = getLocation();
+        Entity schedule = getSchedule();
+        if (listener != null && location != null && schedule != null && rules.checkRoster(getObject(), location)) {
+            if (rosterAlert < 0) {
+                // cancel any existing alert
+                listener.cancel(rosterAlert);
+                rosterAlert = -1;
+            }
+            User clinician = getClinician();
+            if (clinician != null) {
+                Date startTime = getStartTime();
+                Date endTime = getEndTime();
+                RosterService service = ServiceHelper.getBean(RosterService.class);
+                List<RosterService.UserEvent> events = service.getUserEvents(clinician, location, startTime, endTime);
+                if (events.isEmpty()) {
+                    String message = Messages.format("workflow.scheduling.appointment.notrostered",
+                                                     clinician.getName());
+                    rosterAlert = listener.onAlert(message);
+                } else {
+                    // Determine if the roster events cover the appointment period
+                    RangeSet<Date> set = TreeRangeSet.create();
+                    set.add(Range.closed(startTime, endTime));
+                    for (RosterService.UserEvent event : events) {
+                        if (hasSchedule(event.getArea(), schedule)) {
+                            set.remove(Range.closed(event.getStartTime(), event.getEndTime()));
+                        }
+                    }
+                    if (!set.isEmpty()) {
+                        String message = Messages.format("workflow.scheduling.appointment.partiallyrostered",
+                                                         clinician.getName());
+                        rosterAlert = listener.onAlert(message);
+                    } else {
+                        AppointmentService appointmentService = ServiceHelper.getBean(AppointmentService.class);
+                        Act exclude = (getObject().isNew()) ? null : getObject();
+                        List<Times> appointments = appointmentService.getAppointmentsForClinician(clinician, startTime,
+                                                                                                  endTime, exclude);
+                        if (!appointments.isEmpty()) {
+                            String scheduleName = null;
+                            Act existing = (Act) IMObjectHelper.getObject(appointments.get(0).getReference());
+                            if (existing != null) {
+                                scheduleName = IMObjectHelper.getName(getBean(existing).getTargetRef("schedule"));
+                            }
+                            String message = Messages.format("workflow.scheduling.appointment.alreadyscheduled",
+                                                             clinician.getName(), scheduleName);
+                            rosterAlert = listener.onAlert(message);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Determines if a roster area has a schedule.
+     *
+     * @param areaRef  the roster area reference
+     * @param schedule the schedule
+     * @return {@code true} if the roster area has the schedule
+     */
+    private boolean hasSchedule(Reference areaRef, Entity schedule) {
+        Entity area = (Entity) getObject(areaRef);
+        return (area != null) && rules.rosterAreaHasSchedule(area, schedule);
+    }
+
+    /**
+     * Returns the patient editor.
+     *
+     * @return the patient editor
+     */
+    private ClinicianParticipationEditor getClinicianEditor() {
+        ParticipationEditor<User> result = getParticipationEditor("clinician", true);
+        return (ClinicianParticipationEditor) result;
     }
 
     /**

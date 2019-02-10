@@ -18,7 +18,7 @@ package org.openvpms.smartflow.client;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.archetype.rules.user.ClinicianQueryFactory;
+import org.openvpms.archetype.rules.user.UserQueryFactory;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.i18n.Message;
@@ -270,7 +270,7 @@ public class ReferenceDataService extends FlowSheetService {
      * @return the clinicians
      */
     private Iterator<User> getClinicians() {
-        IArchetypeQuery query = ClinicianQueryFactory.create(location);
+        IArchetypeQuery query = UserQueryFactory.createClinicianQuery(location, "id");
         return new IMObjectQueryIterator<>(service, query);
     }
 

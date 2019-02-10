@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
@@ -95,7 +95,7 @@ public class ScheduleEventSeriesState {
         IMObjectBean bean = service.getBean(event);
         this.event = event;
         this.service = service;
-        series = bean.getSource("repeat", Act.class);
+        series = bean.hasNode("repeat") ? bean.getSource("repeat", Act.class) : null;
         if (series != null) {
             IMObjectBean seriesBean = service.getBean(series);
             List<Reference> refs = seriesBean.getTargetRefs("items");
@@ -138,7 +138,6 @@ public class ScheduleEventSeriesState {
 
     /**
      * Determines if the event is associated with a series.
-     * +
      *
      * @return {@code true} if the event is associated with a series
      */

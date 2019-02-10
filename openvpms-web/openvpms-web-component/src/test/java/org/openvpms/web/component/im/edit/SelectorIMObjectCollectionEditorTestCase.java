@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -26,9 +26,8 @@ import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
-import org.openvpms.web.component.property.Modifiable;
-import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.PropertySetBuilder;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.test.AbstractAppTest;
 
@@ -51,18 +50,13 @@ public class SelectorIMObjectCollectionEditorTestCase extends AbstractAppTest {
     public void testAddRemove() {
         Party customer = TestHelper.createCustomer(false);
         LayoutContext layoutContext = new DefaultLayoutContext(new LocalContext(), new HelpContext("foo", null));
-        PropertySet set = new PropertySet(customer, layoutContext);
+        PropertySet set = new PropertySetBuilder(customer, layoutContext).build();
         CollectionProperty property = (CollectionProperty) set.get("type");
         SelectorIMObjectCollectionEditor editor
                 = new SelectorIMObjectCollectionEditor(property, customer, layoutContext);
         final MutableInt modCount = new MutableInt(0);
 
-        editor.addModifiableListener(new ModifiableListener() {
-            @Override
-            public void modified(Modifiable modifiable) {
-                modCount.setValue(modCount.intValue() + 1);
-            }
-        });
+        editor.addModifiableListener(modifiable -> modCount.setValue(modCount.intValue() + 1));
 
         assertFalse(editor.isModified());
         Lookup accountType = TestHelper.getLookup("lookup.customerAccountType", "BAD_DEBT");

@@ -11,15 +11,12 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
 
-import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.ehcache.Cache;
-import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
@@ -32,7 +29,6 @@ import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.springframework.beans.factory.DisposableBean;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -213,25 +209,7 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
      */
     @Override
     public ScheduleEvents getScheduleEvents(Entity schedule, Date from, Date to) {
-        HashCodeBuilder builder = new HashCodeBuilder();
-        Date fromDay = DateRules.getDate(from);
-        Date toDay = DateRules.getDate(to);
-        List<PropertySet> results = new ArrayList<>();
-        while (fromDay.compareTo(toDay) <= 0) {
-            ScheduleEvents events = getScheduleEvents(schedule, fromDay);
-            builder.append(events.getModHash());
-            for (PropertySet event : events.getEvents()) {
-                Date startTime = event.getDate(ScheduleEvent.ACT_START_TIME);
-                Date endTime = event.getDate(ScheduleEvent.ACT_END_TIME);
-                if (DateRules.intersects(startTime, endTime, from, to)) {
-                    results.add(event);
-                } else if (DateRules.compareTo(startTime, to) >= 0) {
-                    break;
-                }
-            }
-            fromDay = DateRules.getDate(fromDay, 1, DateUnits.DAYS);
-        }
-        return new ScheduleEvents(results, builder.toHashCode()); // 64 bit to 32 bit not ideal
+        return cache.getEvents(schedule, from, to);
     }
 
     /**
@@ -246,18 +224,7 @@ public abstract class AbstractScheduleService implements ScheduleService, Dispos
      */
     @Override
     public long getModHash(Entity schedule, Date from, Date to) {
-        HashCodeBuilder builder = new HashCodeBuilder();
-        Date fromDay = DateRules.getDate(from);
-        Date toDay = DateRules.getDate(to);
-        while (fromDay.compareTo(toDay) <= 0) {
-            long modHash = getModHash(schedule, fromDay);
-            if (modHash == -1) {
-                return -1;
-            }
-            builder.append(modHash);
-            fromDay = DateRules.getDate(fromDay, 1, DateUnits.DAYS);
-        }
-        return builder.toHashCode();
+        return cache.getModHash(schedule, from, to);
     }
 
     /**

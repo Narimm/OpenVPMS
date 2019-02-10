@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.calendar;
@@ -41,12 +41,28 @@ public class CalendarLayoutStrategy extends AbstractLayoutStrategy {
     private final CalendarEventViewer viewer;
 
     /**
+     * The style name.
+     */
+    private final String styleName;
+
+    /**
      * Constructs a {@link CalendarLayoutStrategy}.
      *
      * @param viewer the calendar event viewer
      */
     public CalendarLayoutStrategy(CalendarEventViewer viewer) {
+        this(viewer, "Calendar");
+    }
+
+    /**
+     * Constructs a {@link CalendarLayoutStrategy}.
+     *
+     * @param viewer    the calendar event viewer
+     * @param styleName the split pane style name
+     */
+    public CalendarLayoutStrategy(CalendarEventViewer viewer, String styleName) {
         this.viewer = viewer;
+        this.styleName = styleName;
     }
 
     /**
@@ -60,7 +76,7 @@ public class CalendarLayoutStrategy extends AbstractLayoutStrategy {
      */
     @Override
     protected Component doLayout(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-        SplitPane container = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_TOP_BOTTOM, "Calendar");
+        SplitPane container = SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_TOP_BOTTOM, styleName);
         doLayout(object, properties, parent, container, context);
         return container;
     }

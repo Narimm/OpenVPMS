@@ -11,22 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
 
 import org.junit.Test;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.model.act.Act;
 import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.party.Party;
+import org.openvpms.component.model.user.User;
 import org.openvpms.component.system.common.util.PropertySet;
 import org.springframework.beans.factory.DisposableBean;
 
@@ -341,11 +339,11 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
      * @param schedule the schedule
      */
     protected void setSchedule(Act act, Entity schedule) {
-        ActBean bean = new ActBean(act);
+        IMObjectBean bean = getBean(act);
         if (bean.isA(ScheduleArchetypes.APPOINTMENT)) {
-            bean.setParticipant(ScheduleArchetypes.SCHEDULE_PARTICIPATION, schedule);
+            bean.setTarget("schedule", schedule);
         } else {
-            bean.setParticipant(ScheduleArchetypes.WORKLIST_PARTICIPATION, schedule);
+            bean.setTarget("worklist", schedule);
         }
     }
 
@@ -493,8 +491,8 @@ public abstract class AbstractScheduleServiceTest extends ArchetypeServiceTest {
         };
         Callable<PropertySet> write = () -> {
             System.err.println("Writer thread=" + Thread.currentThread().getName());
-            ActBean bean = new ActBean(event);
-            bean.setParticipant(PatientArchetypes.PATIENT_PARTICIPATION, patient2);
+            IMObjectBean bean = getBean(event);
+            bean.setTarget("patient", patient2);
             save(event);
             return null;
         };

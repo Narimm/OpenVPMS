@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -19,6 +19,7 @@ package org.openvpms.web.component.workspace;
 import echopointng.TabbedPane;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
+import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SplitPane;
 import nextapp.echo2.app.event.ChangeEvent;
 import nextapp.echo2.app.layout.SplitPaneLayoutData;
@@ -26,6 +27,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.echo.event.ChangeListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
+import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.factory.TabbedPaneFactory;
 import org.openvpms.web.echo.help.HelpContext;
@@ -34,6 +36,11 @@ import org.openvpms.web.resource.i18n.Messages;
 
 /**
  * An {@link Workspace} that supports multiple tabs.
+ * <p/>
+ * This renders the tab strip in a separate container to the tab content. As a result, the tab model content
+ * is not used.
+ * <br/>
+ * Use {@link TabComponent} to associate a tab with a component.
  *
  * @author Tim Anderson
  */
@@ -53,11 +60,6 @@ public abstract class TabbedWorkspace<T extends IMObject> extends AbstractWorksp
      * The container for the tabbed pane and the buttons.
      */
     private SplitPane container;
-
-    /**
-     * The tabbed pane container.
-     */
-    private Column tabContainer;
 
     /**
      * The split pane style.
@@ -112,6 +114,15 @@ public abstract class TabbedWorkspace<T extends IMObject> extends AbstractWorksp
     }
 
     /**
+     * Returns the tab model.
+     *
+     * @return the tab model
+     */
+    protected ObjectTabPaneModel<TabComponent> getModel() {
+        return model;
+    }
+
+    /**
      * Lays out the component.
      * <p/>
      * This renders a heading using {@link #createHeading}.
@@ -120,7 +131,7 @@ public abstract class TabbedWorkspace<T extends IMObject> extends AbstractWorksp
      */
     @Override
     protected Component doLayout() {
-        tabContainer = ColumnFactory.create();
+        Column tabContainer = ColumnFactory.create();
         SplitPaneLayoutData layoutData = new SplitPaneLayoutData();
         layoutData.setOverflow(SplitPaneLayoutData.OVERFLOW_HIDDEN); // to avoid scrollbars in tab section
         tabContainer.setLayoutData(layoutData);
@@ -140,6 +151,15 @@ public abstract class TabbedWorkspace<T extends IMObject> extends AbstractWorksp
         tabContainer.add(pane);
         onTabSelected(model.getObject(0));
         return root;
+    }
+
+    /**
+     * Returns the tabbed pane.
+     *
+     * @return the tabbed pane
+     */
+    protected TabbedPane getTabbedPane() {
+        return pane;
     }
 
     /**
@@ -172,7 +192,8 @@ public abstract class TabbedWorkspace<T extends IMObject> extends AbstractWorksp
         int index = model.size();
         int shortcut = index + 1;
         String text = "&" + shortcut + " " + Messages.get(name);
-        model.addTab(tab, text, tab.getComponent());
+        Label dummy = LabelFactory.create(); // placeholder, to keep TabbedPane happy
+        model.addTab(tab, text, dummy);
     }
 
     /**
@@ -188,12 +209,13 @@ public abstract class TabbedWorkspace<T extends IMObject> extends AbstractWorksp
     /**
      * Invoked when a tab is selected.
      *
-     * @param tab the tab
+     * @param tab the tab. May be {@code null}
      */
     private void onTabSelected(TabComponent tab) {
+        if (container.getComponentCount() == 2) {
+            container.remove(1);
+        }
         if (tab != null) {
-            container.removeAll();
-            container.add(tabContainer);
             container.add(tab.getComponent());
             tab.show();
         }

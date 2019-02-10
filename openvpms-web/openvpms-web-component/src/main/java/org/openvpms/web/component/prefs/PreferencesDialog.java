@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.prefs;
@@ -25,12 +25,12 @@ import org.openvpms.web.component.help.HelpTopics;
 import org.openvpms.web.component.im.edit.AbstractEditDialog;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
-import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.util.StyleSheetHelper;
 import org.openvpms.web.system.ServiceHelper;
 
 /**

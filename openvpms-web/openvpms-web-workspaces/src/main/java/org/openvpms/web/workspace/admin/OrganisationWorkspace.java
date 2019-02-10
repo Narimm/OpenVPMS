@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin;
@@ -43,8 +43,8 @@ public class OrganisationWorkspace extends ResultSetCRUDWorkspace<Entity> {
      */
     public OrganisationWorkspace(Context context) {
         super("admin.organisation", context);
-        setArchetypes(Entity.class, "party.organisation*", "entity.organisation*", "entity.SMSConfig*",
-                      ProductArchetypes.SERVICE_RATIO_CALENDAR, "entity.mailServer",
+        setArchetypes(Entity.class, "party.organisation*", "entity.organisation*", "entity.rosterArea",
+                      "entity.SMSConfig*", ProductArchetypes.SERVICE_RATIO_CALENDAR, "entity.mailServer",
                       InsuranceArchetypes.INSURANCE_SERVICES);
     }
 
@@ -62,7 +62,7 @@ public class OrganisationWorkspace extends ResultSetCRUDWorkspace<Entity> {
         // (i,e don't change for different organisations).
         Context context = getContext();
         if (TypeHelper.isA(object, "party.organisationSchedule")) {
-            context.setSchedule((Party) object);
+            context.setSchedule(object);
         } else if (TypeHelper.isA(object, "party.organisationWorkList")) {
             context.setWorkList((Party) object);
         } else if (TypeHelper.isA(object, "party.organisationTill")) {

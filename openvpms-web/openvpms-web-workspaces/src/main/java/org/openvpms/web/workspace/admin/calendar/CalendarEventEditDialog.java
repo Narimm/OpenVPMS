@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.calendar;
 
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.workflow.CalendarService;
-import org.openvpms.archetype.rules.workflow.OverlappingEvents;
 import org.openvpms.archetype.rules.workflow.Times;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -101,8 +100,8 @@ public class CalendarEventEditDialog extends AbstractCalendarEventEditDialog {
         Entity schedule = (Entity) editor.getSchedule();
         if (schedule != null) {
             CalendarService service = ServiceHelper.getBean(CalendarService.class);
-            OverlappingEvents overlaps = service.getOverlappingEvents(times, schedule, 1);
-            Times overlap = (overlaps != null) ? overlaps.getFirstOverlap() : null;
+            List<Times> overlaps = service.getOverlappingEvents(times, schedule, 1);
+            Times overlap = (overlaps != null && !overlaps.isEmpty()) ? overlaps.get(0) : null;
             if (overlap != null) {
                 displayOverlapError(overlap);
                 result = false;

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -23,7 +23,7 @@ import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.layout.ViewLayoutStrategyFactory;
-import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.PropertySetBuilder;
 import org.openvpms.web.system.ServiceHelper;
 
 
@@ -70,7 +70,7 @@ public class IMObjectViewer extends AbstractIMObjectView {
      * @param context the layout context
      */
     public IMObjectViewer(IMObject object, IMObject parent, IMObjectLayoutStrategy layout, LayoutContext context) {
-        super(object, new PropertySet(object, context), parent, layout);
+        super(object, new PropertySetBuilder(object, context).build(), parent, layout);
         this.context = new DefaultLayoutContext(context);
         // don't increase the layout depth
         this.context.setLayoutDepth(context.getLayoutDepth());

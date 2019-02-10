@@ -12,16 +12,32 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean class="org.openvpms.booking.impl.LocationServiceImpl">
+    <bean name="bookingCalendar" class="org.openvpms.booking.impl.BookingCalendar">
+        <constructor-arg ref="rosterService"/>
+        <constructor-arg ref="appointmentService"/>
+    </bean>
+
+    <bean name="bookingLocations" class="org.openvpms.booking.impl.BookingLocations">
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="practiceService"/>
+    </bean>
+
+    <bean name="bookingUsers" class="org.openvpms.booking.impl.BookingUsers">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="bookingLocations"/>
+    </bean>
+
+    <bean class="org.openvpms.booking.impl.LocationServiceImpl">
+        <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="bookingLocations"/>
+        <constructor-arg ref="bookingUsers"/>
         <constructor-arg ref="appointmentRules"/>
     </bean>
 
@@ -29,6 +45,12 @@
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="appointmentService"/>
         <constructor-arg ref="appointmentRules"/>
+    </bean>
+
+    <bean class="org.openvpms.booking.impl.UserServiceImpl">
+        <constructor-arg ref="bookingCalendar"/>
+        <constructor-arg ref="bookingLocations"/>
+        <constructor-arg ref="bookingUsers"/>
     </bean>
 
     <bean class="org.openvpms.booking.impl.BookingServiceImpl">

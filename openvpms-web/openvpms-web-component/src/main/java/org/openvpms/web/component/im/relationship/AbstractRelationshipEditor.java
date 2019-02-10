@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -107,6 +107,7 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
 
         if (source == null || !source.equals(parent)) {
             sourceEditor = createSourceEditor(sourceProp, layoutContext);
+            addEditor(sourceEditor);
             nodes.simple(SOURCE);
             nodes.first(SOURCE);
             nodes.exclude(TARGET);
@@ -114,6 +115,7 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
 
         if (target == null || !target.equals(parent) || target.equals(source)) {
             targetEditor = createTargetEditor(targetProp, layoutContext);
+            addEditor(targetEditor);
             nodes.simple(TARGET);
             nodes.first(TARGET);
             nodes.exclude(SOURCE);
@@ -247,6 +249,31 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
     }
 
     /**
+     * Returns the object associated with the reference, defaulting it to the parent if the reference is unset,
+     * and the parent is of the correct archetype.
+     *
+     * @param reference      the reference
+     * @param parent         the parent object
+     * @param archetypeRange the archetypes that the reference may refer to
+     * @param cache          the cache
+     * @return the object, or {@code null} if the reference is set but refers to an invalid object
+     */
+    private IMObject getObject(IMObjectReference reference, IMObject parent, String[] archetypeRange,
+                               IMObjectCache cache) {
+        IMObject result = null;
+        if (reference == null) {
+            if (TypeHelper.isA(parent, archetypeRange)) {
+                result = parent;
+            }
+        } else if (reference.equals(parent.getObjectReference())) {
+            result = parent;
+        } else {
+            result = cache.get(reference);
+        }
+        return result;
+    }
+
+    /**
      * Relationship layout strategy. Displays the source/target nodes before any others.
      * <p/>
      * If there is only a single node, this is rendered without any label.
@@ -311,30 +338,5 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
                 doComplexLayout(object, parent, complex, container, context);
             }
         }
-    }
-
-    /**
-     * Returns the object associated with the reference, defaulting it to the parent if the reference is unset,
-     * and the parent is of the correct archetype.
-     *
-     * @param reference      the reference
-     * @param parent         the parent object
-     * @param archetypeRange the archetypes that the reference may refer to
-     * @param cache          the cache
-     * @return the object, or {@code null} if the reference is set but refers to an invalid object
-     */
-    private IMObject getObject(IMObjectReference reference, IMObject parent, String[] archetypeRange,
-                               IMObjectCache cache) {
-        IMObject result = null;
-        if (reference == null) {
-            if (TypeHelper.isA(parent, archetypeRange)) {
-                result = parent;
-            }
-        } else if (reference.equals(parent.getObjectReference())) {
-            result = parent;
-        } else {
-            result = cache.get(reference);
-        }
-        return result;
     }
 }

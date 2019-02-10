@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -125,11 +125,16 @@ public abstract class AbstractCalendarEventEditor extends AbstractScheduleActEdi
             }
         }
 
-        series = createSeries();
-        if (editSeries) {
-            seriesEditor = createSeriesEditor(series);
-            seriesEditor.addModifiableListener(modifiable -> resetValid(false));
+        if (getProperty("repeat") != null) {
+            series = createSeries();
+            if (editSeries) {
+                seriesEditor = createSeriesEditor(series);
+                seriesEditor.addModifiableListener(modifiable -> resetValid(false));
+            } else {
+                seriesEditor = null;
+            }
         } else {
+            series = null;
             seriesEditor = null;
         }
         updateRelativeDate();
@@ -160,7 +165,7 @@ public abstract class AbstractCalendarEventEditor extends AbstractScheduleActEdi
     /**
      * Returns the event series.
      *
-     * @return the series
+     * @return the series. May be {@code null}
      */
     public ScheduleEventSeries getSeries() {
         return (seriesEditor != null) ? seriesEditor.getSeries() : series;
@@ -380,7 +385,7 @@ public abstract class AbstractCalendarEventEditor extends AbstractScheduleActEdi
      * Returns the slot size for the specified schedule.
      *
      * @param schedule the schedule. May be {@code null}
-     * @return the slot size, in mintes
+     * @return the slot size, in minutes
      */
     protected int getSlotSize(Entity schedule) {
         return (schedule != null) ? rules.getSlotSize(schedule) : 0;
@@ -424,7 +429,7 @@ public abstract class AbstractCalendarEventEditor extends AbstractScheduleActEdi
      * @param date the start date
      * @return the start time
      */
-    private Date getDefaultStartTime(Date date) {
+    protected Date getDefaultStartTime(Date date) {
         Party schedule = (Party) getParticipant("schedule");
         int slotSize = getSlotSize(schedule);
 
@@ -475,17 +480,19 @@ public abstract class AbstractCalendarEventEditor extends AbstractScheduleActEdi
             ComponentGrid grid = super.createGrid(object, properties, context);
 
             Property repeat = getProperty("repeat");
-            if (seriesEditor != null) {
-                ComponentState repeatState = new ComponentState(seriesEditor.getRepeatEditor(), repeat,
-                                                                seriesEditor.getRepeatFocusGroup());
-                grid.add(repeatState, 2);
-                ComponentState untilState = new ComponentState(seriesEditor.getUntilEditor(),
-                                                               seriesEditor.getUntilFocusGroup());
-                untilState.setLabel(new Label());
-                grid.add(untilState);
-            } else {
-                ScheduleEventSeriesViewer viewer = new ScheduleEventSeriesViewer(series);
-                grid.add(new ComponentState(viewer.getComponent(), repeat), 2);
+            if (repeat != null) {
+                if (seriesEditor != null) {
+                    ComponentState repeatState = new ComponentState(seriesEditor.getRepeatEditor(), repeat,
+                                                                    seriesEditor.getRepeatFocusGroup());
+                    grid.add(repeatState, 2);
+                    ComponentState untilState = new ComponentState(seriesEditor.getUntilEditor(),
+                                                                   seriesEditor.getUntilFocusGroup());
+                    untilState.setLabel(new Label());
+                    grid.add(untilState);
+                } else {
+                    ScheduleEventSeriesViewer viewer = new ScheduleEventSeriesViewer(series);
+                    grid.add(new ComponentState(viewer.getComponent(), repeat), 2);
+                }
             }
 
             return grid;

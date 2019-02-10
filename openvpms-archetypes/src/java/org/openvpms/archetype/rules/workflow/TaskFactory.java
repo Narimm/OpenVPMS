@@ -11,17 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
 
-import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.act.Participation;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.util.PropertySet;
 
@@ -40,7 +39,7 @@ class TaskFactory extends ScheduleEventFactory {
      * @param service the archetype service
      * @param lookups the lookup service
      */
-    public TaskFactory(IArchetypeService service, ILookupService lookups) {
+    TaskFactory(IArchetypeService service, ILookupService lookups) {
         super(ScheduleArchetypes.TASK, service, lookups);
     }
 
@@ -51,22 +50,16 @@ class TaskFactory extends ScheduleEventFactory {
      * @param source the source act
      */
     @Override
-    protected void assemble(PropertySet target, ActBean source) {
+    protected void assemble(PropertySet target, IMObjectBean source) {
         super.assemble(target, source);
 
-        Participation schedule = source.getParticipation(ScheduleArchetypes.WORKLIST_PARTICIPATION);
-        IMObjectReference scheduleRef = (schedule != null) ? schedule.getEntity() : null;
-        String scheduleName = getName(scheduleRef);
-        target.set(ScheduleEvent.SCHEDULE_REFERENCE, scheduleRef);
-        target.set(ScheduleEvent.SCHEDULE_NAME, scheduleName);
-        target.set(ScheduleEvent.SCHEDULE_PARTICIPATION_VERSION, (schedule != null) ? schedule.getVersion() : -1);
+        Participation schedule = source.getObject("worklist", Participation.class);
+        populate(target, schedule, "schedule");
 
-        IMObjectReference typeRef = source.getNodeParticipantRef("taskType");
-        String typeName = getName(typeRef);
-        target.set(ScheduleEvent.SCHEDULE_TYPE_REFERENCE, typeRef);
-        target.set(ScheduleEvent.SCHEDULE_TYPE_NAME, typeName);
+        Participation taskType = source.getObject("taskType", Participation.class);
+        populate(target, taskType, "scheduleType");
 
-        String reason = source.getAct().getReason();
+        String reason = ((Act) source.getObject()).getReason();
         target.set(ScheduleEvent.ACT_REASON, reason);
         target.set(ScheduleEvent.ACT_REASON_NAME, reason);
 
@@ -74,14 +67,15 @@ class TaskFactory extends ScheduleEventFactory {
     }
 
     /**
-     * Creates a query to query events for a particular schedule and day.
+     * Creates a query to query events for a particular entity between two times.
      *
-     * @param schedule the schedule
-     * @param day      the day
+     * @param entity    the entity
+     * @param startTime the start time, inclusive
+     * @param endTime   the end time, exclusive
      * @return a new query
      */
     @Override
-    protected ScheduleEventQuery createQuery(Entity schedule, Date day) {
-        return new TaskQuery(schedule, DateRules.getDate(day), getEnd(day), getStatusNames(), getService());
+    protected ScheduleEventQuery createQuery(Entity entity, Date startTime, Date endTime) {
+        return new TaskQuery(entity, startTime, endTime, getStatusNames(), getService());
     }
 }

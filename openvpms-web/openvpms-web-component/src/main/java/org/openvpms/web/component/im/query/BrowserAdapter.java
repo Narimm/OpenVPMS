@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -28,8 +28,7 @@ import java.util.Map;
 /**
  * Adapts the results of one browser to another.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public abstract class BrowserAdapter<A, T> implements Browser<T> {
 
@@ -41,12 +40,11 @@ public abstract class BrowserAdapter<A, T> implements Browser<T> {
     /**
      * The listeners.
      */
-    private Map<BrowserListener<T>, BrowserListener<A>> listeners
-            = new HashMap<BrowserListener<T>, BrowserListener<A>>();
+    private Map<BrowserListener<T>, BrowserListener<A>> listeners = new HashMap<>();
 
 
     /**
-     * Constructs a <tt>BrowserAdapter</tt>.
+     * Constructs a {@link BrowserAdapter}.
      * <p/>
      * The browser to adapt from must be set using {@link #setBrowser}.
      */
@@ -54,7 +52,7 @@ public abstract class BrowserAdapter<A, T> implements Browser<T> {
     }
 
     /**
-     * Creates a new <tt>BrowserAdapter</tt>.
+     * Creates a new {@code BrowserAdapter}.
      *
      * @param browser the browser to adapt from
      */
@@ -75,7 +73,7 @@ public abstract class BrowserAdapter<A, T> implements Browser<T> {
      * Returns the selected object.
      *
      * @return the selected object, or <code>null</code> if none has been
-     *         selected.
+     * selected.
      */
     public T getSelected() {
         A selected = browser.getSelected();
@@ -110,7 +108,7 @@ public abstract class BrowserAdapter<A, T> implements Browser<T> {
      * @return the objects matcing the query.
      */
     public List<T> getObjects() {
-        List<T> result = new ArrayList<T>();
+        List<T> result = new ArrayList<>();
         for (A object : browser.getObjects()) {
             result.add(convert(object));
         }
@@ -123,19 +121,7 @@ public abstract class BrowserAdapter<A, T> implements Browser<T> {
      * @param listener the listener to add
      */
     public void addBrowserListener(final BrowserListener<T> listener) {
-        BrowserListener<A> l = new BrowserListener<A>() {
-            public void query() {
-                listener.query();
-            }
-
-            public void selected(A object) {
-                listener.selected(convert(object));
-            }
-
-            public void browsed(A object) {
-                listener.browsed(convert(object));
-            }
-        };
+        BrowserListener<A> l = adapt(listener);
         browser.addBrowserListener(l);
         listeners.put(listener, l);
     }
@@ -185,7 +171,7 @@ public abstract class BrowserAdapter<A, T> implements Browser<T> {
     /**
      * Returns the browser state.
      *
-     * @return the browser state, or <tt>null</tt> if this browser doesn't support it
+     * @return the browser state, or {@code null} if this browser doesn't support it
      */
     public BrowserState getBrowserState() {
         return browser.getBrowserState();
@@ -201,6 +187,28 @@ public abstract class BrowserAdapter<A, T> implements Browser<T> {
     }
 
     /**
+     * Adapts a listener.
+     *
+     * @param listener the listener to adapt
+     * @return the adapted listener
+     */
+    protected BrowserListener<A> adapt(BrowserListener<T> listener) {
+        return new BrowserListener<A>() {
+            public void query() {
+                listener.query();
+            }
+
+            public void selected(A object) {
+                listener.selected(convert(object));
+            }
+
+            public void browsed(A object) {
+                listener.browsed(convert(object));
+            }
+        };
+    }
+
+    /**
      * Sets the underlying browser.
      *
      * @param browser the browser
@@ -212,8 +220,8 @@ public abstract class BrowserAdapter<A, T> implements Browser<T> {
     /**
      * Converts an object.
      *
-     * @param object the object to convert
-     * @return the converted object
+     * @param object the object to convert. May be {@code null}
+     * @return the converted object. May be {@code null}
      */
     protected abstract T convert(A object);
 }

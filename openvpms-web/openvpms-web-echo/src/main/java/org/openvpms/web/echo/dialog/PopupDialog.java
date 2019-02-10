@@ -11,18 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.dialog;
 
 import nextapp.echo2.app.Button;
+import nextapp.echo2.app.Extent;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.VetoListener;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.echo.util.StyleSheetHelper;
 
 
 /**
@@ -130,6 +132,11 @@ public abstract class PopupDialog extends PopupWindow {
     public static final String[] RETRY_CANCEL = {RETRY_ID, CANCEL_ID};
 
     /**
+     * The help context. May be {@code null}
+     */
+    private final HelpContext help;
+
+    /**
      * The dialog action. May be {@code null}
      */
     private String action;
@@ -148,11 +155,6 @@ public abstract class PopupDialog extends PopupWindow {
      * The default close action.
      */
     private String defaultCloseAction;
-
-    /**
-     * The help context. May be {@code null}
-     */
-    private final HelpContext help;
 
 
     /**
@@ -291,6 +293,16 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
+     * Sets the action and closes the window.
+     *
+     * @param action the action
+     */
+    public void close(String action) {
+        setAction(action);
+        close();
+    }
+
+    /**
      * Sets the dialog action.
      *
      * @param action the action
@@ -389,7 +401,6 @@ public abstract class PopupDialog extends PopupWindow {
         close(NO_ID);
     }
 
-
     /**
      * Invoked when the 'cancel' button is pressed. If a {@link VetoListener}
      * has been registered, this will be notified, otherwise {@link #doCancel} will be invoked.
@@ -441,16 +452,6 @@ public abstract class PopupDialog extends PopupWindow {
     }
 
     /**
-     * Sets the action and closes the window.
-     *
-     * @param action the action
-     */
-    public void close(String action) {
-        setAction(action);
-        close();
-    }
-
-    /**
      * Invoked just prior to the dialog closing.
      * <p/>
      * This implementation is a no-op.
@@ -482,6 +483,59 @@ public abstract class PopupDialog extends PopupWindow {
             }
         };
         return addButton(id, disableShortcut, listener);
+    }
+
+
+    /**
+     * Resizes the dialog if required.
+     * <p/>
+     * This implementation looks for a style sheet property name {@code <styleName>.size} with a value of the format
+     * {@code <width>x<height>}<br/>
+     * The width and height are expressed in terms of the font units that will be converted to pixels using the font
+     * size.
+     */
+    protected void resize() {
+        String styleName = getStyleName();
+        if (styleName != null) {
+            resize(styleName + ".size");
+        }
+    }
+
+    /**
+     * Resizes the dialog if required.
+     * <p/>
+     * This looks for a property with the specified name with a value of the the format {@code <width>x<height>}. <br/>
+     * The width and height are expressed in terms of the font units and will be converted to pixels using the font
+     * size.
+     *
+     * @param property the size property name
+     * @return {@code true} if the size was updated
+     */
+    protected boolean resize(String property) {
+        boolean resized = false;
+        int width = -1;
+        int height = -1;
+        String size = StyleSheetHelper.getProperty(property);
+        if (size != null) {
+            String[] values = size.split("x");
+            if (values.length == 2) {
+                try {
+                    width = Integer.valueOf(values[0]);
+                    height = Integer.valueOf(values[1]);
+                    int fontSize = StyleSheetHelper.getProperty("font.size", -1);
+                    width *= fontSize;
+                    height *= fontSize;
+                } catch (NumberFormatException ignore) {
+                    // do nothing
+                }
+            }
+            if (width > 0 && height > 0) {
+                setWidth(new Extent(width));
+                setHeight(new Extent(height));
+                resized = true;
+            }
+        }
+        return resized;
     }
 
     /**

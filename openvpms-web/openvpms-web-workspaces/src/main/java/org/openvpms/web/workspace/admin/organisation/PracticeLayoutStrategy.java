@@ -121,13 +121,13 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         IMObjectComponentFactory factory = context.getComponentFactory();
-        addEstimateExpiry(object, properties, factory);
-        addPrescriptionExpiry(object, properties, factory);
+        addEstimateExpiry(object, properties, context);
+        addPrescriptionExpiry(object, properties, context);
         addAutoLockScreen(object, properties, factory);
         addAutoLogout(object, properties, factory);
         addSchedulingRefresh(object, properties, factory);
-        addRecordLockPeriod(object, properties, factory);
-        addPharmacyOrderDiscontinuePeriod(object, properties, factory);
+        addRecordLockPeriod(object, properties, context);
+        addPharmacyOrderDiscontinuePeriod(object, properties, context);
         addMinimumQuantities(object, properties, factory);
         if (subscription == null) {
             IArchetypeService service = ServiceHelper.getArchetypeService();
@@ -169,10 +169,10 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
      *
      * @param object     the practice object
      * @param properties the properties
-     * @param factory    the component factory
+     * @param context    the component factory
      */
-    private void addEstimateExpiry(IMObject object, PropertySet properties, IMObjectComponentFactory factory) {
-        addPeriod(object, "estimateExpiryPeriod", ESTIMATE_EXPIRY_UNITS, properties, factory);
+    private void addEstimateExpiry(IMObject object, PropertySet properties, LayoutContext context) {
+        addPeriod(object, "estimateExpiryPeriod", ESTIMATE_EXPIRY_UNITS, properties, context);
     }
 
     /**
@@ -180,10 +180,10 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
      *
      * @param object     the practice object
      * @param properties the properties
-     * @param factory    the component factory
+     * @param context    the the layout context
      */
-    private void addPrescriptionExpiry(IMObject object, PropertySet properties, IMObjectComponentFactory factory) {
-        addPeriod(object, "prescriptionExpiryPeriod", PRESCRIPTION_EXPIRY_UNITS, properties, factory);
+    private void addPrescriptionExpiry(IMObject object, PropertySet properties, LayoutContext context) {
+        addPeriod(object, "prescriptionExpiryPeriod", PRESCRIPTION_EXPIRY_UNITS, properties, context);
     }
 
     /**
@@ -191,10 +191,10 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
      *
      * @param object     the practice object
      * @param properties the properties
-     * @param factory    the component factory
+     * @param context    the layout context
      */
-    private void addRecordLockPeriod(IMObject object, PropertySet properties, IMObjectComponentFactory factory) {
-        addPeriod(object, "recordLockPeriod", RECORD_LOCK_PERIOD_UNITS, properties, factory);
+    private void addRecordLockPeriod(IMObject object, PropertySet properties, LayoutContext context) {
+        addPeriod(object, "recordLockPeriod", RECORD_LOCK_PERIOD_UNITS, properties, context);
     }
 
     /**
@@ -202,12 +202,11 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
      *
      * @param object     the practice object
      * @param properties the properties
-     * @param factory    the component factory
+     * @param context    the layout context
      */
-    private void addPharmacyOrderDiscontinuePeriod(IMObject object, PropertySet properties,
-                                                   IMObjectComponentFactory factory) {
+    private void addPharmacyOrderDiscontinuePeriod(IMObject object, PropertySet properties, LayoutContext context) {
         addPeriod(object, "pharmacyOrderDiscontinuePeriod", PHARMACY_ORDER_DISCONTINUE_PERIOD_UNITS, properties,
-                  factory);
+                  context);
     }
 
     /**
@@ -217,20 +216,11 @@ public class PracticeLayoutStrategy extends AbstractLayoutStrategy {
      * @param periodName the period node name
      * @param unitsName  the units node name
      * @param properties the properties
-     * @param factory    the component factory
+     * @param context    the layout context
      */
     private void addPeriod(IMObject object, String periodName, String unitsName, PropertySet properties,
-                           IMObjectComponentFactory factory) {
-        Property period = properties.get(periodName);
-        Property units = properties.get(unitsName);
-
-        ComponentState periodComponent = factory.create(period, object);
-        ComponentState unitsComponent = factory.create(units, object);
-        Row row = RowFactory.create(Styles.CELL_SPACING, periodComponent.getComponent(), unitsComponent.getComponent());
-        FocusGroup group = new FocusGroup(periodName);
-        group.add(periodComponent.getComponent());
-        group.add(unitsComponent.getComponent());
-        addComponent(new ComponentState(row, period, group));
+                           LayoutContext context) {
+        addComponent(createComponentPair(periodName, unitsName, object, properties, context));
     }
 
     /**

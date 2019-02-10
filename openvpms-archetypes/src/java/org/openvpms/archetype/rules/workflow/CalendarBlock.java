@@ -11,17 +11,17 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
 
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.Date;
 import java.util.List;
@@ -58,7 +58,7 @@ public class CalendarBlock {
      */
     public CalendarBlock(Act act, Entity blockType, boolean reserved, IArchetypeService service) {
         this.act = act;
-        this.blockType = new IMObjectBean(blockType, service);
+        this.blockType = service.getBean(blockType);
         this.reserved = reserved;
     }
 
@@ -67,7 +67,7 @@ public class CalendarBlock {
      *
      * @return the act reference
      */
-    public IMObjectReference getReference() {
+    public Reference getReference() {
         return act.getObjectReference();
     }
 

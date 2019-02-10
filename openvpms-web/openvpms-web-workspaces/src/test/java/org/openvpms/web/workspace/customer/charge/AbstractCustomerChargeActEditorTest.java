@@ -835,7 +835,7 @@ public abstract class AbstractCustomerChargeActEditorTest extends AbstractAppTes
     /**
      * Sets the pharmacy order discontinue period.
      *
-     * @param period the period
+     * @param period the period, in minutes
      */
     protected void setPharmacyOrderDiscontinuePeriod(int period) {
         IMObjectBean bean = getBean(practice);

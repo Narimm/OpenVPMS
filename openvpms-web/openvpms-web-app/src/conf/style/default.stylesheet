@@ -703,7 +703,6 @@
         </properties>
     </style>
 
-    <!--  Calendar -->
     <style name="Calendar" type="nextapp.echo2.app.SplitPane">
         <properties>
             <property name="resizable" value="false"/>
@@ -740,6 +739,13 @@
                     </properties>e
                 </layout-data>
             </property>
+        </properties>
+    </style>
+
+    <style name="Roster" type="nextapp.echo2.app.SplitPane">
+        <properties>
+            <property name="resizable" value="false"/>
+            <property name="separatorPosition" value="${Roster.separatorPosition}"/>
         </properties>
     </style>
 

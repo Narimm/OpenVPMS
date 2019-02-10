@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.booking.api;
@@ -44,6 +44,7 @@ public interface BookingService {
      * Creates a new appointment from a booking request.
      *
      * @param booking the booking
+     * @param uriInfo the URI info
      * @return the appointment reference
      */
     @POST

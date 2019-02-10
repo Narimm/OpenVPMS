@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace;
@@ -49,7 +49,6 @@ import org.openvpms.web.component.im.query.BrowserDialog;
 import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.prefs.UserPreferences;
 import org.openvpms.web.component.util.ErrorHelper;
-import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.component.workspace.Refreshable;
 import org.openvpms.web.component.workspace.Workspace;
 import org.openvpms.web.component.workspace.Workspaces;
@@ -67,6 +66,7 @@ import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.pane.ContentPane;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.util.ApplicationInstanceRunnable;
+import org.openvpms.web.echo.util.StyleSheetHelper;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.history.CustomerPatient;

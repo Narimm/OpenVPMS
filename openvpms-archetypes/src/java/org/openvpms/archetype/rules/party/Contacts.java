@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -20,14 +20,15 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.Predicate;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.object.IMObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -68,7 +69,7 @@ public class Contacts {
      * @param party the party
      * @return the email contacts
      */
-    public List<Contact> getEmailContacts(Party party) {
+    public List<Contact> getEmailContacts(org.openvpms.component.model.party.Party party) {
         return getContacts(party, new EmailPredicate());
     }
 
@@ -78,7 +79,7 @@ public class Contacts {
      * @param party the party
      * @return the SMS contacts
      */
-    public List<Contact> getSMSContacts(Party party) {
+    public List<Contact> getSMSContacts(org.openvpms.component.model.party.Party party) {
         return getContacts(party, new SMSPredicate());
     }
 
@@ -89,7 +90,7 @@ public class Contacts {
      * @return {@code true} if the party can receive SMS messages
      */
     @SuppressWarnings("unchecked")
-    public boolean canSMS(Party party) {
+    public boolean canSMS(org.openvpms.component.model.party.Party party) {
         return CollectionUtils.find((Set<Contact>) (Set) party.getContacts(), new SMSPredicate()) != null;
     }
 
@@ -126,7 +127,7 @@ public class Contacts {
      */
     public static <T extends org.openvpms.component.model.party.Contact> List<T> sort(List<T> contacts) {
         if (contacts.size() > 1) {
-            Collections.sort(contacts, (o1, o2) -> Long.compare(o1.getId(), o2.getId()));
+            Collections.sort(contacts, Comparator.comparingLong(IMObject::getId));
         }
         return contacts;
     }
@@ -183,7 +184,8 @@ public class Contacts {
      * @return contacts matching the predicate
      */
     @SuppressWarnings("unchecked")
-    public static List<Contact> getContacts(Party party, Predicate<Contact> predicate) {
+    public static List<Contact> getContacts(org.openvpms.component.model.party.Party party,
+                                            Predicate<Contact> predicate) {
         List<Contact> result = new ArrayList<>();
         CollectionUtils.select((Set<Contact>) (Set) party.getContacts(), predicate, result);
         return result;

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -29,13 +29,13 @@ import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.layout.GridLayoutData;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.web.component.edit.AlertListener;
-import org.openvpms.web.component.util.StyleSheetHelper;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.event.WindowPaneListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.echo.util.StyleSheetHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -107,7 +107,7 @@ public class AlertManager {
      * Clear any alerts.
      */
     public void clear() {
-        for (WindowPane alert : alerts.toArray(new WindowPane[alerts.size()])) {
+        for (WindowPane alert : alerts.toArray(new WindowPane[0])) {
             alert.userClose();
         }
     }
@@ -200,7 +200,7 @@ public class AlertManager {
      * @param id the alert identifier
      */
     protected void cancelAlert(long id) {
-        for (WindowPane alert : alerts.toArray(new WindowPane[alerts.size()])) {
+        for (WindowPane alert : alerts.toArray(new WindowPane[0])) {
             if (System.identityHashCode(alert) == id) {
                 alert.userClose();
             }
@@ -208,7 +208,7 @@ public class AlertManager {
     }
 
     private static class InformationMessage extends WindowPane {
-        public InformationMessage(String message) {
+        InformationMessage(String message) {
             setStyleName("InformationMessage");
             setClosable(false);
             setPositionX(new Extent(OFFSET));

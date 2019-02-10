@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment.repeat;
@@ -36,6 +36,7 @@ import org.openvpms.web.component.im.act.ActHelper;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -436,9 +437,30 @@ public class ScheduleEventSeries {
         return overlap;
     }
 
+    /**
+     * Detects any overlap to the supplied event.
+     *
+     * @param series the series times, ordered on increasing start time
+     * @param event  the event  the event
+     * @return the overlap, or {@code null} if none is found
+     */
     private Overlap getOverlap(List<Times> series, Times event) {
         Overlap overlap = null;
-        int index = Collections.binarySearch(series, event);
+        // comparator that treats overlapping time ranges as equal
+        Comparator<Times> comparator = (o1, o2) -> {
+            Date startTime1 = o1.getStartTime();
+            Date endTime1 = o1.getEndTime();
+            Date startTime2 = o2.getStartTime();
+            Date endTime2 = o2.getEndTime();
+            if (DateRules.compareTo(startTime1, startTime2) < 0 && DateRules.compareTo(endTime1, startTime2) <= 0) {
+                return -1;
+            }
+            if (DateRules.compareTo(startTime2, endTime2) >= 0 && DateRules.compareTo(endTime1, endTime2) > 0) {
+                return 1;
+            }
+            return Long.compare(o1.getId(), o2.getId());
+        };
+        int index = Collections.binarySearch(series, event, comparator);
         if (index >= 0) {
             overlap = new Overlap(series.get(index), event);
         }

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.layout;
@@ -188,7 +188,7 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link ArchetypeNodes#excludeStringLongerThan} method.
+     * Tests the {@link ArchetypeNodes#excludeStringLongerThan(long)} method.
      */
     @Test
     public void testExcludeStringLongerThan() {
@@ -201,7 +201,7 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the behaviour of {@link ArchetypeNodes#order}.
+     * Tests the behaviour of {@link ArchetypeNodes#order(String, String)}.
      */
     @Test
     public void testOrder() {
@@ -247,10 +247,10 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
         assertNotNull(user);
         checkNodeNames(ArchetypeNodes.allSimple().excludePassword(false), user, "id", "username", "password", "name",
                        "description", "active", "title", "firstName", "lastName", "qualifications", "userLevel",
-                       "editPreferences", "colour");
+                       "editPreferences", "colour", "onlineBooking");
         checkNodeNames(ArchetypeNodes.allSimple().excludePassword(true), user, "id", "username", "name",
                        "description", "active", "title", "firstName", "lastName", "qualifications", "userLevel",
-                       "editPreferences", "colour");
+                       "editPreferences", "colour", "onlineBooking");
     }
 
     /**

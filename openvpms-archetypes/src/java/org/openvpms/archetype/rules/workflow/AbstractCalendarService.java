@@ -11,20 +11,19 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
 
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.cache.EhcacheManager;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.act.Act;
 import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.JoinConstraint;
@@ -158,7 +157,7 @@ public class AbstractCalendarService extends AbstractScheduleService {
      * @param schedule the schedule
      * @return the first event, or {@code null} if none exists
      */
-    public Times getOverlappingEvent(List<Times> events, IMObjectReference schedule) {
+    public Times getOverlappingEvent(List<Times> events, Reference schedule) {
         Times result;
         if (events.isEmpty()) {
             result = null;
@@ -178,14 +177,14 @@ public class AbstractCalendarService extends AbstractScheduleService {
      * @param limit    the maximum no. of events to return
      * @return the overlapping events, or {@code null} if no events overlap
      */
-    public OverlappingEvents getOverlappingEvents(List<Times> events, Entity schedule, int limit) {
+    public List<Times> getOverlappingEvents(List<Times> events, Entity schedule, int limit) {
         List<Times> result = new ArrayList<>();
         ObjectSetQueryIterator iterator = createOverlappingEventIterator(events, schedule.getObjectReference(), limit);
         while (iterator.hasNext()) {
             ObjectSet set = iterator.next();
             result.add(createTimes(set));
         }
-        return !result.isEmpty() ? new OverlappingEvents(schedule, result, getService()) : null;
+        return !result.isEmpty() ? result : null;
     }
 
     /**
@@ -198,6 +197,20 @@ public class AbstractCalendarService extends AbstractScheduleService {
      */
     protected ObjectSetQueryIterator createOverlappingEventIterator(List<Times> events, Reference schedule,
                                                                     int maxResults) {
+        return createOverlappingEventIterator(events, "schedule", schedule, maxResults);
+    }
+
+    /**
+     * Creates an iterator that returns events that overlap those supplied.
+     *
+     * @param events            the events
+     * @param participationNode the participation node name
+     * @param entity            the entity to restrict events to
+     * @param maxResults        the maximum no. of results to return
+     * @return the iterator
+     */
+    protected ObjectSetQueryIterator createOverlappingEventIterator(List<Times> events, String participationNode,
+                                                                    Reference entity, int maxResults) {
         List<Long> ids = getIds(events);
         String[] archetypes = getEventArchetypes();
         ArchetypeQuery query = new ArchetypeQuery(archetypes, false, false);
@@ -205,8 +218,8 @@ public class AbstractCalendarService extends AbstractScheduleService {
         query.add(new ObjectRefSelectConstraint("act"));
         query.add(new NodeSelectConstraint("startTime"));
         query.add(new NodeSelectConstraint("endTime"));
-        JoinConstraint participation = join("schedule");
-        participation.add(eq("entity", schedule));
+        JoinConstraint participation = join(participationNode);
+        participation.add(eq("entity", entity));
 
         // to encourage mysql to use the correct index
         OrConstraint participationActs = new OrConstraint();
@@ -232,6 +245,16 @@ public class AbstractCalendarService extends AbstractScheduleService {
         query.setMaxResults(maxResults);
         IArchetypeService service = getService();
         return new ObjectSetQueryIterator(service, query);
+    }
+
+    /**
+     * Creates a {@link Times} from an object set.
+     *
+     * @param set the set
+     * @return the new times
+     */
+    protected Times createTimes(ObjectSet set) {
+        return new Times(set.getReference("act.reference"), set.getDate("act.startTime"), set.getDate("act.endTime"));
     }
 
     /**
@@ -280,7 +303,7 @@ public class AbstractCalendarService extends AbstractScheduleService {
         Times result = null;
         boolean isNew = times.getId() == -1;
         for (PropertySet event : events) {
-            IMObjectReference ref = event.getReference(ScheduleEvent.ACT_REFERENCE);
+            Reference ref = event.getReference(ScheduleEvent.ACT_REFERENCE);
             if (isNew || ref.getId() != times.getId()) {
                 Date startTime2 = event.getDate(ScheduleEvent.ACT_START_TIME);
                 Date endTime2 = event.getDate(ScheduleEvent.ACT_END_TIME);
@@ -291,16 +314,6 @@ public class AbstractCalendarService extends AbstractScheduleService {
             }
         }
         return result;
-    }
-
-    /**
-     * Creates a {@link Times} from an object set.
-     *
-     * @param set the set
-     * @return the new times
-     */
-    private Times createTimes(ObjectSet set) {
-        return new Times(set.getReference("act.reference"), set.getDate("act.startTime"), set.getDate("act.endTime"));
     }
 
 }

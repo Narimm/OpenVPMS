@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -299,6 +299,19 @@
     <!-- ================================================================== -->
     <!--                        MISC                                        -->
     <!-- ================================================================== -->
+
+    <!--bean id="styleSheetCache" class="org.openvpms.web.echo.style.StyleSheetCache">
+        <constructor-arg index="0" value="style/default"/>
+    </bean-->
+
+    <!--bean id="userStyleSheets" class="org.openvpms.web.echo.style.UserStyleSheets">
+        <constructor-arg index="0" ref="styleSheetCache"/>
+    </bean-->
+
+    <bean id="userStyleSheets" class="org.mockito.Mockito" factory-method="mock">
+        <constructor-arg value="org.openvpms.web.echo.style.UserStyleSheets"/>
+    </bean>
+
     <bean id="keyStrokeMask"
           class="org.openvpms.web.echo.keyboard.KeyStrokeMask">
         <!--  The mask. May contain combinations of Ctrl, Alt, or Shift,

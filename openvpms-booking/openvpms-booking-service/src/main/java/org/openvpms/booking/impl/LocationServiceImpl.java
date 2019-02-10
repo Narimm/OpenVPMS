@@ -11,23 +11,23 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.booking.impl;
 
-import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.booking.api.LocationService;
 import org.openvpms.booking.domain.Location;
 import org.openvpms.booking.domain.Schedule;
-import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.booking.domain.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.IMObject;
+import org.openvpms.component.model.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -37,7 +37,6 @@ import javax.ws.rs.NotFoundException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TimeZone;
 
 /**
  * Practice location query service.
@@ -53,27 +52,34 @@ public class LocationServiceImpl implements LocationService {
     private final IArchetypeService service;
 
     /**
-     * The practice service.
+     * The booking locations.
      */
-    private final PracticeService practiceService;
+    private final BookingLocations locations;
+
+    /**
+     * The booking users.
+     */
+    private final BookingUsers users;
 
     /**
      * The appointment rules.
      */
-    private final AppointmentRules rules;
-
+    private final AppointmentRules appointmentRules;
 
     /**
      * Constructs a {@link PracticeService}.
      *
-     * @param service         the archetype service
-     * @param practiceService the practice service
-     * @param rules           the appointment rules
+     * @param service          the archetype service
+     * @param locations        the booking locations
+     * @param users            the booking users
+     * @param appointmentRules the appointment rules
      */
-    public LocationServiceImpl(IArchetypeService service, PracticeService practiceService, AppointmentRules rules) {
+    public LocationServiceImpl(IArchetypeService service, BookingLocations locations,
+                               BookingUsers users, AppointmentRules appointmentRules) {
         this.service = service;
-        this.practiceService = practiceService;
-        this.rules = rules;
+        this.locations = locations;
+        this.users = users;
+        this.appointmentRules = appointmentRules;
     }
 
     /**
@@ -84,12 +90,9 @@ public class LocationServiceImpl implements LocationService {
     @Override
     public List<Location> getLocations() {
         List<Location> result = new ArrayList<>();
-        String timeZone = getTimeZone().getID();
-        for (Party location : practiceService.getLocations()) {
-            IMObjectBean bean = new IMObjectBean(location, service);
-            if (bean.getBoolean("onlineBooking")) {
-                result.add(new Location(location.getId(), location.getName(), timeZone));
-            }
+        String timeZone = locations.getTimeZone().getID();
+        for (Party location : locations.getLocations()) {
+            result.add(new Location(location.getId(), location.getName(), timeZone));
         }
         return result;
     }
@@ -102,15 +105,9 @@ public class LocationServiceImpl implements LocationService {
      */
     @Override
     public Location getLocation(long locationId) {
-        for (Party location : practiceService.getLocations()) {
-            if (location.getId() == locationId) {
-                IMObjectBean bean = new IMObjectBean(location, service);
-                if (bean.getBoolean("onlineBooking")) {
-                    return new Location(location.getId(), location.getName(), getTimeZone().getID());
-                }
-            }
-        }
-        throw new NotFoundException("Practice location not found");
+        Party location = getLocationEntity(locationId);
+        String timeZone = locations.getTimeZone().getID();
+        return new Location(location.getId(), location.getName(), timeZone);
     }
 
     /**
@@ -122,15 +119,15 @@ public class LocationServiceImpl implements LocationService {
     @Override
     public List<Schedule> getSchedules(long locationId) {
         List<Schedule> result = new ArrayList<>();
+        Party location = getLocationEntity(locationId);
         ArchetypeQuery query = new ArchetypeQuery(ScheduleArchetypes.ORGANISATION_SCHEDULE);
-        IMObjectReference location = new IMObjectReference(PracticeArchetypes.LOCATION, locationId);
         query.add(Constraints.join("location").add(Constraints.eq("target", location)));
-        Iterator<IMObject> iterator = new IMObjectQueryIterator<>(service, query);
+        Iterator<Entity> iterator = new IMObjectQueryIterator<>(service, query);
         while (iterator.hasNext()) {
             IMObject schedule = iterator.next();
-            IMObjectBean bean = new IMObjectBean(schedule, service);
+            IMObjectBean bean = service.getBean(schedule);
             if (bean.getBoolean("onlineBooking")) {
-                int slotSize = rules.getSlotSize((Party) schedule);
+                int slotSize = appointmentRules.getSlotSize((Party) schedule);
                 result.add(new Schedule(schedule.getId(), schedule.getName(), slotSize));
             }
         }
@@ -138,12 +135,34 @@ public class LocationServiceImpl implements LocationService {
     }
 
     /**
-     * Returns the practice time zone.
+     * Returns the users associated with a location.
      *
-     * @return the time zone
+     * @param locationId the location id
+     * @return the users
      */
-    protected TimeZone getTimeZone() {
-        return TimeZone.getDefault();
+    @Override
+    public List<User> getUsers(long locationId) {
+        List<User> result = new ArrayList<>();
+        Party location = getLocationEntity(locationId);
+        for (IMObject object : users.getUsers(location)) {
+            result.add(new User(object.getId(), object.getName()));
+        }
+        return result;
+    }
+
+    /**
+     * Returns a location given its id.
+     *
+     * @param locationId the location identifier
+     * @return the corresponding location
+     * @throws NotFoundException if the location is not found or is not available for online booking
+     */
+    private Party getLocationEntity(long locationId) {
+        Party location = locations.getLocation(locationId);
+        if (location == null) {
+            throw new NotFoundException("Practice location not found");
+        }
+        return location;
     }
 
 }

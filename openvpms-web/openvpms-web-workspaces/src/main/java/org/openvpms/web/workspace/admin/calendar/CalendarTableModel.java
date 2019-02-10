@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.calendar;
@@ -34,13 +34,11 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.ScheduleEvent;
 import org.openvpms.component.system.common.util.PropertySet;
-import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.echo.table.AbstractCellTableModel;
 import org.openvpms.web.echo.table.Cell;
+import org.openvpms.web.echo.table.TableColumnFactory;
 import org.openvpms.web.echo.table.TableHelper;
-import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 
 import java.time.OffsetDateTime;
@@ -256,49 +254,17 @@ public class CalendarTableModel extends AbstractCellTableModel {
      * @return a new column
      */
     private TableColumn createTimeColumn(int modelIndex) {
-        TableColumn column = new TableColumn(modelIndex);
-        column.setCellRenderer(new TimeColumnCellRenderer());
-        column.setHeaderRenderer(new HeaderCellRenderer());
-        return column;
+        return TableColumnFactory.create(modelIndex, CalendarHeaderCellRenderer.INSTANCE, new TimeColumnCellRenderer());
     }
 
+    /**
+     * Creates a new column to display the date.
+     *
+     * @param modelIndex the column model index
+     * @return a new column
+     */
     private TableColumn createDateColumn(int modelIndex, Date date) {
-        TableColumn column = new TableColumn(modelIndex);
-        column.setHeaderValue(date);
-        column.setHeaderRenderer(new HeaderCellRenderer());
-        return column;
-    }
-
-    private class HeaderCellRenderer implements TableCellRendererEx {
-        @Override
-        public XhtmlFragment getTableCellRendererContent(Table table, Object o, int i, int i1) {
-            return null;
-        }
-
-        @Override
-        public boolean isSelectionCausingCell(Table table, int i, int i1) {
-            return false;
-        }
-
-        @Override
-        public boolean isActionCausingCell(Table table, int i, int i1) {
-            return false;
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(Table table, Object value, int column, int row) {
-            Component result;
-            if (value instanceof Date) {
-                Label day = LabelFactory.create(null, Styles.H3);
-                Label name = LabelFactory.create();
-                day.setText(Messages.format("calendar.day.date", value));
-                name.setText(Messages.format("calendar.day.name", value));
-                result = ColumnFactory.create("Calendar.Date", day, name);
-            } else {
-                result = ColumnFactory.create("Calendar.Date");
-            }
-            return result;
-        }
+        return TableColumnFactory.create(modelIndex, date, CalendarHeaderCellRenderer.INSTANCE, null);
     }
 
     private class TimeColumnCellRenderer implements TableCellRendererEx {

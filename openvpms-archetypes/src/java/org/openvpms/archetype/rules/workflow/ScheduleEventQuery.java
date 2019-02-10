@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -45,7 +45,25 @@ import java.util.Map;
  *
  * @author Tim Anderson
  */
-abstract class ScheduleEventQuery {
+public abstract class ScheduleEventQuery {
+
+    /**
+     * Names of the fields being queried.
+     */
+    protected static final Collection<String> NAMES = Arrays.asList("act.archetypeId",
+                                                                    "act.id", "act.linkId",
+                                                                    "act.version",
+                                                                    "act.startTime", "act.endTime",
+                                                                    "act.details_Keys",
+                                                                    "act.details_Values",
+                                                                    "act.status", "act.reason",
+                                                                    "act.name",
+                                                                    "act.description",
+                                                                    "participation.shortName",
+                                                                    "participation.version",
+                                                                    "entity.archetypeId",
+                                                                    "entity.id", "entity.linkId",
+                                                                    "entity.name");
 
     /**
      * The archetype service.
@@ -105,7 +123,7 @@ abstract class ScheduleEventQuery {
      * @throws ArchetypeServiceException if the query fails
      */
     public IPage<ObjectSet> query() {
-        IArchetypeQuery query = createQuery(from, to);
+        IArchetypeQuery query = createQuery(schedule, from, to);
         IPage<ObjectSet> page = service.getObjects(query);
         List<ObjectSet> result = new ArrayList<>();
         Reference currentAct = null;
@@ -125,22 +143,11 @@ abstract class ScheduleEventQuery {
             Reference entityRef = getEntity(set);
             String participation = set.getString("participation.shortName");
             String entityName = set.getString("entity.name");
-            if (CustomerArchetypes.CUSTOMER_PARTICIPATION.equals(participation)) {
-                current.set(ScheduleEvent.CUSTOMER_REFERENCE, entityRef);
-                current.set(ScheduleEvent.CUSTOMER_NAME, entityName);
-                current.set(ScheduleEvent.CUSTOMER_PARTICIPATION_VERSION, set.getLong("participation.version"));
-            } else if (PatientArchetypes.PATIENT_PARTICIPATION.equals(participation)) {
-                current.set(ScheduleEvent.PATIENT_REFERENCE, entityRef);
-                current.set(ScheduleEvent.PATIENT_NAME, entityName);
-                current.set(ScheduleEvent.PATIENT_PARTICIPATION_VERSION, set.getLong("participation.version"));
-            } else if (scheduleType != null && entityRef.isA(scheduleType)) {
-                current.set(ScheduleEvent.SCHEDULE_TYPE_REFERENCE, entityRef);
-                current.set(ScheduleEvent.SCHEDULE_TYPE_NAME, entityName);
-                current.set(ScheduleEvent.SCHEDULE_PARTICIPATION_VERSION, set.getLong("participation.version"));
-            } else if (UserArchetypes.CLINICIAN_PARTICIPATION.equals(participation)) {
-                current.set(ScheduleEvent.CLINICIAN_REFERENCE, entityRef);
-                current.set(ScheduleEvent.CLINICIAN_NAME, entityName);
-                current.set(ScheduleEvent.CLINICIAN_PARTICIPATION_VERSION, set.getLong("participation.version"));
+            long version = set.getLong("participation.version");
+            if (!populateParticipation(current, participation, entityRef, entityName, version)) {
+                if (scheduleType != null && entityRef.isA(scheduleType)) {
+                    populate(current, "scheduleType", entityRef, entityName, version);
+                }
             }
             String key = set.getString("act.details_Keys");
             TypedValue value = (TypedValue) set.get("act.details_Values");
@@ -173,27 +180,13 @@ abstract class ScheduleEventQuery {
     /**
      * Creates a new query.
      *
-     * @param from the from date
-     * @param to   the to date
+     * @param schedule the schedule
+     * @param from     the from date
+     * @param to       the to date
      * @return the query
      */
-    protected IArchetypeQuery createQuery(Date from, Date to) {
-        Collection<String> names = Arrays.asList("act.archetypeId",
-                                                 "act.id", "act.linkId",
-                                                 "act.version",
-                                                 "act.startTime", "act.endTime",
-                                                 "act.details_Keys",
-                                                 "act.details_Values",
-                                                 "act.status", "act.reason",
-                                                 "act.name",
-                                                 "act.description",
-                                                 "participation.shortName",
-                                                 "participation.version",
-                                                 "entity.archetypeId",
-                                                 "entity.id", "entity.linkId",
-                                                 "entity.name");
-        NamedQuery query = new NamedQuery(getQueryName(), names);
-
+    protected IArchetypeQuery createQuery(Entity schedule, Date from, Date to) {
+        NamedQuery query = new NamedQuery(getQueryName(), NAMES);
         query.setParameter("scheduleId", schedule.getId());
         query.setParameter("from", from);
         query.setParameter("to", to);
@@ -226,14 +219,57 @@ abstract class ScheduleEventQuery {
         result.set(ScheduleEvent.CUSTOMER_NAME, null);
         result.set(ScheduleEvent.PATIENT_REFERENCE, null);
         result.set(ScheduleEvent.PATIENT_NAME, null);
-        result.set(ScheduleEvent.SCHEDULE_REFERENCE, schedule.getObjectReference());
-        result.set(ScheduleEvent.SCHEDULE_NAME, schedule.getName());
+        result.set(ScheduleEvent.SCHEDULE_REFERENCE, null);
+        result.set(ScheduleEvent.SCHEDULE_NAME, null);
         result.set(ScheduleEvent.SCHEDULE_TYPE_REFERENCE, null);
         result.set(ScheduleEvent.SCHEDULE_TYPE_NAME, null);
         result.set(ScheduleEvent.CLINICIAN_REFERENCE, null);
         result.set(ScheduleEvent.CLINICIAN_NAME, null);
         result.set(ScheduleEvent.ARRIVAL_TIME, null);
         return result;
+    }
+
+    /**
+     * Populates a set with participation relationship details.
+     *
+     * @param set        the set to populate
+     * @param archetype  the participation archetype
+     * @param entityRef  the entity reference
+     * @param entityName the entity name
+     * @param version    the participation version
+     * @return {@code true} if the set was populated
+     */
+    protected boolean populateParticipation(ObjectSet set, String archetype, Reference entityRef, String entityName,
+                                            long version) {
+        boolean populated = true;
+        if (ScheduleArchetypes.SCHEDULE_PARTICIPATION.equals(archetype)) {
+            populate(set, "schedule", entityRef, entityName, version);
+        } else if (CustomerArchetypes.CUSTOMER_PARTICIPATION.equals(archetype)) {
+            populate(set, "customer", entityRef, entityName, version);
+        } else if (PatientArchetypes.PATIENT_PARTICIPATION.equals(archetype)) {
+            populate(set, "patient", entityRef, entityName, version);
+        } else if (UserArchetypes.CLINICIAN_PARTICIPATION.equals(archetype)) {
+            populate(set, "clinician", entityRef, entityName, version);
+        } else {
+            populated = false;
+        }
+        return populated;
+    }
+
+    /**
+     * Populates a set with participation details.
+     *
+     * @param set        the set to populate
+     * @param prefix     the participation prefix
+     * @param entityRef  the entity reference
+     * @param entityName the entity name
+     * @param version    the participation version
+     */
+    protected void populate(ObjectSet set, String prefix, Reference entityRef, String entityName,
+                            long version) {
+        set.set(prefix + ".objectReference", entityRef);
+        set.set(prefix + ".name", entityName);
+        set.set(prefix + "Participation.version", version);
     }
 
     /**

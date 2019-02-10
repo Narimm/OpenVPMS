@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -688,6 +688,18 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     public <T extends org.openvpms.component.model.object.IMObject, R extends Relationship> T getTarget(
             String name, Class<T> type, Policy<R> policy) {
         return type.cast(getRelatedObject(name, policy, false));
+    }
+
+    /**
+     * Determines if there is an active {@link Relationship} with {@code object} as its target, for the specified node.
+     *
+     * @param name   the relationship node name
+     * @param object the target object
+     * @return {@code true} if there is an active relationship to {@code object}
+     */
+    @Override
+    public boolean hasTarget(String name, org.openvpms.component.model.object.IMObject object) {
+        return getValue(name, Relationship.class, targetEquals(object)) != null;
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.workspace;
@@ -53,7 +53,20 @@ public class BrowserCRUDWindowTab<T extends IMObject> extends BrowserCRUDWindow<
      * @param refreshOnShow determines if the browser should be refreshed when the tab is displayed.
      */
     public BrowserCRUDWindowTab(Browser<T> browser, AbstractCRUDWindow<T> window, boolean refreshOnShow) {
-        super(browser, window);
+        this(browser, window, refreshOnShow, true);
+    }
+
+    /**
+     * Constructs a {@link BrowserCRUDWindowTab}.
+     *
+     * @param browser       the browser
+     * @param window        the window
+     * @param refreshOnShow determines if the browser should be refreshed when the tab is displayed.
+     * @param trackClick    if {@code true}, double selection of an object triggers {@link #onDoubleClick()}
+     */
+    public BrowserCRUDWindowTab(Browser<T> browser, AbstractCRUDWindow<T> window, boolean refreshOnShow,
+                                boolean trackClick) {
+        super(browser, window, trackClick);
         this.refreshOnShow = refreshOnShow;
     }
 
@@ -71,15 +84,6 @@ public class BrowserCRUDWindowTab<T extends IMObject> extends BrowserCRUDWindow<
             }
             browser.setFocusOnResults();
         }
-    }
-
-    /**
-     * Invoked when a query is performed.
-     */
-    @Override
-    protected void onQuery() {
-        T selected = getBrowser().getSelected();
-        setSelected(selected);
     }
 
     /**
@@ -101,5 +105,14 @@ public class BrowserCRUDWindowTab<T extends IMObject> extends BrowserCRUDWindow<
     @Override
     public HelpContext getHelpContext() {
         return getWindow().getHelpContext();
+    }
+
+    /**
+     * Invoked when a query is performed.
+     */
+    @Override
+    protected void onQuery() {
+        T selected = getBrowser().getSelected();
+        setSelected(selected);
     }
 }

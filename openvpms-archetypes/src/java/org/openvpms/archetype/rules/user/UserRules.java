@@ -24,7 +24,6 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceExcepti
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.model.object.Reference;
@@ -130,7 +129,7 @@ public class UserRules {
      * @return {@code true} if the user is a clinician,
      * otherwise {@code false}
      */
-    public boolean isClinician(User user) {
+    public boolean isClinician(org.openvpms.component.model.user.User user) {
         return isA(user, UserArchetypes.CLINICIAN_USER_TYPE);
     }
 
@@ -141,10 +140,10 @@ public class UserRules {
      * @param user the user to check
      * @return {@code true} if the user is an administrator
      */
-    public boolean isAdministrator(User user) {
+    public boolean isAdministrator(org.openvpms.component.model.user.User user) {
         boolean result = isA(user, UserArchetypes.ADMINISTRATOR_USER_TYPE);
         if (!result) {
-            result = TypeHelper.isA(user, UserArchetypes.USER) && "admin".equals(user.getUsername());
+            result = user.isA(UserArchetypes.USER) && "admin".equals(user.getUsername());
         }
         return result;
     }
@@ -156,8 +155,8 @@ public class UserRules {
      * @param userType the user type code
      * @return {@code true} if the user has the user type
      */
-    public boolean isA(User user, String userType) {
-        if (TypeHelper.isA(user, UserArchetypes.USER)) {
+    public boolean isA(org.openvpms.component.model.user.User user, String userType) {
+        if (user.isA(UserArchetypes.USER)) {
             for (Lookup lookup : user.getClassifications()) {
                 if (lookup.isA("lookup.userType") && userType.equals(lookup.getCode())) {
                     return true;
@@ -274,7 +273,7 @@ public class UserRules {
      */
     @SuppressWarnings("unchecked")
     public List<User> getClinicians(Party location) {
-        IArchetypeQuery query = ClinicianQueryFactory.create(location);
+        IArchetypeQuery query = UserQueryFactory.createClinicianQuery(location, "id");
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
         List results = service.get(query).getResults();
         return (List<User>) results;

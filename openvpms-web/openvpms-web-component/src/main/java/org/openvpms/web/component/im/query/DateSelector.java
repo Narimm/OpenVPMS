@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -104,19 +104,15 @@ public class DateSelector {
     }
 
     /**
-     * Set the displayed date
+     * Set the displayed date.
+     * <p/>
+     * This may modify the date, as per {@link DateNavigator#getDate(Date)}.
      *
      * @param date the date to set
      */
     public void setDate(Date date) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        CalendarSelectionModel model = this.date.getModel();
-        model.removeListener(calendarListener);
-        DateChooser dateChooser = this.date.getDateChooser();
-        dateChooser.setSelectedDate(calendar);
-        dateChooser.setDisplayedDate(calendar);
-        model.addListener(calendarListener);
+        date = navigator.getDate(date);
+        setDateInternal(date);
     }
 
     /**
@@ -145,6 +141,7 @@ public class DateSelector {
      */
     public void setNavigator(DateNavigator navigator) {
         this.navigator = navigator;
+        setDate(getDate());
     }
 
     /**
@@ -166,6 +163,40 @@ public class DateSelector {
      */
     public FocusGroup getFocusGroup() {
         return focus;
+    }
+
+    /**
+     * Invoked when the date is updated.
+     */
+    private void onDateChanged() {
+        Date date = getDate();
+        Date modified = navigator.getDate(date);
+        if (!modified.equals(date)) {
+            // force the date to be that determined by the navigator
+            setDateInternal(modified);
+        }
+        if (!date.equals(lastDate)) {
+            lastDate = date;
+            if (listener != null) {
+                listener.actionPerformed(new ActionEvent(this, "date"));
+            }
+        }
+    }
+
+    /**
+     * Sets the date.
+     *
+     * @param date the new date
+     */
+    private void setDateInternal(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        CalendarSelectionModel model = this.date.getModel();
+        model.removeListener(calendarListener);
+        DateChooser dateChooser = this.date.getDateChooser();
+        dateChooser.setSelectedDate(calendar);
+        dateChooser.setDisplayedDate(calendar);
+        model.addListener(calendarListener);
     }
 
     /**
@@ -208,25 +239,12 @@ public class DateSelector {
     }
 
     /**
-     * Invoked when the date is updated.
-     */
-    protected void onDateChanged() {
-        Date date = getDate();
-        if (!date.equals(lastDate)) {
-            lastDate = date;
-            if (listener != null) {
-                listener.actionPerformed(new ActionEvent(this, "date"));
-            }
-        }
-    }
-
-    /**
      * Updates the date, notifying listeners.
      *
      * @param date the date
      */
     private void update(Date date) {
-        setDate(date);
+        setDateInternal(date);
         onDateChanged();
     }
 

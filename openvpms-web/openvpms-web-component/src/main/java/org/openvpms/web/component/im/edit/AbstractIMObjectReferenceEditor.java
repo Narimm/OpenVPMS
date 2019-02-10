@@ -18,10 +18,10 @@ package org.openvpms.web.component.im.edit;
 
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -255,12 +255,21 @@ public abstract class AbstractIMObjectReferenceEditor<T extends IMObject>
     protected boolean isValidReference(IMObjectReference reference, Validator validator) {
         boolean result = isValidReference(reference);
         if (!result) {
-            ArchetypeId archetypeId = reference.getArchetypeId();
-            String displayName = DescriptorHelper.getDisplayName(archetypeId.getShortName());
-            String message = Messages.format("imobject.invalidreference", displayName);
-            validator.add(this, new ValidatorError(getProperty(), message));
+            validator.add(this, createValidatorError(reference));
         }
         return result;
+    }
+
+    /**
+     * Creates a validator error for an invalid reference.
+     *
+     * @param reference the reference. Never null
+     * @return a new error
+     */
+    protected ValidatorError createValidatorError(Reference reference) {
+        String displayName = DescriptorHelper.getDisplayName(reference.getArchetype());
+        String message = Messages.format("imobject.invalidreference", displayName);
+        return new ValidatorError(getProperty(), message);
     }
 
     /**

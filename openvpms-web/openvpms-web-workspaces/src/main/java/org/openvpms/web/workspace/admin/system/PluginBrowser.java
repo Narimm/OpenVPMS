@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.system;
@@ -196,9 +196,6 @@ public class PluginBrowser extends AbstractTabComponent {
      */
     @Override
     public Component getComponent() {
-        // Cannot cache the SplitPane for some reason. Get a:
-        // "Cannot process ServerMessage (Phase 2) Error: Element c_246 already exists in document; cannot add"
-        // message.
         return SplitPaneFactory.create(SplitPane.ORIENTATION_VERTICAL_BOTTOM_TOP, "SplitPaneWithButtonRow",
                                        getButtons(), component);
     }

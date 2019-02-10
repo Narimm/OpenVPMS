@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.appointment;
@@ -20,12 +20,11 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.workflow.AppointmentService;
 import org.openvpms.archetype.rules.workflow.CalendarBlock;
 import org.openvpms.archetype.rules.workflow.CalendarBlocks;
-import org.openvpms.archetype.rules.workflow.OverlappingEvents;
 import org.openvpms.archetype.rules.workflow.Times;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.util.IMObjectSorter;
 import org.openvpms.web.component.util.ErrorHelper;
@@ -48,6 +47,11 @@ import java.util.List;
 public class AppointmentEditDialog extends AbstractCalendarEventEditDialog {
 
     /**
+     * The appointment service.
+     */
+    private final AppointmentService appointmentService;
+
+    /**
      * The customer.
      */
     private Party customer;
@@ -65,6 +69,7 @@ public class AppointmentEditDialog extends AbstractCalendarEventEditDialog {
      */
     public AppointmentEditDialog(AbstractCalendarEventEditor editor, Context context) {
         super(editor, context);
+        appointmentService = ServiceHelper.getBean(AppointmentService.class);
     }
 
     /**
@@ -109,8 +114,7 @@ public class AppointmentEditDialog extends AbstractCalendarEventEditDialog {
         Entity schedule = (Entity) editor.getSchedule();
         Party customer = editor.getCustomer();
         if (schedule != null && customer != null) {
-            AppointmentService service = ServiceHelper.getBean(AppointmentService.class);
-            OverlappingEvents overlaps = service.getOverlappingEvents(times, schedule, MAX_OVERLAPS + 1);
+            OverlappingEvents overlaps = getOverlappingEvents(times, schedule);
             if (overlaps != null) {
                 if (!overlaps.allowDoubleBooking() && overlaps.getFirstAppointment() != null) {
                     // double booking in a schedule where double booking is not permitted
@@ -130,7 +134,7 @@ public class AppointmentEditDialog extends AbstractCalendarEventEditDialog {
                         // have a double booked appointment or unreserved calendar block overlap
                         List<Times> appointments = overlaps.getAppointments();
                         List<CalendarBlock> unreservedBlocks
-                                = (blocks != null) ? blocks.getUnreserved() : Collections.<CalendarBlock>emptyList();
+                                = (blocks != null) ? blocks.getUnreserved() : Collections.emptyList();
                         if (overlaps.getEvents().size() > MAX_OVERLAPS) {
                             // there were too many overlaps, and it bailed out early
                             String title = Messages.get("workflow.scheduling.toomanyoverlaps.title");
@@ -163,6 +167,19 @@ public class AppointmentEditDialog extends AbstractCalendarEventEditDialog {
     }
 
     /**
+     * Returns events that overlap those supplied.
+     *
+     * @param events   the events to check
+     * @param schedule the schedule
+     * @return the overlapping events, or {@code null} if none overlap
+     */
+    private OverlappingEvents getOverlappingEvents(List<Times> events, Entity schedule) {
+        List<Times> overlaps = appointmentService.getOverlappingEvents(events, schedule, MAX_OVERLAPS + 1);
+        return (overlaps != null) ? new OverlappingEvents(schedule, overlaps, ServiceHelper.getArchetypeService())
+                                  : null;
+    }
+
+    /**
      * Displays an error when an appointment overlaps a reserved calendar block.
      *
      * @param block the calendar block
@@ -174,7 +191,7 @@ public class AppointmentEditDialog extends AbstractCalendarEventEditDialog {
         List<Lookup> types = new ArrayList<>();
         types.addAll(block.getCustomerAccountTypes());
         types.addAll(block.getCustomerTypes());
-        Collections.sort(types, IMObjectSorter.getNameComparator(true));
+        types.sort(IMObjectSorter.getNameComparator(true));
         for (Lookup type : types) {
             if (buffer.length() != 0) {
                 buffer.append(", ");

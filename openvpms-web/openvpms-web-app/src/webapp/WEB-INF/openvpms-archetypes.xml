@@ -49,6 +49,15 @@
     </bean>
 
     <!-- ================================================================== -->
+    <!--                    ROSTER SERVICE                                -->
+    <!-- ================================================================== -->
+
+    <bean id="rosterService" class="org.openvpms.archetype.rules.workflow.roster.RosterService">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="cacheFactory"/>
+    </bean>
+
+    <!-- ================================================================== -->
     <!-- Business rules                                                     -->
     <!-- ================================================================== -->
 

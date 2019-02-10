@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.archetype.helper;
@@ -175,14 +175,14 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         IMObjectBean bean = createBean("party.customerperson");
         try {
             bean.getValue("badNode");
-            assertTrue(false);
+            fail();
         } catch (IMObjectBeanException expected) {
             assertEquals(NodeDescriptorNotFound, expected.getErrorCode());
         }
 
         try {
             bean.setValue("badNode", "value");
-            assertTrue(false);
+            fail();
         } catch (IMObjectBeanException expected) {
             assertEquals(NodeDescriptorNotFound, expected.getErrorCode());
         }
@@ -367,7 +367,6 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
 
     /**
      * Tests the {@link IMObjectBean#getValues(String, Class)} method.
-     *
      */
     @Test
     public void testGetValuesTypeSafeCast() {
@@ -688,6 +687,38 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         assertEquals(patient, bean.getTarget("owns", Party.class));
         assertNull(bean.getTarget("owns", Party.class, Policies.active()));
         assertEquals(patient, bean.getTarget("owns", Party.class, Policies.any()));
+    }
+
+    /**
+     * Tests the {@link IMObjectBean#hasTarget(String, org.openvpms.component.model.object.IMObject)} method.
+     *
+     * @throws Exception for any error
+     */
+    @Test
+    public void testHasTarget() throws Exception {
+        Party customer = createCustomer();
+        Party patient1 = createPatient();
+        Party patient2 = createPatient();
+
+        IMObjectBean bean = new IMObjectBean(customer);
+        assertFalse(bean.hasTarget("owns", patient1));
+        assertFalse(bean.hasTarget("owns", patient2));
+
+        // now add a relationship
+        Relationship relationship1 = bean.addTarget("owns", patient1);
+        assertTrue(bean.hasTarget("owns", patient1));
+        assertFalse(bean.hasTarget("owns", patient2));
+
+        // add another relationship
+        bean.addTarget("owns", patient2);
+        assertTrue(bean.hasTarget("owns", patient1));
+        assertTrue(bean.hasTarget("owns", patient2));
+
+        // verify both active and inactive relationships are examined
+        relationship1.setActive(false);
+        Thread.sleep(500);
+        assertTrue(bean.hasTarget("owns", patient1));
+        assertTrue(bean.hasTarget("owns", patient2));
     }
 
     /**

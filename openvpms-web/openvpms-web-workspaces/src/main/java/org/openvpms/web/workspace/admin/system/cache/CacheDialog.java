@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.system.cache;
@@ -61,7 +61,9 @@ public class CacheDialog extends ModalDialog {
      * @param help the help context
      */
     public CacheDialog(HelpContext help) {
-        super(Messages.get("admin.system.cache.title"), "MessageDialog", new String[0], help);
+        super(Messages.get("admin.system.cache.title"), new String[0], help);
+        resize("CacheDialog.size");
+
         browser = new CacheBrowser();
         manager = ServiceHelper.getBean(EhcacheManager.class);
         addButton(EDIT_ID, new ActionListener() {

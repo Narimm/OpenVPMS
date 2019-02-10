@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.organisation;
@@ -34,9 +34,7 @@ import org.openvpms.web.component.edit.PropertyComponentEditor;
 import org.openvpms.web.component.im.doc.LogoEditor;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
-import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
-import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.EntityLinkCollectionTargetPropertyEditor;
@@ -139,67 +137,6 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
         return result;
     }
 
-    private static class PrinterEditor extends AbstractIMObjectEditor {
-
-        /**
-         * The printer selector.
-         */
-        private final PropertyComponentEditor printer;
-
-        /**
-         * Constructs a {@link PrinterEditor}.
-         *
-         * @param object        the object to edit
-         * @param parent        the parent object. May be {@code null}
-         * @param printerNames  the available printer names
-         * @param layoutContext the layout context
-         */
-        public PrinterEditor(IMObject object, IMObject parent, Set<String> printerNames, LayoutContext layoutContext) {
-            super(object, parent, layoutContext);
-            Property property = getProperty("name");
-            SelectField field = BoundSelectFieldFactory.create(property, createModel(printerNames));
-            printer = new PropertyComponentEditor(property, field);
-        }
-
-        /**
-         * Sets the available printer names.
-         *
-         * @param printerNames the available printer names
-         */
-        public void setAvailablePrinterNames(Set<String> printerNames) {
-            ((SelectField) printer.getComponent()).setModel(createModel(printerNames));
-        }
-
-        /**
-         * Creates a model of available printer names.
-         *
-         * @param names the available printer names
-         * @return a new model
-         */
-        protected ListModel createModel(Set<String> names) {
-            String name = getProperty("name").getString();
-            if (name != null) {
-                names = new HashSet<>(names);
-                names.add(name);
-            }
-            List<String> list = new ArrayList<>(names);
-            Collections.sort(list);
-            return new DefaultListModel(list.toArray(new String[list.size()]));
-        }
-
-        /**
-         * Creates the layout strategy.
-         *
-         * @return a new layout strategy
-         */
-        @Override
-        protected IMObjectLayoutStrategy createLayoutStrategy() {
-            IMObjectLayoutStrategy strategy = super.createLayoutStrategy();
-            strategy.addComponent(new ComponentState(printer));
-            return strategy;
-        }
-    }
-
     private class PrinterCollectionEditor extends MultipleRelationshipCollectionTargetEditor {
 
         /**
@@ -209,7 +146,7 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
          * @param entity   the parent entity
          * @param context  the layout context
          */
-        public PrinterCollectionEditor(CollectionProperty property, Entity entity, LayoutContext context) {
+        PrinterCollectionEditor(CollectionProperty property, Entity entity, LayoutContext context) {
             super(new EntityLinkCollectionTargetPropertyEditor(property, entity), entity, context);
         }
 
@@ -272,7 +209,7 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
          *
          * @return the available printer names
          */
-        protected Set<String> getAvailablePrinterNames() {
+        Set<String> getAvailablePrinterNames() {
             Set<String> allocatedNames = new HashSet<>();
             for (IMObject object : getCurrentObjects()) {
                 if (object.getName() != null) {
@@ -326,14 +263,8 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
         }
     }
 
-    private class LocationLayoutStrategy extends AbstractLayoutStrategy {
+    private class LocationLayoutStrategy extends OrganisationLocationLayoutStrategy {
 
-        /**
-         * Constructs an {@link LocationLayoutStrategy}.
-         */
-        public LocationLayoutStrategy() {
-            super(NODES);
-        }
 
         /**
          * Apply the layout strategy.
@@ -357,42 +288,78 @@ public class OrganisationLocationEditor extends AbstractIMObjectEditor {
         }
 
         /**
-         * Lays out components in a grid.
+         * Returns a component representing the practice location logo.
          *
-         * @param object     the object to lay out
-         * @param properties the properties
-         * @param context    the layout context
+         * @param object  the practice location
+         * @param context the layout context
+         * @return a new component
          */
         @Override
-        protected ComponentGrid createGrid(IMObject object, List<Property> properties, LayoutContext context) {
-            ComponentGrid grid = super.createGrid(object, properties, context);
-            ComponentState logo = new ComponentState(logoEditor.getComponent(), null, logoEditor.getFocusGroup(),
-                                                     Messages.get("admin.practice.logo"));
-            grid.add(logo, 2);
-            return grid;
+        protected ComponentState getLogo(IMObject object, LayoutContext context) {
+            return new ComponentState(logoEditor.getComponent(), null, logoEditor.getFocusGroup(),
+                                      Messages.get("admin.practice.logo"));
+        }
+    }
+
+    private static class PrinterEditor extends AbstractIMObjectEditor {
+
+        /**
+         * The printer selector.
+         */
+        private final PropertyComponentEditor printer;
+
+        /**
+         * Constructs a {@link PrinterEditor}.
+         *
+         * @param object        the object to edit
+         * @param parent        the parent object. May be {@code null}
+         * @param printerNames  the available printer names
+         * @param layoutContext the layout context
+         */
+        PrinterEditor(IMObject object, IMObject parent, Set<String> printerNames, LayoutContext layoutContext) {
+            super(object, parent, layoutContext);
+            Property property = getProperty("name");
+            SelectField field = BoundSelectFieldFactory.create(property, createModel(printerNames));
+            printer = new PropertyComponentEditor(property, field);
         }
 
         /**
-         * Creates a component for a property.
+         * Sets the available printer names.
          *
-         * @param property the property
-         * @param parent   the parent object
-         * @param context  the layout context
-         * @return a component to display {@code property}
+         * @param printerNames the available printer names
          */
-        @Override
-        protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
-            ComponentState result;
-            if (property.getName().equals("defaultPrinter")) {
-                DefaultListModel model = new DefaultListModel(PrintHelper.getPrinters());
-                SelectField field = BoundSelectFieldFactory.create(property, model);
-                result = new ComponentState(field, property);
-            } else {
-                result = super.createComponent(property, parent, context);
-            }
-            return result;
+        void setAvailablePrinterNames(Set<String> printerNames) {
+            ((SelectField) printer.getComponent()).setModel(createModel(printerNames));
         }
 
+        /**
+         * Creates a model of available printer names.
+         *
+         * @param names the available printer names
+         * @return a new model
+         */
+        ListModel createModel(Set<String> names) {
+            String name = getProperty("name").getString();
+            if (name != null) {
+                names = new HashSet<>(names);
+                names.add(name);
+            }
+            List<String> list = new ArrayList<>(names);
+            Collections.sort(list);
+            return new DefaultListModel(list.toArray(new String[0]));
+        }
+
+        /**
+         * Creates the layout strategy.
+         *
+         * @return a new layout strategy
+         */
+        @Override
+        protected IMObjectLayoutStrategy createLayoutStrategy() {
+            IMObjectLayoutStrategy strategy = super.createLayoutStrategy();
+            strategy.addComponent(new ComponentState(printer));
+            return strategy;
+        }
     }
 
 }

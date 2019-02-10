@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -27,6 +27,20 @@
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="stockControl" path="/details/stockControl" type="java.lang.Boolean"
               minCardinality="0" maxCardinality="1" defaultValue="false()"/>
+        <node name="rostering" path="/details/rostering" type="java.lang.Boolean"
+              minCardinality="0" maxCardinality="1" defaultValue="false()"/>
+        <node name="rosterCheckPeriod" path="/details/rosterCheckPeriod" type="java.lang.Integer"
+              minCardinality="0" defaultValue="4"/>
+        <node name="rosterCheckPeriodUnits" path="/details/rosterCheckPeriodUnits"
+              type="java.lang.String" minCardinality="0" defaultValue="'WEEKS'">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="DAYS" value="days"/>
+                    <property name="WEEKS" value="weeks"/>
+                    <property name="MONTHS" value="months"/>
+                </propertyList>
+            </assertion>
+        </node>
         <node name="defaultPrinter" displayName="Default Printer" path="/details/defaultPrinter" type="java.lang.String"
               minCardinality="0"/>
         <node name="contacts" path="/contacts"

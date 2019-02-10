@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
 
 import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectRefSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
@@ -52,8 +53,23 @@ public class EntityObjectSetResultSet
      */
     public EntityObjectSetResultSet(ShortNameConstraint archetypes, String value, boolean searchIdentities,
                                     SortConstraint[] sort, int rows, boolean distinct) {
-        super(archetypes, value, searchIdentities, null, sort,
-              rows, distinct, new ObjectSetQueryExecutor());
+        this(archetypes, value, searchIdentities, null, sort, rows, distinct);
+    }
+
+    /**
+     * Constructs an {@link EntityObjectSetResultSet}.
+     *
+     * @param archetypes       the archetypes to query
+     * @param value            the value to query on. May be {@code null}
+     * @param searchIdentities if {@code true} search on identity name
+     * @param constraints      additional query constraints. May be {@code null}
+     * @param sort             the sort criteria. May be {@code null}
+     * @param rows             the maximum no. of rows per page
+     * @param distinct         if {@code true} filter duplicate rows
+     */
+    public EntityObjectSetResultSet(ShortNameConstraint archetypes, String value, boolean searchIdentities,
+                                    IConstraint constraints, SortConstraint[] sort, int rows, boolean distinct) {
+        super(archetypes, value, searchIdentities, constraints, sort, rows, distinct, new ObjectSetQueryExecutor());
         archetypes.setAlias("entity");
     }
 

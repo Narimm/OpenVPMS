@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.workflow;
@@ -23,6 +23,26 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeServiceListener;
 import org.openvpms.component.business.service.cache.EhcacheManager;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.user.User;
+import org.openvpms.component.system.common.query.ArchetypeQuery;
+import org.openvpms.component.system.common.query.JoinConstraint;
+import org.openvpms.component.system.common.query.NodeSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectRefSelectConstraint;
+import org.openvpms.component.system.common.query.ObjectSetQueryIterator;
+import org.openvpms.component.system.common.query.ParticipationConstraint;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import static org.openvpms.component.system.common.query.Constraints.and;
+import static org.openvpms.component.system.common.query.Constraints.eq;
+import static org.openvpms.component.system.common.query.Constraints.gt;
+import static org.openvpms.component.system.common.query.Constraints.join;
+import static org.openvpms.component.system.common.query.Constraints.lt;
+import static org.openvpms.component.system.common.query.Constraints.ne;
+import static org.openvpms.component.system.common.query.ParticipationConstraint.Field.ActShortName;
 
 
 /**
@@ -67,6 +87,51 @@ public class AppointmentService extends AbstractCalendarService {
             }
         };
         service.addListener(ScheduleArchetypes.VISIT_REASON, listener);
+    }
+
+    /**
+     * Returns the non-cancelled appointments for a clinician in the specified date range.
+     *
+     * @param clinician the clinician
+     * @param from      the start time, inclusive
+     * @param to        the end time, inclusive
+     * @return the appointment times
+     */
+    public List<Times> getAppointmentsForClinician(User clinician, Date from, Date to) {
+        return getAppointmentsForClinician(clinician, from, to, null);
+    }
+
+    /**
+     * Returns the non-cancelled appointments for a clinician in the specified date range.
+     *
+     * @param clinician the clinician
+     * @param from      the start time, inclusive
+     * @param to        the end time, inclusive
+     * @param excluding an appointment to exclude from the results. May be {@code null}
+     * @return the appointment times
+     */
+    public List<Times> getAppointmentsForClinician(User clinician, Date from, Date to, Act excluding) {
+        List<Times> result = new ArrayList<>();
+        ArchetypeQuery query = new ArchetypeQuery(ScheduleArchetypes.APPOINTMENT, false, false);
+        query.getArchetypeConstraint().setAlias("act");
+        query.add(new ObjectRefSelectConstraint("act"));
+        query.add(new NodeSelectConstraint("startTime"));
+        query.add(new NodeSelectConstraint("endTime"));
+        JoinConstraint participation = join("clinician");
+        participation.add(eq("entity", clinician));
+        participation.add(new ParticipationConstraint(ActShortName, ScheduleArchetypes.APPOINTMENT));
+        query.add(participation);
+        query.add(and(lt("startTime", to), gt("endTime", from)));
+        query.add(ne("status", AppointmentStatus.CANCELLED));
+        if (excluding != null) {
+            query.add(ne("id", excluding.getId()));
+        }
+        IArchetypeService service = getService();
+        ObjectSetQueryIterator iterator = new ObjectSetQueryIterator(service, query);
+        while (iterator.hasNext()) {
+            result.add(createTimes(iterator.next()));
+        }
+        return result;
     }
 
     /**

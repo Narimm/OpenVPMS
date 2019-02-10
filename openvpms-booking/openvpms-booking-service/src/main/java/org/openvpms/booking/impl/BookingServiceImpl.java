@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.booking.impl;
@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.Contacts;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
@@ -32,17 +33,16 @@ import org.openvpms.archetype.rules.workflow.Times;
 import org.openvpms.archetype.rules.workflow.WorkflowStatus;
 import org.openvpms.booking.api.BookingService;
 import org.openvpms.booking.domain.Booking;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.IMObject;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.model.party.Contact;
+import org.openvpms.component.model.party.Party;
+import org.openvpms.component.model.user.User;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -124,6 +124,7 @@ public class BookingServiceImpl implements BookingService {
      * Creates a new appointment from a booking request.
      *
      * @param booking the booking
+     * @param uriInfo the URI info
      * @return the appointment reference
      */
     @Override
@@ -175,23 +176,35 @@ public class BookingServiceImpl implements BookingService {
         if (patient == null && !StringUtils.isEmpty(booking.getPatientName())) {
             append(notes, "Patient", booking.getPatientName());
         }
+        User user = getUser(booking);
+
+        Act act = (Act) service.create(ScheduleArchetypes.APPOINTMENT);
+        IMObjectBean bean = service.getBean(act);
+        bean.setValue("startTime", start);
+        bean.setValue("endTime", end);
+        bean.setTarget("schedule", schedule);
+        if (customer != null) {
+            bean.setTarget("customer", customer);
+        }
+        bean.setTarget("appointmentType", appointmentType);
+        if (patient != null) {
+            bean.setTarget("patient", patient);
+        }
+        if (user != null) {
+            if (userRules.isClinician(user)) {
+                bean.setTarget("clinician", user);
+            } else {
+                // appointment with a user who isn't a clinician (e.g. a puppy class booking).
+                // This isn't directly supported so make a note.
+                append(notes, "User", user.getName());
+            }
+        }
+        bean.setValue("onlineBooking", true);
+
         if (!StringUtils.isEmpty(booking.getNotes())) {
             append(notes, "Notes", booking.getNotes());
         }
 
-        Act act = (Act) service.create(ScheduleArchetypes.APPOINTMENT);
-        ActBean bean = new ActBean(act, service);
-        bean.setValue("startTime", start);
-        bean.setValue("endTime", end);
-        bean.setNodeParticipant("schedule", schedule);
-        if (customer != null) {
-            bean.setNodeParticipant("customer", customer);
-        }
-        bean.setNodeParticipant("appointmentType", appointmentType);
-        if (patient != null) {
-            bean.setNodeParticipant("patient", patient);
-        }
-        bean.setValue("onlineBooking", true);
         String bookingNotes = StringUtils.abbreviate(notes.toString(), 5000);
         if (!bookingNotes.isEmpty()) {
             bean.setValue("bookingNotes", bookingNotes);
@@ -210,7 +223,7 @@ public class BookingServiceImpl implements BookingService {
         if (authentication != null) {
             User author = userRules.getUser(authentication);
             if (author != null) {
-                bean.setNodeParticipant("author", author);
+                bean.setTarget("author", author);
             }
         }
 
@@ -237,7 +250,7 @@ public class BookingServiceImpl implements BookingService {
             throw new BadRequestException("The booking must be pending to cancel");
         }
         act.setStatus(ActStatus.CANCELLED);
-        service.save(act);
+        service.save((org.openvpms.component.business.domain.im.common.IMObject) act);
         return Response.status(Response.Status.NO_CONTENT).build();
     }
 
@@ -255,15 +268,16 @@ public class BookingServiceImpl implements BookingService {
             throw new BadRequestException("Invalid booking reference");
         }
         Act act = getAppointment(reference);
-        ActBean bean = new ActBean(act, service);
-        Entity schedule = bean.getNodeParticipant("schedule");
-        Party customer = (Party) bean.getNodeParticipant("customer");
-        IMObjectReference appointmentType = bean.getNodeParticipantRef("appointmentType");
+        IMObjectBean bean = service.getBean(act);
+        Entity schedule = bean.getTarget("schedule", Entity.class);
+        Party customer = bean.getTarget("customer", Party.class);
+        Reference appointmentType = bean.getTargetRef("appointmentType");
+        Reference clinician = bean.getTargetRef("clincian");
         Booking booking = new Booking();
         if (schedule != null) {
-            IMObjectBean scheduleBean = new IMObjectBean(schedule, service);
+            IMObjectBean scheduleBean = service.getBean(schedule);
             booking.setSchedule(schedule.getId());
-            IMObjectReference location = scheduleBean.getNodeTargetObjectRef("location");
+            Reference location = scheduleBean.getTargetRef("location");
             if (location != null) {
                 booking.setLocation(location.getId());
             }
@@ -271,7 +285,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setStart(act.getActivityStartTime());
         booking.setEnd(act.getActivityEndTime());
         if (customer != null) {
-            IMObjectBean customerBean = new IMObjectBean(customer, service);
+            IMObjectBean customerBean = service.getBean(customer);
             booking.setTitle(customerBean.getString("title"));
             booking.setFirstName(customerBean.getString("firstName"));
             booking.setLastName(customerBean.getString("lastName"));
@@ -284,11 +298,36 @@ public class BookingServiceImpl implements BookingService {
         if (appointmentType != null) {
             booking.setAppointmentType(appointmentType.getId());
         }
-        Party patient = (Party) bean.getNodeParticipant("patient");
+        Party patient = bean.getTarget("patient", Party.class);
         if (patient != null) {
             booking.setPatientName(patient.getName());
         }
+        if (clinician != null) {
+            booking.setUser(clinician.getId());
+        }
         return booking;
+    }
+
+    /**
+     * Saves the appointment after ensuring there is no double booking.
+     *
+     * @param act      the appointment
+     * @param schedule the schedule
+     */
+    protected void save(Act act, Entity schedule) {
+        TransactionTemplate template = new TransactionTemplate(transactionManager);
+        template.execute(new TransactionCallbackWithoutResult() {
+            @Override
+            protected void doInTransactionWithoutResult(TransactionStatus status) {
+                Times existing = appointmentRules.getOverlap(act.getActivityStartTime(), act.getActivityEndTime(),
+                                                             schedule);
+                if (existing != null) {
+                    throw new BadRequestException("An appointment is already scheduled for "
+                                                  + existing.getStartTime() + "-" + existing.getEndTime());
+                }
+                service.save((org.openvpms.component.business.domain.im.common.IMObject) act);
+            }
+        });
     }
 
     /**
@@ -298,7 +337,7 @@ public class BookingServiceImpl implements BookingService {
      * @return the appointment
      * @throws BadRequestException if the appointment cannot be found
      */
-    protected Act getAppointment(String reference) {
+    private Act getAppointment(String reference) {
         String[] parts = reference.split(":");
         if (parts.length != 2) {
             throw new BadRequestException("Invalid booking reference");
@@ -323,10 +362,10 @@ public class BookingServiceImpl implements BookingService {
      * @return the schedule
      * @throws BadRequestException if the schedule is invalid
      */
-    protected Entity getSchedule(Booking booking) {
+    private Entity getSchedule(Booking booking) {
         Entity schedule = getRequired("Schedule", booking.getSchedule(), ScheduleArchetypes.ORGANISATION_SCHEDULE);
-        IMObjectBean bean = new IMObjectBean(schedule, service);
-        IMObjectReference locationRef = bean.getNodeTargetObjectRef("location");
+        IMObjectBean bean = service.getBean(schedule);
+        Reference locationRef = bean.getTargetRef("location");
         if (locationRef == null || locationRef.getId() != booking.getLocation()) {
             throw new BadRequestException("Schedule is not available at location " + booking.getLocation());
         }
@@ -340,7 +379,7 @@ public class BookingServiceImpl implements BookingService {
      * @return the customer, or {@code null} if the customer can't be found
      * @throws BadRequestException if the customer cannot be found
      */
-    protected Party getCustomer(Booking booking) {
+    private Party getCustomer(Booking booking) {
         String firstName = getRequired("firstName", booking.getFirstName());
         String lastName = getRequired("lastName", booking.getLastName());
         String name = lastName + "," + firstName;
@@ -370,7 +409,7 @@ public class BookingServiceImpl implements BookingService {
      * @param booking  the booking request
      * @return the patient, or {@code null} if no patient was specified or the patient could not be found
      */
-    protected Party getPatient(Party customer, Booking booking) {
+    private Party getPatient(Party customer, Booking booking) {
         Party match = null;
         String name = booking.getPatientName();
         if (!StringUtils.isBlank(name)) {
@@ -401,15 +440,15 @@ public class BookingServiceImpl implements BookingService {
         String bookingPhone = Contacts.getPhone(booking.getPhone());
         String bookingMobile = Contacts.getPhone(booking.getMobile());
         for (Contact contact : customer.getContacts()) {
-            if (TypeHelper.isA(contact, ContactArchetypes.PHONE)) {
+            if (contact.isA(ContactArchetypes.PHONE)) {
                 String phone = contacts.getPhone(contact);
                 if (!StringUtils.isBlank(phone) && (phone.equals(bookingPhone) || phone.equals(bookingMobile))) {
                     match = true;
                     break;
                 }
-            } else if (TypeHelper.isA(contact, ContactArchetypes.EMAIL)) {
+            } else if (contact.isA(ContactArchetypes.EMAIL)) {
                 if (!StringUtils.isEmpty(booking.getEmail())) {
-                    IMObjectBean bean = new IMObjectBean(contact, service);
+                    IMObjectBean bean = service.getBean(contact);
                     String email = bean.getString("emailAddress");
                     if (!StringUtils.isBlank(email) && email.equals(booking.getEmail())) {
                         match = true;
@@ -428,30 +467,20 @@ public class BookingServiceImpl implements BookingService {
      * @return the customer
      * @throws BadRequestException if the customer cannot be found
      */
-    protected Entity getAppointmentType(Booking booking) {
+    private Entity getAppointmentType(Booking booking) {
         return getRequired("Appointment Type", booking.getAppointmentType(), ScheduleArchetypes.APPOINTMENT_TYPE);
     }
 
     /**
-     * Saves the appointment after ensuring there is no double booking.
+     * Returns the user.
      *
-     * @param act      the appointment
-     * @param schedule the schedule
+     * @param booking the booking request
+     * @return the user, or {@code null} if no user is specified
+     * @throws BadRequestException if the user cannot be found
      */
-    protected void save(final Act act, final Entity schedule) {
-        TransactionTemplate template = new TransactionTemplate(transactionManager);
-        template.execute(new TransactionCallbackWithoutResult() {
-            @Override
-            protected void doInTransactionWithoutResult(TransactionStatus status) {
-                Times existing = appointmentRules.getOverlap(act.getActivityStartTime(), act.getActivityEndTime(),
-                                                             schedule);
-                if (existing != null) {
-                    throw new BadRequestException("An appointment is already scheduled for "
-                                                  + existing.getStartTime() + "-" + existing.getEndTime());
-                }
-                service.save(act);
-            }
-        });
+    private User getUser(Booking booking) {
+        long userId = booking.getUser();
+        return (userId > 0) ? (User) getRequired("User", userId, UserArchetypes.USER) : null;
     }
 
     /**
