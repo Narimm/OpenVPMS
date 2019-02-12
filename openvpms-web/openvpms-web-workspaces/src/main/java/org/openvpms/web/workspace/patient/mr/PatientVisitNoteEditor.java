@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.mr;
@@ -26,7 +26,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.bound.BoundTextArea;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
-import org.openvpms.web.component.im.edit.act.ParticipationCollectionEditor;
+import org.openvpms.web.component.im.edit.act.SingleParticipationCollectionEditor;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.ComponentSet;
@@ -61,7 +61,7 @@ public class PatientVisitNoteEditor extends AbstractPatientClinicalActEditor {
     /**
      * The clinician editor.
      */
-    private ParticipationCollectionEditor clinicianEditor;
+    private SingleParticipationCollectionEditor clinicianEditor;
 
     /**
      * Constructs a new {@link PatientVisitNoteEditor}.
@@ -84,8 +84,8 @@ public class PatientVisitNoteEditor extends AbstractPatientClinicalActEditor {
         getEditors().add(noteEditor);
 
         // update the event clinician when the note clinician changes
-        clinicianEditor = new ParticipationCollectionEditor(noteEditor.getCollectionProperty("clinician"),
-                                                            noteEditor.getObject(), context);
+        clinicianEditor = new SingleParticipationCollectionEditor(noteEditor.getCollectionProperty("clinician"),
+                                      noteEditor.getObject(), context);
         clinicianEditor.addModifiableListener(modifiable -> setParticipant("clinician", noteEditor.getClinicianRef()));
 
         // update the event start time when the note start time changes

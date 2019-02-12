@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -21,6 +21,7 @@ import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
 import org.openvpms.archetype.rules.prefs.Preferences;
@@ -58,6 +59,8 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.PatientMedicalRecordLinker;
 import org.openvpms.web.workspace.patient.info.PatientContextHelper;
 import org.openvpms.web.workspace.patient.mr.PatientVisitNoteEditor;
+
+import java.util.Date;
 
 
 /**
@@ -303,6 +306,8 @@ public class PatientHistoryCRUDWindow extends AbstractPatientHistoryCRUDWindow {
      */
     protected void onAddNote() {
         Act event = (Act) IMObjectCreator.create(PatientArchetypes.CLINICAL_EVENT);
+        event.setStatus(ActStatus.COMPLETED);
+        event.setActivityEndTime(new Date());
         HelpContext help = getHelpContext().subtopic("visitnote");
         LayoutContext layoutContext = createLayoutContext(help);
         PatientVisitNoteEditor editor = new PatientVisitNoteEditor(event, layoutContext);
