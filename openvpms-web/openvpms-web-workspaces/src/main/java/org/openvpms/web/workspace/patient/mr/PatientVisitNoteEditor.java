@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.web.component.bound.BoundTextArea;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.edit.act.SingleParticipationCollectionEditor;
@@ -37,6 +38,7 @@ import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.act.ActLayoutStrategy;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
+import org.openvpms.web.component.property.Validator;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
@@ -85,7 +87,7 @@ public class PatientVisitNoteEditor extends AbstractPatientClinicalActEditor {
 
         // update the event clinician when the note clinician changes
         clinicianEditor = new SingleParticipationCollectionEditor(noteEditor.getCollectionProperty("clinician"),
-                                      noteEditor.getObject(), context);
+                                                                  noteEditor.getObject(), context);
         clinicianEditor.addModifiableListener(modifiable -> setParticipant("clinician", noteEditor.getClinicianRef()));
 
         // update the event start time when the note start time changes
@@ -104,6 +106,23 @@ public class PatientVisitNoteEditor extends AbstractPatientClinicalActEditor {
     }
 
     /**
+     * Validates the object.
+     * <p>
+     * This extends validation by ensuring that the start time is less than the end time, if non-null.
+     *
+     * @param validator the validator
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
+     */
+    @Override
+    protected boolean doValidation(Validator validator) {
+        if (getParticipantRef("clinician") == null) {
+            // TODO - required to remove any clinican participation when the clinician is unset.
+            setParticipant("clinician", (IMObjectReference) null);
+        }
+        return super.doValidation(validator);
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy
@@ -114,7 +133,7 @@ public class PatientVisitNoteEditor extends AbstractPatientClinicalActEditor {
     }
 
     private class LayoutStrategy extends ActLayoutStrategy {
-        public LayoutStrategy() {
+        LayoutStrategy() {
             super(false);
         }
 
