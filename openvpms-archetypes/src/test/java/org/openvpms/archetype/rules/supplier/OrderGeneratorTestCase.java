@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
@@ -138,6 +138,8 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
         // shouldn't impact totals
         createOrder(product1, supplier1, stockLocation, 1, OrderStatus.CANCELLED);
         createOrder(product2, supplier1, stockLocation, 1, OrderStatus.CANCELLED);
+        createOrder(product1, supplier1, stockLocation, 1, OrderStatus.REJECTED);
+        createOrder(product2, supplier1, stockLocation, 1, OrderStatus.REJECTED);
         createOrder(product3, supplier2, stockLocation, 1, OrderStatus.IN_PROGRESS);
         createOrder(product3, supplier2, stockLocation, 1, OrderStatus.COMPLETED);
         createOrder(product3, supplier2, stockLocation, 1, OrderStatus.POSTED);
@@ -394,6 +396,9 @@ public class OrderGeneratorTestCase extends AbstractSupplierTest {
 
         // create a part delivered order. 50 units left to deliver
         createOrder(product, supplier, stockLocation, 100, 1, OrderStatus.ACCEPTED, 50, 0, DeliveryStatus.PART);
+
+        // create a rejected order of 200 units
+        createOrder(product, supplier, stockLocation, 200, 1, OrderStatus.REJECTED, 0, 0, DeliveryStatus.PENDING);
 
         // 0 units on hand, want 100
         addRelationships(product, stockLocation, supplier, true, 0, 100, 100, new BigDecimal("2.0"), 1);

@@ -13,7 +13,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <!DOCTYPE hibernate-mapping PUBLIC
@@ -147,7 +147,7 @@
             join    acts orders
                         on orders.act_id = orderLink.source_id
                         and orders.arch_short_name = "act.supplierOrder"
-                        and orders.status <> "CANCELLED"
+                        and orders.status not in ("CANCELLED", "REJECTED")
             join    financial_acts forderItem on forderItem.financial_act_id = orderItem.act_id
             join    participations stockParticipation
                         on stockParticipation.act_id = orders.act_id
