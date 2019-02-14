@@ -11,20 +11,21 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.supplier;
 
 import org.openvpms.archetype.rules.stock.StockArchetypes;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 
 import java.math.BigDecimal;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.openvpms.archetype.test.TestHelper.create;
@@ -34,8 +35,7 @@ import static org.openvpms.archetype.test.TestHelper.save;
 /**
  * Supplier test case helper methods.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: $
+ * @author Tim Anderson
  */
 public class SupplierTestHelper {
 
@@ -63,41 +63,58 @@ public class SupplierTestHelper {
      * @param supplier      the supplier
      * @param stockLocation the stockLocation
      * @param product       the product
-     * @return a list containing the invoice act and its item
+     * @return a list containing the order act and its item
      */
-    public static List<FinancialAct> createOrder(BigDecimal amount,
-                                                 Party supplier,
-                                                 Party stockLocation,
+    public static List<FinancialAct> createOrder(BigDecimal amount, Party supplier, Party stockLocation,
                                                  Product product) {
-        FinancialAct act = (FinancialAct) create(SupplierArchetypes.ORDER);
-        act.setStatus(OrderStatus.POSTED);
-        FinancialAct item = createItem(SupplierArchetypes.ORDER_ITEM, product, BigDecimal.ONE,
-                                       1, PACKAGE_UNITS, amount, amount);
-        ActBean bean = new ActBean(act);
-        bean.addNodeParticipation("supplier", supplier);
-        bean.addNodeParticipation("stockLocation", stockLocation);
-        bean.addRelationship(SupplierArchetypes.ORDER_ITEM_RELATIONSHIP, item);
-        bean.setValue("amount", item.getTotal());
-        return Arrays.asList(act, item);
+        FinancialAct item = createOrderItem(product, BigDecimal.ONE, 1, PACKAGE_UNITS, amount, amount);
+        return createOrder(supplier, stockLocation, item);
     }
 
     /**
-     * Creates a new supplier act item.
+     * Helper to create a POSTED <em>act.supplierOrder</em> with corresponding <em>act.supplierOrderItem</em>s.
      *
-     * @param shortName    the act short name
+     * @param supplier      the supplier
+     * @param stockLocation the stockLocation
+     * @param items         the order items
+     * @return a list containing the order act and its item
+     */
+    public static List<FinancialAct> createOrder(Party supplier, Party stockLocation, FinancialAct... items) {
+        List<FinancialAct> result = new ArrayList<>();
+        FinancialAct act = (FinancialAct) create(SupplierArchetypes.ORDER);
+        act.setStatus(OrderStatus.POSTED);
+        result.add(act);
+
+        IMObjectBean bean = new IMObjectBean(act);
+        bean.setTarget("supplier", supplier);
+        bean.setTarget("stockLocation", stockLocation);
+        BigDecimal total = BigDecimal.ZERO;
+        for (FinancialAct item : items) {
+            ActRelationship relationship = (ActRelationship) bean.addTarget("items", item);
+            item.addActRelationship(relationship);
+            total = total.add(item.getTotal());
+            result.add(item);
+        }
+        bean.setValue("amount", total);
+        return result;
+    }
+
+    /**
+     * Helper to create an order item.
+     *
      * @param product      the product
      * @param quantity     the quantity
      * @param packageSize  the package size
      * @param packageUnits the package units
      * @param unitPrice    the unit price
      * @param listPrice    the list price
-     * @return a new act
+     * @return a new order item
      */
-    protected static FinancialAct createItem(String shortName, Product product, BigDecimal quantity, int packageSize,
-                                             String packageUnits, BigDecimal unitPrice, BigDecimal listPrice) {
-        FinancialAct item = (FinancialAct) create(shortName);
-        ActBean bean = new ActBean(item);
-        bean.addParticipation(StockArchetypes.STOCK_PARTICIPATION, product);
+    public static FinancialAct createOrderItem(Product product, BigDecimal quantity, int packageSize,
+                                               String packageUnits, BigDecimal unitPrice, BigDecimal listPrice) {
+        FinancialAct item = (FinancialAct) create(SupplierArchetypes.ORDER_ITEM);
+        IMObjectBean bean = new IMObjectBean(item);
+        bean.setTarget("product", product);
         item.setQuantity(quantity);
         bean.setValue("packageSize", packageSize);
         bean.setValue("packageUnits", packageUnits);

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier.order;
@@ -87,7 +87,7 @@ public class OrderEditor extends FinancialActEditor {
 
 
     /**
-     * Constructs an {@code OrderEditor}.
+     * Constructs an {@link OrderEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent object. May be {@code null}
@@ -103,6 +103,35 @@ public class OrderEditor extends FinancialActEditor {
         accepted = OrderStatus.ACCEPTED.equals(act.getStatus());
         rules = SupplierHelper.createOrderRules(context.getContext().getPractice());
         initialise();
+    }
+
+    /**
+     * Creates a new instance of the editor, with the latest instance of the object to edit.
+     *
+     * @return {@code null}
+     */
+    @Override
+    public IMObjectEditor newInstance() {
+        return new OrderEditor(reload(getObject()), getParent(), getLayoutContext());
+    }
+
+    /**
+     * Returns the delivery status.
+     *
+     * @return the delivery status
+     */
+    public String getDeliveryStatus() {
+        return getProperty("deliveryStatus").getString();
+    }
+
+    /**
+     * Returns the items collection editor.
+     *
+     * @return the items collection editor. May be {@code null}
+     */
+    @Override
+    protected ActRelationshipCollectionEditor getItems() {
+        return super.getItems();
     }
 
     /**
@@ -189,20 +218,33 @@ public class OrderEditor extends FinancialActEditor {
      */
     private void checkDeliveryStatus(List<Act> acts) {
         Property deliveryStatus = getProperty("deliveryStatus");
-        DeliveryStatus current = DeliveryStatus.valueOf((String) deliveryStatus.getValue());
-        DeliveryStatus newStatus = null;
+        int full = 0;
+        int part = 0;
+        int pending = 0;
         for (Act act : acts) {
             FinancialAct item = (FinancialAct) act;
             DeliveryStatus status = rules.getDeliveryStatus(item);
-            if (newStatus == null) {
-                newStatus = status;
-            } else if (status == DeliveryStatus.PART) {
-                newStatus = status;
-            } else if (status == DeliveryStatus.PENDING && newStatus != DeliveryStatus.PART) {
-                newStatus = status;
+            switch (status) {
+                case FULL:
+                    full++;
+                    break;
+                case PART:
+                    part++;
+                    break;
+                default:
+                    pending++;
             }
         }
-        if (newStatus != null && newStatus != current) {
+        DeliveryStatus current = DeliveryStatus.valueOf((String) deliveryStatus.getValue());
+        DeliveryStatus newStatus;
+        if (full != 0) {
+            newStatus = (part == 0 && pending == 0) ? DeliveryStatus.FULL : DeliveryStatus.PART;
+        } else if (part != 0) {
+            newStatus = DeliveryStatus.PART;
+        } else {
+            newStatus = DeliveryStatus.PENDING;
+        }
+        if (newStatus != current) {
             deliveryStatus.setValue(newStatus.toString());
             deliveryStatusField.setText(LookupNameHelper.getName(getObject(), deliveryStatus.getName()));
         }
@@ -211,11 +253,11 @@ public class OrderEditor extends FinancialActEditor {
     private class LayoutStrategy extends ActLayoutStrategy {
 
         /**
-         * Creates a new {@code NonPostedLayoutStrategy}.
+         * Constructs a {@link LayoutStrategy}.
          *
          * @param editor the act items editor
          */
-        public LayoutStrategy(EditableIMObjectCollectionEditor editor) {
+        LayoutStrategy(EditableIMObjectCollectionEditor editor) {
             super(editor);
             if (posted || accepted) {
                 editor.setCardinalityReadOnly(true);
@@ -223,9 +265,7 @@ public class OrderEditor extends FinancialActEditor {
         }
 
         @Override
-        protected ComponentState createComponent(Property property,
-                                                 IMObject parent,
-                                                 LayoutContext context) {
+        protected ComponentState createComponent(Property property, IMObject parent, LayoutContext context) {
             ComponentState state;
             if (property.getName().equals("deliveryStatus")) {
                 property = createReadOnly(property);
