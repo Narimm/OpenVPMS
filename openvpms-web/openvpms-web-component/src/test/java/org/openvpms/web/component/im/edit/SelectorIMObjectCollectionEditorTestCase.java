@@ -18,6 +18,7 @@ package org.openvpms.web.component.im.edit;
 
 import org.apache.commons.lang.mutable.MutableInt;
 import org.junit.Test;
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
@@ -59,7 +60,7 @@ public class SelectorIMObjectCollectionEditorTestCase extends AbstractAppTest {
         editor.addModifiableListener(modifiable -> modCount.setValue(modCount.intValue() + 1));
 
         assertFalse(editor.isModified());
-        Lookup accountType = TestHelper.getLookup("lookup.customerAccountType", "BAD_DEBT");
+        Lookup accountType = TestHelper.getLookup(CustomerArchetypes.ACCOUNT_TYPE, "BAD_DEBT");
         editor.add(accountType);
         assertEquals(1, modCount.intValue());
 

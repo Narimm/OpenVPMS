@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -37,8 +37,7 @@ import static org.openvpms.archetype.test.TestHelper.getDate;
 /**
  * Tests the {@link OutstandingBalanceQuery} class.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class OutstandingBalanceQueryTestCase extends AbstractCustomerAccountTest {
 
@@ -84,7 +83,7 @@ public class OutstandingBalanceQueryTestCase extends AbstractCustomerAccountTest
         Lookup accountType2 = createAccountType(60, DateUnits.DAYS);
 
         // verify no customers returned
-        OutstandingBalanceQuery query = new OutstandingBalanceQuery();
+        OutstandingBalanceQuery query = new OutstandingBalanceQuery(getArchetypeService());
         query.setAccountType(accountType1);
         assertFalse(query.query().hasNext());
 
@@ -119,7 +118,7 @@ public class OutstandingBalanceQueryTestCase extends AbstractCustomerAccountTest
      */
     private List<Party> getCustomersWithOutstandingBalances() {
         List<Party> result = new ArrayList<Party>();
-        OutstandingBalanceQuery query = new OutstandingBalanceQuery();
+        OutstandingBalanceQuery query = new OutstandingBalanceQuery(getArchetypeService());
         Iterator<Party> iterator = query.query();
         while (iterator.hasNext()) {
             result.add(iterator.next());

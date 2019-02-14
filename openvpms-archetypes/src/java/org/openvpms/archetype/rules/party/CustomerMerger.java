@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -26,7 +26,11 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.bean.Predicates;
+import org.openvpms.component.model.entity.EntityLink;
 import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -40,7 +44,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+import static org.openvpms.archetype.rules.customer.CustomerArchetypes.ACCOUNT_TYPE;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.CLOSING_BALANCE;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.OPENING_BALANCE;
 
@@ -57,6 +64,16 @@ class CustomerMerger extends PartyMerger {
      */
     private final CustomerRules rules;
 
+    /**
+     * Practice node name.
+     */
+    private static final String PRACTICE = "practice";
+
+    /**
+     * Customer location link archetype.
+     */
+    private static final String CUSTOMER_LOCATION = "entityLink.customerLocation";
+
 
     /**
      * Constructs a {@link CustomerMerger}.
@@ -64,7 +81,7 @@ class CustomerMerger extends PartyMerger {
      * @param service the archetype service
      * @param rules   the customer rules
      */
-    public CustomerMerger(IArchetypeService service, CustomerRules rules) {
+    CustomerMerger(IArchetypeService service, CustomerRules rules) {
         super(CustomerArchetypes.PERSON, service);
         this.rules = rules;
     }
@@ -95,8 +112,7 @@ class CustomerMerger extends PartyMerger {
                 // remove opening and closing balance acts from the to customer
                 // that are timestamped on or after the first transaction date
                 ArchetypeQuery toQuery = createOpeningClosingBalanceQuery(to);
-                toQuery.add(new NodeConstraint("startTime", RelationalOp.GTE,
-                                               startTime));
+                toQuery.add(new NodeConstraint("startTime", RelationalOp.GTE, startTime));
                 toQuery.setMaxResults(ArchetypeQuery.ALL_RESULTS);
                 remove(toQuery);
             }
@@ -107,16 +123,13 @@ class CustomerMerger extends PartyMerger {
         // assign any participations over to the to customer,
         // excluding any linked to opening and closing balance acts that
         // have been deleted (but due to transaction, are still returned)
-        ArchetypeQuery query
-                = new ArchetypeQuery("participation.*", true, false);
+        ArchetypeQuery query = new ArchetypeQuery("participation.*", true, false);
         query.add(new ObjectRefNodeConstraint("entity", fromRef));
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-        List<IMObject> participations = getArchetypeService().get(
-                query).getResults();
+        List<IMObject> participations = getArchetypeService().get(query).getResults();
         for (IMObject object : participations) {
             Participation participation = (Participation) object;
-            if (!TypeHelper.isA(participation.getAct(),
-                                OPENING_BALANCE, CLOSING_BALANCE)) {
+            if (!TypeHelper.isA(participation.getAct(), OPENING_BALANCE, CLOSING_BALANCE)) {
                 participation.setEntity(toRef);
                 result.add(participation);
             }
@@ -137,7 +150,7 @@ class CustomerMerger extends PartyMerger {
     @Override
     protected void copyClassifications(Party from, Party to) {
         for (Lookup lookup : from.getClassifications()) {
-            if (!TypeHelper.isA(lookup, "lookup.customerAccountType")) {
+            if (!lookup.isA(ACCOUNT_TYPE)) {
                 to.addClassification(lookup);
             }
         }
@@ -148,6 +161,44 @@ class CustomerMerger extends PartyMerger {
                 to.addClassification(accountType);
             }
         }
+    }
+
+    /**
+     * Copies entity links from one party to another, excluding any link which would duplicate an existing
+     * relationship in the 'to' party.
+     *
+     * @param from the party to copy from
+     * @param to   the party to copy to
+     * @throws ArchetypeServiceException for any archetype service error
+     */
+    @Override
+    protected void copyEntityLinks(Party from, Party to) {
+        super.copyEntityLinks(from, to);
+
+        // handle the practice node explicitly to avoid 2 relationships
+        IArchetypeService service = getArchetypeService();
+        IMObjectBean toBean = service.getBean(to);
+        if (toBean.getTargetRef(PRACTICE) == null) {
+            IMObjectBean fromBean = service.getBean(from);
+            Reference practice = fromBean.getTargetRef(PRACTICE);
+            if (practice != null) {
+                toBean.setTarget(PRACTICE, practice);
+            }
+        }
+    }
+
+    /**
+     * Returns the entity links to copy.
+     * <p/>
+     * This excludes location links.
+     *
+     * @param from the party to copy from
+     * @return the entity links
+     */
+    @Override
+    protected Set<EntityLink> getEntityLinks(Party from) {
+        Set<EntityLink> links = super.getEntityLinks(from);
+        return links.stream().filter(Predicates.isA(CUSTOMER_LOCATION).negate()).collect(Collectors.toSet());
     }
 
     /**

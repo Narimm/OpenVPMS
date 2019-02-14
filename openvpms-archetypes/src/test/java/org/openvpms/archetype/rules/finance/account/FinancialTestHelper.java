@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -37,6 +37,7 @@ import java.util.Random;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
+import static org.openvpms.archetype.rules.customer.CustomerArchetypes.ACCOUNT_TYPE;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.COUNTER;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.COUNTER_ITEM;
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.CREDIT;
@@ -527,7 +528,7 @@ public class FinancialTestHelper extends TestHelper {
     public static Lookup createAccountType(int paymentTerms, DateUnits paymentUom, BigDecimal accountFeeAmount,
                                            AccountType.FeeType accountFeeType, int accountFeeDays,
                                            BigDecimal feeBalance, String accountFeeMessage) {
-        Lookup lookup = (Lookup) create("lookup.customerAccountType");
+        Lookup lookup = (Lookup) create(ACCOUNT_TYPE);
         IMObjectBean bean = new IMObjectBean(lookup);
         bean.setValue("code", "XCUSTOMER_ACCOUNT_TYPE" + Math.abs(new Random().nextInt()));
         bean.setValue("paymentTerms", paymentTerms);

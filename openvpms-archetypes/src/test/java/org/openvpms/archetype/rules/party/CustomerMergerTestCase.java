@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.party;
@@ -24,24 +24,24 @@ import org.openvpms.archetype.rules.finance.account.CustomerAccountQueryFactory;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.finance.statement.EndOfPeriodProcessor;
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.practice.PracticeArchetypes;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
-import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.datatypes.quantity.Money;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.EntityIdentity;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
@@ -91,6 +91,17 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
      */
     private TransactionTemplate template;
 
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        PlatformTransactionManager mgr = applicationContext.getBean(PlatformTransactionManager.class);
+        template = new TransactionTemplate(mgr);
+
+        customerRules = new CustomerRules(getArchetypeService(), getLookupService());
+        practice = (Party) create(PracticeArchetypes.PRACTICE);
+    }
 
     /**
      * Merges two customers and verifies the merged customer contains the
@@ -118,8 +129,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
     public void testMergeAccountType() {
         Party from = TestHelper.createCustomer();
         Party to = TestHelper.createCustomer();
-        Lookup accountType = FinancialTestHelper.createAccountType(
-                30, DateUnits.DAYS, BigDecimal.ZERO);
+        Lookup accountType = FinancialTestHelper.createAccountType(30, DateUnits.DAYS, BigDecimal.ZERO);
 
         from.addClassification(accountType);
 
@@ -135,10 +145,8 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
     public void testMergeAccountTypes() {
         Party from = TestHelper.createCustomer();
         Party to = TestHelper.createCustomer();
-        Lookup accountType1 = FinancialTestHelper.createAccountType(
-                30, DateUnits.DAYS, BigDecimal.ZERO);
-        Lookup accountType2 = FinancialTestHelper.createAccountType(
-                15, DateUnits.DAYS, BigDecimal.ZERO);
+        Lookup accountType1 = FinancialTestHelper.createAccountType(30, DateUnits.DAYS, BigDecimal.ZERO);
+        Lookup accountType2 = FinancialTestHelper.createAccountType(15, DateUnits.DAYS, BigDecimal.ZERO);
 
         from.addClassification(accountType1);
         to.addClassification(accountType2);
@@ -189,15 +197,11 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
 
         Party merged = checkMerge(from, to);
 
-        EntityIdentity[] identities
-                = merged.getIdentities().toArray(
-                new EntityIdentity[merged.getIdentities().size()]);
+        EntityIdentity[] identities = merged.getIdentities().toArray(new EntityIdentity[0]);
         String idA = identities[0].getIdentity();
         String idB = identities[1].getIdentity();
-        assertTrue(id1.getIdentity().equals(idA)
-                   || id1.getIdentity().equals(idB));
-        assertTrue(id2.getIdentity().equals(idA)
-                   || id2.getIdentity().equals(idB));
+        assertTrue(id1.getIdentity().equals(idA) || id1.getIdentity().equals(idB));
+        assertTrue(id2.getIdentity().equals(idA) || id2.getIdentity().equals(idB));
     }
 
     /**
@@ -214,9 +218,8 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
         assertEquals(0, countParticipations(to));
 
         for (int i = 0; i < 10; ++i) {
-            List<FinancialAct> invoice
-                    = FinancialTestHelper.createChargesInvoice(
-                    new Money(100), from, patient, product, ActStatus.POSTED);
+            List<FinancialAct> invoice = FinancialTestHelper.createChargesInvoice(MathRules.ONE_HUNDRED, from, patient,
+                                                                                  product, ActStatus.POSTED);
             save(invoice);
         }
         int fromRefs = countParticipations(from);
@@ -243,8 +246,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
             checkMerge(from, to);
             fail("Expected merge to invalid party to fail");
         } catch (MergeException expected) {
-            assertEquals(MergeException.ErrorCode.InvalidType,
-                         expected.getErrorCode());
+            assertEquals(MergeException.ErrorCode.InvalidType, expected.getErrorCode());
         }
     }
 
@@ -258,8 +260,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
             checkMerge(from, from);
             fail("Expected merge to same customer to fail");
         } catch (MergeException expected) {
-            assertEquals(MergeException.ErrorCode.CannotMergeToSameObject,
-                         expected.getErrorCode());
+            assertEquals(MergeException.ErrorCode.CannotMergeToSameObject, expected.getErrorCode());
         }
     }
 
@@ -282,15 +283,13 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
 
         // add some transaction history for the 'from' customer
         Date firstStartTime = getDatetime("2007-01-02 10:0:0");
-        addInvoice(firstStartTime, eighty, from, fromPatient,
-                   product);
+        addInvoice(firstStartTime, eighty, from, fromPatient, product);
         addPayment(getDatetime("2007-01-02 11:0:0"), forty, from);
 
         runEOP(from, getDate("2007-02-01"));
 
         // ... and the 'to' customer
-        addInvoice(getDatetime("2007-01-01 10:0:0"), fifty, to, toPatient,
-                   product);
+        addInvoice(getDatetime("2007-01-01 10:0:0"), fifty, to, toPatient, product);
         runEOP(to, getDate("2007-01-01"));
         runEOP(to, getDate("2007-02-01"));
 
@@ -309,7 +308,7 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
         ArchetypeQuery query = CustomerAccountQueryFactory.createQuery(
                 to, new String[]{CustomerAccountArchetypes.OPENING_BALANCE,
                                  CustomerAccountArchetypes.CLOSING_BALANCE});
-        IMObjectQueryIterator<Act> iter = new IMObjectQueryIterator<Act>(query);
+        IMObjectQueryIterator<Act> iter = new IMObjectQueryIterator<>(query);
         int count = 0;
         while (iter.hasNext()) {
             Act act = iter.next();
@@ -324,15 +323,48 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
     }
 
     /**
-     * Sets up the test case.
+     * Verifies that the location node is merged as follows:
+     * <p/>
+     * Note that if both customer A and customer B had a Practice Location set, customer A's location should remain unchanged.
+     * <p>
+     * When two customers A and B are merged, and the customer A has no Practice Location but customer B does, customer A should be assigned customer B's
      */
-    @Before
-    public void setUp() {
-        PlatformTransactionManager mgr = applicationContext.getBean(PlatformTransactionManager.class);
-        template = new TransactionTemplate(mgr);
+    @Test
+    public void testMergeLocationInFrom() {
+        Party location = TestHelper.createLocation();
+        Party from = TestHelper.createCustomer(location);
+        Party to = TestHelper.createCustomer();
+        Party merged = checkMerge(from, to);
+        IMObjectBean bean = getBean(merged);
+        assertEquals(location, bean.getTarget("practice"));
+    }
 
-        customerRules = new CustomerRules(getArchetypeService(), getLookupService());
-        practice = (Party) create(PracticeArchetypes.PRACTICE);
+    /**
+     * Verifies that when the 'to' customer has a location, and the 'from' customer has none, the 'to' location
+     * is retained.
+     */
+    @Test
+    public void testMergeLocationInTo() {
+        Party location = TestHelper.createLocation();
+        Party from = TestHelper.createCustomer();
+        Party to = TestHelper.createCustomer(location);
+        Party merged = checkMerge(from, to);
+        IMObjectBean bean = getBean(merged);
+        assertEquals(location, bean.getTarget("practice"));
+    }
+
+    /**
+     * Verifies that when both the 'from' and the 'to' customer have a location, the 'to' location is retained.
+     */
+    @Test
+    public void testMergeLocation() {
+        Party location1 = TestHelper.createLocation();
+        Party location2 = TestHelper.createLocation();
+        Party from = TestHelper.createCustomer(location1);
+        Party to = TestHelper.createCustomer(location2);
+        Party merged = checkMerge(from, to);
+        IMObjectBean bean = getBean(merged);
+        assertEquals(location2, bean.getTarget("practice"));
     }
 
     /**
@@ -355,12 +387,10 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
      * @param to   the customer to merge to
      * @return the merged customer
      */
-    private Party checkMerge(final Party from, final Party to) {
-        template.execute(new TransactionCallback<Object>() {
-            public Object doInTransaction(TransactionStatus transactionStatus) {
-                customerRules.mergeCustomers(from, to);
-                return null;
-            }
+    private Party checkMerge(Party from, Party to) {
+        template.execute(transactionStatus -> {
+            customerRules.mergeCustomers(from, to);
+            return null;
         });
 
         // verify the from customer has been deleted
@@ -380,11 +410,9 @@ public class CustomerMergerTestCase extends AbstractPartyMergerTest {
      * @param patient   the patient
      * @param product   the product
      */
-    private void addInvoice(Date startTime, Money amount, Party customer,
-                            Party patient, Product product) {
-        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(
-                amount, customer, patient, product,
-                ActStatus.POSTED);
+    private void addInvoice(Date startTime, BigDecimal amount, Party customer, Party patient, Product product) {
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(amount, customer, patient, product,
+                                                                           ActStatus.POSTED);
         FinancialAct act = acts.get(0);
         act.setActivityStartTime(startTime);
         save(acts);

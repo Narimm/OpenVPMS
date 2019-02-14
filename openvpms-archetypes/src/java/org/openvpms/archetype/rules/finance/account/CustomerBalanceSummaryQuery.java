@@ -597,7 +597,7 @@ public class CustomerBalanceSummaryQuery implements Iterator<ObjectSet> {
     private Lookup getLookup(String code) {
         Lookup lookup;
         if ((lookup = lookupCache.get(code)) == null) {
-            lookup = lookups.getLookup("lookup.customerAccountType", code);
+            lookup = lookups.getLookup(CustomerArchetypes.ACCOUNT_TYPE, code);
             lookupCache.put(code, lookup);
         }
         return lookup;

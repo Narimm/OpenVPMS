@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.account;
@@ -20,7 +20,6 @@ import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.CollectionNodeConstraint;
@@ -34,12 +33,13 @@ import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.util.Iterator;
 
+import static org.openvpms.archetype.rules.customer.CustomerArchetypes.ACCOUNT_TYPE;
+
 
 /**
  * Query for customers with outstanding balances.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class OutstandingBalanceQuery {
 
@@ -49,7 +49,7 @@ public class OutstandingBalanceQuery {
     private final IArchetypeService service;
 
     /**
-     * The customer account type classification. May be <tt>null</tt>.
+     * The customer account type classification. May be {@code null}.
      */
     private Lookup accountType;
 
@@ -59,16 +59,8 @@ public class OutstandingBalanceQuery {
      */
     private boolean debit = false;
 
-
     /**
-     * Creates a new <code>OutstandingBalanceQuery</code>.
-     */
-    public OutstandingBalanceQuery() {
-        this(ArchetypeServiceHelper.getArchetypeService());
-    }
-
-    /**
-     * Creates a new <code>OutstandingBalanceQuery</code>.
+     * Constructs an {@link OutstandingBalanceQuery}.
      *
      * @param service the archetype service
      */
@@ -81,17 +73,16 @@ public class OutstandingBalanceQuery {
      *
      * @param accountType the customer account type (an instance of
      *                    <em>lookup.customerAccountType</em>).
-     *                    If <tt>null</tt> indicates to query all account types.
+     *                    If {@code null} indicates to query all account types.
      */
     public void setAccountType(Lookup accountType) {
         this.accountType = accountType;
     }
 
     /**
-     * Determines if customers with debit balances or debit/credit balances
-     * should be returned.
+     * Determines if customers with debit balances or debit/credit balances should be returned.
      *
-     * @param debit if <code>true</code>
+     * @param debit if {@code true} only include debit balances
      */
     public void setDebitOnly(boolean debit) {
         this.debit = debit;
@@ -122,10 +113,8 @@ public class OutstandingBalanceQuery {
         query.add(new IdConstraint("balance.entity", "customer"));
         query.add(new IdConstraint("balance.act", "act"));
         if (accountType != null) {
-            ShortNameConstraint type = new ShortNameConstraint(
-                    "type", "lookup.customerAccountType", true, true);
-            ObjectRefConstraint objRef = new ObjectRefConstraint(
-                    "lookup", accountType.getObjectReference());
+            ShortNameConstraint type = new ShortNameConstraint("type", ACCOUNT_TYPE, true, true);
+            ObjectRefConstraint objRef = new ObjectRefConstraint("lookup", accountType.getObjectReference());
             customer.add(new CollectionNodeConstraint("type", type));
             query.add(objRef);
             query.add(new IdConstraint("type", "lookup"));

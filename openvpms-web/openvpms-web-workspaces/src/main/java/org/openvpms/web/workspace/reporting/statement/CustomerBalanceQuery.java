@@ -26,6 +26,7 @@ import nextapp.echo2.app.Label;
 import nextapp.echo2.app.SelectField;
 import nextapp.echo2.app.event.ActionEvent;
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.CustomerBalanceSummaryQuery;
 import org.openvpms.archetype.rules.practice.Location;
@@ -278,9 +279,7 @@ public class CustomerBalanceQuery extends AbstractArchetypeQuery<ObjectSet> {
     @Override
     protected void doLayout(Component container) {
         Grid grid = GridFactory.create(6);
-        accountType = LookupFieldFactory.create(
-                new ArchetypeLookupQuery("lookup.customerAccountType"),
-                true);
+        accountType = LookupFieldFactory.create(new ArchetypeLookupQuery(CustomerArchetypes.ACCOUNT_TYPE), true);
         accountType.setSelected((Lookup) null);
         accountType.setCellRenderer(LookupListCellRenderer.INSTANCE);
 
