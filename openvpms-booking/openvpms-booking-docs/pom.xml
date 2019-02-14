@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -21,12 +21,12 @@
     <parent>
         <artifactId>openvpms-booking</artifactId>
         <groupId>org.openvpms</groupId>
-        <version>2.0</version>
+        <version>2.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>openvpms-booking-docs</artifactId>
-    <name>OpenVPMS Booking API</name>
+    <name>OpenVPMS Booking API V2 (Draft)</name>
     <description>JSON API to make customer appointments in OpenVPMS</description>
     <packaging>pom</packaging>
 
