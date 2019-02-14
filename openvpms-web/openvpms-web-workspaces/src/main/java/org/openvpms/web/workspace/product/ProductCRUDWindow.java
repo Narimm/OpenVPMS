@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product;
@@ -35,8 +35,10 @@ import org.openvpms.archetype.rules.product.io.ProductImporter;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.archetype.NodeDescriptor;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.InventoryService;
 import org.openvpms.smartflow.client.SyncState;
@@ -83,6 +85,11 @@ import java.util.List;
 public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
 
     /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
      * The Smart Flow Sheet service factory.
      */
     private final FlowSheetServiceFactory flowSheetServiceFactory;
@@ -120,6 +127,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
     public ProductCRUDWindow(Archetypes<Product> archetypes, Query<Product> query, ResultSet<Product> set,
                              Context context, HelpContext help) {
         super(archetypes, query, set, context, help);
+        service = ServiceHelper.getArchetypeService();
         flowSheetServiceFactory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
     }
 
@@ -226,8 +234,18 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
     private void copy(Product product) {
         try {
             ProductRules rules = ServiceHelper.getBean(ProductRules.class);
-            String name = Messages.format("product.copy.name", product.getName());
-            Product copy = rules.copy(product, name);
+            String name = product.getName();
+            IMObjectBean bean = service.getBean(product);
+            int length = bean.getMaxLength("name");
+            if (length <= 0) {
+                length = NodeDescriptor.DEFAULT_MAX_LENGTH;
+            }
+            String copyName = Messages.format("product.copy.name", name);
+            if (copyName.length() > length) {
+                name = StringUtils.abbreviate(name, length - (copyName.length() - length));
+                copyName = Messages.format("product.copy.name", name);
+            }
+            Product copy = rules.copy(product, copyName);
 
             // NOTE: can't use the parent edit(IMObject) method as it relies on the object being edited
             // being in the current result set.
@@ -249,7 +267,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
         Party stockLocation = getContext().getStockLocation();
         Party practice = getContext().getPractice();
         boolean useLocationProducts = (practice != null)
-                                      && new IMObjectBean(practice).getBoolean("useLocationProducts");
+                                      && service.getBean(practice).getBoolean("useLocationProducts");
         InventoryService service = flowSheetServiceFactory.getInventoryService(location);
         SyncState sync = service.synchronise(useLocationProducts, location, stockLocation);
         String title = Messages.get("product.information.sync.title");
@@ -333,8 +351,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
     private void importDocument(Document document, ProductCSVReader reader, HelpContext help) {
         ProductDataSet data = reader.read(document);
         if (data.getErrors().isEmpty()) {
-            ProductDataFilter filter = new ProductDataFilter(ServiceHelper.getBean(ProductPriceRules.class),
-                                                             ServiceHelper.getArchetypeService());
+            ProductDataFilter filter = new ProductDataFilter(ServiceHelper.getBean(ProductPriceRules.class), service);
             data = filter.filter(data.getData());
         }
         if (data.getErrors().isEmpty()) {
@@ -410,8 +427,7 @@ public class ProductCRUDWindow extends ResultSetCRUDWindow<Product> {
      * @param data the data to import
      */
     private void onImport(List<ProductData> data) {
-        ProductImporter importer = new ProductImporter(ServiceHelper.getBean(ProductPriceRules.class),
-                                                       ServiceHelper.getArchetypeService());
+        ProductImporter importer = new ProductImporter(ServiceHelper.getBean(ProductPriceRules.class), service);
         importer.run(data);
         InformationDialog.show(Messages.get("product.import.title"), Messages.get("product.import.imported"));
     }
