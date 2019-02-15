@@ -17,12 +17,11 @@
 package org.openvpms.archetype.rules.product;
 
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.entity.EntityLink;
+import org.openvpms.component.model.lookup.Lookup;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -343,11 +342,10 @@ public class ProductPriceTestHelper {
      * @param to            the to date. May be {@code null}
      */
     public static void addPriceTemplate(Product product, Product priceTemplate, String from, String to) {
-        EntityBean bean = new EntityBean(product);
-        EntityRelationship relationship = bean.addRelationship(ProductArchetypes.PRODUCT_LINK_RELATIONSHIP,
-                                                               priceTemplate);
+        IMObjectBean bean = new IMObjectBean(product);
+        EntityLink relationship = (EntityLink) bean.setTarget("linked", priceTemplate);
         relationship.setActiveStartTime(getDate(from));
         relationship.setActiveEndTime(getDate(to));
-        TestHelper.save(product, priceTemplate);
+        bean.save();
     }
 }

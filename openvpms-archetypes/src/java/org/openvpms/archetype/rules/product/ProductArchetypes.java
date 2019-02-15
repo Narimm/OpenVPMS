@@ -80,12 +80,6 @@ public class ProductArchetypes {
     public static final String PRODUCT_SUPPLIER_RELATIONSHIP = "entityLink.productSupplier";
 
     /**
-     * Product link entity relationship short name.
-     */
-    public static final String PRODUCT_LINK_RELATIONSHIP
-            = "entityRelationship.productLink";
-
-    /**
      * Product type short name.
      */
     public static final String PRODUCT_TYPE = "entity.productType";

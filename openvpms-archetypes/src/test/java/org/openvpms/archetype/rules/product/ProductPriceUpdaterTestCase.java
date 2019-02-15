@@ -101,7 +101,7 @@ public class ProductPriceUpdaterTestCase extends AbstractProductTest {
         // now save with a custom unit price, and verify it doesn't get
         // overwritten when the product saves.
         Set<org.openvpms.component.model.product.ProductPrice> prices = product.getProductPrices();
-        ProductPrice unit = prices.toArray(new ProductPrice[prices.size()])[0];
+        ProductPrice unit = prices.toArray(new ProductPrice[0])[0];
         unit.setPrice(new BigDecimal("1.35"));
         save(product);
         checkPrice(product, new BigDecimal("0.67"), new BigDecimal("1.35"));

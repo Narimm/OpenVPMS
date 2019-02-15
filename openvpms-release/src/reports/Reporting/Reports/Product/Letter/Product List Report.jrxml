@@ -129,8 +129,9 @@ left join (
 			cast(d3.value as decimal(18,3)) as cost
 		from products p
 		join entities e on p.product_id = e.entity_id 
-		join entity_relationships erl on erl.source_id = e.entity_id and erl.arch_short_name = 'entityRelationship.productLink'
+		join entity_links erl on erl.source_id = e.entity_id and erl.arch_short_name = 'entityLink.productLink'
 		join entities pt on pt.entity_id = erl.target_id
+			and pt.active = 1
 		join product_prices pp on pt.entity_id = pp.product_id 
 			and ((pp.start_time is null or pp.start_time <= now()) and (pp.end_time is null or pp.end_time > now()))
 		left join product_price_details d1

@@ -227,6 +227,7 @@ public class ProductUpdaterTestCase extends AbstractProductIOTest {
         Product product = createProduct("P1", "Product 1");
         ProductPrice fixedPrice = createFixedPrice("2013-01-01", null, true);
         Product template = createPriceTemplate(fixedPrice);
+        save(template);
         addPriceTemplate(product, template, "2013-01-01", null);
 
         assertEquals(0, product.getProductPrices().size());

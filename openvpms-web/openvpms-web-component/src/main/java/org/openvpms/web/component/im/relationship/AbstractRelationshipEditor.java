@@ -98,8 +98,8 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
             sourceProp.setValue(source.getObjectReference());
         }
         if (targetRef == null && target != null && !ObjectUtils.equals(source, target)) {
-            // only add the target if it is different to the source (e.g. see entityRelationship.productLink where the
-            // source and target archetypes are the same)
+            // only add the target if it is different to the source (to handle where the source and target archetypes
+            // are the same
             targetProp.setValue(target.getObjectReference());
         }
 

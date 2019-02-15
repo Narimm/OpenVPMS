@@ -23,8 +23,7 @@ import org.openvpms.archetype.rules.product.ProductPriceRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.lookup.Lookup;
 
 import java.math.BigDecimal;
@@ -380,8 +379,8 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
         template.setName("XPriceTemplate-" + System.currentTimeMillis());
         ProductPrice linkedFixedPrice = createFixedPrice(getDate("2014-01-01"), null, true);
         template.addProductPrice(linkedFixedPrice);
-        EntityBean bean = new EntityBean(product);
-        bean.addNodeRelationship("linked", template);
+        IMObjectBean bean = getBean(product);
+        bean.addTarget("linked", template);
         product.getProductPrices().remove(fixed1); // remove the fixed price, and use the one linked from the template
         save(product, template);
 
@@ -549,7 +548,7 @@ public class ProductDataComparatorTestCase extends AbstractProductIOTest {
      */
     @Test
     public void testMissingCostAndMaxDiscount() {
-        IMObjectBean bean = new IMObjectBean(fixed1);
+        IMObjectBean bean = getBean(fixed1);
         bean.setValue("cost", null);
         bean.setValue("maxDiscount", null);
         ProductData data = createProduct(product);

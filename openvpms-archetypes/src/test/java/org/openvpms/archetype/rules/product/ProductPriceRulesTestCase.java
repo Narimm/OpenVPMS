@@ -22,13 +22,12 @@ import org.openvpms.archetype.rules.math.Currencies;
 import org.openvpms.archetype.rules.math.Currency;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.EntityLink;
+import org.openvpms.component.model.lookup.Lookup;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -86,7 +85,7 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
     public void setUp() {
         practice = TestHelper.getPractice(BigDecimal.TEN);
         rules = new ProductPriceRules(getArchetypeService());
-        IMObjectBean bean = new IMObjectBean(practice);
+        IMObjectBean bean = getBean(practice);
         Currencies currencies = new Currencies(getArchetypeService(), getLookupService());
         currency = currencies.getCurrency(bean.getString("currency"));
     }
@@ -264,7 +263,7 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
 
         // now make price2 a default. This should be returned over price1 when groupA is specified. Without the group
         // which one is returned is non-deterministic
-        IMObjectBean bean = new IMObjectBean(price2);
+        IMObjectBean bean = getBean(price2);
         bean.setValue("default", true);
         price = rules.getProductPrice(product, ProductArchetypes.FIXED_PRICE, today, groupA);
         assertEquals(price, price2);
@@ -299,7 +298,7 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         java.util.Currency AUD = java.util.Currency.getInstance("AUD");
 
         // remove tax as it complicates rounding tests
-        IMObjectBean bean = new IMObjectBean(practice);
+        IMObjectBean bean = getBean(practice);
         for (Lookup tax : bean.getValues("taxes", Lookup.class)) {
             practice.removeClassification(tax);
         }
@@ -354,7 +353,7 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         ProductPrice price = ProductPriceTestHelper.createPrice(FIXED_PRICE, new Date(), new Date());
         checkEquals(new BigDecimal(100), rules.getMaxDiscount(price));
 
-        IMObjectBean bean = new IMObjectBean(price);
+        IMObjectBean bean = getBean(price);
         bean.setValue("maxDiscount", 10);
         checkEquals(BigDecimal.TEN, rules.getMaxDiscount(price));
     }
@@ -482,6 +481,7 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
             // verify that linked products are used if there are no matching prices for the date
             Product priceTemplate = createPriceTemplate(fixed3);
             priceTemplate.setName("XPriceTemplate");
+            save(priceTemplate);
 
             addPriceTemplate(product, priceTemplate, "2008-01-01", null);
 
@@ -569,6 +569,7 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
             // verify that linked products are used if there are no matching prices for the date
             Product priceTemplate = createPriceTemplate(fixed3A, fixed3B, fixed3C);
             priceTemplate.setName("XPriceTemplate");
+            save(priceTemplate);
 
             addPriceTemplate(product, priceTemplate, "2008-01-01", null);
 
@@ -646,9 +647,8 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
             priceTemplate.setName("XPriceTemplate");
             save(priceTemplate);
 
-            EntityBean bean = new EntityBean(product);
-            EntityRelationship relationship = bean.addRelationship(
-                    ProductArchetypes.PRODUCT_LINK_RELATIONSHIP, priceTemplate);
+            IMObjectBean bean = getBean(product);
+            EntityLink relationship = (EntityLink) bean.setTarget("linked", priceTemplate);
             relationship.setActiveStartTime(getDate("2008-01-01"));
             bean.save();
 
@@ -772,11 +772,7 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
             priceTemplate.setName("XPriceTemplate");
             save(priceTemplate);
 
-            EntityBean bean = new EntityBean(product);
-            EntityRelationship relationship = bean.addRelationship(
-                    ProductArchetypes.PRODUCT_LINK_RELATIONSHIP, priceTemplate);
-            relationship.setActiveStartTime(getDate("2008-01-01"));
-            bean.save();
+            ProductPriceTestHelper.addPriceTemplate(product, priceTemplate, "2008-01-01", null);
 
             checkPrice(fixed2A, two, FIXED_PRICE, "2008-02-01", product, groupA);
             checkPrice(fixed2B, two, FIXED_PRICE, "2008-02-01", product, groupB);
@@ -907,11 +903,7 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         priceTemplate.setName("XPriceTemplate");
         save(priceTemplate);
 
-        EntityBean bean = new EntityBean(product);
-        EntityRelationship relationship = bean.addRelationship(
-                ProductArchetypes.PRODUCT_LINK_RELATIONSHIP, priceTemplate);
-        relationship.setActiveStartTime(getDate("2008-01-01"));
-        bean.save();
+        ProductPriceTestHelper.addPriceTemplate(product, priceTemplate, "2008-01-01", null);
 
         product = get(product);
 
@@ -973,11 +965,7 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         priceTemplate.setName("XPriceTemplate");
         save(priceTemplate);
 
-        EntityBean bean = new EntityBean(product);
-        EntityRelationship relationship = bean.addRelationship(
-                ProductArchetypes.PRODUCT_LINK_RELATIONSHIP, priceTemplate);
-        relationship.setActiveStartTime(getDate("2008-01-01"));
-        bean.save();
+        ProductPriceTestHelper.addPriceTemplate(product, priceTemplate, "2008-01-01", null);
 
         product = get(product);
 

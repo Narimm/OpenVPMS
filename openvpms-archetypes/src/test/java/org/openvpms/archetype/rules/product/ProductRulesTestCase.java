@@ -24,12 +24,12 @@ import org.openvpms.archetype.rules.stock.StockRules;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.model.product.ProductPrice;
 
 import java.math.BigDecimal;
@@ -89,8 +89,8 @@ public class ProductRulesTestCase extends AbstractProductTest {
 
         // add a linked product. This should *not* be copied
         Product linked = TestHelper.createProduct(ProductArchetypes.PRICE_TEMPLATE, null);
-        EntityBean bean = new EntityBean(product);
-        bean.addNodeRelationship("linked", linked);
+        IMObjectBean bean = getBean(product);
+        bean.addTarget("linked", linked);
         save(product, linked);
 
         // now perform the copy
@@ -103,8 +103,8 @@ public class ProductRulesTestCase extends AbstractProductTest {
         assertEquals(name, copy.getName());
 
         // verify the copy has a different dose
-        EntityBean copyBean = new EntityBean(copy);
-        List<Entity> doses = copyBean.getNodeTargetObjects("doses", Entity.class);
+        IMObjectBean copyBean = getBean(copy);
+        List<Entity> doses = copyBean.getTargets("doses", Entity.class);
         assertEquals(1, doses.size());
         assertNotEquals(doses.get(0), dose);
 
@@ -113,12 +113,12 @@ public class ProductRulesTestCase extends AbstractProductTest {
         assertEquals(species.getId(), species2.getId());
 
         // verify the copy refers to the same stock location
-        assertEquals(copyBean.getNodeTargetEntity("stockLocations"), stockLocation);
+        assertEquals(copyBean.getTarget("stockLocations"), stockLocation);
 
         // verify the product price has been copied
         Set<ProductPrice> productPrices = copy.getProductPrices();
         assertEquals(1, productPrices.size());
-        ProductPrice priceCopy = productPrices.toArray(new ProductPrice[productPrices.size()])[0];
+        ProductPrice priceCopy = productPrices.toArray(new ProductPrice[0])[0];
         assertTrue(unitPrice.getId() != priceCopy.getId());
         checkEquals(unitPrice.getPrice(), priceCopy.getPrice());
 
@@ -132,7 +132,7 @@ public class ProductRulesTestCase extends AbstractProductTest {
         assertEquals(supplier.getObjectReference(), psCopy.getSupplierRef());
 
         // verify the linked product is the same
-        List<IMObjectReference> linkedRefs = copyBean.getNodeTargetEntityRefs("linked");
+        List<Reference> linkedRefs = copyBean.getTargetRefs("linked");
         assertEquals(1, linkedRefs.size());
         assertEquals(linked.getObjectReference(), linkedRefs.get(0));
 
@@ -148,9 +148,9 @@ public class ProductRulesTestCase extends AbstractProductTest {
         Product product = ProductTestHelper.createService();
 
         // add a location exclusion. This should not be copied.
-        IMObjectBean bean = new IMObjectBean(product);
+        IMObjectBean bean = getBean(product);
         Party location = TestHelper.createLocation();
-        bean.addNodeTarget("locations", location);
+        bean.addTarget("locations", location);
         bean.save();
 
         // now perform the copy
