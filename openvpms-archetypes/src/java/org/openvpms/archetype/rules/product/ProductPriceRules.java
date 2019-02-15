@@ -16,7 +16,7 @@
 
 package org.openvpms.archetype.rules.product;
 
-import org.apache.commons.collections.ComparatorUtils;
+import org.apache.commons.collections4.ComparatorUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.finance.tax.TaxRules;
 import org.openvpms.archetype.rules.math.Currency;
@@ -150,10 +150,9 @@ public class ProductPriceRules {
      */
     public List<ProductPrice> getProductPrices(Product product, String shortName, boolean includeLinked,
                                                PricingGroup group) {
-        List<ProductPrice> result = new ArrayList<>();
         ProductPricePredicate predicate = new ProductPricePredicate(shortName, group);
         List<ProductPrice> prices = findPrices(product, predicate);
-        result.addAll(prices);
+        List<ProductPrice> result = new ArrayList<>(prices);
         if (includeLinked && FIXED_PRICE.equals(shortName)) {
             // see if there is a fixed price in linked products
             result.addAll(findLinkedPrices(product, predicate, Predicates.activeNow()));
@@ -201,10 +200,9 @@ public class ProductPriceRules {
      */
     public List<ProductPrice> getProductPrices(Product product, String shortName, Date date, boolean includeLinked,
                                                PricingGroup group) {
-        List<ProductPrice> result = new ArrayList<>();
         ShortNameDatePredicate predicate = new ShortNameDatePredicate(shortName, date, group);
         List<ProductPrice> prices = findPrices(product, predicate);
-        result.addAll(prices);
+        List<ProductPrice> result = new ArrayList<>(prices);
         if (includeLinked && FIXED_PRICE.equals(shortName)) {
             // see if there is a fixed price in linked products
             result.addAll(findLinkedPrices(product, predicate, Predicates.activeAt(date)));
@@ -255,10 +253,9 @@ public class ProductPriceRules {
      */
     public List<ProductPrice> getProductPrices(Product product, String shortName, Date from, Date to,
                                                boolean includeLinked, PricingGroup group) {
-        List<ProductPrice> result = new ArrayList<>();
         ShortNameDateRangePredicate predicate = new ShortNameDateRangePredicate(shortName, from, to, group);
         List<ProductPrice> prices = findPrices(product, predicate);
-        result.addAll(prices);
+        List<ProductPrice> result = new ArrayList<>(prices);
         if (includeLinked && FIXED_PRICE.equals(shortName)) {
             // see if there is a fixed price in linked products
             result.addAll(findLinkedPrices(product, predicate, Predicates.active(from, to)));
@@ -514,9 +511,8 @@ public class ProductPriceRules {
      * @param prices the prices to sort
      * @return the prices
      */
-    @SuppressWarnings("unchecked")
     public List<ProductPrice> sort(List<ProductPrice> prices) {
-        Collections.sort(prices, ComparatorUtils.reversedComparator(ProductPriceComparator.INSTANCE));
+        prices.sort(ComparatorUtils.reversedComparator(ProductPriceComparator.INSTANCE));
         return prices;
     }
 
@@ -673,7 +669,7 @@ public class ProductPriceRules {
         List<ProductPrice> prices;
         IMObjectBean bean = service.getBean(product);
         if (bean.hasNode("linked")) {
-            for (Product linked : bean.getTargets("linked", Product.class, Policies.all(active))) {
+            for (Product linked : bean.getTargets("linked", Product.class, Policies.match(true, active))) {
                 prices = findPrices(linked, price);
                 if (result == null) {
                     result = new ArrayList<>();
@@ -681,7 +677,7 @@ public class ProductPriceRules {
                 result.addAll(prices);
             }
         }
-        return (result != null) ? result : Collections.<ProductPrice>emptyList();
+        return (result != null) ? result : Collections.emptyList();
     }
 
     /**
@@ -708,7 +704,7 @@ public class ProductPriceRules {
         private final PricingGroup group;
 
 
-        public ProductPricePredicate(String shortName, PricingGroup group) {
+        ProductPricePredicate(String shortName, PricingGroup group) {
             this.shortName = shortName;
             this.group = group;
         }
@@ -762,7 +758,7 @@ public class ProductPriceRules {
          */
         private final Date date;
 
-        public ShortNameDatePredicate(String shortName, Date date, PricingGroup group) {
+        ShortNameDatePredicate(String shortName, Date date, PricingGroup group) {
             super(shortName, group);
             this.date = date;
         }
@@ -796,7 +792,7 @@ public class ProductPriceRules {
          */
         private final Date to;
 
-        public ShortNameDateRangePredicate(String shortName, Date from, Date to, PricingGroup group) {
+        ShortNameDateRangePredicate(String shortName, Date from, Date to, PricingGroup group) {
             super(shortName, group);
             this.from = from;
             this.to = to;

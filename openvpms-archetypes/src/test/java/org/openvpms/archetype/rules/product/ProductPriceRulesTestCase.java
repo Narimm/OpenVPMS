@@ -26,7 +26,6 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.product.ProductPrice;
 import org.openvpms.component.model.bean.IMObjectBean;
-import org.openvpms.component.model.entity.EntityLink;
 import org.openvpms.component.model.lookup.Lookup;
 
 import java.math.BigDecimal;
@@ -489,6 +488,11 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
 
             // fixed3 overrides fixed2 as it is the default
             checkPrice(fixed3, FIXED_PRICE, "2008-03-01", product, null);
+
+            // now deactivate the template and verify the price is no longer returned
+            priceTemplate.setActive(false);
+            save(priceTemplate);
+            checkPrice(fixed2, FIXED_PRICE, "2008-03-01", product, null);
         }
     }
 
@@ -579,6 +583,11 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
             checkPrice(fixed3A, FIXED_PRICE, "2008-03-01", product, groupA);
             checkPrice(fixed3B, FIXED_PRICE, "2008-03-01", product, groupB);
             checkPrice(fixed3C, FIXED_PRICE, "2008-03-01", product, null);
+
+            // now deactivate the template and verify its prices are no longer returned
+            priceTemplate.setActive(false);
+            save(priceTemplate);
+            checkPrice(fixed2A, FIXED_PRICE, "2008-03-01", product, groupA);
         }
     }
 
@@ -647,14 +656,16 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
             priceTemplate.setName("XPriceTemplate");
             save(priceTemplate);
 
-            IMObjectBean bean = getBean(product);
-            EntityLink relationship = (EntityLink) bean.setTarget("linked", priceTemplate);
-            relationship.setActiveStartTime(getDate("2008-01-01"));
-            bean.save();
+            addPriceTemplate(product, priceTemplate, "2008-01-01", null);
 
             checkPrice(fixed2, two, FIXED_PRICE, "2008-02-01", product, null);
             checkPrice(fixed3, three, FIXED_PRICE, "2008-03-01", product, null);
             checkPrice(fixed2, two, FIXED_PRICE, "2008-03-01", product, null);
+
+            // now deactivate the template and verify its prices are no longer returned
+            priceTemplate.setActive(false);
+            save(priceTemplate);
+            checkPrice(null, three, FIXED_PRICE, "2008-03-01", product, null);
         }
     }
 
@@ -763,8 +774,7 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         checkPrice(unit2C, two, UNIT_PRICE, "2010-02-01", product, null); // unbounded
 
         if (usePriceTemplate) {
-            // verify that linked products are used if there are no matching prices
-            // for the date
+            // verify that linked products are used if there are no matching prices for the date
             Product priceTemplate = createPriceTemplate();
             priceTemplate.addProductPrice(fixed3A);
             priceTemplate.addProductPrice(fixed3B);
@@ -780,6 +790,19 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
             checkPrice(fixed3A, three, FIXED_PRICE, "2008-03-01", product, groupA);
             checkPrice(fixed3B, three, FIXED_PRICE, "2008-03-01", product, groupB);
             checkPrice(fixed3C, three, FIXED_PRICE, "2008-03-01", product, null);
+            checkPrice(fixed2A, two, FIXED_PRICE, "2008-03-01", product, groupA);
+            checkPrice(fixed2B, two, FIXED_PRICE, "2008-03-01", product, groupB);
+            checkPrice(fixed2C, two, FIXED_PRICE, "2008-03-01", product, null);
+
+            // now deactivate the template and verify its prices are no longer returned
+            priceTemplate.setActive(false);
+            save(priceTemplate);
+            checkPrice(fixed2A, two, FIXED_PRICE, "2008-02-01", product, groupA);
+            checkPrice(fixed2B, two, FIXED_PRICE, "2008-02-01", product, groupB);
+            checkPrice(fixed2C, two, FIXED_PRICE, "2008-02-01", product, null);
+            checkPrice(null, three, FIXED_PRICE, "2008-03-01", product, groupA);
+            checkPrice(null, three, FIXED_PRICE, "2008-03-01", product, groupB);
+            checkPrice(null, three, FIXED_PRICE, "2008-03-01", product, null);
             checkPrice(fixed2A, two, FIXED_PRICE, "2008-03-01", product, groupA);
             checkPrice(fixed2B, two, FIXED_PRICE, "2008-03-01", product, groupB);
             checkPrice(fixed2C, two, FIXED_PRICE, "2008-03-01", product, null);
@@ -927,6 +950,12 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
         assertFalse(prices.contains(fixed1));
         assertFalse(prices.contains(fixed2));
         assertTrue(prices.contains(fixed3));
+
+        // now deactivate the template and verify the prices are no longer returned
+        priceTemplate.setActive(false);
+        save(priceTemplate);
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2009-01-01"), ALL);
+        assertEquals(0, prices.size());
     }
 
     /**
@@ -1007,6 +1036,12 @@ public class ProductPriceRulesTestCase extends AbstractProductTest {
 
         prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2009-01-01"), new PricingGroup(null));
         checkPrices(prices, fixed3C);
+
+        // now deactivate the template and verify the prices are no longer returned
+        priceTemplate.setActive(false);
+        save(priceTemplate);
+        prices = rules.getProductPrices(product, FIXED_PRICE, getDate("2008-02-01"), new PricingGroup(groupA));
+        checkPrices(prices, fixed2A, fixed2C);
     }
 
     /**
