@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.till;
@@ -428,7 +428,7 @@ public class TillRulesTestCase extends AbstractTillRulesTest {
         if (TillBalanceStatus.CLEARED.equals(status)) {
             // CLEARED balances have an end time
             assertEquals(1, endTime.compareTo(startTime));
-            assertEquals(-1, endTime.compareTo(new Date()));
+            assertTrue(endTime.compareTo(new Date()) <= 0);
         } else {
             // IN_PROGRESS balances do not
             assertNull(endTime);
