@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.history;
@@ -138,16 +138,16 @@ public class ProductTypeSelector extends DropDown {
             }
         };
         all.addActionListener(actionListener);
-        all.addPropertyChangeListener(allListener);
+        all.addPropertyChangeListener(CheckBox.SELECTED_CHANGED_PROPERTY, allListener);
 
         types = new ArrayList<>();
         types.add(new Type(Messages.get("list.all"), all));
 
         for (Entity productType : productTypes) {
-            CheckBox checkBox = CheckBoxFactory.create(false);
-            checkBox.addPropertyChangeListener(typeListener);
-            checkBox.addActionListener(actionListener);
-            types.add(new Type(productType, checkBox));
+            CheckBox checkbox = CheckBoxFactory.create(false);
+            checkbox.addPropertyChangeListener(CheckBox.SELECTED_CHANGED_PROPERTY, typeListener);
+            checkbox.addActionListener(actionListener);
+            types.add(new Type(productType, checkbox));
         }
 
         Table table = pagedTable.getTable();
@@ -221,9 +221,9 @@ public class ProductTypeSelector extends DropDown {
     private void onProductTypeChanged() {
         boolean selectAll = !haveSelections();
         if (all.isSelected() != selectAll) {
-            all.removePropertyChangeListener(allListener);
+            all.removePropertyChangeListener(CheckBox.SELECTED_CHANGED_PROPERTY, allListener);
             all.setSelected(selectAll);
-            all.addPropertyChangeListener(allListener);
+            all.addPropertyChangeListener(CheckBox.SELECTED_CHANGED_PROPERTY, allListener);
         }
         List<Entity> selected = getProductTypes(false);
         int size = selected.size();
@@ -253,7 +253,6 @@ public class ProductTypeSelector extends DropDown {
 
     /**
      * Invoked when a row is selected.
-     *
      */
     private void onTableSelected() {
         setExpanded(false);
@@ -324,9 +323,9 @@ public class ProductTypeSelector extends DropDown {
     private boolean setSelected(CheckBox checkbox, boolean selected) {
         boolean changed = false;
         if (checkbox.isSelected() != selected) {
-            checkbox.removePropertyChangeListener(typeListener);
+            checkbox.removePropertyChangeListener(CheckBox.SELECTED_CHANGED_PROPERTY, typeListener);
             checkbox.setSelected(selected);
-            checkbox.addPropertyChangeListener(typeListener);
+            checkbox.addPropertyChangeListener(CheckBox.SELECTED_CHANGED_PROPERTY, typeListener);
             changed = true;
         }
         return changed;
@@ -380,9 +379,9 @@ public class ProductTypeSelector extends DropDown {
             }
             boolean haveSelection = (selected != 0);
             if (all.isSelected() == haveSelection) {
-                all.removePropertyChangeListener(allListener);
+                all.removePropertyChangeListener(CheckBox.SELECTED_CHANGED_PROPERTY, allListener);
                 all.setSelected(!haveSelection);
-                all.addPropertyChangeListener(allListener);
+                all.addPropertyChangeListener(CheckBox.SELECTED_CHANGED_PROPERTY, allListener);
             }
             if (selected == 1) {
                 setText(full);

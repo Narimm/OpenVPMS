@@ -149,9 +149,8 @@ public class PatientVisitNoteEditor extends AbstractPatientClinicalActEditor {
          * @return the component containing the rendered {@code object}
          */
         @Override
-        public ComponentState apply(IMObject object, PropertySet properties, IMObject parent,
-                                    LayoutContext context) {
-            ArchetypeNodes nodes = ArchetypeNodes.none().simple("reason");
+        public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
+            ArchetypeNodes nodes = ArchetypeNodes.none().simple("reason", "title");
             setArchetypeNodes(nodes);
             return super.apply(object, properties, parent, context);
         }
