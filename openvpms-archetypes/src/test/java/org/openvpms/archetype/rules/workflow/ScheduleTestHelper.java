@@ -612,7 +612,8 @@ public class ScheduleTestHelper extends TestHelper {
      * @param author    the author. May be {@code null}
      * @return a new act
      */
-    public static Act createCalendarBlock(Date startTime, Date endTime, Entity schedule, Entity blockType,
+    public static Act createCalendarBlock(Date startTime, Date endTime, org.openvpms.component.model.entity.Entity schedule,
+                                          org.openvpms.component.model.entity.Entity blockType,
                                           User author) {
         Act act = (Act) create(ScheduleArchetypes.CALENDAR_BLOCK);
         IMObjectBean bean = new IMObjectBean(act);

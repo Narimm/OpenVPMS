@@ -21,6 +21,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.LookupHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.act.Participation;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.model.object.Reference;
@@ -105,7 +106,8 @@ class AppointmentFactory extends ScheduleEventFactory {
             target.set(ScheduleEvent.BOOKING_NOTES, source.getString(ScheduleEvent.BOOKING_NOTES));
         } else {
             target.set(ScheduleEvent.ACT_NAME, object.getName());
-            populate(target, source, "type");
+            Participation type = source.getObject("type", Participation.class);
+            populate(target, type, "scheduleType");
         }
     }
 

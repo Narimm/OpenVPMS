@@ -62,6 +62,14 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
      */
     private Party location;
 
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        location = TestHelper.createLocation();
+        schedule = ScheduleTestHelper.createSchedule(location);
+    }
 
     /**
      * Tests addition of an appointment.
@@ -530,12 +538,41 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
     }
 
     /**
-     * Sets up the test case.
+     * Tests addition of a calendar block.
+     *
+     * @throws Exception the exception
      */
-    @Before
-    public void setUp() {
-        location = TestHelper.createLocation();
-        schedule = ScheduleTestHelper.createSchedule(location);
+    @Test
+    public void testAddCalendarBlock() throws Exception {
+        Date date1 = getDate("2008-01-01");
+        Date date2 = getDate("2008-01-02");
+        Date date3 = getDate("2008-01-03");
+
+        // retrieve the events for date1 and date2 and verify they are empty.
+        // This caches the events for each date.
+        ScheduleService service = initScheduleService(30);
+        long hash1 = checkEvents(schedule, date1, 0);
+        checkEvents(schedule, date2, 0);
+
+        // create and save a calendar block for date1
+        Act block = createCalendarBlock(date1);
+
+        ScheduleEvents events3 = service.getScheduleEvents(schedule, date1);
+        assertEquals(1, events3.size());
+        PropertySet set = events3.getEvents().get(0);
+        checkCalendarBlock(block, set);
+        assertNotEquals(hash1, events3.getModHash());  // hash should have changed
+
+        checkEvents(schedule, date2, 0);
+        checkEvents(schedule, date3, 0);
+
+        destroyService(service);
+
+        // verify that when loaded from the db, the event is the same
+        service = initScheduleService(30);
+        ScheduleEvents events4 = service.getScheduleEvents(schedule, date1);
+        assertEquals(1, events4.size());
+        checkCalendarBlock(block, events4.getEvents().get(0));
     }
 
     /**
@@ -704,5 +741,40 @@ public class AppointmentServiceTestCase extends AbstractScheduleServiceTest {
         }
         return appointment;
     }
+
+    /**
+     * Verifies that an appointment matches the {@link PropertySet} representing it.
+     *
+     * @param act the appointment
+     * @param set the set
+     */
+    private void checkCalendarBlock(Act act, PropertySet set) {
+        IMObjectBean bean = getBean(act);
+        assertEquals(act.getObjectReference(), set.get(ScheduleEvent.ACT_REFERENCE));
+        assertEquals(act.getActivityStartTime(), set.get(ScheduleEvent.ACT_START_TIME));
+        assertEquals(act.getActivityEndTime(), set.get(ScheduleEvent.ACT_END_TIME));
+        assertEquals(act.getStatus(), set.get(ScheduleEvent.ACT_STATUS));
+        assertEquals(act.getDescription(), set.get(ScheduleEvent.ACT_DESCRIPTION));
+        assertEquals(bean.getTargetRef("schedule"), set.get(ScheduleEvent.SCHEDULE_REFERENCE));
+        assertEquals(bean.getTarget("schedule").getName(), set.get(ScheduleEvent.SCHEDULE_NAME));
+        assertEquals(bean.getTargetRef("type"), set.get(ScheduleEvent.SCHEDULE_TYPE_REFERENCE));
+        assertEquals(bean.getTarget("type").getName(), set.get(ScheduleEvent.SCHEDULE_TYPE_NAME));
+    }
+
+    /**
+     * Creates and saves a new appointment.
+     *
+     * @param date the date to create the appointment on
+     * @return a new appointment
+     */
+    private Act createCalendarBlock(Date date) {
+        Date startTime = DateRules.getDate(date, 15, DateUnits.MINUTES);
+        Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
+        Act block = ScheduleTestHelper.createCalendarBlock(startTime, endTime, schedule,
+                                                           ScheduleTestHelper.createCalendarBlockType(), null);
+        save(block);
+        return block;
+    }
+
 
 }
