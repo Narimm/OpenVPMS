@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit.act;
@@ -22,8 +22,7 @@ import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.component.system.common.query.CollectionNodeConstraint;
-import org.openvpms.component.system.common.query.NodeConstraint;
+import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
@@ -71,39 +70,30 @@ public class StockLocationParticipationEditor extends ParticipationEditor<Party>
     /**
      * Editor for stock location {@link IMObjectReference}s.
      */
-    private class LocationReferenceEditor
-            extends AbstractIMObjectReferenceEditor<Party> {
+    private class LocationReferenceEditor extends AbstractIMObjectReferenceEditor<Party> {
 
-        public LocationReferenceEditor(Property property, LayoutContext context) {
+        LocationReferenceEditor(Property property, LayoutContext context) {
             super(property, getParent(), context);
         }
 
         /**
          * Creates a query to select stock locations.
          * <p/>
-         * If the participation is not an
-         * <em>participation.stockTransferLocation</em>,
-         * constrains the stock location to those associated with the current
-         * practice location, if any.
+         * If the participation is not an <em>participation.stockTransferLocation</em>, constrains the stock location to
+         * those associated with the current practice location, if any.
          *
          * @param name a name to filter on. May be {@code null}
          * @return a new query
-         * @throws ArchetypeQueryException if the short names don't match any
-         *                                 archetypes
+         * @throws ArchetypeQueryException if the short names don't match any archetypes
          */
         @Override
         protected Query<Party> createQuery(String name) {
             Query<Party> query = super.createQuery(name);
-            if (!TypeHelper.isA(getObject(),
-                                STOCK_XFER_LOCATION_PARTICIPATION)) {
+            if (!TypeHelper.isA(getObject(), STOCK_XFER_LOCATION_PARTICIPATION)) {
                 Context context = getLayoutContext().getContext();
                 Party location = context.getLocation();
                 if (location != null) {
-                    CollectionNodeConstraint node
-                            = new CollectionNodeConstraint("locations");
-                    node.add(new NodeConstraint("source",
-                                                location.getObjectReference()));
-                    query.setConstraints(node);
+                    query.setConstraints(Constraints.join("locations").add(Constraints.eq("source", location)));
                 }
             }
             return query;
