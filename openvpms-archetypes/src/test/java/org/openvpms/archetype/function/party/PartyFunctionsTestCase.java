@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.party;
@@ -50,8 +50,8 @@ import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctio
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.jxpath.ObjectFunctions;
 
@@ -63,7 +63,10 @@ import java.util.List;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.math.MathRules.ONE_POUND_IN_GRAMS;
 import static org.openvpms.archetype.rules.math.MathRules.ONE_POUND_IN_KILOS;
 import static org.openvpms.archetype.rules.math.MathRules.ONE_THOUSAND;
@@ -101,7 +104,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     @Before
     public void setUp() {
         customer = TestHelper.createCustomer("Foo", "Bar", false, true);
-        IMObjectBean bean = new IMObjectBean(customer);
+        IMObjectBean bean = getBean(customer);
         bean.setValue("title", TestHelper.getLookup("lookup.personTitle", "MR").getCode());
         patient = TestHelper.createPatient(customer);
         User author = TestHelper.createUser();
@@ -388,7 +391,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
 
         EntityIdentity microchip = (EntityIdentity) create(
                 "entityIdentity.microchip");
-        IMObjectBean tagBean = new IMObjectBean(microchip);
+        IMObjectBean tagBean = getBean(microchip);
         tagBean.setValue("microchip", "1234567");
         patient.addIdentity(microchip);
 
@@ -406,7 +409,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         assertEquals("", ctx.getValue("party:getPatientMicrochips(.)"));
 
         EntityIdentity microchip1 = (EntityIdentity) create("entityIdentity.microchip");
-        IMObjectBean tagBean = new IMObjectBean(microchip1);
+        IMObjectBean tagBean = getBean(microchip1);
         tagBean.setValue("microchip", "123");
         patient.addIdentity(microchip1);
         save(patient);
@@ -414,7 +417,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         assertEquals("123", ctx.getValue("party:getPatientMicrochips(.)"));
 
         EntityIdentity microchip2 = (EntityIdentity) create("entityIdentity.microchip");
-        tagBean = new IMObjectBean(microchip2);
+        tagBean = getBean(microchip2);
         tagBean.setValue("microchip", "456");
         patient.addIdentity(microchip2);
         save(patient);
@@ -502,7 +505,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         assertNull(ctx.getValue("party:getMicrochip(.)"));
 
         EntityIdentity microchip = (EntityIdentity) create("entityIdentity.microchip");
-        IMObjectBean tagBean = new IMObjectBean(microchip);
+        IMObjectBean tagBean = getBean(microchip);
         tagBean.setValue("microchip", "1234567");
         patient.addIdentity(microchip);
         save(patient);
@@ -685,7 +688,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         assertEquals("", context.getValue("party:getWebsite(.)"));
 
         Contact contact = (Contact) create(ContactArchetypes.WEBSITE);
-        IMObjectBean bean = new IMObjectBean(contact);
+        IMObjectBean bean = getBean(contact);
         bean.setValue("url", "http://wwww.openvpms.org");
         customer.addContact(contact);
 
@@ -761,7 +764,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         home.addClassification(billing);
         Contact work = TestHelper.createLocationContact("456 Smith St", "WONTHAGGI", "VIC", "3058");
         work.addClassification(shipping);
-        IMObjectBean bean = new IMObjectBean(work);
+        IMObjectBean bean = getBean(work);
         bean.setValue("preferred", false);
         customer.addContact(home);
         customer.addContact(work);
@@ -772,6 +775,44 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         assertEquals("123 Main Rd, Kongwak Vic 3058", context.getValue("party:getAddress(., 'BILLING', true())"));
         assertEquals("456 Smith St\nWonthaggi Vic 3058", context.getValue("party:getAddress(., 'SHIPPING')"));
         assertEquals("123 Main Rd\nKongwak Vic 3058", context.getValue("party:getAddress(., 'NO_SUCH_PURPOSE')"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#setPatientInactive(Party)}. method.
+     */
+    @Test
+    public void testSetInactive() {
+        assertTrue(patient.isActive());
+        JXPathContext context = createContext(patient);
+        context.getValue("party:setPatientInactive(.)");
+        IMObject object = get(patient);
+        assertFalse(object.isActive());
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#setPatientDeceased(Party)} method.
+     */
+    @Test
+    public void testSetDeceased() {
+        JXPathContext context = createContext(patient);
+        context.getValue("party:setPatientDeceased(.)");
+        IMObject object = get(patient);
+        assertFalse(object.isActive());
+        IMObjectBean bean = getBean(object);
+        assertTrue(bean.getBoolean("deceased"));
+        assertNotNull(bean.getDate("deceasedDate"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#setPatientDesexed(Party)} method.
+     */
+    @Test
+    public void testSetDesexed() {
+        JXPathContext context = createContext(patient);
+        context.getValue("party:setPatientDesexed(.)");
+        IMObject object = get(patient);
+        IMObjectBean bean = getBean(object);
+        assertTrue(bean.getBoolean("desexed"));
     }
 
     /**
@@ -815,7 +856,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
      */
     private Contact createPhone(String number, boolean preferred, String purpose) {
         Contact contact = (Contact) create(ContactArchetypes.PHONE);
-        IMObjectBean bean = new IMObjectBean(contact);
+        IMObjectBean bean = getBean(contact);
         bean.setValue("areaCode", "03");
         bean.setValue("telephoneNumber", number);
         bean.setValue("preferred", preferred);
@@ -835,7 +876,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
      */
     private EntityIdentity createPetTag(String tag) {
         EntityIdentity result = (EntityIdentity) create("entityIdentity.petTag");
-        IMObjectBean tagBean = new IMObjectBean(result);
+        IMObjectBean tagBean = getBean(result);
         tagBean.setValue("petTag", tag);
         return result;
     }
@@ -847,7 +888,8 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
      * @return a new JXPathContext
      */
     private JXPathContext createContext(IMObject object) {
-        IArchetypeService service = getArchetypeService();
+        // use the non-rules based archetype service, as that is what is used at deployment
+        IArchetypeService service = applicationContext.getBean("defaultArchetypeService", IArchetypeService.class);
         ILookupService lookups = getLookupService();
         ArchetypeServiceFunctions functions = new ArchetypeServiceFunctions(service, lookups);
         PartyFunctions partyFunctions = new PartyFunctions(service, lookups, new PatientRules(null, service, lookups),

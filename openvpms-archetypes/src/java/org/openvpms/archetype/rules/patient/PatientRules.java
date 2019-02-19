@@ -331,7 +331,7 @@ public class PatientRules {
         IMObjectBean bean = service.getBean(patient);
         if (bean.getBoolean("active")) {
             bean.setValue("active", false);
-            bean.save();
+            service.save(patient);
         }
     }
 
@@ -349,7 +349,7 @@ public class PatientRules {
             if (bean.hasNode("deceasedDate")) {
                 bean.setValue("deceasedDate", new Date());
             }
-            bean.save();
+            service.save(patient);
         }
     }
 
@@ -375,7 +375,7 @@ public class PatientRules {
         IMObjectBean bean = service.getBean(patient);
         if (!bean.getBoolean("desexed")) {
             bean.setValue("desexed", true);
-            bean.save();
+            service.save(patient);
         }
     }
 
