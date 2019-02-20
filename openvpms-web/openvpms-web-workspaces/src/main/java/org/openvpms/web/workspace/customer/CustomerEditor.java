@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -157,5 +157,14 @@ public class CustomerEditor extends AbstractIMObjectEditor {
             }
         }
         return contact;
+    }
+
+    /**
+     * Returns the patient editor.
+     *
+     * @return the patient editor. May be {@code null}
+     */
+    PatientEntityRelationshipCollectionEditor getPatientCollectionEditor() {
+        return (PatientEntityRelationshipCollectionEditor) getEditor("patients", false);
     }
 }

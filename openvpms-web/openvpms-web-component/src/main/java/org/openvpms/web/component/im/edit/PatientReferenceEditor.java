@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.edit;
@@ -101,8 +101,12 @@ public class PatientReferenceEditor
     protected Query<Party> createQuery(String name) {
         Query<Party> query = super.createQuery(name);
         if (query instanceof PatientQuery) {
-            // constrain patients to the current customer
-            ((PatientQuery) query).setShowAllPatients(allPatients);
+            // constrain patients to the current customer, if any
+            PatientQuery patientQuery = (PatientQuery) query;
+            patientQuery.setShowAllPatients(allPatients);
+            if (allPatients) {
+                patientQuery.setQueryAllPatients(true);
+            }
         }
         return query;
     }
