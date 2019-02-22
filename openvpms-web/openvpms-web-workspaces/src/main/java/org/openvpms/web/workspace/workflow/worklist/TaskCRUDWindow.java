@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.worklist;
@@ -57,6 +57,17 @@ public class TaskCRUDWindow extends ScheduleCRUDWindow {
      */
     public TaskCRUDWindow(Context context, HelpContext help) {
         super(Archetypes.create("act.customerTask", Act.class), TaskActions.INSTANCE, context, help);
+    }
+
+    /**
+     * Sets the object.
+     *
+     * @param object the object. May be {@code null}
+     */
+    @Override
+    public void setObject(Act object) {
+        super.setObject(object);
+        getContext().setTask(object); // make available to macros etc
     }
 
     /**

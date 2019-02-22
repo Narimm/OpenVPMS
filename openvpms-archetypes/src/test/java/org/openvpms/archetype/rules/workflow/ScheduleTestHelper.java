@@ -283,7 +283,9 @@ public class ScheduleTestHelper extends TestHelper {
      * @param status    the appointment status
      * @return a new appointment
      */
-    public static Act createAppointment(Date startTime, Entity schedule, Party customer, Party patient, String status) {
+    public static Act createAppointment(Date startTime, org.openvpms.component.model.entity.Entity schedule,
+                                        org.openvpms.component.model.party.Party customer,
+                                        org.openvpms.component.model.party.Party patient, String status) {
         Date endTime = DateRules.getDate(startTime, 15, DateUnits.MINUTES);
         Act appointment = createAppointment(startTime, endTime, schedule, customer, patient);
         appointment.setStatus(status);
@@ -434,7 +436,7 @@ public class ScheduleTestHelper extends TestHelper {
      * @param workList  the work list
      * @return a new act
      */
-    public static Act createTask(Date startTime, Date endTime, Entity workList) {
+    public static Act createTask(Date startTime, Date endTime, org.openvpms.component.model.entity.Entity workList) {
         Party customer = TestHelper.createCustomer();
         Party patient = TestHelper.createPatient();
         return createTask(startTime, endTime, workList, customer, patient);
@@ -450,7 +452,9 @@ public class ScheduleTestHelper extends TestHelper {
      * @param patient   the patient. May be {@code null}
      * @return a new act
      */
-    public static Act createTask(Date startTime, Date endTime, Entity workList, Party customer, Party patient) {
+    public static Act createTask(Date startTime, Date endTime, org.openvpms.component.model.entity.Entity workList,
+                                 org.openvpms.component.model.party.Party customer,
+                                 org.openvpms.component.model.party.Party patient) {
         return createTask(startTime, endTime, workList, customer, patient, null, null);
     }
 

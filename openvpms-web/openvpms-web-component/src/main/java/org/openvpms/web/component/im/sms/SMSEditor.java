@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.sms;
@@ -128,7 +128,7 @@ public class SMSEditor extends AbstractModifiable {
      * @param context the context
      */
     public SMSEditor(Context context) {
-        this(Collections.<Contact>emptyList(), null, context);
+        this(Collections.emptyList(), null, context);
     }
 
     /**
@@ -196,7 +196,7 @@ public class SMSEditor extends AbstractModifiable {
             }
         });
 
-        setMaxParts(ServiceHelper.getSMSConnectionFactory().getMaxParts());
+        setMaxParts(1);
     }
 
     /**

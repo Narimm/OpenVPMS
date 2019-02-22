@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.sms;
@@ -78,6 +78,7 @@ public class SMSDialog extends PopupDialog {
                                                       ServiceHelper.getArchetypeService(),
                                                       ServiceHelper.getLookupService());
         editor = new SMSEditor(phones, variables, context);
+        editor.setMaxParts(ServiceHelper.getSMSConnectionFactory().getMaxParts());
 
         Column column = ColumnFactory.create(Styles.INSET, editor.getComponent());
         getLayout().add(column);

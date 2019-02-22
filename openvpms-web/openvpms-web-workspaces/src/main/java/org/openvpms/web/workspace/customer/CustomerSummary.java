@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -155,7 +155,7 @@ public class CustomerSummary extends PartySummary {
                 local.setCustomer(party);
                 Button button = ButtonFactory.create("button.sms.send", new ActionListener() {
                     public void onAction(ActionEvent event) {
-                        SMSDialog dialog = new SMSDialog(contacts, context, getHelpContext().subtopic("sms"));
+                        SMSDialog dialog = new SMSDialog(contacts, local, getHelpContext().subtopic("sms"));
                         dialog.show();
                     }
                 });
