@@ -30,7 +30,7 @@ import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
 import org.openvpms.component.system.common.query.ObjectSet;
-import org.openvpms.web.component.im.act.ActHelper;
+import org.openvpms.web.component.im.query.QueryHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.system.ServiceHelper;
 import org.springframework.transaction.TransactionStatus;
@@ -105,7 +105,7 @@ public class ScheduleEventSeriesState {
             query.add(new NodeSelectConstraint("startTime"));
             query.add(new NodeSelectConstraint("status"));
             query.add(Constraints.sort("startTime"));
-            query.add(Constraints.in("id", (Object[]) ActHelper.getIds(refs)));
+            query.add(Constraints.in("id", (Object[]) QueryHelper.getIds(refs)));
             query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
             IPage<ObjectSet> objects = service.getObjects(query);
             items = objects.getResults();

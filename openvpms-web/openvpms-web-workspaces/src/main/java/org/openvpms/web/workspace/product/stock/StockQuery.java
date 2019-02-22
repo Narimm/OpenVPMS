@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.product.stock;
@@ -35,7 +35,6 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
-import org.openvpms.web.resource.i18n.Messages;
 
 
 /**
@@ -53,12 +52,11 @@ public class StockQuery extends DateRangeActQuery<Act> {
     /**
      * The act statuses.
      */
-    private static final ActStatuses STATUSES
-            = new ActStatuses(StockArchetypes.STOCK_TRANSFER);
+    private static final ActStatuses STATUSES = new ActStatuses(StockArchetypes.STOCK_TRANSFER);
 
 
     /**
-     * Constructs a new {@code StockQuery}.
+     * Constructs a {@link StockQuery}.
      *
      * @param shortNames the act short names to query
      * @param context    the context
@@ -67,12 +65,9 @@ public class StockQuery extends DateRangeActQuery<Act> {
     public StockQuery(String[] shortNames, Context context, HelpContext help) {
         super(shortNames, STATUSES, Act.class);
 
-        setParticipantConstraint(null, "stockLocation",
-                                 StockArchetypes.STOCK_LOCATION_PARTICIPATION);
+        setParticipantConstraint(null, "stockLocation", StockArchetypes.STOCK_LOCATION_PARTICIPATION);
 
-        stockLocation = new IMObjectSelector<>(Messages.get("product.stockLocation"),
-                                               new DefaultLayoutContext(context, help),
-                                               "party.organisationStockLocation");
+        stockLocation = new StockLocationSelector(new DefaultLayoutContext(context, help));
         stockLocation.setListener(new AbstractIMObjectSelectorListener<Party>() {
             public void selected(Party object) {
                 setEntity(object);
@@ -80,9 +75,7 @@ public class StockQuery extends DateRangeActQuery<Act> {
             }
         });
 
-        Party location = context.getStockLocation();
-        stockLocation.setObject(location);
-        setEntity(location);
+        setEntity(stockLocation.getObject());
     }
 
     /**

@@ -14,23 +14,19 @@
  * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
-package org.openvpms.web.component.im.edit.act;
+package org.openvpms.web.workspace.product.stock;
 
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
-import org.openvpms.component.system.common.query.Constraints;
-import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
+import org.openvpms.web.component.im.edit.act.ParticipationEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.component.property.Property;
-
-import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_XFER_LOCATION_PARTICIPATION;
 
 
 /**
@@ -41,7 +37,7 @@ import static org.openvpms.archetype.rules.stock.StockArchetypes.STOCK_XFER_LOCA
 public class StockLocationParticipationEditor extends ParticipationEditor<Party> {
 
     /**
-     * Constructs a {@code StockLocationParticipationEditor}.
+     * Constructs a {@link StockLocationParticipationEditor}.
      *
      * @param participation the object to edit
      * @param parent        the parent object
@@ -49,8 +45,7 @@ public class StockLocationParticipationEditor extends ParticipationEditor<Party>
      */
     public StockLocationParticipationEditor(Participation participation, Act parent, LayoutContext context) {
         super(participation, parent, context);
-        if (participation.getEntity() == null && parent.isNew()
-            && !TypeHelper.isA(participation, STOCK_XFER_LOCATION_PARTICIPATION)) {
+        if (participation.isNew()) {
             Party location = getLayoutContext().getContext().getStockLocation();
             setEntity(location);
         }
@@ -68,7 +63,9 @@ public class StockLocationParticipationEditor extends ParticipationEditor<Party>
     }
 
     /**
-     * Editor for stock location {@link IMObjectReference}s.
+     * Editor for the stock location {@link Reference}s.
+     * <p/>
+     * This restricts the stock location to those locations accessible to the user.
      */
     private class LocationReferenceEditor extends AbstractIMObjectReferenceEditor<Party> {
 
@@ -78,9 +75,6 @@ public class StockLocationParticipationEditor extends ParticipationEditor<Party>
 
         /**
          * Creates a query to select stock locations.
-         * <p/>
-         * If the participation is not an <em>participation.stockTransferLocation</em>, constrains the stock location to
-         * those associated with the current practice location, if any.
          *
          * @param name a name to filter on. May be {@code null}
          * @return a new query
@@ -88,14 +82,8 @@ public class StockLocationParticipationEditor extends ParticipationEditor<Party>
          */
         @Override
         protected Query<Party> createQuery(String name) {
-            Query<Party> query = super.createQuery(name);
-            if (!TypeHelper.isA(getObject(), STOCK_XFER_LOCATION_PARTICIPATION)) {
-                Context context = getLayoutContext().getContext();
-                Party location = context.getLocation();
-                if (location != null) {
-                    query.setConstraints(Constraints.join("locations").add(Constraints.eq("source", location)));
-                }
-            }
+            Query<Party> query = new UserStockLocationQuery(getContext());
+            query.setValue(name);
             return query;
         }
     }

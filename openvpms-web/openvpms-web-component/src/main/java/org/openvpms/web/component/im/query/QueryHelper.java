@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -25,6 +25,7 @@ import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.Constraints;
@@ -34,6 +35,7 @@ import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
@@ -344,6 +346,21 @@ public class QueryHelper {
         query.setMaxResults(1);
         List<IMObject> rows = query(query);
         return (!rows.isEmpty()) ? (Participation) rows.get(0) : null;
+    }
+
+    /**
+     * Creates a sorted list of identifiers suitable for use in an {@link Constraints#in} constraint.
+     *
+     * @param references the object references. Must refer to the same base type
+     * @return a sorted list of identifiers
+     */
+    public static Long[] getIds(List<Reference> references) {
+        Long[] result = new Long[references.size()];
+        for (int i = 0; i < references.size(); ++i) {
+            result[i] = references.get(i).getId();
+        }
+        Arrays.sort(result);
+        return result;
     }
 
     /**

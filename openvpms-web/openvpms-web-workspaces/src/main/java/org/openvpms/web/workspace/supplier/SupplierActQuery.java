@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier;
 
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
+import org.openvpms.archetype.rules.stock.StockArchetypes;
 import org.openvpms.archetype.rules.supplier.SupplierArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
@@ -30,7 +31,7 @@ import org.openvpms.web.component.im.query.ResultSet;
 import org.openvpms.web.component.im.select.AbstractIMObjectSelectorListener;
 import org.openvpms.web.component.im.select.IMObjectSelector;
 import org.openvpms.web.echo.factory.LabelFactory;
-import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.workspace.product.stock.StockLocationSelector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,8 +74,7 @@ public abstract class SupplierActQuery<T extends Act> extends DateRangeActQuery<
             }
         });
 
-        stockLocation = new IMObjectSelector<>(Messages.get("product.stockLocation"), context,
-                                               "party.organisationStockLocation");
+        stockLocation = new StockLocationSelector(context);
         stockLocation.setListener(new AbstractIMObjectSelectorListener<Party>() {
             public void selected(Party object) {
                 onQuery();
@@ -82,7 +82,7 @@ public abstract class SupplierActQuery<T extends Act> extends DateRangeActQuery<
         });
 
         setSupplier(context.getContext().getSupplier());
-        setStockLocation(context.getContext().getStockLocation());
+        setStockLocation(stockLocation.getObject());
     }
 
     /**
@@ -136,7 +136,8 @@ public abstract class SupplierActQuery<T extends Act> extends DateRangeActQuery<
             list.add(supplier);
         }
         if (stockLocation.getObject() != null) {
-            ParticipantConstraint location = new ParticipantConstraint("stockLocation", "participation.stockLocation",
+            ParticipantConstraint location = new ParticipantConstraint("stockLocation",
+                                                                       StockArchetypes.STOCK_LOCATION_PARTICIPATION,
                                                                        stockLocation.getObject());
             list.add(location);
         }

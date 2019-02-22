@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.supplier;
@@ -26,7 +26,7 @@ import org.openvpms.web.echo.factory.GridFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.workspace.product.stock.StockLocationSelector;
 
 /**
  * Supplier/Stock Location selector.
@@ -67,7 +67,7 @@ public class StockDetailsSelector {
         supplier = new SupplierSelector(supplierContext);
 
         LayoutContext locationContext = new DefaultLayoutContext(context, help.topic("stockLocation/select"));
-        location = new StockLocationSelector(Messages.get("product.stockLocation"), locationContext);
+        location = new StockLocationSelector(locationContext);
 
         Grid grid = GridFactory.create(2);
         grid.add(LabelFactory.create("supplier.type"));
