@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -73,6 +73,7 @@ public class CheckInDialog extends ModalDialog {
     public CheckInDialog(Party customer, Party patient, Entity schedule, User clinician, Party location,
                          Date arrivalTime, Act appointment, User user, HelpContext help) {
         super(Messages.get("patient.checkin.title"), "CheckInDialog", OK_CANCEL, help);
+        resize();
         transactionManager = ServiceHelper.getBean(PlatformTransactionManager.class);
         editor = new CheckInEditor(customer, patient, schedule, clinician, location, arrivalTime, appointment, user,
                                    help);

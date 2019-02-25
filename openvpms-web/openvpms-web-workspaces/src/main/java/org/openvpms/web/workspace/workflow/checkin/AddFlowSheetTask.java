@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -108,6 +108,6 @@ public class AddFlowSheetTask extends Tasks {
      */
     private boolean createFlowSheet(Entity workList) {
         IMObjectBean bean = new IMObjectBean(workList);
-        return bean.getString("createFlowSheet") != null;
+        return bean.getBoolean("createFlowSheet");
     }
 }

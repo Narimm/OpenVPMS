@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkin;
@@ -172,7 +172,7 @@ class PatientWeightTask extends Tasks {
     }
 
     private boolean createFlowSheet(Entity workList) {
-        return workList != null && new IMObjectBean(workList).getString("createFlowSheet") != null;
+        return workList != null && new IMObjectBean(workList).getBoolean("createFlowSheet");
     }
 
     /**

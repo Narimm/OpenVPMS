@@ -355,7 +355,7 @@ public class CheckInWorkflow extends WorkflowImpl {
     }
 
     /**
-     * Task to create a flow sheet if a work list has been selected and has "createFlowSheet" set.
+     * Task to create a flow sheet.
      */
     private class CreateFlowSheetTask extends AbstractTask {
 
