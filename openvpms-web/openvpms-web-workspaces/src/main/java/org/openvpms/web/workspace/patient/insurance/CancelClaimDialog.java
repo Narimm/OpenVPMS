@@ -11,13 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.insurance;
 
 import nextapp.echo2.app.Label;
-import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
+import org.openvpms.archetype.rules.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.model.archetype.NodeDescriptor;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;

@@ -26,6 +26,7 @@ import net.sf.jasperreports.engine.JRRuntimeException;
 import net.sf.jasperreports.engine.JRValueParameter;
 import net.sf.jasperreports.engine.JasperReport;
 import net.sf.jasperreports.engine.JasperReportsContext;
+import net.sf.jasperreports.engine.fill.JRParameterDefaultValuesEvaluator;
 import net.sf.jasperreports.engine.query.JRJdbcQueryExecuterFactory;
 import net.sf.jasperreports.engine.query.JRQueryExecuter;
 import org.apache.commons.jxpath.Functions;
@@ -45,11 +46,6 @@ public class JDBCQueryExecuterFactory extends JRJdbcQueryExecuterFactory {
 
 
     /**
-     * Fields to pass to the report. May be {@code null}
-     */
-    private ResolvingPropertySet fields;
-
-    /**
      * The archetype service.
      */
     private final IArchetypeService service;
@@ -63,6 +59,11 @@ public class JDBCQueryExecuterFactory extends JRJdbcQueryExecuterFactory {
      * The extension functions.
      */
     private final Functions functions;
+
+    /**
+     * Fields to pass to the report. May be {@code null}
+     */
+    private ResolvingPropertySet fields;
 
     /**
      * Constructs a {@link JDBCQueryExecuterFactory}.
@@ -98,7 +99,7 @@ public class JDBCQueryExecuterFactory extends JRJdbcQueryExecuterFactory {
     public JRQueryExecuter createQueryExecuter(JasperReportsContext context, JasperReport report,
                                                Map<String, Object> parameters) throws JRException {
         JRDataset dataset = report.getMainDataset();
-        return createQueryExecuter(context, dataset, convert(dataset, parameters));
+        return createQueryExecuter(context, dataset, convert(report, context, parameters));
     }
 
     /**
@@ -119,21 +120,29 @@ public class JDBCQueryExecuterFactory extends JRJdbcQueryExecuterFactory {
     /**
      * Helper to convert a map of parameters to those required by {@code JRJdbcQueryExecuter}.
      *
-     * @param dataset    the report data set
+     * @param report     the report
      * @param parameters the report parameters
      * @return the converted parameters
+     * @throws JRException if parameters cannot be evaluated
      */
-    public static Map<String, ? extends JRValueParameter> convert(JRDataset dataset, Map<String, Object> parameters) {
-        JRParameter[] list = dataset.getParameters();
+    private static Map<String, ? extends JRValueParameter> convert(JasperReport report, JasperReportsContext context,
+                                                                   Map<String, Object> parameters)
+            throws JRException {
+        Map<String, Object> evaluated = JRParameterDefaultValuesEvaluator.evaluateParameterDefaultValues(
+                context, report, parameters);
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+            if (!evaluated.containsKey(entry.getKey())) {
+                evaluated.put(entry.getKey(), entry.getValue());
+            }
+        }
+
         Map<String, Parameter> result = new HashMap<>();
-        if (list != null) {
-            for (JRParameter parameter : list) {
-                String name = parameter.getName();
-                if (JRParameter.REPORT_PARAMETERS_MAP.equals(name)) {
-                    result.put(name, new Parameter(parameter, parameters));
-                } else {
-                    result.put(name, new Parameter(parameter, parameters.get(name)));
-                }
+        for (JRParameter parameter : report.getParameters()) {
+            String name = parameter.getName();
+            if (JRParameter.REPORT_PARAMETERS_MAP.equals(name)) {
+                result.put(name, new Parameter(parameter, evaluated));
+            } else {
+                result.put(name, new Parameter(parameter, evaluated.get(name)));
             }
         }
         return result;

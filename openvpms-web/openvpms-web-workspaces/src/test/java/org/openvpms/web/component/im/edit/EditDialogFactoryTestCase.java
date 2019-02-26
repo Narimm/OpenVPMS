@@ -32,6 +32,7 @@ import org.openvpms.web.echo.help.HelpListener;
 import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.test.AbstractAppTest;
 import org.openvpms.web.workspace.customer.charge.DefaultCustomerChargeActEditDialog;
+import org.openvpms.web.workspace.customer.credit.CreditActEditDialog;
 import org.openvpms.web.workspace.patient.mr.PatientClinicalEventEditDialog;
 
 import static org.junit.Assert.assertEquals;
@@ -73,12 +74,9 @@ public class EditDialogFactoryTestCase extends AbstractAppTest {
     @Test
     public void testCreateActEditDialog() {
         checkCreate(CustomerAccountArchetypes.COUNTER, ActEditDialog.class);
-        checkCreate(CustomerAccountArchetypes.CREDIT, ActEditDialog.class);
         checkCreate(CustomerAccountArchetypes.DEBIT_ADJUST, ActEditDialog.class);
-        checkCreate(CustomerAccountArchetypes.PAYMENT, ActEditDialog.class);
         checkCreate(CustomerAccountArchetypes.REFUND, ActEditDialog.class);
         checkCreate(CustomerAccountArchetypes.INITIAL_BALANCE, ActEditDialog.class);
-        checkCreate(CustomerAccountArchetypes.BAD_DEBT, ActEditDialog.class);
     }
 
     /**
@@ -86,6 +84,17 @@ public class EditDialogFactoryTestCase extends AbstractAppTest {
      */
     public void testCreatePatientClinicalEventEditDialog() {
         checkCreate(PatientArchetypes.CLINICAL_EVENT, PatientClinicalEventEditDialog.class);
+    }
+
+    /**
+     * Verifies that a {@link CreditActEditDialog} is returned for customer credit acts.
+     */
+    @Test
+    public void testCreateCreditActEditDialog() {
+        checkCreate(CustomerAccountArchetypes.BAD_DEBT, CreditActEditDialog.class);
+        checkCreate(CustomerAccountArchetypes.CREDIT, CreditActEditDialog.class);
+        checkCreate(CustomerAccountArchetypes.CREDIT_ADJUST, CreditActEditDialog.class);
+        checkCreate(CustomerAccountArchetypes.PAYMENT, CreditActEditDialog.class);
     }
 
     /**

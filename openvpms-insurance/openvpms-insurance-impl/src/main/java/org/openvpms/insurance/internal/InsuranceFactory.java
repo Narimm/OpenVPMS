@@ -11,18 +11,25 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.insurance.internal;
 
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.archetype.rules.party.CustomerRules;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
+import org.openvpms.archetype.rules.insurance.InsuranceRules;
+import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.party.Party;
+import org.openvpms.domain.internal.practice.LocationImpl;
+import org.openvpms.domain.practice.Location;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.internal.claim.ClaimImpl;
+import org.openvpms.insurance.internal.claim.GapClaimImpl;
 import org.openvpms.insurance.internal.policy.PolicyImpl;
 import org.openvpms.insurance.policy.Policy;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -40,9 +47,19 @@ public class InsuranceFactory {
     private final IArchetypeRuleService service;
 
     /**
+     * The insurance rules.
+     */
+    private final InsuranceRules insuranceRules;
+
+    /**
      * The customer rules.
      */
-    private final CustomerRules customerRules;
+    private final PartyRules partyRules;
+
+    /**
+     * The customer account rules.
+     */
+    private final CustomerAccountRules accountRules;
 
     /**
      * The patient rules.
@@ -63,16 +80,20 @@ public class InsuranceFactory {
      * Constructs a {@link InsuranceFactory}.
      *
      * @param service            the archetype service
-     * @param customerRules      the customer rules
+     * @param insuranceRules     the insurance rules
+     * @param partyRules         the party rules
+     * @param accountRules       the customer account rules
      * @param patientRules       the patient rules
      * @param handlers           the document handlers
      * @param transactionManager the transaction manager
      */
-    public InsuranceFactory(IArchetypeRuleService service, CustomerRules customerRules, PatientRules patientRules,
-                            DocumentHandlers handlers,
+    public InsuranceFactory(IArchetypeRuleService service, InsuranceRules insuranceRules, PartyRules partyRules,
+                            CustomerAccountRules accountRules, PatientRules patientRules, DocumentHandlers handlers,
                             PlatformTransactionManager transactionManager) {
         this.service = service;
-        this.customerRules = customerRules;
+        this.insuranceRules = insuranceRules;
+        this.partyRules = partyRules;
+        this.accountRules = accountRules;
         this.patientRules = patientRules;
         this.handlers = handlers;
         this.transactionManager = transactionManager;
@@ -85,7 +106,7 @@ public class InsuranceFactory {
      * @return the corresponding policy
      */
     public Policy createPolicy(Act policy) {
-        return new PolicyImpl(policy, service, customerRules, patientRules);
+        return new PolicyImpl(policy, service, partyRules, patientRules);
     }
 
     /**
@@ -106,6 +127,22 @@ public class InsuranceFactory {
      * @return the corresponding claim
      */
     public Claim createClaim(Act claim, IArchetypeRuleService service) {
-        return new ClaimImpl(claim, service, customerRules, patientRules, handlers, transactionManager);
+        IMObjectBean bean = service.getBean(claim);
+        if (!bean.getBoolean("gapClaim")) {
+            return new ClaimImpl(bean, service, insuranceRules, partyRules, patientRules, handlers,
+                                 transactionManager);
+        }
+        return new GapClaimImpl(bean, service, insuranceRules, partyRules, accountRules, patientRules, handlers,
+                                transactionManager);
+    }
+
+    /**
+     * Helper to return a {@link Location} given its party instance.
+     *
+     * @param location the party
+     * @return the corresponding location
+     */
+    public Location getLocation(Party location) {
+        return new LocationImpl(location, service, partyRules);
     }
 }

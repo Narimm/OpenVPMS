@@ -32,6 +32,7 @@ public interface InsuranceServices {
      *
      * @param insurer the insurer
      * @return {@code true} if insurer accepts claims via an {@link InsuranceService}
+     * @throws InsuranceException if the service is unavailable
      */
     boolean canSubmit(Party insurer);
 

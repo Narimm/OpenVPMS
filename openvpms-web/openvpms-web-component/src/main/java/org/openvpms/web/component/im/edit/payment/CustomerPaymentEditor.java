@@ -19,9 +19,12 @@ package org.openvpms.web.component.im.edit.payment;
 import nextapp.echo2.app.Component;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.IMObjectCollectionEditor;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.layout.ComponentGrid;
 import org.openvpms.web.component.im.layout.ComponentSet;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -97,6 +100,50 @@ public class CustomerPaymentEditor extends AbstractCustomerPaymentEditor {
     }
 
     /**
+     * Returns the customer.
+     *
+     * @return the customer. May be {@code null}
+     */
+    public Party getCustomer() {
+        return (Party) getParticipant("customer");
+    }
+
+    /**
+     * Creates a new instance of the editor, with the latest instance of the object to edit.
+     *
+     * @return a new instance
+     * @throws OpenVPMSException if a new instance cannot be created
+     */
+    @Override
+    public IMObjectEditor newInstance() {
+        // TODO - add items
+        return new CustomerPaymentEditor(reloadPayment(), getParent(), getLayoutContext(), getInvoiceAmount());
+    }
+
+    /**
+     * Reloads the payment.
+     * <p/>
+     * This resets the payment if it has never been saved
+     *
+     * @return the payment
+     * @see #newInstance()
+     * @throws OpenVPMSException if the payment cannot be reloaded
+     */
+    protected FinancialAct reloadPayment() {
+        FinancialAct object = (FinancialAct) reload(getObject());
+        if (object.isNew()) {
+            // reset the object. This removes any relationships as the targets haven't been saved.
+            object.setTotal(BigDecimal.ZERO);
+            object.setTaxAmount(BigDecimal.ZERO);
+            object.setAllocatedAmount(BigDecimal.ZERO);
+            object.getParticipations().clear();
+            object.getSourceActRelationships().clear();
+            object.getTargetActRelationships().clear();
+        }
+        return object;
+    }
+
+    /**
      * Creates the layout strategy.
      *
      * @return a new layout strategy
@@ -110,7 +157,7 @@ public class CustomerPaymentEditor extends AbstractCustomerPaymentEditor {
      * Updates the balance summary for the current customer.
      */
     protected void updateSummary() {
-        Party customer = (Party) getParticipant("customer");
+        Party customer = getCustomer();
         BigDecimal overdue = BigDecimal.ZERO;
         BigDecimal previous = BigDecimal.ZERO;
         BigDecimal total = BigDecimal.ZERO;

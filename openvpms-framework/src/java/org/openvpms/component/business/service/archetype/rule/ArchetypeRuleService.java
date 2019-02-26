@@ -134,11 +134,9 @@ public class ArchetypeRuleService extends DelegatingArchetypeService implements 
      * @throws ArchetypeServiceException if the object cannot be removed
      */
     @Override
-    public void remove(org.openvpms.component.model.object.IMObject object) {
-        execute("remove", object, new Runnable() {
-            public void run() {
-                getService().remove(object);
-            }
+    public void remove(final org.openvpms.component.model.object.IMObject object) {
+        execute("remove", object, () -> {
+            getService().remove(object);
         });
     }
 
@@ -157,7 +155,7 @@ public class ArchetypeRuleService extends DelegatingArchetypeService implements 
      * @param operation the operation to execute
      */
     private void execute(String name, org.openvpms.component.model.object.IMObject object, Runnable operation) {
-        template.execute(transactionStatus -> {
+        template.execute(status -> {
             executeRules(name, object, true);
             operation.run();
             executeRules(name, object, false);
@@ -206,7 +204,7 @@ public class ArchetypeRuleService extends DelegatingArchetypeService implements 
             if (log.isDebugEnabled()) {
                 log.debug("Executing rules for uri=" + uri);
             }
-            List<Object> localFacts = new ArrayList<Object>();
+            List<Object> localFacts = new ArrayList<>();
             localFacts.add(object);
             localFacts.add(getService());
             localFacts.add(txnManager);

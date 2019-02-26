@@ -27,9 +27,10 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.PeriodRelationship;
+import org.openvpms.component.model.object.Relationship;
+import org.openvpms.component.model.party.Party;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -197,9 +198,9 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
     public void testGetReferralVet() {
         Party patient = TestHelper.createPatient(false);
         Party vet = TestHelper.createSupplierVet();
-        EntityBean bean = new EntityBean(patient);
-        EntityRelationship referral
-                = bean.addRelationship("entityRelationship.referredFrom", vet);
+        org.openvpms.component.model.bean.IMObjectBean bean = getBean(patient);
+        PeriodRelationship referral = (PeriodRelationship) bean.addTarget(
+                "referrals", "entityRelationship.referredFrom", vet);
 
         // verify the vet is returned for a time > the default start time
         Party vet2 = rules.getReferralVet(patient, new Date());
@@ -420,10 +421,9 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
      * @param expected the expected owner
      */
     private void checkOwner(Party patient, String date, Party expected) {
-        Act act = (Act) create(PatientArchetypes.PATIENT_WEIGHT);
+        Act act = (Act) create(PatientArchetypes.CLINICAL_EVENT);
         act.setActivityStartTime(getDate(date));
-        IMObjectBean bean = getBean(act);
-        bean.setTarget("patient", patient);
+        getBean(act).setTarget("patient", patient);
         assertEquals(expected, rules.getOwner(act));
     }
 
@@ -435,10 +435,9 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
      * @param expected the expected location customer
      */
     private void checkLocation(Party patient, String date, Party expected) {
-        Act act = (Act) create(PatientArchetypes.PATIENT_WEIGHT);
+        Act act = (Act) create(PatientArchetypes.CLINICAL_EVENT);
         act.setActivityStartTime(getDate(date));
-        IMObjectBean bean = getBean(act);
-        bean.setTarget("patient", patient);
+        getBean(act).setTarget("patient", patient);
         assertEquals(expected, rules.getLocation(act));
     }
 
@@ -449,9 +448,10 @@ public class PatientRulesTestCase extends ArchetypeServiceTest {
      * @param shortName the relationship short name
      */
     private void deactivateRelationship(Party patient, String shortName) {
-        EntityBean bean = new EntityBean(patient);
-        for (EntityRelationship relationship : bean.getRelationships(shortName)) {
-            relationship.setActive(false);
+        for (Relationship relationship : patient.getEntityRelationships()) {
+            if (relationship.isA(shortName)) {
+                relationship.setActive(false);
+            }
         }
         try {
             Thread.sleep(1000);

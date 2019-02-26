@@ -16,7 +16,7 @@
 
 package org.openvpms.web.workspace.admin;
 
-import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
+import org.openvpms.archetype.rules.insurance.InsuranceArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;

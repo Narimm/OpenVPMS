@@ -19,7 +19,7 @@ package org.openvpms.component.business.dao.hibernate.im.query;
 import org.apache.commons.lang.WordUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.NodeConstraint;
@@ -761,8 +761,8 @@ public class QueryContext {
                 return param;
 
             default:
-                if (param instanceof IMObjectReference) {
-                    return ((IMObjectReference) param).getId();
+                if (param instanceof Reference) {
+                    return ((Reference) param).getId();
                 }
                 return param;
         }

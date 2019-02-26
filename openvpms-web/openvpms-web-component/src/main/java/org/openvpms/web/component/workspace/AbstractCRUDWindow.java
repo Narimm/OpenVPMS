@@ -828,7 +828,7 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * Invoked to preview the current object.
      */
     protected void onPreview() {
-        run(this::preview, getObject(), "preview.title");
+        run(this::preview, getObject(), true, "preview.title");
     }
 
     /**
@@ -951,12 +951,26 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @return a new listener
      */
     protected ActionListener action(String archetype, Consumer<T> action, String title) {
+        return action(archetype, action, true, title);
+    }
+
+    /**
+     * Creates an action listener that runs an action against the selected object when clicked.
+     * <p>
+     * The action is run with the latest instance of the selected object, but only if it matches the supplied archetype.
+     *
+     * @param archetype the archetype. May contain wildcards
+     * @param action    the action to execute, when the selected object is an instance of {@code archetype}
+     * @param title     the title resource bundle key, used when displaying an error dialog if the action fails
+     * @return a new listener
+     */
+    protected ActionListener action(String archetype, Consumer<T> action, boolean required, String title) {
         return new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
                 T object = getObject();
                 if (TypeHelper.isA(object, archetype)) {
-                    run(action, object, title);
+                    run(action, object, required, title);
                 }
             }
         };
@@ -972,11 +986,25 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @return a new listener
      */
     protected ActionListener action(Consumer<T> action, String title) {
+        return action(action, true, title);
+    }
+
+    /**
+     * Creates an action listener that runs an action against the selected object when clicked.
+     * <p>
+     * The action is run with the latest instance of the selected object.
+     *
+     * @param action   the action to execute
+     * @param required if {@code true}, the object is required, otherwise the action supports a {@code null} argument
+     * @param title    the title resource bundle key, used when displaying an error dialog if the action fails
+     * @return a new listener
+     */
+    protected ActionListener action(Consumer<T> action, boolean required, String title) {
         return new ActionListener() {
             @Override
             public void onAction(ActionEvent event) {
                 T object = getObject();
-                run(action, object, title);
+                run(action, object, required, title);
             }
         };
     }
@@ -989,9 +1017,21 @@ public abstract class AbstractCRUDWindow<T extends IMObject> implements CRUDWind
      * @param title  the title resource bundle key, used when displaying an error dialog if the action fails
      */
     private void run(Consumer<T> action, T object, String title) {
+        run(action, object, true, title);
+    }
+
+    /**
+     * Runs an action with the latest instance of an object.
+     *
+     * @param action   the action
+     * @param object   the object. May be {@code null}
+     * @param required if {@code true}, the object is required, otherwise the action supports a {@code null} argument
+     * @param title    the title resource bundle key, used when displaying an error dialog if the action fails
+     */
+    private void run(Consumer<T> action, T object, boolean required, String title) {
         try {
             T latest = IMObjectHelper.reload(object);
-            if (latest != null) {
+            if (latest != null || !required) {
                 action.accept(latest);
             } else {
                 String displayName = object != null ? DescriptorHelper.getDisplayName(object)

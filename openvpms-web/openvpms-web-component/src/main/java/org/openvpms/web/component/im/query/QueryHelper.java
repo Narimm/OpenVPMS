@@ -24,6 +24,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.Participation;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
@@ -33,6 +34,7 @@ import org.openvpms.component.system.common.query.IConstraint;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
 import org.openvpms.component.system.common.query.JoinConstraint;
 import org.openvpms.component.system.common.query.ShortNameConstraint;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -132,8 +134,19 @@ public class QueryHelper {
      * @return the matching objects
      */
     public static <T extends org.openvpms.component.model.object.IMObject> List<T> query(ArchetypeQuery query) {
+        return query(query, ServiceHelper.getArchetypeService());
+    }
+
+    /**
+     * Returns all objects matching the specified query in a list.
+     *
+     * @param query   the query
+     * @param service the archetype service
+     * @return the matching objects
+     */
+    public static <T extends org.openvpms.component.model.object.IMObject> List<T> query(ArchetypeQuery query, IArchetypeService service) {
         List<T> matches = new ArrayList<>();
-        CollectionUtils.addAll(matches, new IMObjectQueryIterator<T>(query));
+        CollectionUtils.addAll(matches, new IMObjectQueryIterator<T>(service, query));
         return matches;
     }
 
@@ -209,9 +222,9 @@ public class QueryHelper {
 
     /**
      * Helper to create a constraint on a date node.
-     * <p/>
+     * <p>
      * NOTE: any time component is stripped from the date.
-     * <p/>
+     * <p>
      * If:
      * <ul>
      * <li>{@code from} and {@code to} are {@code null} no constraint is created</li>

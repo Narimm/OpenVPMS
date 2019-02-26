@@ -81,7 +81,7 @@ public abstract class AbstractServiceTest extends AbstractMessageTest {
 
             @Override
             public List<Connector> getConnectors() {
-                return Collections.<Connector>singletonList(sender);
+                return Collections.singletonList(sender);
             }
 
             @Override

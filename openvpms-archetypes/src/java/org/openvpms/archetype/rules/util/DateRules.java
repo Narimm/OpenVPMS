@@ -24,6 +24,7 @@ import org.openvpms.component.system.common.util.DateHelper;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Calendar;
 import java.util.Date;
@@ -427,6 +428,16 @@ public class DateRules {
     }
 
     /**
+     * Helper to convert a {@code Date} to a {@code OffsetDateTime}, using the system default time zone.
+     *
+     * @param date the date to convert. May be {@code null}
+     * @return the converted date. May be {@code null}
+     */
+    public static OffsetDateTime toOffsetDateTime(Date date) {
+        return (date != null) ? OffsetDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault()) : null;
+    }
+
+    /**
      * Helper to convert a {@code LocalDate} to a {@code Date}, using the system default time zone.
      *
      * @param date the date to convert. May be {@code null}
@@ -435,5 +446,37 @@ public class DateRules {
     public static Date toDate(LocalDate date) {
         return (date != null) ? Date.from(date.atStartOfDay().atZone(ZoneId.systemDefault()).toInstant()) : null;
     }
+
+    /**
+     * Converts a {@code OffsetDateTime} to a date.
+     *
+     * @param date the date to convert. May be {@code null}
+     * @return the converted date. May be {@code null}
+     */
+    public static Date toDate(OffsetDateTime date) {
+        return (date != null) ? Date.from(date.toInstant()) : null;
+    }
+
+    /**
+     * Determines if a date is today.
+     *
+     * @param date the date
+     * @return {@code true} if a date is today
+     */
+    public static boolean isToday(OffsetDateTime date) {
+        return date.withOffsetSameInstant(OffsetDateTime.now().getOffset()).toLocalDate().equals(LocalDate.now());
+    }
+
+    /**
+     * Determines if a date is tomorrow.
+     *
+     * @param date the date
+     * @return {@code true} if a date is tomorrow
+     */
+    public static boolean isTomorrow(OffsetDateTime date) {
+        return date.withOffsetSameInstant(OffsetDateTime.now().getOffset()).toLocalDate()
+                .equals(LocalDate.now().plusDays(1));
+    }
+
 
 }

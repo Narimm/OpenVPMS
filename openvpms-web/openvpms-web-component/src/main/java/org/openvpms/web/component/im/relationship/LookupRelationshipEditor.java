@@ -17,6 +17,7 @@
 package org.openvpms.web.component.im.relationship;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
@@ -25,7 +26,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
  *
  * @author Tim Anderson
  */
-public class LookupRelationshipEditor extends AbstractRelationshipEditor {
+public class LookupRelationshipEditor extends AbstractRelationshipEditor<Lookup> {
 
     /**
      * Constructs an {@link LookupRelationshipEditor}.

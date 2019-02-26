@@ -24,6 +24,7 @@ import org.openvpms.web.resource.i18n.Messages;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.OffsetDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -90,6 +91,17 @@ public class DateFormatter {
     }
 
     /**
+     * Format a date.
+     *
+     * @param date the date to format
+     * @param edit if {@code true} format the number for editing
+     * @return the formatted date
+     */
+    public static String formatDate(OffsetDateTime date, boolean edit) {
+        return formatDate(DateRules.toDate(date), edit);
+    }
+
+    /**
      * Returns a date format.
      *
      * @param edit if {@code true} return a format for editing otherwise return a format for viewing dates
@@ -152,10 +164,21 @@ public class DateFormatter {
      *
      * @param time the time to format
      * @param edit if {@code true} format the number for editing
-     * @return the formatted date
+     * @return the formatted time
      */
     public static String formatTime(Date time, boolean edit) {
         return getTimeFormat(edit).format(time);
+    }
+
+    /**
+     * Format a time.
+     *
+     * @param time the time to format
+     * @param edit if {@code true} format the number for editing
+     * @return the formatted time
+     */
+    public static String formatTime(OffsetDateTime time, boolean edit) {
+        return formatTime(DateRules.toDate(time), edit);
     }
 
     /**
@@ -246,6 +269,16 @@ public class DateFormatter {
      */
     public static String formatDateTimeAbbrev(Date dateTime) {
         return formatDateTimeAbbrev(dateTime, DateRules.getToday());
+    }
+
+    /**
+     * Formats a date-time, abbreviating it to just the time if the date is today.
+     *
+     * @param dateTime the date-time to format
+     * @return the formatted date-time
+     */
+    public static String formatDateTimeAbbrev(OffsetDateTime dateTime) {
+        return formatDateTimeAbbrev(new Date(dateTime.toInstant().toEpochMilli()));
     }
 
     /**

@@ -19,7 +19,6 @@ package org.openvpms.web.component.im.relationship;
 import nextapp.echo2.app.Component;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
@@ -46,17 +45,17 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor {
+public abstract class AbstractRelationshipEditor<T extends IMObject> extends AbstractIMObjectEditor {
 
     /**
      * Editor for the source of the relationship. Null if the source is the parent.
      */
-    private IMObjectReferenceEditor<Entity> sourceEditor;
+    private IMObjectReferenceEditor<T> sourceEditor;
 
     /**
      * Editor for the target of the relationship. Null if the target is the parent.
      */
-    private IMObjectReferenceEditor<Entity> targetEditor;
+    private IMObjectReferenceEditor<T> targetEditor;
 
     /**
      * The nodes to render.
@@ -127,7 +126,7 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
      *
      * @param source the source. May be {@code null}
      */
-    public void setSource(Entity source) {
+    public void setSource(T source) {
         if (sourceEditor != null) {
             sourceEditor.setObject(source);
         } else {
@@ -140,7 +139,7 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
      *
      * @param target the target. May be {@code null}
      */
-    public void setTarget(Entity target) {
+    public void setTarget(T target) {
         if (targetEditor != null) {
             targetEditor.setObject(target);
         } else {
@@ -196,11 +195,11 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
         return new LayoutStrategy();
     }
 
-    protected IMObjectReferenceEditor<Entity> getSourceEditor() {
+    protected IMObjectReferenceEditor<T> getSourceEditor() {
         return sourceEditor;
     }
 
-    protected IMObjectReferenceEditor<Entity> getTargetEditor() {
+    protected IMObjectReferenceEditor<T> getTargetEditor() {
         return targetEditor;
     }
 
@@ -211,7 +210,7 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
      * @param context  the layout context
      * @return a new reference editor
      */
-    protected IMObjectReferenceEditor<Entity> createSourceEditor(Property property, LayoutContext context) {
+    protected IMObjectReferenceEditor<T> createSourceEditor(Property property, LayoutContext context) {
         return createReferenceEditor(property, context);
     }
 
@@ -222,7 +221,7 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
      * @param context  the layout context
      * @return a new reference editor
      */
-    protected IMObjectReferenceEditor<Entity> createTargetEditor(Property property, LayoutContext context) {
+    protected IMObjectReferenceEditor<T> createTargetEditor(Property property, LayoutContext context) {
         return createReferenceEditor(property, context);
     }
 
@@ -233,8 +232,8 @@ public abstract class AbstractRelationshipEditor extends AbstractIMObjectEditor 
      * @param context  the layout context
      * @return a new reference editor
      */
-    protected IMObjectReferenceEditor<Entity> createReferenceEditor(Property property, LayoutContext context) {
-        IMObjectReferenceEditor<Entity> editor = IMObjectReferenceEditorFactory.create(property, getObject(), context);
+    protected IMObjectReferenceEditor<T> createReferenceEditor(Property property, LayoutContext context) {
+        IMObjectReferenceEditor<T> editor = IMObjectReferenceEditorFactory.create(property, getObject(), context);
         editor.setAllowCreate(true);
         return editor;
     }

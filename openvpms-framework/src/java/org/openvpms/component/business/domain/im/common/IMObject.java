@@ -178,8 +178,8 @@ public class IMObject implements org.openvpms.component.model.object.IMObject, S
         if (this == obj) {
             return true;
         }
-        if (obj instanceof IMObject) {
-            IMObject rhs = (IMObject) obj;
+        if (obj instanceof org.openvpms.component.model.object.IMObject) {
+            org.openvpms.component.model.object.IMObject rhs = (org.openvpms.component.model.object.IMObject) obj;
             return getObjectReference().equals(rhs.getObjectReference());
         }
         return false;
@@ -192,7 +192,8 @@ public class IMObject implements org.openvpms.component.model.object.IMObject, S
      */
     @Override
     public String getArchetype() {
-        return archetypeId != null ? archetypeId.getShortName() : null;
+        ArchetypeId result = getArchetypeId();
+        return (result != null) ? result.getShortName() : null;
     }
 
     /**

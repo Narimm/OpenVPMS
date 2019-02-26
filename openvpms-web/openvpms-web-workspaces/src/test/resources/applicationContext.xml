@@ -245,8 +245,23 @@
         <constructor-arg ref="archetypeService"/>
     </bean>
 
-    <bean id="insuranceRules" class="org.openvpms.archetype.rules.patient.insurance.InsuranceRules">
+    <bean id="insuranceRules" class="org.openvpms.archetype.rules.insurance.InsuranceRules">
         <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="txnManager"/>
+    </bean>
+
+    <bean id="creditAllocator" class="org.openvpms.archetype.rules.finance.credit.CreditActAllocator">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="insuranceRules"/>
+    </bean>
+
+    <bean id="insuranceFactory" class="org.openvpms.insurance.internal.InsuranceFactory">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="insuranceRules"/>
+        <constructor-arg ref="customerRules"/>
+        <constructor-arg ref="customerAccountRules"/>
+        <constructor-arg ref="patientRules"/>
+        <constructor-arg ref="documentHandlers"/>
         <constructor-arg ref="txnManager"/>
     </bean>
 

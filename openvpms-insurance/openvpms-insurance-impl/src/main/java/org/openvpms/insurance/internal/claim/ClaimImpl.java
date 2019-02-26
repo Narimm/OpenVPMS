@@ -16,28 +16,44 @@
 
 package org.openvpms.insurance.internal.claim;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.archetype.rules.party.CustomerRules;
+import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.insurance.InsuranceRules;
+import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
-import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
+import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.act.Act;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.object.Relationship;
+import org.openvpms.component.model.party.Party;
+import org.openvpms.component.system.common.cache.IMObjectCache;
+import org.openvpms.component.system.common.cache.MapIMObjectCache;
+import org.openvpms.domain.internal.practice.LocationImpl;
+import org.openvpms.domain.party.Email;
+import org.openvpms.domain.party.Phone;
+import org.openvpms.domain.patient.Patient;
+import org.openvpms.domain.practice.Location;
 import org.openvpms.insurance.claim.Attachment;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.claim.ClaimHandler;
 import org.openvpms.insurance.claim.Condition;
+import org.openvpms.insurance.claim.Invoice;
 import org.openvpms.insurance.claim.Note;
 import org.openvpms.insurance.exception.InsuranceException;
 import org.openvpms.insurance.internal.i18n.InsuranceMessages;
 import org.openvpms.insurance.internal.policy.PolicyImpl;
-import org.openvpms.insurance.policy.Animal;
 import org.openvpms.insurance.policy.Policy;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -45,9 +61,12 @@ import org.springframework.transaction.support.TransactionCallbackWithoutResult;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Default implementation of {@link Claim}.
@@ -72,9 +91,14 @@ public class ClaimImpl implements Claim {
     private final IArchetypeRuleService service;
 
     /**
-     * The customer rules.
+     * The insurance rules.
      */
-    private final CustomerRules customerRules;
+    private final InsuranceRules insuranceRules;
+
+    /**
+     * The party rules.
+     */
+    private final PartyRules partyRules;
 
     /**
      * The patient rules.
@@ -121,18 +145,57 @@ public class ClaimImpl implements Claim {
      *
      * @param claim              the claim
      * @param service            the archetype service
-     * @param customerRules      the customer rules
+     * @param insuranceRules     the insurance rules
+     * @param partyRules         the customer rules
      * @param patientRules       the patient rules
      * @param handlers           the document handlers
      * @param transactionManager the transaction manager
      */
-    public ClaimImpl(Act claim, IArchetypeRuleService service, CustomerRules customerRules, PatientRules patientRules,
-                     DocumentHandlers handlers, PlatformTransactionManager transactionManager) {
-        this.claim = service.getBean(claim);
-        this.act = claim;
-        this.customerRules = customerRules;
-        this.patientRules = patientRules;
+    public ClaimImpl(Act claim, IArchetypeRuleService service, InsuranceRules insuranceRules,
+                     PartyRules partyRules, PatientRules patientRules, DocumentHandlers handlers,
+                     PlatformTransactionManager transactionManager) {
+        this(service.getBean(claim), claim, service, insuranceRules, partyRules, patientRules, handlers,
+             transactionManager);
+    }
+
+    /**
+     * Constructs a {@link ClaimImpl}.
+     *
+     * @param claim              the claim
+     * @param service            the archetype service
+     * @param insuranceRules     the insurance rules
+     * @param partyRules         the party rules
+     * @param patientRules       the patient rules
+     * @param handlers           the document handlers
+     * @param transactionManager the transaction manager
+     */
+    public ClaimImpl(IMObjectBean claim, IArchetypeRuleService service, InsuranceRules insuranceRules,
+                     PartyRules partyRules, PatientRules patientRules, DocumentHandlers handlers,
+                     PlatformTransactionManager transactionManager) {
+        this(claim, (Act) claim.getObject(), service, insuranceRules, partyRules, patientRules, handlers,
+             transactionManager);
+    }
+
+    /**
+     * Constructs a {@link ClaimImpl}.
+     *
+     * @param claim              the claim
+     * @param service            the archetype service
+     * @param insuranceRules     the insurance rules
+     * @param partyRules         the party rules
+     * @param patientRules       the patient rules
+     * @param handlers           the document handlers
+     * @param transactionManager the transaction manager
+     */
+    private ClaimImpl(IMObjectBean claim, Act act, IArchetypeRuleService service, InsuranceRules insuranceRules,
+                      PartyRules partyRules, PatientRules patientRules, DocumentHandlers handlers,
+                      PlatformTransactionManager transactionManager) {
+        this.claim = claim;
+        this.act = act;
         this.service = service;
+        this.insuranceRules = insuranceRules;
+        this.partyRules = partyRules;
+        this.patientRules = patientRules;
         this.handlers = handlers;
         this.transactionManager = transactionManager;
     }
@@ -188,8 +251,8 @@ public class ClaimImpl implements Claim {
      * @return the date
      */
     @Override
-    public Date getCreated() {
-        return claim.getDate("startTime");
+    public OffsetDateTime getCreated() {
+        return DateRules.toOffsetDateTime(claim.getDate("startTime"));
     }
 
     /**
@@ -200,8 +263,8 @@ public class ClaimImpl implements Claim {
      * @return the date, or {@code null} if the claim hasn't been completed
      */
     @Override
-    public Date getCompleted() {
-        return claim.getDate("endTime");
+    public OffsetDateTime getCompleted() {
+        return DateRules.toOffsetDateTime(claim.getDate("endTime"));
     }
 
     /**
@@ -258,7 +321,7 @@ public class ClaimImpl implements Claim {
      * @return the animal
      */
     @Override
-    public Animal getAnimal() {
+    public Patient getAnimal() {
         return getPolicy().getAnimal();
     }
 
@@ -270,10 +333,65 @@ public class ClaimImpl implements Claim {
     @Override
     public Policy getPolicy() {
         if (policy == null) {
-            policy = new PolicyImpl(claim.getTarget("policy", Act.class), service, customerRules, patientRules);
+            policy = new PolicyImpl(claim.getTarget("policy", Act.class), service, partyRules, patientRules);
         }
         return policy;
     }
+
+    /**
+     * Changes the policy for a claim. This can be used if a policy was submitted with an incorrect insurer or policy
+     * number.
+     *
+     * @param insurer      the insurer
+     * @param policyNumber the policy number
+     * @return the updated policy
+     */
+    @Override
+    public Policy setPolicy(org.openvpms.component.model.party.Party insurer, String policyNumber) {
+        if (policyNumber == null) {
+            throw new IllegalArgumentException("Argument 'policyNumber' is null");
+        }
+        getPolicy();
+        if (!policy.getInsurer().equals(insurer) || !ObjectUtils.equals(policy.getPolicyNumber(), policyNumber)) {
+            Act act = insuranceRules.getPolicyForClaim(getCustomer(), getPatient(), insurer,
+                                                       policyNumber, null, (FinancialAct) claim.getObject(),
+                                                       policy.getAct());
+            Relationship relationship = claim.setTarget("policy", act);
+            act.addActRelationship((ActRelationship) relationship);
+            claim.save(act);
+            this.policy = new PolicyImpl(act, service, partyRules, patientRules);
+        }
+
+        return policy;
+    }
+
+    /**
+     * Returns the customer.
+     *
+     * @return the customer
+     */
+    public Party getCustomer() {
+        return ((PolicyImpl) getPolicy()).getCustomer();
+    }
+
+    /**
+     * Returns the patient.
+     *
+     * @return the patient
+     */
+    public Party getPatient() {
+        return ((PolicyImpl) getPolicy()).getPatient();
+    }
+
+    /**
+     * Returns the insurer.
+     *
+     * @return the insurer
+     */
+    public Party getInsurer() {
+        return getPolicy().getInsurer();
+    }
+
 
     /**
      * Returns the claim status.
@@ -367,10 +485,10 @@ public class ClaimImpl implements Claim {
     public ClaimHandler getClaimHandler() {
         if (handler == null) {
             final User user = claim.getTarget("user", User.class);
-            Party location = getLocation();
             if (user == null) {
                 throw new IllegalStateException("Claim has no user");
             }
+            Location location = getLocation();
             handler = new ClaimHandler() {
                 @Override
                 public String getName() {
@@ -378,13 +496,13 @@ public class ClaimImpl implements Claim {
                 }
 
                 @Override
-                public Contact getPhone() {
-                    return (location != null) ? customerRules.getTelephoneContact(location) : null;
+                public Phone getPhone() {
+                    return location != null ? location.getPhone() : null;
                 }
 
                 @Override
-                public Contact getEmail() {
-                    return (location != null) ? customerRules.getEmailContact(location) : null;
+                public Email getEmail() {
+                    return location != null ? location.getEmail() : null;
                 }
             };
         }
@@ -397,8 +515,9 @@ public class ClaimImpl implements Claim {
      * @return the practice location
      */
     @Override
-    public Party getLocation() {
-        return claim.getTarget("location", Party.class);
+    public Location getLocation() {
+        Party location = claim.getTarget("location", Party.class);
+        return (location != null) ? new LocationImpl(location, service, partyRules) : null;
     }
 
     /**
@@ -467,12 +586,7 @@ public class ClaimImpl implements Claim {
             template.execute(new TransactionCallbackWithoutResult() {
                 @Override
                 protected void doInTransactionWithoutResult(TransactionStatus transactionStatus) {
-                    setStatus(Status.POSTED);
-                    for (Attachment attachment : getAttachments()) {
-                        if (attachment.getStatus() == Attachment.Status.PENDING) {
-                            attachment.setStatus(Attachment.Status.POSTED);
-                        }
-                    }
+                    finaliseClaim();
                 }
             });
         } catch (InsuranceException exception) {
@@ -480,6 +594,100 @@ public class ClaimImpl implements Claim {
         } catch (Exception exception) {
             throw new InsuranceException(InsuranceMessages.failedToFinaliseClaim(exception.getMessage()), exception);
         }
+    }
+
+    /**
+     * Returns the total amount that has been allocated towards this claim.
+     * <p>
+     * This is the sum of {@link FinancialAct#getAllocatedAmount() allocated amounts} of the invoices being claimed.
+     * <p>
+     * NOTE: this may be greater than the claim itself, as allocations are handled at the invoice level, not
+     * the invoice item level.
+     *
+     * @return the allocated amount
+     */
+    public BigDecimal getAllocated() {
+        BigDecimal result = BigDecimal.ZERO;
+        for (FinancialAct invoice : getInvoices()) {
+            result = result.add(invoice.getAllocatedAmount());
+        }
+        return result;
+    }
+
+    /**
+     * Reloads the claim.
+     *
+     * @return the latest instance of the claim
+     */
+    public ClaimImpl reload() {
+        Act object = (Act) service.get(act.getObjectReference());
+        if (object == null) {
+            throw new IllegalStateException("Cannot reload claim=" + act.getObjectReference()
+                                            + ". It has been deleted");
+        }
+        return newInstance(object, service, insuranceRules, partyRules, patientRules, handlers, transactionManager);
+    }
+
+    /**
+     * Returns all invoices associated with this claim.
+     * <p>
+     * NOTE: the results of this call are not cached.
+     *
+     * @return the invoices
+     */
+    @SuppressWarnings("unchecked")
+    public List<FinancialAct> getInvoices() {
+        Map<Reference, IMObject> invoices = new HashMap<>();
+        IMObjectCache cache = new MapIMObjectCache(invoices, service);
+        for (Condition condition : getConditions()) {
+            for (Invoice invoice : condition.getInvoices()) {
+                IMObjectReference reference = new IMObjectReference(CustomerAccountArchetypes.INVOICE, invoice.getId());
+                if (cache.get(reference) == null) {
+                    throw new IllegalStateException("Failed to retrieve invoice=" + reference
+                                                    + " associated with claim=" + getId());
+                }
+            }
+        }
+        return new ArrayList(invoices.values());
+    }
+
+    /**
+     * Finalises the claim.
+     */
+    protected void finaliseClaim() {
+        setStatus(Status.POSTED);
+        for (Attachment attachment : getAttachments()) {
+            if (attachment.getStatus() == Attachment.Status.PENDING) {
+                attachment.setStatus(Attachment.Status.POSTED);
+            }
+        }
+    }
+
+    /**
+     * Creates a new instance of the claim.
+     *
+     * @param claim              the claim
+     * @param service            the archetype service
+     * @param insuranceRules     the insurance rules
+     * @param partyRules         the party rules
+     * @param patientRules       the patient rules
+     * @param handlers           the document handlers
+     * @param transactionManager the transaction manager
+     * @return a new instance
+     */
+    protected ClaimImpl newInstance(Act claim, IArchetypeRuleService service, InsuranceRules insuranceRules,
+                                    PartyRules partyRules, PatientRules patientRules, DocumentHandlers handlers,
+                                    PlatformTransactionManager transactionManager) {
+        return new ClaimImpl(claim, service, insuranceRules, partyRules, patientRules, handlers, transactionManager);
+    }
+
+    /**
+     * Returns the claim.
+     *
+     * @return the claim
+     */
+    protected IMObjectBean getClaim() {
+        return claim;
     }
 
     /**
@@ -529,12 +737,21 @@ public class ClaimImpl implements Claim {
     }
 
     /**
-     * Returns the patient.
+     * Returns the archetype service.
      *
-     * @return the patient
+     * @return the archetype service
      */
-    private Party getPatient() {
-        return ((PolicyImpl) getPolicy()).getPatient();
+    protected IArchetypeRuleService getService() {
+        return service;
+    }
+
+    /**
+     * Returns the insurance rules.
+     *
+     * @return the insurance rules
+     */
+    protected InsuranceRules getInsuranceRules() {
+        return insuranceRules;
     }
 
     /**
@@ -544,6 +761,10 @@ public class ClaimImpl implements Claim {
      * @param status the status
      */
     private void changeStatus(Status status) {
+        Status current = getStatus();
+        if (current == Status.CANCELLED || current == Status.SETTLED || current == Status.DECLINED) {
+            throw new IllegalStateException("Cannot update claim status when it is " + current);
+        }
         act.setStatus(status.name());
         if (status == Status.CANCELLED || status == Status.SETTLED || status == Status.DECLINED) {
             claim.setValue("endTime", new Date());

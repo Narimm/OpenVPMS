@@ -16,7 +16,7 @@
 
 package org.openvpms.web.workspace.patient;
 
-import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
+import org.openvpms.archetype.rules.insurance.InsuranceArchetypes;
 import org.openvpms.archetype.rules.prefs.Preferences;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.workspace.AbstractWorkspaces;

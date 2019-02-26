@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.print;
@@ -172,7 +172,7 @@ public class InteractivePrinter implements Printer {
      * If the underlying printer requires interactive support or no printer
      * is specified, pops up a {@link PrintDialog} prompting if printing of an
      * object should proceed, invoking {@link #doPrint} if 'OK' is selected, or
-     * {@link #doPrintPreview} if 'preview' is selected.
+     * {@link #download} if 'preview' is selected.
      *
      * @param printer the printer name. May be {@code null}
      * @throws OpenVPMSException for any error
@@ -366,7 +366,7 @@ public class InteractivePrinter implements Printer {
         return new PrintDialog(title, true, mail, skip, context.getLocation(), help) {
             @Override
             protected void onPreview() {
-                doPrintPreview();
+                download();
             }
 
             @Override
@@ -422,7 +422,10 @@ public class InteractivePrinter implements Printer {
         if (PrintDialog.OK_ID.equals(action)) {
             String printerName = dialog.getPrinter();
             if (printerName == null) {
-                doPrintPreview();
+                // no printer so can't print. Download but notify listeners that it has been printed
+                // so that the printed flag is updated
+                download();
+                printed(null);
             } else {
                 printer.setCopies(dialog.getCopies());
                 doPrint(printerName);
@@ -453,7 +456,7 @@ public class InteractivePrinter implements Printer {
     /**
      * Generates a document and downloads it to the client.
      */
-    protected void doPrintPreview() {
+    protected void download() {
         try {
             Document document = getDocument();
             DownloadServlet.startDownload(document);

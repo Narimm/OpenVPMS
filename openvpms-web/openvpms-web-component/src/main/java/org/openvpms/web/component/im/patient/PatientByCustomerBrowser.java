@@ -56,7 +56,7 @@ public class PatientByCustomerBrowser extends BrowserAdapter<ObjectSet, Party> {
         Party patient = getSelected();
         if (patient != null) {
             PatientRules rules = ServiceHelper.getBean(PatientRules.class);
-            result = rules.getOwner(patient);
+            result = (Party) rules.getOwner(patient);
         }
         return result;
     }

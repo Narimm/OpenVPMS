@@ -32,6 +32,7 @@
         <module>openvpms-test-plugin</module>
         <module>openvpms-test-servlet-plugin</module>
         <module>openvpms-test-service</module>
+        <module>openvpms-test-insurance-service</module>
     </modules>
 
 </project>

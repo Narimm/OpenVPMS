@@ -129,15 +129,6 @@ public class InsuranceMessages {
     }
 
     /**
-     * Message indicating that a policy has no expiry date.
-     *
-     * @return a new message
-     */
-    public static Message policyHasNoExpiryDate() {
-        return messages.create(34);
-    }
-
-    /**
      * Message indicating that an insurance service is unavailable.
      *
      * @param name the service configuration name
@@ -146,4 +137,16 @@ public class InsuranceMessages {
     public static Message serviceUnavailable(String name) {
         return messages.create(40, name);
     }
+
+    /**
+     * Message indicating that the configuration for an insurance service has been marked inactive.
+     *
+     * @param name    the service configuration name
+     * @param insurer the insurer name
+     * @return a new message
+     */
+    public static Message serviceInactive(String name, String insurer) {
+        return messages.create(41, name, insurer);
+    }
+
 }

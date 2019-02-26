@@ -132,7 +132,7 @@ public class MessageReceiverTestCase extends AbstractRDSTest {
         MessageReceiver receiver = new MessageReceiver(application, connector, service, user, hl7Service);
         Message message = createRDS(createProduct());
         assertTrue(receiver.canProcess(message));
-        Message response = receiver.processMessage(message, new HashMap<String, Object>());
+        Message response = receiver.processMessage(message, new HashMap<>());
         assertTrue(response instanceof ACK);
 
         assertEquals(1, acts.size());
@@ -168,7 +168,7 @@ public class MessageReceiverTestCase extends AbstractRDSTest {
         Message message = createRDS(createProduct());
         assertTrue(receiver.canProcess(message));
         try {
-            receiver.processMessage(message, new HashMap<String, Object>());
+            receiver.processMessage(message, new HashMap<>());
             fail("Expected ReceivingApplicationException");
         } catch (ReceivingApplicationException expected) {
             // do nothing
@@ -197,7 +197,7 @@ public class MessageReceiverTestCase extends AbstractRDSTest {
         msh.getSendingApplication().getNamespaceID().setValue("Foobar");
 
         try {
-            receiver.processMessage(message, new HashMap<String, Object>());
+            receiver.processMessage(message, new HashMap<>());
             fail("Expected receiver to throw exception");
         } catch (HL7Exception expected) {
             assertEquals("Unrecognised application details", expected.getMessage());

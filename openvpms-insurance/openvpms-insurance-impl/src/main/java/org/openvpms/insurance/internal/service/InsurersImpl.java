@@ -23,6 +23,7 @@ import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Identity;
 import org.openvpms.component.model.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
@@ -148,9 +149,23 @@ public class InsurersImpl implements Insurers {
      * @return the insurer identifier, or {@code null} if the insurer doesn't have one
      */
     @Override
-    public String getInsurerId(Party insurer) {
+    public Identity getIdentifier(Party insurer) {
         IMObjectBean bean = service.getBean(insurer);
-        EntityIdentity id = bean.getObject("insurerId", EntityIdentity.class);
-        return id != null ? id.getIdentity() : null;
+        return bean.getObject("insurerId", EntityIdentity.class);
+    }
+
+    /**
+     * Returns the insurer identifier.
+     * <p>
+     * This is short for {@link {@code getIdentifier(insurer).getIdentity()}.
+     *
+     * @param insurer the insurer
+     * @param insurer
+     * @return the insurer identifier, or {@code null} if the insurer doesn't have one
+     */
+    @Override
+    public String getInsurerId(Party insurer) {
+        Identity identity = getIdentifier(insurer);
+        return (identity != null) ? identity.getIdentity() : null;
     }
 }

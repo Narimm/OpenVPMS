@@ -19,6 +19,7 @@ package org.openvpms.web.component.im.layout;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
+import org.openvpms.archetype.rules.insurance.InsuranceArchetypes;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.product.ProductArchetypes;
@@ -251,6 +252,20 @@ public class ArchetypeNodesTestCase extends ArchetypeServiceTest {
         checkNodeNames(ArchetypeNodes.allSimple().excludePassword(true), user, "id", "username", "name",
                        "description", "active", "title", "firstName", "lastName", "qualifications", "userLevel",
                        "editPreferences", "colour", "onlineBooking");
+    }
+
+    /**
+     * Tests the {@link ArchetypeNodes#nodes(String...)} method.
+     */
+    @Test
+    public void testNodes() {
+        ArchetypeDescriptor claim = getArchetypeService().getArchetypeDescriptor(InsuranceArchetypes.CLAIM);
+        assertNotNull(claim);
+        checkNodeNames(ArchetypeNodes.nodes("startTime", "insurerId", "policy", "patient", "status", "amount",
+                                            "gapClaim", "status2", "benefitAmount"),
+                       claim, "startTime", "insurerId", "policy", "patient", "status", "amount",
+                       "gapClaim", "status2", "benefitAmount");
+
     }
 
     /**

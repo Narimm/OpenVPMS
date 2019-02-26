@@ -16,8 +16,8 @@
 
 package org.openvpms.web.workspace.patient.insurance;
 
+import org.openvpms.archetype.rules.insurance.InsuranceArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;

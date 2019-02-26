@@ -18,12 +18,13 @@ package org.openvpms.insurance.claim;
 
 import org.openvpms.component.model.party.Party;
 import org.openvpms.component.model.user.User;
+import org.openvpms.domain.patient.Patient;
+import org.openvpms.domain.practice.Location;
 import org.openvpms.insurance.exception.InsuranceException;
-import org.openvpms.insurance.policy.Animal;
 import org.openvpms.insurance.policy.Policy;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -46,6 +47,7 @@ public interface Claim {
         public boolean isA(String status) {
             return name().equals(status);
         }
+
     }
 
     /**
@@ -79,7 +81,7 @@ public interface Claim {
      *
      * @return the date
      */
-    Date getCreated();
+    OffsetDateTime getCreated();
 
     /**
      * Returns the date when the claim was completed.
@@ -88,7 +90,7 @@ public interface Claim {
      *
      * @return the date, or {@code null} if the claim hasn't been completed
      */
-    Date getCompleted();
+    OffsetDateTime getCompleted();
 
     /**
      * Returns the discount amount, including tax.
@@ -119,11 +121,11 @@ public interface Claim {
     BigDecimal getTotalTax();
 
     /**
-     * Returns the animal that the claim applies to.
+     * Returns the patient that the claim applies to.
      *
-     * @return the animal
+     * @return the patient
      */
-    Animal getAnimal();
+    Patient getAnimal();
 
     /**
      * Returns the policy that a claim is being made on.
@@ -131,6 +133,16 @@ public interface Claim {
      * @return the policy
      */
     Policy getPolicy();
+
+    /**
+     * Changes the policy for a claim. This can be used if a policy was submitted with an incorrect insurer or policy
+     * number.
+     *
+     * @param insurer      the insurer
+     * @param policyNumber the policy number
+     * @return the updated policy
+     */
+    Policy setPolicy(Party insurer, String policyNumber);
 
     /**
      * Returns the claim status.
@@ -194,7 +206,7 @@ public interface Claim {
      *
      * @return the practice location
      */
-    Party getLocation();
+    Location getLocation();
 
     /**
      * Sets a message on the claim. This may be used by insurance service to convey to users the status of the claim,

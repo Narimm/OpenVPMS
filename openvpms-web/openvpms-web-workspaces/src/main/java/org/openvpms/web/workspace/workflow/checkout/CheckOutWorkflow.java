@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkout;
@@ -21,6 +21,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
+import org.openvpms.archetype.rules.insurance.InsuranceRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -29,13 +30,19 @@ import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.domain.practice.Location;
 import org.openvpms.hl7.patient.PatientContext;
 import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientInformationService;
+import org.openvpms.insurance.internal.InsuranceFactory;
+import org.openvpms.insurance.service.GapInsuranceService;
+import org.openvpms.insurance.service.InsuranceService;
+import org.openvpms.insurance.service.InsuranceServices;
+import org.openvpms.insurance.service.Times;
 import org.openvpms.smartflow.client.FlowSheetServiceFactory;
 import org.openvpms.smartflow.client.HospitalizationService;
 import org.openvpms.smartflow.event.SmartFlowSheetEventService;
@@ -82,11 +89,11 @@ import org.openvpms.web.workspace.workflow.MandatoryPatientAlertTask;
 import org.openvpms.web.workspace.workflow.payment.PaymentWorkflow;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static org.openvpms.web.component.workflow.TaskFactory.and;
 import static org.openvpms.web.component.workflow.TaskFactory.eq;
 import static org.openvpms.web.component.workflow.TaskFactory.ne;
 import static org.openvpms.web.component.workflow.TaskFactory.when;
@@ -110,19 +117,29 @@ public class CheckOutWorkflow extends WorkflowImpl {
     private final Visits visits;
 
     /**
-     * The initial context.
+     * The archetype service.
      */
-    private TaskContext initial;
+    private final IArchetypeService service;
 
     /**
      * The appointment rules.
      */
-    private AppointmentRules appointmentRules;
+    private final AppointmentRules appointmentRules;
+
+    /**
+     * The insurance rules.
+     */
+    private final InsuranceRules insuranceRules;
 
     /**
      * The flow sheet service factory.
      */
-    private FlowSheetServiceFactory flowSheetServiceFactory;
+    private final FlowSheetServiceFactory flowSheetServiceFactory;
+
+    /**
+     * The initial context.
+     */
+    private TaskContext initial;
 
     /**
      * The logger.
@@ -143,7 +160,9 @@ public class CheckOutWorkflow extends WorkflowImpl {
             throw new IllegalStateException("Context has no practice");
         }
         external = context;
+        service = ServiceHelper.getArchetypeService();
         appointmentRules = ServiceHelper.getBean(AppointmentRules.class);
+        insuranceRules = ServiceHelper.getBean(InsuranceRules.class);
         visits = new Visits(context.getCustomer(), appointmentRules, ServiceHelper.getBean(PatientRules.class));
         flowSheetServiceFactory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
 
@@ -205,9 +224,11 @@ public class CheckOutWorkflow extends WorkflowImpl {
      * @param help the help context
      */
     private void initialise(Act act, HelpContext help) {
-        ActBean bean = new ActBean(act);
-        Party customer = (Party) bean.getNodeParticipant("customer");
-        Party patient = (Party) bean.getNodeParticipant("patient");
+        IMObjectBean bean = service.getBean(act);
+        Party customer = bean.getTarget("customer", Party.class);
+        Party patient = bean.getTarget("patient", Party.class);
+        Act policy = null;
+        boolean gapClaim = false;
 
         if (customer == null) {
             throw new ContextException(ContextException.ErrorCode.NoCustomer);
@@ -220,7 +241,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
         if (UserHelper.useLoggedInClinician(external)) {
             clinician = external.getUser();
         } else {
-            clinician = (User) bean.getNodeParticipant("clinician");
+            clinician = bean.getTarget("clinician", User.class);
             if (clinician == null) {
                 clinician = external.getClinician();
             }
@@ -257,6 +278,12 @@ public class CheckOutWorkflow extends WorkflowImpl {
                     visits.add(event, appointment);
                 }
             });
+
+            // check if the patient has a policy, and if it supports gap claims
+            policy = (Act) insuranceRules.getCurrentPolicy(customer, patient);
+            if (policy != null) {
+                gapClaim = canSubmitGapClaimsNow(policy);
+            }
         }
 
         if (flowSheetServiceFactory.isSmartFlowSheetEnabled(initial.getLocation())) {
@@ -270,11 +297,22 @@ public class CheckOutWorkflow extends WorkflowImpl {
         // on save, determine if the user wants to post the invoice, but only if its not already posted
         addTask(when(ne(CustomerAccountArchetypes.INVOICE, "status", ActStatus.POSTED), getPostTask()));
 
-        // if the invoice is posted and the customer has a positive balance, prompt to pay the account
+        // if the invoice is posted and the customer has a positive balance: prompt to pay the account
         PaymentWorkflow payWorkflow = createPaymentWorkflow(initial);
         payWorkflow.setRequired(false);
-        addTask(when(and(eq(CustomerAccountArchetypes.INVOICE, "status", ActStatus.POSTED), new PositiveBalance()),
-                     payWorkflow));
+
+        Tasks tasks = new Tasks(help);
+        if (policy != null && gapClaim) {
+            // gap claims need to be submitted for unpaid invoices
+            tasks.addTask(when(new PositiveBalance(), new InsuranceClaimTask(policy, true, help)));
+        }
+        tasks.addTask(when(new PositiveBalance(), payWorkflow));
+        if (policy != null && !gapClaim) {
+            // standard claims need to be submitted for paid invoices
+            tasks.addTask(new InsuranceClaimTask(policy, false, help));
+        }
+
+        addTask(when(eq(CustomerAccountArchetypes.INVOICE, "status", ActStatus.POSTED), tasks));
 
         // print acts and documents created since the events or invoice was created
         addTask(new PrintTask(visits, help.subtopic("print")));
@@ -304,8 +342,6 @@ public class CheckOutWorkflow extends WorkflowImpl {
             addTask(new UpdateIMObjectTask(shortName, appProps));
         }
 
-        addTask(new InsuranceClaimTask(help));
-
         // add a task to update the context at the end of the workflow
         addTask(new SynchronousTask() {
             public void execute(TaskContext context) {
@@ -315,6 +351,37 @@ public class CheckOutWorkflow extends WorkflowImpl {
                 external.setClinician(context.getClinician());
             }
         });
+    }
+
+    /**
+     * Determines if gap claims can be submitted for a policy now.
+     *
+     * @param policy the policy
+     * @return {@code true} if gap claims can be submitted for the policy now
+     */
+    private boolean canSubmitGapClaimsNow(Act policy) {
+        boolean result = false;
+        Party insurer = (Party) insuranceRules.getInsurer(policy);
+        String policyNumber = insuranceRules.getPolicyNumber(policy);
+        if (insurer != null) {
+            try {
+                InsuranceService insuranceService = ServiceHelper.getBean(InsuranceServices.class).getService(insurer);
+                if (insuranceService instanceof GapInsuranceService) {
+                    InsuranceFactory factory = ServiceHelper.getBean(InsuranceFactory.class);
+                    GapInsuranceService gapService = (GapInsuranceService) insuranceService;
+                    Location location = factory.getLocation(initial.getLocation());
+                    if (gapService.supportsGapClaims(insurer, policyNumber, location)) {
+                        OffsetDateTime now = OffsetDateTime.now();
+                        Times times = gapService.getGapClaimSubmitTimes(insurer, now, location);
+                        result = (times != null && times.inRange(now));
+                    }
+                }
+            } catch (Throwable exception) {
+                log.error("Cannot determine if gap claims may be submitted for insurer=" + insurer.getName(),
+                          exception);
+            }
+        }
+        return result;
     }
 
     /**
@@ -329,10 +396,10 @@ public class CheckOutWorkflow extends WorkflowImpl {
         if (TypeHelper.isA(act, ScheduleArchetypes.APPOINTMENT)) {
             result = act;
         } else {
-            ActBean bean = new ActBean(act);
-            result = (Act) bean.getNodeSourceObject("appointments");
+            IMObjectBean bean = service.getBean(act);
+            result = bean.getSource("appointments", Act.class);
             if (result == null) {
-                result = ServiceHelper.getBean(AppointmentRules.class).getActiveAppointment(patient);
+                result = appointmentRules.getActiveAppointment(patient);
             }
         }
         return result;
@@ -368,171 +435,10 @@ public class CheckOutWorkflow extends WorkflowImpl {
         boolean result = false;
         Party practice = external.getPractice();
         if (practice != null) {
-            IMObjectBean bean = new IMObjectBean(practice);
+            IMObjectBean bean = service.getBean(practice);
             result = bean.getBoolean("followUpAtCheckOut");
         }
         return result;
-    }
-
-    /**
-     * Task to import flow sheet reports for a patient, if a patient has a Smart Flow Sheet hospitalisation.
-     */
-    private static class DischargeFromSmartFlowSheetTask extends AbstractTask {
-
-        private final PatientContext patientContext;
-
-        private final HospitalizationService service;
-
-        public DischargeFromSmartFlowSheetTask(PatientContext context, HospitalizationService service) {
-            this.patientContext = context;
-            this.service = service;
-        }
-
-        /**
-         * Starts the task.
-         * <p>
-         * The registered {@link TaskListener} will be notified on completion or failure.
-         *
-         * @param context the task context
-         * @throws OpenVPMSException for any error
-         */
-        @Override
-        public void start(final TaskContext context) {
-            SmartFlowSheetEventService eventService = ServiceHelper.getBean(SmartFlowSheetEventService.class);
-            try {
-                service.discharge(patientContext.getPatient(), patientContext.getVisit());
-                eventService.poll();                    // wake up the event service if it is inactive
-                notifyCompleted();
-            } catch (Exception exception) {
-                log.error(exception, exception);
-                String title = Messages.get("workflow.checkout.flowsheet.discharge.title");
-                String message = Messages.format("workflow.checkout.flowsheet.discharge.error", exception.getMessage());
-                PopupDialogListener listener = new PopupDialogListener() {
-                    @Override
-                    public void onYes() {
-                        start(context);
-                    }
-
-                    /**
-                     * Invoked when the 'no' button is pressed.
-                     * <p/>
-                     * If not overridden in subclasses, delegates to {@link #onAction(String)}.
-                     */
-                    @Override
-                    public void onNo() {
-                        notifyCompleted();
-                    }
-
-                    @Override
-                    public void onCancel() {
-                        notifyCancelled();
-                    }
-                };
-                ErrorDialog.show(title, message, ErrorDialog.YES_NO_CANCEL, context.getHelpContext(), listener);
-            }
-        }
-    }
-
-    /**
-     * Updates the patient clinical event, if it is not already completed.
-     */
-    private static class UpdateEventTask extends SynchronousTask {
-
-        /**
-         * The events to update.
-         */
-        private final Visits visits;
-
-        /**
-         * Constructs an {@link UpdateEventTask}.
-         */
-        public UpdateEventTask(Visits visits) {
-            this.visits = visits;
-        }
-
-        /**
-         * Executes the task.
-         *
-         * @param context the context
-         * @throws OpenVPMSException for any error
-         */
-        @Override
-        public void execute(TaskContext context) {
-            for (final Visit event : visits) {
-                Retryable action = new AbstractRetryable() {
-                    @Override
-                    protected boolean runFirst() {
-                        return update(true, event);
-                    }
-
-                    @Override
-                    protected boolean runAction() {
-                        return update(false, event);
-                    }
-                };
-                if (!Retryer.run(action)) {
-                    notifyCancelled();
-                }
-            }
-        }
-
-        /**
-         * Updates an event.
-         *
-         * @param first  if {@code true} this is the first time it is being updated.
-         * @param event  the event
-         * @param toSave collects objects to save
-         * @return {@code true} if the object exists, otherwise {@code false}
-         */
-        protected boolean updateEvent(boolean first, Act event, List<Act> toSave) {
-            if (!first) {
-                event = IMObjectHelper.reload(event);
-            }
-            if (event != null) {
-                if (ActStatus.IN_PROGRESS.equals(event.getStatus())) {
-                    event.setStatus(ActStatus.COMPLETED);
-                    event.setActivityEndTime(new Date());
-                    toSave.add(event);
-                }
-            }
-            return event != null;
-        }
-
-        /**
-         * Updates an object and saves it.
-         *
-         * @param first if {@code true}, this is the first invocation
-         * @param event the event
-         * @return {@code true} if the object exists, otherwise {@code false}
-         */
-        private boolean update(boolean first, Visit event) {
-            List<Act> toSave = new ArrayList<>();
-            boolean result = updateAppointment(first, event.getAppointment(), toSave);
-            result |= updateEvent(first, event.getEvent(), toSave);
-            if (!toSave.isEmpty()) {
-                ServiceHelper.getArchetypeService().save(toSave);
-            }
-            return result;
-        }
-
-        /**
-         * Updates an appointment.
-         *
-         * @param first       if {@code true} this is the first time it is being updated.
-         * @param appointment the appointment
-         * @param toSave      collects objects to save
-         * @return {@code true} if the object exists, otherwise {@code false}
-         */
-        private boolean updateAppointment(boolean first, Act appointment, List<Act> toSave) {
-            if (!first) {
-                appointment = IMObjectHelper.reload(appointment);
-            }
-            if (appointment != null && !ActStatus.COMPLETED.equals(appointment.getStatus())) {
-                appointment.setStatus(ActStatus.COMPLETED);
-                toSave.add(appointment);
-            }
-            return appointment != null;
-        }
     }
 
     /**
@@ -546,7 +452,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
         /**
          * Constructs a {@link PostInvoiceTask}.
          */
-        public PostInvoiceTask() {
+        PostInvoiceTask() {
             super(CustomerAccountArchetypes.INVOICE, false, false);
             setShowEditorOnError(false);
         }
@@ -580,7 +486,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
          *
          * @param help the help context
          */
-        public UndispensedOrderTask(HelpContext help) {
+        UndispensedOrderTask(HelpContext help) {
             super(help);
         }
 
@@ -659,7 +565,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
          * @param visits the events
          * @param help   the help context
          */
-        public PrintTask(Visits visits, HelpContext help) {
+        PrintTask(Visits visits, HelpContext help) {
             super(help);
             this.visits = visits;
         }
@@ -763,7 +669,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
 
         private final Visits visits;
 
-        public DischargeTask(Visits visits) {
+        DischargeTask(Visits visits) {
             this.visits = visits;
         }
 
@@ -782,6 +688,167 @@ public class CheckOutWorkflow extends WorkflowImpl {
                                                           context.getLocation(), context.getClinician());
                 service.discharged(pc, context.getUser());
             }
+        }
+    }
+
+    /**
+     * Task to import flow sheet reports for a patient, if a patient has a Smart Flow Sheet hospitalisation.
+     */
+    private static class DischargeFromSmartFlowSheetTask extends AbstractTask {
+
+        private final PatientContext patientContext;
+
+        private final HospitalizationService service;
+
+        public DischargeFromSmartFlowSheetTask(PatientContext context, HospitalizationService service) {
+            this.patientContext = context;
+            this.service = service;
+        }
+
+        /**
+         * Starts the task.
+         * <p>
+         * The registered {@link TaskListener} will be notified on completion or failure.
+         *
+         * @param context the task context
+         * @throws OpenVPMSException for any error
+         */
+        @Override
+        public void start(final TaskContext context) {
+            SmartFlowSheetEventService eventService = ServiceHelper.getBean(SmartFlowSheetEventService.class);
+            try {
+                service.discharge(patientContext.getPatient(), patientContext.getVisit());
+                eventService.poll();                    // wake up the event service if it is inactive
+                notifyCompleted();
+            } catch (Exception exception) {
+                log.error(exception, exception);
+                String title = Messages.get("workflow.checkout.flowsheet.discharge.title");
+                String message = Messages.format("workflow.checkout.flowsheet.discharge.error", exception.getMessage());
+                PopupDialogListener listener = new PopupDialogListener() {
+                    @Override
+                    public void onYes() {
+                        start(context);
+                    }
+
+                    /**
+                     * Invoked when the 'no' button is pressed.
+                     * <p/>
+                     * If not overridden in subclasses, delegates to {@link #onAction(String)}.
+                     */
+                    @Override
+                    public void onNo() {
+                        notifyCompleted();
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        notifyCancelled();
+                    }
+                };
+                ErrorDialog.show(title, message, ErrorDialog.YES_NO_CANCEL, context.getHelpContext(), listener);
+            }
+        }
+    }
+
+    /**
+     * Updates the patient clinical event, if it is not already completed.
+     */
+    private static class UpdateEventTask extends SynchronousTask {
+
+        /**
+         * The events to update.
+         */
+        private final Visits visits;
+
+        /**
+         * Constructs an {@link UpdateEventTask}.
+         */
+        UpdateEventTask(Visits visits) {
+            this.visits = visits;
+        }
+
+        /**
+         * Executes the task.
+         *
+         * @param context the context
+         * @throws OpenVPMSException for any error
+         */
+        @Override
+        public void execute(TaskContext context) {
+            for (final Visit event : visits) {
+                Retryable action = new AbstractRetryable() {
+                    @Override
+                    protected boolean runFirst() {
+                        return update(true, event);
+                    }
+
+                    @Override
+                    protected boolean runAction() {
+                        return update(false, event);
+                    }
+                };
+                if (!Retryer.run(action)) {
+                    notifyCancelled();
+                }
+            }
+        }
+
+        /**
+         * Updates an event.
+         *
+         * @param first  if {@code true} this is the first time it is being updated.
+         * @param event  the event
+         * @param toSave collects objects to save
+         * @return {@code true} if the object exists, otherwise {@code false}
+         */
+        private boolean updateEvent(boolean first, Act event, List<Act> toSave) {
+            if (!first) {
+                event = IMObjectHelper.reload(event);
+            }
+            if (event != null) {
+                if (ActStatus.IN_PROGRESS.equals(event.getStatus())) {
+                    event.setStatus(ActStatus.COMPLETED);
+                    event.setActivityEndTime(new Date());
+                    toSave.add(event);
+                }
+            }
+            return event != null;
+        }
+
+        /**
+         * Updates an object and saves it.
+         *
+         * @param first if {@code true}, this is the first invocation
+         * @param event the event
+         * @return {@code true} if the object exists, otherwise {@code false}
+         */
+        private boolean update(boolean first, Visit event) {
+            List<Act> toSave = new ArrayList<>();
+            boolean result = updateAppointment(first, event.getAppointment(), toSave);
+            result |= updateEvent(first, event.getEvent(), toSave);
+            if (!toSave.isEmpty()) {
+                ServiceHelper.getArchetypeService().save(toSave);
+            }
+            return result;
+        }
+
+        /**
+         * Updates an appointment.
+         *
+         * @param first       if {@code true} this is the first time it is being updated.
+         * @param appointment the appointment
+         * @param toSave      collects objects to save
+         * @return {@code true} if the object exists, otherwise {@code false}
+         */
+        private boolean updateAppointment(boolean first, Act appointment, List<Act> toSave) {
+            if (!first) {
+                appointment = IMObjectHelper.reload(appointment);
+            }
+            if (appointment != null && !ActStatus.COMPLETED.equals(appointment.getStatus())) {
+                appointment.setStatus(ActStatus.COMPLETED);
+                toSave.add(appointment);
+            }
+            return appointment != null;
         }
     }
 

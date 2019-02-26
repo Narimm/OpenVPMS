@@ -248,6 +248,9 @@
               description="Lists HL7 messages in the specified period containing the specified text"
               path="Reporting/Reports/HL7/A4/HL7 Messages Report.jrxml" mimeType="text/xml"
               docType="document.other"/>
-
+    <template name="Insurance Claims Report" archetype="INSURANCE_CLAIMS_REPORT" reportType="WORKFLOW"
+              description="Lists insurance claims by location"
+              path="Reporting/Insurance/A4/Insurance Claims Report.jrxml" mimeType="text/xml"
+              docType="document.other"/>
 
 </templates>

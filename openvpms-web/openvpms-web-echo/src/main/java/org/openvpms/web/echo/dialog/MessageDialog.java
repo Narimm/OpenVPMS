@@ -92,6 +92,15 @@ public abstract class MessageDialog extends ModalDialog {
     }
 
     /**
+     * Returns the message.
+     *
+     * @return the message
+     */
+    public String getMessage() {
+        return message;
+    }
+
+    /**
      * Lays out the component prior to display.
      */
     @Override
@@ -100,15 +109,6 @@ public abstract class MessageDialog extends ModalDialog {
         content.setText(message);
         Row row = RowFactory.create(Styles.LARGE_INSET, content);
         getLayout().add(row);
-    }
-
-    /**
-     * Returns the message.
-     *
-     * @return the message
-     */
-    protected String getMessage() {
-        return message;
     }
 
 }

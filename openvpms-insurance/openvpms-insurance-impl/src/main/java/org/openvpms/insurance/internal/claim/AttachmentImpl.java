@@ -19,6 +19,7 @@ package org.openvpms.insurance.internal.claim;
 import org.openvpms.archetype.rules.doc.DocumentHandlers;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
@@ -35,7 +36,7 @@ import org.openvpms.insurance.exception.InsuranceException;
 import org.openvpms.insurance.internal.i18n.InsuranceMessages;
 
 import java.io.InputStream;
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 /**
  * Default implementation of the {@link Attachment} interface.
@@ -98,21 +99,30 @@ public class AttachmentImpl implements Attachment {
      * <p>
      * An attachment can have a single identifier issued by an insurer. To avoid duplicates, each insurance service must
      * provide a unique archetype.
+     * <br/>
+     * If an attachment needs to be resubmitted with a different identifier, a new id can be assigned, or the existing
+     * one removed by supplying {@code null}.
      *
      * @param archetype the identifier archetype. Must have an <em>actIdentity.insuranceAttachment</em> prefix.
-     * @param id        the claim identifier
+     * @param id        the attachment identifier. If {@code null}, removes the existing identifier
      */
     @Override
     public void setInsurerId(String archetype, String id) {
         ActIdentity identity = getIdentity();
         if (identity == null) {
-            identity = (ActIdentity) service.create(archetype);
-            act.addValue("insurerId", identity);
+            if (id != null) {
+                identity = (ActIdentity) service.create(archetype);
+                act.addValue("insurerId", identity);
+            }
         } else if (!identity.isA(archetype)) {
             throw new IllegalArgumentException(
                     "Argument 'archetype' must be of the same type as the existing identifier");
         }
-        identity.setIdentity(id);
+        if (id != null) {
+            identity.setIdentity(id);
+        } else {
+            getAct().removeIdentity(identity);
+        }
         act.save();
     }
 
@@ -122,8 +132,8 @@ public class AttachmentImpl implements Attachment {
      * @return the date
      */
     @Override
-    public Date getDate() {
-        return getAct().getActivityStartTime();
+    public OffsetDateTime getDate() {
+        return DateRules.toOffsetDateTime(getAct().getActivityStartTime());
     }
 
     /**

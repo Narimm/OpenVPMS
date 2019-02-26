@@ -16,20 +16,23 @@
 
 package org.openvpms.insurance.internal.policy;
 
-import org.openvpms.archetype.rules.party.CustomerRules;
+import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActIdentity;
-import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.act.Act;
 import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Identity;
+import org.openvpms.component.model.party.Party;
+import org.openvpms.domain.customer.Customer;
+import org.openvpms.domain.internal.customer.CustomerImpl;
+import org.openvpms.domain.internal.patient.PatientImpl;
+import org.openvpms.domain.patient.Patient;
 import org.openvpms.insurance.exception.InsuranceException;
 import org.openvpms.insurance.internal.i18n.InsuranceMessages;
-import org.openvpms.insurance.policy.Animal;
 import org.openvpms.insurance.policy.Policy;
-import org.openvpms.insurance.policy.PolicyHolder;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 /**
  * Default implementation of the {@link Policy} interface.
@@ -54,9 +57,9 @@ public class PolicyImpl implements Policy {
     private final IArchetypeRuleService service;
 
     /**
-     * The customer rules.
+     * The party rules.
      */
-    private final CustomerRules customerRules;
+    private final PartyRules partyRules;
 
     /**
      * The patient rules.
@@ -64,14 +67,19 @@ public class PolicyImpl implements Policy {
     private final PatientRules patientRules;
 
     /**
-     * The policy holder.
+     * The customer.
      */
-    private PolicyHolder policyHolder;
+    private Party customer;
 
     /**
-     * The animal.
+     * The policy holder.
      */
-    private Animal animal;
+    private Customer policyHolder;
+
+    /**
+     * The patient.
+     */
+    private Patient animal;
 
     /**
      * The insurer.
@@ -82,17 +90,16 @@ public class PolicyImpl implements Policy {
     /**
      * Constructs a {@link PolicyImpl}.
      *
-     * @param policy        the policy
-     * @param service       the archetype service
-     * @param customerRules the customer rules
-     * @param patientRules  the patient rules
+     * @param policy       the policy
+     * @param service      the archetype service
+     * @param partyRules   the party rules
+     * @param patientRules the patient rules
      */
-    public PolicyImpl(Act policy, IArchetypeRuleService service, CustomerRules customerRules,
-                      PatientRules patientRules) {
+    public PolicyImpl(Act policy, IArchetypeRuleService service, PartyRules partyRules, PatientRules patientRules) {
         this.policy = service.getBean(policy);
         this.act = policy;
         this.service = service;
-        this.customerRules = customerRules;
+        this.partyRules = partyRules;
         this.patientRules = patientRules;
     }
 
@@ -107,33 +114,26 @@ public class PolicyImpl implements Policy {
     }
 
     /**
-     * Returns the policy identifier, issued by the insurer.
+     * Returns the policy number.
+     * <p>
+     * This is short for {@code getInsurerId().getIdentity()}
      *
-     * @return the policy identifier
-     * @throws InsuranceException for any error
+     * @return the policy number, or {@code null} if none has been assigned
      */
     @Override
-    public String getInsurerId() {
-        ActIdentity identity = getIdentity();
-        if (identity == null) {
-            throw new InsuranceException(InsuranceMessages.policyHasNoId());
-        }
-        return identity.getIdentity();
+    public String getPolicyNumber() {
+        Identity insurerId = policy.getObject("insurerId", Identity.class);
+        return (insurerId != null) ? insurerId.getIdentity() : null;
     }
 
     /**
      * Returns the date when the policy expires.
      *
-     * @return the policy expiry date
-     * @throws InsuranceException for any error
+     * @return the policy expiry date, or {@code null} if it is not known
      */
     @Override
-    public Date getExpiryDate() {
-        Date date = act.getActivityEndTime();
-        if (date == null) {
-            throw new InsuranceException(InsuranceMessages.policyHasNoExpiryDate());
-        }
-        return date;
+    public OffsetDateTime getExpiryDate() {
+        return DateRules.toOffsetDateTime(act.getActivityEndTime());
     }
 
     /**
@@ -143,13 +143,13 @@ public class PolicyImpl implements Policy {
      * @throws InsuranceException for any error
      */
     @Override
-    public PolicyHolder getPolicyHolder() {
+    public Customer getPolicyHolder() {
         if (policyHolder == null) {
-            Party customer = policy.getTarget("customer", Party.class);
+            customer = policy.getTarget("customer", Party.class);
             if (customer == null) {
                 throw new InsuranceException(InsuranceMessages.policyHasNoCustomer());
             }
-            policyHolder = new PolicyHolderImpl(customer, customerRules);
+            policyHolder = new CustomerImpl(customer, service, partyRules);
         }
         return policyHolder;
     }
@@ -161,10 +161,10 @@ public class PolicyImpl implements Policy {
      * @throws InsuranceException for any error
      */
     @Override
-    public Animal getAnimal() {
+    public Patient getAnimal() {
         if (animal == null) {
             Party patient = getPatient();
-            animal = new AnimalImpl(patient, service, patientRules);
+            animal = new PatientImpl(patient, service, patientRules);
         }
         return animal;
     }
@@ -187,6 +187,25 @@ public class PolicyImpl implements Policy {
     }
 
     /**
+     * Returns the policy act.
+     *
+     * @return the policy act
+     */
+    public Act getAct() {
+        return act;
+    }
+
+    /**
+     * Returns the customer.
+     *
+     * @return the customer
+     */
+    public Party getCustomer() {
+        getPolicyHolder();
+        return customer;
+    }
+
+    /**
      * Returns the patient.
      *
      * @return the patient
@@ -198,15 +217,6 @@ public class PolicyImpl implements Policy {
             throw new InsuranceException(InsuranceMessages.policyHasNoPatient());
         }
         return patient;
-    }
-
-    /**
-     * Returns the policy identity, as specified by the insurance provider.
-     *
-     * @return the policy identity, or {@code null} if none is registered
-     */
-    protected ActIdentity getIdentity() {
-        return policy.getObject("insurerId", ActIdentity.class);
     }
 
 }

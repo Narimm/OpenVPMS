@@ -154,6 +154,7 @@ public class ArchetypeService implements IArchetypeService {
      *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptor(java.lang.String)
      */
+    @Override
     public ArchetypeDescriptor getArchetypeDescriptor(String shortName) {
         return dCache.getArchetypeDescriptor(shortName);
     }
@@ -163,6 +164,7 @@ public class ArchetypeService implements IArchetypeService {
      *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptor(org.openvpms.component.business.domain.archetype.ArchetypeId)
      */
+    @Override
     public ArchetypeDescriptor getArchetypeDescriptor(ArchetypeId id) {
         return dCache.getArchetypeDescriptor(id);
     }
@@ -172,6 +174,7 @@ public class ArchetypeService implements IArchetypeService {
      *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getAssertionTypeRecord(java.lang.String)
      */
+    @Override
     public AssertionTypeDescriptor getAssertionTypeDescriptor(String name) {
         return dCache.getAssertionTypeDescriptor(name);
     }
@@ -181,6 +184,7 @@ public class ArchetypeService implements IArchetypeService {
      *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getAssertionTypeRecords()
      */
+    @Override
     public List<AssertionTypeDescriptor> getAssertionTypeDescriptors() {
         return dCache.getAssertionTypeDescriptors();
     }
@@ -190,6 +194,7 @@ public class ArchetypeService implements IArchetypeService {
      *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#createDefaultObject(org.openvpms.component.business.domain.archetype.ArchetypeId)
      */
+    @Override
     public IMObject create(ArchetypeId id) {
         if (log.isDebugEnabled()) {
             log.debug("ArchetypeService.create: Creating object of type " + id.getShortName());
@@ -202,6 +207,7 @@ public class ArchetypeService implements IArchetypeService {
      *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#createDefaultObject(java.lang.String)
      */
+    @Override
     public IMObject create(String name) {
         if (log.isDebugEnabled()) {
             log.debug("ArchetypeService.create: Creating object of type "
@@ -220,17 +226,17 @@ public class ArchetypeService implements IArchetypeService {
     @Override
     public List<org.openvpms.component.service.archetype.ValidationError> validate(
             org.openvpms.component.model.object.IMObject object) {
-        return validator.validate((IMObject) object);
+        return validator.validate(object);
     }
 
-    /**
+   /*
      * (non-Javadoc)
      *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#validateObject(org.openvpms.component.model.object.IMObject)
      */
     @Override
     public void validateObject(org.openvpms.component.model.object.IMObject object) {
-        List<org.openvpms.component.service.archetype.ValidationError> errors = validator.validate((IMObject) object);
+        List<org.openvpms.component.service.archetype.ValidationError> errors = validator.validate(object);
         if (!errors.isEmpty()) {
             throw new ValidationException(
                     errors, ValidationException.ErrorCode.FailedToValidObjectAgainstArchetype,
@@ -299,7 +305,7 @@ public class ArchetypeService implements IArchetypeService {
         }
 
         // derive the value
-        ndesc.deriveValue(object);
+        ndesc.deriveValue((IMObject) object);
     }
 
     /*
@@ -307,6 +313,7 @@ public class ArchetypeService implements IArchetypeService {
      *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeRecords()
      */
+    @Override
     public List<ArchetypeDescriptor> getArchetypeDescriptors() {
         return dCache.getArchetypeDescriptors();
     }
@@ -316,6 +323,7 @@ public class ArchetypeService implements IArchetypeService {
      *
      * @see org.openvpms.component.business.service.archetype.IArchetypeService#getArchetypeDescriptors(java.lang.String)
      */
+    @Override
     public List<ArchetypeDescriptor> getArchetypeDescriptors(String shortName) {
         return dCache.getArchetypeDescriptors(shortName);
     }
@@ -327,6 +335,7 @@ public class ArchetypeService implements IArchetypeService {
      * @return the corresponding object, or {@code null} if none is found
      * @throws ArchetypeServiceException if the query fails
      */
+    @Override
     public IMObject get(Reference reference) {
         return dao.get(reference);
     }
@@ -381,6 +390,7 @@ public class ArchetypeService implements IArchetypeService {
      * @param nodes the collection node names
      * @return a page of objects that match the query criteria
      */
+    @Override
     public IPage<IMObject> get(IArchetypeQuery query, Collection<String> nodes) {
         if (log.isDebugEnabled()) {
             log.debug("ArchetypeService.get: query=" + query + ", nodes=" + nodes);
@@ -400,6 +410,7 @@ public class ArchetypeService implements IArchetypeService {
      * @return a page of objects that match the query criteria
      * @throws ArchetypeServiceException if the query fails
      */
+    @Override
     public IPage<ObjectSet> getObjects(IArchetypeQuery query) {
         if (log.isDebugEnabled()) {
             log.debug("ArchetypeService.getObjects: query=" + query);
@@ -420,6 +431,7 @@ public class ArchetypeService implements IArchetypeService {
      * @return the nodes for each object that matches the query criteria
      * @throws ArchetypeServiceException if the query fails
      */
+    @Override
     public IPage<NodeSet> getNodes(IArchetypeQuery query, Collection<String> nodes) {
         if (log.isDebugEnabled()) {
             log.debug("ArchetypeService.get: query " + query + ", nodes=" + nodes);
@@ -473,11 +485,11 @@ public class ArchetypeService implements IArchetypeService {
                     new Object[]{});
         }
 
-        notifyRemove((IMObject) object, true);
+        notifyRemove(object, true);
 
         try {
             dao.delete((IMObject) object);
-            notifyRemove((IMObject) object, false);
+            notifyRemove(object, false);
         } catch (IMObjectDAOException exception) {
             if (IMObjectDAOException.ErrorCode.CannotDeleteLookupInUse.equals(exception.getErrorCode())) {
                 throw new ArchetypeServiceException(ArchetypeServiceException.ErrorCode.CannotDeleteLookupInUse,
@@ -861,11 +873,9 @@ public class ArchetypeService implements IArchetypeService {
      * @param preRemove if {@code true} the object is about to be removed,
      *                  otherwise it has been removed
      */
-    private void notifyRemove(IMObject object, boolean preRemove) {
+    private void notifyRemove(org.openvpms.component.model.object.IMObject object, boolean preRemove) {
         synchronized (listeners) {
-            ArchetypeId id = object.getArchetypeId();
-            String shortName = id.getShortName();
-            List<IArchetypeServiceListener> list = listeners.get(shortName);
+            List<IArchetypeServiceListener> list = listeners.get(object.getArchetype());
             if (list != null) {
                 Notifier notifier = Notifier.getNotifier(this);
                 if (preRemove) {

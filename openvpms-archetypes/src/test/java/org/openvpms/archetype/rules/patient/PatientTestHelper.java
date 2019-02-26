@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.patient;
@@ -28,11 +28,11 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.party.Party;
+import org.openvpms.component.model.user.User;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -61,7 +61,9 @@ public class PatientTestHelper {
      * @param owner       the patient owner
      * @return a new patient
      */
-    public static Party createPatient(String name, String species, String breed, Date dateOfBirth, Party owner) {
+    public static org.openvpms.component.business.domain.im.party.Party createPatient(String name, String species,
+                                                                                      String breed, Date dateOfBirth,
+                                                                                      Party owner) {
         Party patient = TestHelper.createPatient(owner);
         patient.setName(name);
         Lookup speciesLookup = getLookup(PatientArchetypes.SPECIES, species,
@@ -75,7 +77,7 @@ public class PatientTestHelper {
         bean.setValue("breed", breed);
         bean.setValue("dateOfBirth", dateOfBirth);
         bean.save();
-        return patient;
+        return (org.openvpms.component.business.domain.im.party.Party) patient;
     }
 
     /**
@@ -91,9 +93,11 @@ public class PatientTestHelper {
      * @param owner       the patient owner
      * @return a new patient
      */
-    public static Party createPatient(String name, String species, String breed, String sex, Date dateOfBirth,
-                                      String microchip, String colour, Party owner) {
-        Party patient = createPatient(name, species, breed, dateOfBirth, owner);
+    public static org.openvpms.component.business.domain.im.party.Party createPatient(
+            String name, String species, String breed, String sex, Date dateOfBirth, String microchip, String colour,
+            Party owner) {
+        org.openvpms.component.business.domain.im.party.Party patient
+                = createPatient(name, species, breed, dateOfBirth, owner);
         IMObjectBean bean = new IMObjectBean(patient);
         bean.setValue("sex", sex);
         if (microchip != null) {
@@ -172,7 +176,7 @@ public class PatientTestHelper {
      * @param patient   the patient
      * @return a new act
      */
-    public static Act createEvent(Date startTime, Party patient, Act... items) {
+    public static Act createEvent(Date startTime, Party patient, org.openvpms.component.model.act.Act... items) {
         return createEvent(startTime, null, patient, null, items);
     }
 
@@ -186,7 +190,8 @@ public class PatientTestHelper {
      * @param clinician the clinician. May be {@code null}
      * @return a new act
      */
-    public static Act createEvent(Date startTime, Party patient, User clinician, Act... items) {
+    public static Act createEvent(Date startTime, Party patient, User clinician,
+                                  org.openvpms.component.model.act.Act... items) {
         return createEvent(startTime, null, patient, clinician, items);
     }
 
@@ -202,19 +207,20 @@ public class PatientTestHelper {
      * @param items     the items. May be history or invoice items
      * @return a new act
      */
-    public static Act createEvent(Date startTime, Date endTime, Party patient, User clinician, Act... items) {
+    public static Act createEvent(Date startTime, Date endTime, Party patient, User clinician,
+                                  org.openvpms.component.model.act.Act... items) {
         Act act = createEvent(patient, clinician);
         act.setActivityStartTime(startTime);
         act.setActivityEndTime(endTime);
         ActBean bean = new ActBean(act);
-        for (Act item : items) {
+        for (org.openvpms.component.model.act.Act item : items) {
             if (item instanceof FinancialAct) {
-                bean.addNodeRelationship("chargeItems", item);
+                bean.addNodeRelationship("chargeItems", (FinancialAct) item);
             } else {
-                bean.addNodeRelationship("items", item);
+                bean.addNodeRelationship("items", (Act) item);
             }
         }
-        List<Act> acts = new ArrayList<>();
+        List<org.openvpms.component.model.act.Act> acts = new ArrayList<>();
         acts.add(act);
         acts.addAll(Arrays.asList(items));
         save(acts);
@@ -332,9 +338,10 @@ public class PatientTestHelper {
      *                 <em>act.patientMedication</em>
      * @param addendum the addendum
      */
-    public static void addAddendum(Act act, Act addendum) {
-        ActBean bean = new ActBean(act);
-        bean.addNodeRelationship("addenda", addendum);
+    public static void addAddendum(org.openvpms.component.model.act.Act act,
+                                   org.openvpms.component.model.act.Act addendum) {
+        ActBean bean = new ActBean((Act) act);
+        bean.addNodeRelationship("addenda", (Act) addendum);
         save(act, addendum);
     }
 
@@ -436,9 +443,9 @@ public class PatientTestHelper {
         Act act = (Act) create(shortName);
         act.setActivityStartTime(startTime);
         ActBean bean = new ActBean(act);
-        bean.addNodeParticipation("patient", patient);
+        bean.setTarget("patient", patient);
         if (clinician != null) {
-            bean.addNodeParticipation("clinician", clinician);
+            bean.setTarget("clinician", clinician);
         }
         return act;
     }

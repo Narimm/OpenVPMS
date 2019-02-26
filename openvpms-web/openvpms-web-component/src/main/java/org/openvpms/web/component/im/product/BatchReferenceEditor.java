@@ -34,7 +34,6 @@ import org.openvpms.web.component.edit.AbstractPropertyEditor;
 import org.openvpms.web.component.im.edit.IMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.PagedIMTable;
-import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
@@ -75,6 +74,16 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
     private final FocusGroup focusGroup;
 
     /**
+     * The text input property.
+     */
+    private final SimpleProperty input;
+
+    /**
+     * Input listener.
+     */
+    private final ModifiableListener listener;
+
+    /**
      * The product.
      */
     private Product product;
@@ -95,19 +104,9 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
     private Date expiryDate;
 
     /**
-     * The text input property.
-     */
-    private final SimpleProperty input;
-
-    /**
      * The batch drop down component.
      */
     private DropDown dropDown;
-
-    /**
-     * Input listener.
-     */
-    private final ModifiableListener listener;
 
 
     /**
@@ -132,12 +131,7 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
         dropDown.setPopUpAlwaysOnTop(true);
         dropDown.setFocusOnExpand(true);
         batch = getObject();
-        listener = new ModifiableListener() {
-            @Override
-            public void modified(Modifiable modifiable) {
-                updateBatches(true);
-            }
-        };
+        listener = modifiable -> updateBatches(true);
         updateText();
     }
 
@@ -180,7 +174,7 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
      *
      * @param object the object. May be {@code null}
      * @return {@code true} if the value was set, {@code false} if it cannot be set due to error, or is the same as
-     *         the existing value
+     * the existing value
      */
     @Override
     public boolean setObject(Entity object) {
@@ -188,6 +182,22 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
         batch = object;
         updateText();
         return getProperty().setValue(ref);
+    }
+
+    /**
+     * Returns the object corresponding to the reference.
+     *
+     * @return the object, or {@code null} if the reference is {@code null} or the object no longer exists
+     */
+    @Override
+    public Entity getObject() {
+        Property property = getProperty();
+        IMObjectReference reference = (IMObjectReference) property.getValue();
+        Entity object = null;
+        if (reference != null) {
+            object = (Entity) context.getCache().get(reference);
+        }
+        return object;
     }
 
     /**
@@ -253,9 +263,9 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
 
     /**
      * Determines if the reference is valid.
-     * <p/>
+     * <p>
      * This ensures that if a batch and product exists, there is a relationship between them.
-     * <p/>
+     * <p>
      * It could also verify that there is a relationship between batch and stock location, but this is less critical
      * and may interfere with how users manage batches (i.e. delete stock location relationship rather than deactivate).
      *
@@ -277,21 +287,6 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
     }
 
     /**
-     * Returns the object corresponding to the reference.
-     *
-     * @return the object, or {@code null} if the reference is {@code null} or the object no longer exists
-     */
-    protected Entity getObject() {
-        Property property = getProperty();
-        IMObjectReference reference = (IMObjectReference) property.getValue();
-        Entity object = null;
-        if (reference != null) {
-            object = (Entity) context.getCache().get(reference);
-        }
-        return object;
-    }
-
-    /**
      * Updates the field with the current batch.
      */
     private void updateText() {
@@ -309,7 +304,7 @@ class BatchReferenceEditor extends AbstractPropertyEditor implements IMObjectRef
 
     /**
      * Updates the product batches.
-     * <p/>
+     * <p>
      * If there are multiple batches associated with the product, renders a drop down containing them beside the text
      * field.
      *

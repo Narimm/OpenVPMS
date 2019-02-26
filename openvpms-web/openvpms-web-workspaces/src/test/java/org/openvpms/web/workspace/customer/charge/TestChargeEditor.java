@@ -22,10 +22,12 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.hl7.laboratory.Laboratories;
 import org.openvpms.hl7.patient.PatientContextFactory;
 import org.openvpms.hl7.patient.PatientInformationService;
 import org.openvpms.hl7.pharmacy.Pharmacies;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.ActRelationshipCollectionEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -122,6 +124,17 @@ public class TestChargeEditor extends DefaultCustomerChargeActEditor {
     @Override
     public TestChargeItemRelationshipCollectionEditor getItems() {
         return (TestChargeItemRelationshipCollectionEditor) super.getItems();
+    }
+
+    /**
+     * Creates a new instance of the editor, with the latest instance of the object to edit.
+     *
+     * @return a new instance
+     * @throws OpenVPMSException if a new instance cannot be created
+     */
+    @Override
+    public IMObjectEditor newInstance() {
+        return new TestChargeEditor(reload(getObject()), getLayoutContext(), getAddDefaultIem());
     }
 
     /**

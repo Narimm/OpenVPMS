@@ -20,7 +20,7 @@ import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.model.product.Product;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 /**
  * An invoice item being charged on a claim.
@@ -41,7 +41,7 @@ public interface Item {
      *
      * @return the date
      */
-    Date getDate();
+    OffsetDateTime getDate();
 
     /**
      * Returns the product.

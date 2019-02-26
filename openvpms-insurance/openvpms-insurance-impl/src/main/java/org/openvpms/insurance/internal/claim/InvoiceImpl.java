@@ -16,11 +16,13 @@
 
 package org.openvpms.insurance.internal.claim;
 
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.archetype.rules.util.DateRules;
+import org.openvpms.component.model.act.Act;
 import org.openvpms.insurance.claim.Invoice;
 import org.openvpms.insurance.claim.Item;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -74,8 +76,8 @@ public class InvoiceImpl implements Invoice {
      * @return the date
      */
     @Override
-    public Date getDate() {
-        return date;
+    public OffsetDateTime getDate() {
+        return DateRules.toOffsetDateTime(date);
     }
 
     /**

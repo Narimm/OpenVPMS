@@ -16,12 +16,16 @@
 
 package org.openvpms.web.echo.factory;
 
+import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Extent;
 import org.openvpms.web.echo.text.PasswordField;
 import org.openvpms.web.echo.text.TextArea;
 import org.openvpms.web.echo.text.TextComponent;
 import org.openvpms.web.echo.text.TextDocument;
 import org.openvpms.web.echo.text.TextField;
+import org.openvpms.web.resource.i18n.format.NumberFormatter;
+
+import java.math.BigDecimal;
 
 
 /**
@@ -99,7 +103,7 @@ public class TextComponentFactory extends ComponentFactory {
 
     /**
      * Creates a new text field that has a width based on the number of characters present.
-     * <p/>
+     * <p>
      * This selects a width that displays the text in field slightly bigger than the text, up to maxLength characters.
      * This is not perfect, as it is dependent on the font and characters used, but works in most cases.
      * The alternative would be to calculate the field width in pixels on the browser side based on the characters.
@@ -153,5 +157,25 @@ public class TextComponentFactory extends ComponentFactory {
         }
         return text;
     }
+
+    /**
+     * Creates a right aligned text field displaying a currency amount.
+     *
+     * @param amount   the amount
+     * @param columns  the columns
+     * @param readOnly if {@code true} disable the field
+     * @return a new text field
+     */
+    public static TextComponent createAmount(BigDecimal amount, int columns, boolean readOnly) {
+        TextField field = create(columns);
+        Alignment align = new Alignment(Alignment.RIGHT, Alignment.DEFAULT);
+        field.setAlignment(align);
+        field.setText(NumberFormatter.getCurrencyFormat().format(amount));
+        if (readOnly) {
+            field.setEnabled(false);
+        }
+        return field;
+    }
+
 
 }

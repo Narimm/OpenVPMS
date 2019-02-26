@@ -21,6 +21,7 @@ import org.openvpms.web.component.im.util.UserHelper;
 import org.openvpms.web.component.workflow.ConditionalTask;
 import org.openvpms.web.component.workflow.ConfirmationTask;
 import org.openvpms.web.component.workflow.DefaultTaskContext;
+import org.openvpms.web.component.workflow.EditIMObjectTask;
 import org.openvpms.web.component.workflow.SynchronousTask;
 import org.openvpms.web.component.workflow.TaskContext;
 import org.openvpms.web.component.workflow.TaskListener;
@@ -47,18 +48,22 @@ public class PaymentWorkflow extends WorkflowImpl {
     private final TaskContext initial;
 
     /**
-     * The charge amount that triggered the payment workflow.
-     */
-    private BigDecimal chargeAmount;
-
-    /**
      * The context to update at the end of the workflow.
      */
     private final Context parent;
 
+    /**
+     * The charge amount that triggered the payment workflow.
+     */
+    private final BigDecimal chargeAmount;
 
     /**
-     * Constructs a {@code PaymentWorkflow}.
+     * Determines if the user should be prompted to pay the account.
+     */
+    private final boolean prompt;
+
+    /**
+     * Constructs a {@link PaymentWorkflow}.
      *
      * @param chargeAmount the charge amount that triggered the payment workflow. If {@code 0}, the context will be
      *                     examined for an invoice to determine the amount
@@ -66,42 +71,59 @@ public class PaymentWorkflow extends WorkflowImpl {
      * @param help         the help context
      */
     public PaymentWorkflow(BigDecimal chargeAmount, Context context, HelpContext help) {
-        this(new DefaultTaskContext(null, help), chargeAmount, context, help);
+        this(new DefaultTaskContext(null, help), chargeAmount, true, context, help);
     }
 
     /**
-     * Constructs a {@code PaymentWorkflow}.
+     * Constructs a {@link PaymentWorkflow}.
+     *
+     * @param chargeAmount the charge amount that triggered the payment workflow. If {@code 0}, the context will be
+     *                     examined for an invoice to determine the amount
+     * @param prompt       if {@code true}, prompt the user to pay the account, otherwise launch a payment dialog
+     * @param context      the context
+     * @param help         the help context
+     */
+    public PaymentWorkflow(BigDecimal chargeAmount, boolean prompt, Context context, HelpContext help) {
+        this(new DefaultTaskContext(null, help), chargeAmount, prompt, context, help);
+    }
+
+
+    /**
+     * Constructs a {@link PaymentWorkflow}.
      *
      * @param context the task context
      * @param parent  the context to fall back on if an object isn't in the task context
      */
     public PaymentWorkflow(TaskContext context, Context parent) {
-        this(context, BigDecimal.ZERO, parent, context.getHelpContext());
+        this(context, BigDecimal.ZERO, true, parent, context.getHelpContext());
     }
 
     /**
-     * Constructs a {@code PaymentWorkflow}.
+     * Constructs a {@link PaymentWorkflow}.
      *
      * @param context the task context
      * @param parent  the context to fall back on if an object isn't in the task context
      * @param help    the help context
      */
     public PaymentWorkflow(TaskContext context, Context parent, HelpContext help) {
-        this(context, BigDecimal.ZERO, parent, help);
+        this(context, BigDecimal.ZERO, true, parent, help);
     }
 
     /**
-     * Constructs a {@code PaymentWorkflow}.
+     * Constructs a {@link PaymentWorkflow}.
      *
      * @param initial      the initial task context
      * @param chargeAmount the charge amount that triggered the payment workflow
+     * @param prompt       if {@code true}, prompt the user to pay the account, otherwise launch a payment dialog
      * @param parent       the parent context to fall back on if an object isn't in the task context
      * @param help         the help context
      */
-    public PaymentWorkflow(TaskContext initial, BigDecimal chargeAmount, Context parent, HelpContext help) {
+    public PaymentWorkflow(TaskContext initial, BigDecimal chargeAmount, boolean prompt, Context parent,
+                           HelpContext help) {
         super(help);
         this.initial = initial;
         this.chargeAmount = chargeAmount;
+        this.prompt = prompt;
         this.parent = parent;
 
         if (this.initial.getCustomer() == null) {
@@ -139,7 +161,7 @@ public class PaymentWorkflow extends WorkflowImpl {
 
     /**
      * Starts the task.
-     * <p/>
+     * <p>
      * The registered {@link TaskListener} will be notified on completion or
      * failure.
      *
@@ -151,7 +173,7 @@ public class PaymentWorkflow extends WorkflowImpl {
         String payMsg = Messages.get("workflow.payment.payaccount.message");
 
         Tasks tasks = new Tasks(getHelpContext());
-        tasks.addTask(new PaymentEditTask(chargeAmount));
+        tasks.addTask(createPaymentTask(chargeAmount));
         tasks.addTask(new OpenDrawerTask());
 
         // add a task to update the parent context at the end of the workflow
@@ -166,9 +188,23 @@ public class PaymentWorkflow extends WorkflowImpl {
             }
         });
 
-        boolean displayNo = !isRequired();
-        addTask(new ConditionalTask(new ConfirmationTask(payTitle, payMsg, displayNo, getHelpContext()), tasks));
+        if (prompt) {
+            boolean displayNo = !isRequired();
+            addTask(new ConditionalTask(new ConfirmationTask(payTitle, payMsg, displayNo, getHelpContext()), tasks));
+        } else {
+            addTask(tasks);
+        }
         super.start(context);
+    }
+
+    /**
+     * Creates a payment task.
+     *
+     * @param amount the charge amount that triggered the payment workflow
+     * @return a new payment task
+     */
+    protected EditIMObjectTask createPaymentTask(BigDecimal amount) {
+        return new PaymentEditTask(amount);
     }
 
 }

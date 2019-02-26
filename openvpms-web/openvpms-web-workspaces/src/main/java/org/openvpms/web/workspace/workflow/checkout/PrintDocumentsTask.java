@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkout;
@@ -294,13 +294,6 @@ class PrintDocumentsTask extends AbstractTask {
          * Invoked when a print is cancelled. This restarts the task.
          */
         public void cancelled() {
-            start(getContext());
-        }
-
-        /**
-         * Notifies that the print was skipped. This restarts the task.
-         */
-        public void skipped() {
             start(getContext());
         }
 

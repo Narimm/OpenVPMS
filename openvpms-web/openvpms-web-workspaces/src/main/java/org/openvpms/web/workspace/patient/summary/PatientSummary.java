@@ -27,10 +27,10 @@ import nextapp.echo2.app.layout.GridLayoutData;
 import nextapp.echo2.app.layout.RowLayoutData;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.insurance.InsuranceArchetypes;
+import org.openvpms.archetype.rules.insurance.InsuranceRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
-import org.openvpms.archetype.rules.patient.insurance.InsuranceRules;
 import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.archetype.rules.patient.reminder.ReminderRules;
 import org.openvpms.archetype.rules.prefs.PreferenceArchetypes;
@@ -447,7 +447,8 @@ public class PatientSummary extends PartySummary {
      */
     protected void addInsurancePolicy(Party patient, Grid grid) {
         Label title = LabelFactory.create("patient.insurance");
-        Act policy = insuranceRules.getPolicy(patient);
+        Party customer = getContext().getCustomer();
+        Act policy = (customer != null) ? (Act) insuranceRules.getPolicy(customer, patient) : null;
         String name;
         if (policy == null) {
             name = Messages.get("patient.insurance.none");
@@ -456,7 +457,7 @@ public class PatientSummary extends PartySummary {
             if (endTime != null && endTime.compareTo(new Date()) < 0) {
                 name = Messages.get("patient.insurance.expired");
             } else {
-                Party insurer = insuranceRules.getInsurer(policy);
+                Party insurer = (Party) insuranceRules.getInsurer(policy);
                 name = (insurer != null) ? insurer.getName() : Messages.get("patient.insurance.none");
             }
         }
@@ -495,7 +496,7 @@ public class PatientSummary extends PartySummary {
         String showReferral = getPreferences().getString(PreferenceArchetypes.SUMMARY, "showReferral",
                                                          NEVER_SHOW_REFERRAL);
         if (!NEVER_SHOW_REFERRAL.equals(showReferral)) {
-            final Party vet = rules.getReferralVet(patient, new Date());
+            Party vet = (Party) rules.getReferralVet(patient, new Date());
             if (vet != null || ALWAYS_SHOW_REFERRAL.equals(showReferral)) {
                 grid.add(LabelFactory.create("patient.referralvet"));
                 if (vet != null) {
@@ -670,7 +671,7 @@ public class PatientSummary extends PartySummary {
      * @param patient the patient
      */
     private void onShowEstimates(Party patient) {
-        Party customer = rules.getOwner(patient);
+        Party customer = (Party) rules.getOwner(patient);
         if (customer != null) {
             CustomerEstimates query = new CustomerEstimates();
             List<Act> estimates = query.getEstimates(customer, patient);
@@ -743,7 +744,7 @@ public class PatientSummary extends PartySummary {
      * @return {@code true} if there are estimates
      */
     private boolean hasEstimates(Party patient) {
-        Party customer = rules.getOwner(patient);
+        Party customer = (Party) rules.getOwner(patient);
         if (customer != null) {
             CustomerEstimates query = new CustomerEstimates();
             return query.hasEstimates(customer, patient);

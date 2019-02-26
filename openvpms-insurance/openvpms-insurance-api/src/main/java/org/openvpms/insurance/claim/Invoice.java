@@ -17,7 +17,7 @@
 package org.openvpms.insurance.claim;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -39,7 +39,7 @@ public interface Invoice {
      *
      * @return the date
      */
-    Date getDate();
+    OffsetDateTime getDate();
 
     /**
      * Returns the discount amount, including tax.

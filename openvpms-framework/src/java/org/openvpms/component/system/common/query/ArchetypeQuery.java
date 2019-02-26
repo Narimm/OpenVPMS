@@ -20,7 +20,7 @@ package org.openvpms.component.system.common.query;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.object.Reference;
 
 
 /**
@@ -161,11 +161,11 @@ public class ArchetypeQuery extends AbstractArchetypeQuery
     }
 
     /**
-     * Create a query based on the specified {@link IMObjectReference}.
+     * Create a query based on the specified {@link Reference}.
      *
      * @param reference the object reference
      */
-    public ArchetypeQuery(IMObjectReference reference) {
+    public ArchetypeQuery(Reference reference) {
         archetypeConstraint = new ObjectRefConstraint(reference);
     }
 

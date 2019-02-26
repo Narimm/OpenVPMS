@@ -69,6 +69,11 @@ public class ArchetypeNodes {
     private boolean allComplexNodes;
 
     /**
+     * The nodes to include in the specified order.
+     */
+    private Set<String> list = new LinkedHashSet<>();
+
+    /**
      * Include the specified nodes as simple nodes.
      */
     private Set<String> includeSimpleNodes = new LinkedHashSet<>();
@@ -139,6 +144,7 @@ public class ArchetypeNodes {
         this.allComplexNodes = nodes.allSimpleNodes;
         this.first = nodes.first;
         this.second = nodes.second;
+        this.list = new LinkedHashSet<>(nodes.list);
         this.includeSimpleNodes = new LinkedHashSet<>(nodes.includeSimpleNodes);
         this.includeComplexNodes = new LinkedHashSet<>(nodes.includeComplexNodes);
         this.exclude = new HashSet<>(nodes.exclude);
@@ -168,6 +174,17 @@ public class ArchetypeNodes {
      */
     public ArchetypeNodes second(String second) {
         this.second = second;
+        return this;
+    }
+
+    /**
+     * Includes the specified nodes, in the order they are listed.
+     *
+     * @param nodes the nodes
+     * @return this instance
+     */
+    public ArchetypeNodes list(String... nodes) {
+        list.addAll(Arrays.asList(nodes));
         return this;
     }
 
@@ -459,6 +476,18 @@ public class ArchetypeNodes {
     }
 
     /**
+     * Creates a new instance that selects the list of nodes, in the order given.
+     * <p>
+     * This includes hidden nodes.
+     *
+     * @param nodes the nodes
+     * @return a new instance
+     */
+    public static ArchetypeNodes nodes(String... nodes) {
+        return none().list(nodes);
+    }
+
+    /**
      * Returns the named property.
      *
      * @param properties the properties to search
@@ -591,7 +620,7 @@ public class ArchetypeNodes {
         for (NodeDescriptor node : first) {
             String name = node.getName();
             if (indexOf(name, second) != -1 || includeSimpleNodes.contains(name)
-                || includeComplexNodes.contains(name)) {
+                || includeComplexNodes.contains(name) || list.contains(name)) {
                 result.add(node);
             }
             int index = indexOf(name, left);
@@ -601,7 +630,7 @@ public class ArchetypeNodes {
         }
         for (NodeDescriptor node : left) {
             String name = node.getName();
-            if (includeSimpleNodes.contains(name) || includeComplexNodes.contains(name)) {
+            if (includeSimpleNodes.contains(name) || includeComplexNodes.contains(name) || list.contains(name)) {
                 boolean found = false;
                 int index = indexOf(name, second) - 1;
                 while (index > 0) {
@@ -684,15 +713,23 @@ public class ArchetypeNodes {
      * @return {@code descriptors}
      */
     private List<NodeDescriptor> reorder(List<NodeDescriptor> descriptors) {
+        int i = 0;
+        for (String node : list) {
+            int index = indexOf(node, descriptors);
+            if (index != -1) {
+                move(index, i, descriptors);
+                ++i;
+            }
+        }
         if (first != null) {
             move(first, 0, descriptors);
         }
         if (second != null) {
             move(second, 1, descriptors);
         }
-        for (int i = 0; i < order.size(); i += 2) {
-            String node1 = order.get(i);
-            String node2 = order.get(i + 1);
+        for (int j = 0; j < order.size(); j += 2) {
+            String node1 = order.get(j);
+            String node2 = order.get(j + 1);
             int index = indexOf(node2, descriptors);
             if (index != -1) {
                 move(node1, index, descriptors);
@@ -727,12 +764,25 @@ public class ArchetypeNodes {
      */
     private void move(String node, int index, List<NodeDescriptor> descriptors) {
         int pos = indexOf(node, descriptors);
-        if (pos != -1 && pos != index) {
-            NodeDescriptor descriptor = descriptors.remove(pos);
-            if (pos > index) {
-                descriptors.add(index, descriptor);
+        if (pos != -1) {
+            move(pos, index, descriptors);
+        }
+    }
+
+    /**
+     * Moves a node to its correct position in a list.
+     *
+     * @param oldIndex    the old index
+     * @param newIndex    the new index
+     * @param descriptors the list of descriptors
+     */
+    private void move(int oldIndex, int newIndex, List<NodeDescriptor> descriptors) {
+        if (oldIndex != newIndex) {
+            NodeDescriptor descriptor = descriptors.remove(oldIndex);
+            if (oldIndex > newIndex) {
+                descriptors.add(newIndex, descriptor);
             } else {
-                descriptors.add(index - 1, descriptor);
+                descriptors.add(newIndex - 1, descriptor);
             }
         }
     }
@@ -815,7 +865,7 @@ public class ArchetypeNodes {
             boolean include = false;
             String name = descriptor.getName();
             boolean simple = !descriptor.isComplexNode();
-            boolean named = includeSimpleNodes.contains(name);
+            boolean named = includeSimpleNodes.contains(name) || list.contains(name);
             // nodes that are explicitly named ignore hidden=false flag
             if (((allSimpleNodes && simple) || named) && !includeComplexNodes.contains(name)) {
                 include = include(descriptor, named);
@@ -844,7 +894,7 @@ public class ArchetypeNodes {
             boolean include = false;
             String name = descriptor.getName();
             boolean complex = descriptor.isComplexNode();
-            boolean named = includeComplexNodes.contains(name);
+            boolean named = includeComplexNodes.contains(name) || list.contains(name);
             // nodes that are explicitly named ignore hidden=false flag
             if (((allComplexNodes && complex) || named) && !includeSimpleNodes.contains(name)) {
                 include = include(descriptor, named);

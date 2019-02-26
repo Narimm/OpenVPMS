@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -28,7 +28,9 @@
 
     <bean id="insuranceFactory" class="org.openvpms.insurance.internal.InsuranceFactory">
         <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="insuranceRules"/>
         <constructor-arg ref="customerRules"/>
+        <constructor-arg ref="customerAccountRules"/>
         <constructor-arg ref="patientRules"/>
         <constructor-arg ref="documentHandlers"/>
         <constructor-arg ref="txnManager"/>

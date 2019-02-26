@@ -17,6 +17,7 @@
 package org.openvpms.insurance.service;
 
 import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Identity;
 import org.openvpms.component.model.party.Party;
 
 import java.util.List;
@@ -60,6 +61,16 @@ public interface Insurers {
 
     /**
      * Returns the insurer identifier.
+     *
+     * @param insurer the insurer
+     * @return the insurer identifier, or {@code null} if the insurer doesn't have one
+     */
+    Identity getIdentifier(Party insurer);
+
+    /**
+     * Returns the insurer identifier.
+     * <p>
+     * This is short for {@link {@code getIdentifier(insurer).getIdentity()}.
      *
      * @param insurer the insurer
      * @return the insurer identifier, or {@code null} if the insurer doesn't have one

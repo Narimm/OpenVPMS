@@ -207,7 +207,7 @@ public class ReminderProcessor {
      * @return the corresponding customer, or {@code null} if it cannot be found
      */
     public Party getCustomer(Party patient) {
-        return patientRules.getOwner(patient);
+        return (Party) patientRules.getOwner(patient);
     }
 
     /**

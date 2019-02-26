@@ -12,13 +12,12 @@
  *  License.
  *
  *  Copyright 2006 (C) OpenVPMS Ltd. All Rights Reserved.
- *
- *  $Id$
  */
 
 package org.openvpms.web.component.im.lookup;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.lookup.LookupRelationship;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.AbstractRelationshipEditor;
@@ -27,21 +26,18 @@ import org.openvpms.web.component.im.relationship.AbstractRelationshipEditor;
 /**
  * An editor for {@link LookupRelationship}s.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
-public class LookupRelationshipEditor extends AbstractRelationshipEditor {
+public class LookupRelationshipEditor extends AbstractRelationshipEditor<Lookup> {
 
     /**
-     * Construct a new <code>EntityRelationshipEditor</code>.
+     * Constructs a {@link LookupRelationshipEditor}.
      *
      * @param relationship the relationship
      * @param parent       the parent object
      * @param context      the layout context
      */
-    public LookupRelationshipEditor(LookupRelationship relationship,
-                                    IMObject parent,
-                                    LayoutContext context) {
+    public LookupRelationshipEditor(LookupRelationship relationship, IMObject parent, LayoutContext context) {
         super(relationship, parent, context);
     }
 }

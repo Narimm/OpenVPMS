@@ -18,7 +18,6 @@ package org.openvpms.insurance.internal.service;
 
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
 import org.openvpms.component.model.bean.IMObjectBean;
-import org.openvpms.component.model.bean.Policies;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.model.party.Party;
 import org.openvpms.insurance.exception.InsuranceException;
@@ -60,6 +59,7 @@ public class InsuranceServicesImpl implements InsuranceServices {
      *
      * @param insurer the insurer
      * @return {@code true} if insurer accepts claims via an {@link InsuranceService}
+     * @throws InsuranceException if the service is unavailable
      */
     public boolean canSubmit(Party insurer) {
         return getConfig(insurer) != null;
@@ -109,10 +109,15 @@ public class InsuranceServicesImpl implements InsuranceServices {
      * Returns the <em>entity.insuranceService*</em> configuration for an insurer.
      *
      * @param insurer the insurer
-     * @return the configuration, or {@code null} if none exists or is inactive
+     * @return the configuration, or {@code null} if none exists
+     * @throws InsuranceException if the configuration is inactive
      */
     private Entity getConfig(Party insurer) {
         IMObjectBean bean = service.getBean(insurer);
-        return bean.getTarget("service", Entity.class, Policies.active());
+        Entity config = bean.getTarget("service", Entity.class);
+        if (config != null && !config.isActive()) {
+            throw new InsuranceException(InsuranceMessages.serviceInactive(config.getName(), insurer.getName()));
+        }
+        return config;
     }
 }

@@ -17,18 +17,19 @@
 package org.openvpms.insurance.internal.claim;
 
 import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.act.Act;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.party.Party;
 import org.openvpms.insurance.claim.Condition;
 import org.openvpms.insurance.claim.Invoice;
 import org.openvpms.insurance.claim.Item;
 import org.openvpms.insurance.claim.Note;
 
 import java.math.BigDecimal;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -93,8 +94,8 @@ public class ConditionImpl implements Condition {
      * @return date when treatment for the condition was started
      */
     @Override
-    public Date getTreatedFrom() {
-        return act.getActivityStartTime();
+    public OffsetDateTime getTreatedFrom() {
+        return DateRules.toOffsetDateTime(act.getActivityStartTime());
     }
 
     /**
@@ -103,8 +104,8 @@ public class ConditionImpl implements Condition {
      * @return date when treatment for the condition was ended
      */
     @Override
-    public Date getTreatedTo() {
-        return act.getActivityEndTime();
+    public OffsetDateTime getTreatedTo() {
+        return DateRules.toOffsetDateTime(act.getActivityEndTime());
     }
 
     /**
@@ -267,10 +268,10 @@ public class ConditionImpl implements Condition {
         for (Map.Entry<Reference, Act> entry : invoicesByRef.entrySet()) {
             Act invoice = entry.getValue();
             List<Item> items = itemsByInvoice.get(entry.getKey());
-            Collections.sort(items, (o1, o2) -> DateRules.compareTo(o1.getDate(), o2.getDate()));
+            Collections.sort(items, (o1, o2) -> o1.getDate().compareTo(o2.getDate()));
             result.add(new InvoiceImpl(invoice, items));
         }
-        Collections.sort(result, (o1, o2) -> DateRules.compareTo(o1.getDate(), o2.getDate()));
+        Collections.sort(result, (o1, o2) -> o1.getDate().compareTo(o2.getDate()));
         return result;
     }
 

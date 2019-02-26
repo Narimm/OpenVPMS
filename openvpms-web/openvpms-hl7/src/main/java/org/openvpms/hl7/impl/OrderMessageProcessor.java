@@ -184,7 +184,7 @@ abstract class OrderMessageProcessor {
             }
             note = "Unknown patient, Id='" + pid.getPatientID().getIDNumber() + "', name='" + name + "'";
         } else {
-            customer = rules.getOwner(patient);
+            customer = (Party) rules.getOwner(patient);
         }
         return createState(patient, customer, note, location, service);
     }

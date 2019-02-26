@@ -95,7 +95,7 @@ public class TestHelper {
      * @throws ArchetypeServiceException if the service cannot save the object
      * @throws ValidationException       if the object cannot be validated
      */
-    public static void save(IMObject object) {
+    public static void save(org.openvpms.component.model.object.IMObject object) {
         ArchetypeServiceHelper.getArchetypeService().save(object);
     }
 
@@ -106,7 +106,7 @@ public class TestHelper {
      * @throws ArchetypeServiceException if the service cannot save the object
      * @throws ValidationException       if the object cannot be validated
      */
-    public static void save(IMObject... objects) {
+    public static void save(org.openvpms.component.model.object.IMObject... objects) {
         save(Arrays.asList(objects));
     }
 
@@ -117,7 +117,7 @@ public class TestHelper {
      * @throws ArchetypeServiceException if the service cannot save the object
      * @throws ValidationException       if the object cannot be validated
      */
-    public static void save(Collection<? extends IMObject> objects) {
+    public static void save(Collection<? extends org.openvpms.component.model.object.IMObject> objects) {
         ArchetypeServiceHelper.getArchetypeService().save(objects);
     }
 
@@ -426,7 +426,7 @@ public class TestHelper {
      * @param owner the patient owner
      * @return a new patient
      */
-    public static Party createPatient(Party owner) {
+    public static Party createPatient(org.openvpms.component.model.party.Party owner) {
         return createPatient(owner, true);
     }
 
@@ -437,7 +437,7 @@ public class TestHelper {
      * @param save  if {@code true}, make the patient persistent
      * @return a new patient
      */
-    public static Party createPatient(Party owner, boolean save) {
+    public static Party createPatient(org.openvpms.component.model.party.Party owner, boolean save) {
         return createPatient(randomName("XPatient-"), owner, save);
     }
 
@@ -449,9 +449,10 @@ public class TestHelper {
      * @param save  if {@code true}, make the patient persistent
      * @return a new patient
      */
-    public static Party createPatient(String name, Party owner, boolean save) {
+    public static Party createPatient(String name, org.openvpms.component.model.party.Party owner, boolean save) {
         Party patient = createPatient(name, save);
-        PatientRules rules = new PatientRules(null, ArchetypeServiceHelper.getArchetypeService(), null, null);
+        IArchetypeService service = ArchetypeServiceHelper.getArchetypeService();
+        PatientRules rules = new PatientRules(null, service, null, null);
         rules.addPatientOwnerRelationship(owner, patient);
         if (save) {
             save(owner, patient);
@@ -787,6 +788,20 @@ public class TestHelper {
         return till;
     }
 
+    /**
+     * Creates a new till linked to a location.
+     *
+     * @param location the practice location
+     * @return the new till
+     */
+    public static Party createTill(Party location) {
+        Party till = createTill();
+        IMObjectBean bean = new IMObjectBean(location);
+        bean.addTarget("tills", till, "locations");
+        bean.save(till);
+        return till;
+    }
+
 
     /**
      * Returns a lookup, creating and saving it if it doesn't exist.
@@ -898,7 +913,7 @@ public class TestHelper {
         relationship.setTarget(target.getObjectReference());
         source.addLookupRelationship(relationship);
         target.addLookupRelationship(relationship);
-        save((Lookup) source, target);
+        save(source, target);
         return target;
     }
 

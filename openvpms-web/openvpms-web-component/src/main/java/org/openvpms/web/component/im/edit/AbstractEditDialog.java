@@ -34,15 +34,12 @@ import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.PopupDialog;
 import org.openvpms.web.echo.error.ErrorHandler;
 import org.openvpms.web.echo.event.ActionListener;
-import org.openvpms.web.echo.event.VetoListener;
 import org.openvpms.web.echo.event.Vetoable;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.resource.i18n.Messages;
 import org.springframework.transaction.TransactionStatus;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -105,6 +102,11 @@ public abstract class AbstractEditDialog extends PopupDialog {
     private HelpContext helpContext;
 
     /**
+     * Callback to be invoked when the editor is saved, within the same transaction.
+     */
+    private Consumer<IMObjectEditor> transactionCallback;
+
+    /**
      * Callback to be invoked after the editor is successfully saved.
      */
     private Consumer<IMObjectEditor> postSaveCallback;
@@ -162,11 +164,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
                 onMacro();
             }
         });
-        setCancelListener(new VetoListener() {
-            public void onVeto(Vetoable action) {
-                onCancel(action);
-            }
-        });
+        setCancelListener(this::onCancel);
     }
 
     /**
@@ -176,6 +174,18 @@ public abstract class AbstractEditDialog extends PopupDialog {
      */
     public IMObjectEditor getEditor() {
         return editor;
+    }
+
+    /**
+     * Registers a callback to be invoked whenever the editor is saved.
+     * <p>
+     * This is invoked within the same transaction as the editor. If it throws an exception, any changes will
+     * be rolled back.
+     *
+     * @param callback the callback. May be {@code null}
+     */
+    public void setTransactionCallback(Consumer<IMObjectEditor> callback) {
+        this.transactionCallback = callback;
     }
 
     /**
@@ -375,12 +385,7 @@ public abstract class AbstractEditDialog extends PopupDialog {
         IMObjectEditor previous = this.editor;
         if (editor != null) {
             setTitle(editor.getTitle());
-            editor.addPropertyChangeListener(
-                    IMObjectEditor.COMPONENT_CHANGED_PROPERTY, new PropertyChangeListener() {
-                        public void propertyChange(PropertyChangeEvent event) {
-                            onComponentChange();
-                        }
-                    });
+            editor.addPropertyChangeListener(IMObjectEditor.COMPONENT_CHANGED_PROPERTY, event -> onComponentChange());
         }
         this.editor = editor;
         if (previous != null) {
@@ -404,6 +409,9 @@ public abstract class AbstractEditDialog extends PopupDialog {
      */
     protected void doSave(IMObjectEditor editor) {
         editor.save();
+        if (transactionCallback != null) {
+            transactionCallback.accept(editor);
+        }
     }
 
     /**
@@ -435,14 +443,19 @@ public abstract class AbstractEditDialog extends PopupDialog {
      * Invoked to reload the object being edited when save fails.
      *
      * @param editor the editor
-     * @return a {@code true} if the editor was reloaded
+     * @return {@code true} if the editor was reloaded
      */
     protected boolean reload(IMObjectEditor editor) {
         IMObjectEditor newEditor = null;
         try {
             newEditor = editor.newInstance();
             if (newEditor != null) {
-                setEditor(newEditor);
+                if (newEditor.getClass() == editor.getClass()) {
+                    setEditor(newEditor);
+                } else {
+                    log.error("Cannot reload editor. Reloaded editor=" + newEditor.getClass().getName()
+                              + " is a different type to the original editor=" + editor.getClass().getName());
+                }
             }
         } catch (Throwable exception) {
             log.error("Failed to reload editor", exception);

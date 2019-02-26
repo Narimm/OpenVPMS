@@ -25,6 +25,7 @@ import nextapp.echo2.app.SelectField;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.web.component.im.filter.NodeFilter;
 import org.openvpms.web.component.im.view.ComponentState;
 import org.openvpms.web.component.im.view.IMObjectComponentFactory;
@@ -36,6 +37,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.echo.text.TextArea;
 
 import java.util.Collection;
@@ -651,6 +653,16 @@ public abstract class AbstractLayoutStrategy implements IMObjectLayoutStrategy {
         group.add(state2.getComponent());
         return new ComponentState(RowFactory.create(Styles.CELL_SPACING, state1.getComponent(),
                                                     state2.getComponent()), state1.getProperty(), group);
+    }
+
+    /**
+     * Helper to return a bean for an object.
+     *
+     * @param object the object
+     * @return the object wrapped in a bean
+     */
+    protected IMObjectBean getBean(IMObject object) {
+        return ServiceHelper.getArchetypeService().getBean(object);
     }
 
     /**

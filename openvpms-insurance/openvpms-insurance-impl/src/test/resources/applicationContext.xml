@@ -246,8 +246,15 @@
     <!--  Insurance                                                         -->
     <!-- ================================================================== -->
 
+    <bean id="insuranceRules" class="org.openvpms.archetype.rules.insurance.InsuranceRules">
+        <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="txnManager"/>
+    </bean>
+
     <bean id="insuranceFactory" class="org.openvpms.insurance.internal.InsuranceFactory">
         <constructor-arg ref="archetypeService"/>
+        <constructor-arg ref="insuranceRules"/>
+        <constructor-arg ref="customerAccountRules"/>
         <constructor-arg ref="customerRules"/>
         <constructor-arg ref="patientRules"/>
         <constructor-arg ref="documentHandlers"/>

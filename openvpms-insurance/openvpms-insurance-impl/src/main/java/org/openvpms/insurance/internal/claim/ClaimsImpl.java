@@ -16,7 +16,7 @@
 
 package org.openvpms.insurance.internal.claim;
 
-import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
+import org.openvpms.archetype.rules.insurance.InsuranceArchetypes;
 import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;

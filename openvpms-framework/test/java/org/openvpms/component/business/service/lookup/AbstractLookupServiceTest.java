@@ -67,7 +67,7 @@ public abstract class AbstractLookupServiceTest extends AbstractArchetypeService
      */
     @Test
     public void testGetLookup() {
-        Lookup lookup = createLookup("lookup.breed", "CANINE");
+        Lookup lookup = createLookup("lookup.breed", "BLOODHOUND");
         String code = lookup.getCode();
 
         Lookup found = lookupService.getLookup("lookup.breed", code);
@@ -411,6 +411,22 @@ public abstract class AbstractLookupServiceTest extends AbstractArchetypeService
         checkLookups(lookupService.getLookups("lookup.species"), false, species);
         assertNull(lookupService.getLookup("lookup.species", species.getCode()));
         checkSources(breed1);
+    }
+
+    /**
+     * Tests the {@link ILookupService#getLookup(String, String, String)}
+     * and {@link ILookupService#getName(String, String, String)} methods.
+     */
+    @Test
+    public void testGetLookupByArchetypeNodeAndCode() {
+        Lookup canine = createLookup("lookup.species", "CANINE");
+        save(canine);
+
+        Lookup indirect = lookupService.getLookup("party.patientpet", "species", canine.getCode());
+        assertEquals(canine, indirect);
+
+        String name = lookupService.getName("party.patientpet", "species", canine.getCode());
+        assertEquals(canine.getName(), name);
     }
 
     /**

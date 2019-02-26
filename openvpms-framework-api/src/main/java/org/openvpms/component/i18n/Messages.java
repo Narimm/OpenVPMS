@@ -46,20 +46,47 @@ public class Messages {
     private final String groupId;
 
     /**
+     * The class loader to use. If not specified, resource bundles will be resolved using the context class loader.
+     */
+    private final ClassLoader classLoader;
+
+    /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(Messages.class);
 
 
     /**
-     * Constructs a {@code Message}.
+     * Constructs a {@link Messages}.
      *
      * @param groupId    the group that the messages belong to
      * @param bundlePath the resource bundle path
      */
     public Messages(String groupId, String bundlePath) {
+        this(groupId, bundlePath, null);
+    }
+
+    /**
+     * Constructs a {@link Messages}.
+     *
+     * @param groupId the group that the messages belong to
+     * @param type    the class used to determine the resource bundle name, and the class loader used to load the bundle
+     */
+    public Messages(String groupId, Class type) {
+        this(groupId, type.getName(), type.getClassLoader());
+    }
+
+    /**
+     * Constructs a {@link Messages}.
+     *
+     * @param groupId     the group that the messages belong to
+     * @param bundlePath  the resource bundle path
+     * @param classLoader the class loader used to load the resource bundle. May be {@code null}
+     */
+    private Messages(String groupId, String bundlePath, ClassLoader classLoader) {
         this.groupId = groupId;
         this.bundlePath = bundlePath;
+        this.classLoader = classLoader;
     }
 
     /**
@@ -155,7 +182,7 @@ public class Messages {
      * @return the class loader
      */
     protected ClassLoader getClassLoader() {
-        ClassLoader result = Thread.currentThread().getContextClassLoader();
+        ClassLoader result = (classLoader != null) ? classLoader : Thread.currentThread().getContextClassLoader();
         return (result != null) ? result : getClass().getClassLoader();
     }
 

@@ -24,10 +24,10 @@
         <node name="insurer" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.insurer"/>
         <node name="insurerId" displayName="Policy Number" path="/identities" type="java.util.HashSet"
-              baseName="Identity" minCardinality="1" maxCardinality="1" filter="actIdentity.insurancePolicy"/>
+              baseName="Identity" minCardinality="0" maxCardinality="1" filter="actIdentity.insurancePolicy"/>
         <node displayName="Start Date" name="startTime" path="/activityStartTime" type="java.util.Date"
               minCardinality="1" defaultValue="java.util.Date.new()"/>
-        <node displayName="End Date" name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="1"/>
+        <node displayName="End Date" name="endTime" path="/activityEndTime" type="java.util.Date" minCardinality="0"/>
         <node name="customer" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.customer" readOnly="true"/>
         <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"

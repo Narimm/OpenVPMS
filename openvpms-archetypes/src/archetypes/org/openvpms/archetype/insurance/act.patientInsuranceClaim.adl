@@ -33,6 +33,8 @@
               minCardinality="1" maxCardinality="1" filter="actRelationship.insuranceClaimPolicy" readOnly="true"/>
         <node name="patient" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.patient" hidden="true"/>
+        <node name="gapClaim" path="/details/gapClaim" type="java.lang.Boolean" minCardinality="0"
+              defaultValue="false()"/>
         <node name="author" path="/participations" type="java.util.HashSet" minCardinality="1" maxCardinality="1"
               filter="participation.author" readOnly="true"/>
         <node name="user" displayName="Claim Handler" path="/participations" type="java.util.HashSet" minCardinality="1"
@@ -70,6 +72,33 @@
                 </propertyList>
             </assertion>
         </node>
+        <node displayName="Gap Claim Status" name="status2" path="/status2" type="java.lang.String" minCardinality="0"
+              readOnly="true" hidden="true">
+            <assertion name="lookup.local">
+                <propertyList name="entries">
+                    <property name="PENDING" value="Pending"/>
+                    <property name="RECEIVED" value="Received"/>
+                    <property name="PAID" value="Paid"/>
+                    <property name="NOTIFIED" value="Notified"/>
+                </propertyList>
+            </assertion>
+        </node>
+        <node name="benefitAmount" path="/details/benefitAmount"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0"
+              defaultValue="'0.0'" readOnly="true" hidden="true">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
+        <node name="paid" path="/details/paid"
+              type="org.openvpms.component.business.domain.im.datatypes.quantity.Money" minCardinality="0"
+              defaultValue="'0.0'" readOnly="true" hidden="true">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be >= 0.0</errorMessage>
+            </assertion>
+        </node>
+        <node name="benefitNotes" type="java.lang.String" path="/details/benefitNotes" readOnly="true" maxLength="5000"
+              hidden="true"/>
         <node name="message" path="/details/message" type="java.lang.String" minCardinality="0" maxLength="5000"
               readOnly="true"/>
         <node name="notes" path="/details/notes" type="java.lang.String" minCardinality="0" maxLength="5000"/>

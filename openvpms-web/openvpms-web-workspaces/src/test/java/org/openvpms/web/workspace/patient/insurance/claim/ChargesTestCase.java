@@ -11,17 +11,21 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.insurance.claim;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
+import org.openvpms.archetype.rules.insurance.InsuranceArchetypes;
+import org.openvpms.archetype.rules.insurance.InsuranceRules;
+import org.openvpms.archetype.rules.insurance.InsuranceTestHelper;
 import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
@@ -29,7 +33,11 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.insurance.InsuranceTestHelper;
+import org.openvpms.component.business.service.archetype.rule.ArchetypeRuleService;
+import org.openvpms.insurance.internal.InsuranceFactory;
+import org.openvpms.insurance.service.InsuranceServices;
+import org.openvpms.web.component.app.Context;
+import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.test.AbstractAppTest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -45,7 +53,6 @@ import static org.junit.Assert.assertTrue;
 import static org.openvpms.archetype.rules.act.ActStatus.IN_PROGRESS;
 import static org.openvpms.archetype.rules.act.ActStatus.POSTED;
 import static org.openvpms.archetype.rules.finance.account.FinancialTestHelper.createChargesInvoice;
-import static org.openvpms.archetype.test.TestHelper.createActIdentity;
 
 /**
  * Tests the {@link Charges} class.
@@ -92,6 +99,13 @@ public class ChargesTestCase extends AbstractAppTest {
     private Party till;
 
     /**
+     * The insurance rules.
+     */
+    private InsuranceRules insuranceRules;
+
+    private Context context;
+
+    /**
      * Sets up the test case.
      */
     @Before
@@ -103,6 +117,15 @@ public class ChargesTestCase extends AbstractAppTest {
         clinician = TestHelper.createClinician();
         location = TestHelper.createLocation();
         till = TestHelper.createTill();
+        insuranceRules = new InsuranceRules((ArchetypeRuleService) getArchetypeService(),
+                                            transactionManager);
+        context = new LocalContext();
+        context.setPractice(TestHelper.getPractice());
+        context.setLocation(TestHelper.createLocation());
+        context.setUser(TestHelper.createUser());
+
+        // diagnosis codes
+        InsuranceTestHelper.createDiagnosis("VENOM_328", "Abcess", "328");
     }
 
     /**
@@ -110,7 +133,8 @@ public class ChargesTestCase extends AbstractAppTest {
      */
     @Test
     public void testCanClaimInvoice() {
-        Charges charges = new Charges();
+        FinancialAct claim = (FinancialAct) create(InsuranceArchetypes.CLAIM);
+        Charges charges = new Charges(createClaimContext(claim));
         FinancialAct item1 = createInvoiceItem();
         FinancialAct item2 = createInvoiceItem();
         FinancialAct invoice = createInvoice(IN_PROGRESS, item1, item2);
@@ -142,7 +166,8 @@ public class ChargesTestCase extends AbstractAppTest {
      */
     @Test
     public void testCanClaimItem() {
-        Charges charges1 = new Charges();
+        FinancialAct claim1 = (FinancialAct) create(InsuranceArchetypes.CLAIM);
+        Charges charges1 = new Charges(createClaimContext(claim1));
 
         FinancialAct item1 = createInvoiceItem();
         FinancialAct item2 = createInvoiceItem();
@@ -162,7 +187,7 @@ public class ChargesTestCase extends AbstractAppTest {
         assertFalse(charges1.canClaimItem(item2));
 
         // need to reload
-        Charges charges2 = new Charges();
+        Charges charges2 = new Charges(createClaimContext(claim1));
         assertTrue(charges2.canClaimItem(item1));
         assertTrue(charges2.canClaimItem(item2));
 
@@ -179,23 +204,25 @@ public class ChargesTestCase extends AbstractAppTest {
         assertFalse(charges2.canClaimItem(item2));
 
         // now add item1 to a claim. It should not be able to be claimed in another claim.
-        Act policy = InsuranceTestHelper.createPolicy(customer, patient, InsuranceTestHelper.createInsurer("Foo"),
-                                                      createActIdentity("actIdentity.insurancePolicy", "POL123456"));
+        Act policy = (Act) InsuranceTestHelper.createPolicy(customer, patient, InsuranceTestHelper.createInsurer("Foo"),
+                                                            "POL123456");
         save(policy);
-        FinancialAct claimItem1 = InsuranceTestHelper.createClaimItem("VENOM_328", new Date(), new Date(), item1);
-        FinancialAct claim1 = InsuranceTestHelper.createClaim(policy, location, clinician, clinician, claimItem1);
-        save(claim1, claimItem1, item1);
+        FinancialAct claimItem1 = (FinancialAct) InsuranceTestHelper.createClaimItem("VENOM_328", new Date(),
+                                                                                     new Date(), item1);
+        FinancialAct claim2 = (FinancialAct) InsuranceTestHelper.createClaim(policy, location, clinician, clinician,
+                                                                             claimItem1);
+        save(claim2, claimItem1, item1);
 
-        Charges charges3 = new Charges();
+        Charges charges3 = new Charges(createClaimContext(claim2));
         assertFalse(charges3.canClaimItem(item1));
         assertTrue(charges3.canClaimItem(item2));
 
         // now cancel the claim, and verify the item can be claimed. Need to recreate due to caching.
-        claim1.setStatus(ActStatus.CANCELLED);
-        save(claim1);
+        claim2.setStatus(ActStatus.CANCELLED);
+        save(claim2);
         assertFalse(charges3.canClaimItem(item1));
 
-        Charges charges4 = new Charges();
+        Charges charges4 = new Charges(createClaimContext(claim2));
         assertTrue(charges4.canClaimItem(item1));
     }
 
@@ -204,7 +231,8 @@ public class ChargesTestCase extends AbstractAppTest {
      */
     @Test
     public void testIsPaid() {
-        Charges charges = new Charges();
+        FinancialAct claim = (FinancialAct) create(InsuranceArchetypes.CLAIM);
+        Charges charges = new Charges(createClaimContext(claim));
 
         FinancialAct invoice = createInvoice(POSTED, createInvoiceItem());
         assertFalse(charges.isPaid(invoice));
@@ -224,13 +252,26 @@ public class ChargesTestCase extends AbstractAppTest {
      */
     @Test
     public void testIsReversed() {
-        Charges charges = new Charges();
+        FinancialAct claim = (FinancialAct) create(InsuranceArchetypes.CLAIM);
+        Charges charges = new Charges(createClaimContext(claim));
 
         FinancialAct invoice = createInvoice(POSTED, createInvoiceItem());
         assertFalse(charges.isReversed(invoice));
 
         accountRules.reverse(invoice, new Date());
         assertTrue(charges.isReversed(invoice));
+    }
+
+    /**
+     * Creates a claim context.
+     *
+     * @param claim the claim
+     * @return a new claim context
+     */
+    private ClaimContext createClaimContext(FinancialAct claim) {
+        return new ClaimContext(claim, customer, patient, clinician, context.getPractice(), getArchetypeService(),
+                                insuranceRules, Mockito.mock(InsuranceServices.class),
+                                Mockito.mock(InsuranceFactory.class));
     }
 
     /**

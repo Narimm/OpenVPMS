@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.im.relationship;
 
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -29,7 +30,7 @@ import java.util.List;
  *
  * @author Tim Anderson
  */
-public class EntityLinkEditor extends AbstractRelationshipEditor {
+public class EntityLinkEditor extends AbstractRelationshipEditor<Entity> {
 
     /**
      * Constructs an {@link EntityLinkEditor}.

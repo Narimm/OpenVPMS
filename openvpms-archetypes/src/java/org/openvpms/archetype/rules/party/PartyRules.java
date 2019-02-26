@@ -22,7 +22,6 @@ import org.openvpms.archetype.rules.contact.BasicAddressFormatter;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -30,6 +29,7 @@ import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.LookupHelperException;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.model.entity.EntityIdentity;
+import org.openvpms.component.model.party.Contact;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -93,7 +93,7 @@ public class PartyRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     @Deprecated
-    public Object getCustomerNode(Party party, String nodeName) {
+    public Object getCustomerNode(org.openvpms.component.model.party.Party party, String nodeName) {
         if (party != null) {
             IMObjectBean bean = new IMObjectBean(party, service);
             NodeDescriptor descriptor = bean.getDescriptor(nodeName);
@@ -113,7 +113,7 @@ public class PartyRules {
      * @return the formatted full name of the party
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getFullName(Party party) {
+    public String getFullName(org.openvpms.component.model.party.Party party) {
         return getFullName(party, true);
     }
 
@@ -125,7 +125,7 @@ public class PartyRules {
      * @return the formatted full name of the party
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getFullName(Party party, boolean includeTitle) {
+    public String getFullName(org.openvpms.component.model.party.Party party, boolean includeTitle) {
         String name = null;
         if (party != null) {
             IMObjectBean bean = new IMObjectBean(party, service);
@@ -167,7 +167,7 @@ public class PartyRules {
      * @return a formatted string of preferred contacts
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getPreferredContacts(Party party) {
+    public String getPreferredContacts(org.openvpms.component.model.party.Party party) {
         StringBuilder result = new StringBuilder();
         for (org.openvpms.component.model.party.Contact contact : Contacts.sort(party.getContacts())) {
             IMObjectBean bean = new IMObjectBean(contact, service);
@@ -215,7 +215,7 @@ public class PartyRules {
      * there is no corresponding <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getBillingAddress(Party party, boolean singleLine) {
+    public String getBillingAddress(org.openvpms.component.model.party.Party party, boolean singleLine) {
         return getAddress(party, ContactArchetypes.BILLING_PURPOSE, singleLine);
     }
 
@@ -228,7 +228,7 @@ public class PartyRules {
      * <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getCorrespondenceAddress(Party party, boolean singleLine) {
+    public String getCorrespondenceAddress(org.openvpms.component.model.party.Party party, boolean singleLine) {
         return getAddress(party, ContactArchetypes.CORRESPONDENCE_PURPOSE, singleLine);
     }
 
@@ -241,7 +241,7 @@ public class PartyRules {
      * there is no corresponding <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getCorrespondenceNameAddress(Party party, boolean singleLine) {
+    public String getCorrespondenceNameAddress(org.openvpms.component.model.party.Party party, boolean singleLine) {
         return getFullName(party) + "\n" + getAddress(party, ContactArchetypes.CORRESPONDENCE_PURPOSE, singleLine);
     }
 
@@ -255,7 +255,7 @@ public class PartyRules {
      * @param purpose the contact purpose
      * @return the contact, or {@code null} if none is found
      */
-    public Contact getAddressContact(Party party, String purpose) {
+    public Contact getAddressContact(org.openvpms.component.model.party.Party party, String purpose) {
         return getContact(party, ContactArchetypes.LOCATION, purpose);
     }
 
@@ -271,7 +271,7 @@ public class PartyRules {
      * @return a formatted address. May be empty if there is no corresponding <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getAddress(Party party, String purpose, boolean singleLine) {
+    public String getAddress(org.openvpms.component.model.party.Party party, String purpose, boolean singleLine) {
         return formatAddress(getAddressContact(party, purpose), singleLine);
     }
 

@@ -32,19 +32,17 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.AbstractBrowserListener;
 import org.openvpms.web.component.im.query.Browser;
-import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.DateRangeActQuery;
 import org.openvpms.web.component.im.query.DefaultActQuery;
+import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.ListResultSet;
 import org.openvpms.web.component.im.table.PagedIMTable;
 import org.openvpms.web.component.im.table.act.AbstractActTableModel;
-import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.echo.button.CheckBox;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ColumnFactory;
@@ -52,12 +50,15 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.SplitPaneFactory;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
+import org.openvpms.web.workspace.customer.credit.ChargeAllocationTableModel;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes.INVOICE;
 import static org.openvpms.component.system.common.query.Constraints.eq;
@@ -143,7 +144,8 @@ public class ChargeBrowser {
                 subQuery(CustomerAccountArchetypes.INVOICE_ITEM, "i")
                         .add(join("invoice").add(idEq("source", "act")))
                         .add(join("patient").add(eq("entity", patient)))));
-        Browser<FinancialAct> browser = BrowserFactory.create(query, context);
+        ChargeAllocationTableModel model = new ChargeAllocationTableModel(context);
+        Browser<FinancialAct> browser = new DefaultIMObjectTableBrowser<>(query, model, context);
         browser.addBrowserListener(new AbstractBrowserListener<FinancialAct>() {
             @Override
             public void selected(FinancialAct object) {
@@ -162,18 +164,14 @@ public class ChargeBrowser {
      * @return the selected invoices
      */
     public List<FinancialAct> getSelectedInvoices() {
-        Map<IMObjectReference, FinancialAct> invoices = new HashMap<>();
+        Set<FinancialAct> invoices = new HashSet<>();
         for (Act item : getSelectedItems()) {
-            ActBean bean = new ActBean(item);
-            IMObjectReference invoiceRef = bean.getNodeSourceObjectRef("invoice");
-            if (invoiceRef != null && !invoices.containsKey(invoiceRef)) {
-                FinancialAct invoice = (FinancialAct) IMObjectHelper.getObject(invoiceRef);
-                if (invoice != null) {
-                    invoices.put(invoiceRef, invoice);
-                }
+            FinancialAct invoice = charges.getInvoice(item);
+            if (invoice != null) {
+                invoices.add(invoice);
             }
         }
-        return new ArrayList<>(invoices.values());
+        return new ArrayList<>(invoices);
     }
 
     /**
@@ -207,14 +205,16 @@ public class ChargeBrowser {
      */
     private void setSelectedInvoice(FinancialAct invoice) {
         List<Act> matches = new ArrayList<>();
-        ActBean bean = new ActBean(invoice);
         boolean claimed = false;
         boolean reversed = charges.isReversed(invoice);
-        boolean allocated = false;
+        boolean paid = false;
+        boolean unpaid = false;
+        boolean mustBePaid = charges.getChargesMustBePaid();
         if (!reversed) {
-            allocated = charges.isPaid(invoice);
-            if (allocated) {
-                for (Reference itemRef : bean.getTargetRefs("items")) {
+            paid = charges.isPaid(invoice);      // i.e is fully paid
+            unpaid = charges.isUnpaid(invoice);  // i.e is not fully nor part paid
+            if ((mustBePaid && paid) || (!mustBePaid && unpaid)) {
+                for (Reference itemRef : charges.getItemRefs(invoice)) {
                     if (!charges.contains(itemRef)) {
                         Act item = charges.getItem(itemRef, patientRef);
                         if (item != null) {
@@ -236,17 +236,24 @@ public class ChargeBrowser {
             table.setResultSet(new ListResultSet<>(matches, 20));
             container.add(table.getComponent());
         } else {
-            Label label = LabelFactory.create(null, Styles.BOLD);
+            Label label = LabelFactory.create(true, true);
+            label.setStyleName(Styles.BOLD);
             String displayName = DescriptorHelper.getDisplayName(CustomerAccountArchetypes.INVOICE);
             String message;
-            if (claimed) {
-                message = Messages.format("patient.insurance.charge.allclaimed", displayName);
-            } else if (allocated) {
-                message = Messages.format("patient.insurance.charge.nocharges", displayName, patient.getName());
-            } else if (reversed) {
+            if (reversed) {
                 message = Messages.format("patient.insurance.charge.reversed", displayName);
+            } else if (claimed) {
+                message = Messages.format("patient.insurance.charge.allclaimed", displayName);
+            } else if (paid && !mustBePaid) {
+                message = Messages.format("patient.insurance.charge.paid", displayName);
+            } else if (unpaid && mustBePaid) {
+                if (charges.isGapClaimAvailable()) {
+                    message = Messages.format("patient.insurance.charge.unpaid.gapavailable", displayName);
+                } else {
+                    message = Messages.format("patient.insurance.charge.unpaid", displayName);
+                }
             } else {
-                message = Messages.format("patient.insurance.charge.unpaid", displayName);
+                message = Messages.format("patient.insurance.charge.nocharges", displayName, patient.getName());
             }
             label.setText(message);
             label.setLayoutData(ColumnFactory.layout(Alignment.ALIGN_CENTER));

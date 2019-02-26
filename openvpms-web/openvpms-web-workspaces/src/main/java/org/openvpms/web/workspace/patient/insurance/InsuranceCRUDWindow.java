@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.insurance;
@@ -19,9 +19,8 @@ package org.openvpms.web.workspace.patient.insurance;
 import nextapp.echo2.app.Button;
 import nextapp.echo2.app.event.ActionEvent;
 import nextapp.echo2.app.event.WindowPaneEvent;
-import org.openvpms.archetype.rules.patient.insurance.InsuranceRules;
+import org.openvpms.archetype.rules.insurance.InsuranceRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.insurance.claim.Claim;
@@ -31,10 +30,11 @@ import org.openvpms.insurance.service.InsuranceService;
 import org.openvpms.insurance.service.InsuranceServices;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.archetype.Archetypes;
-import org.openvpms.web.component.im.edit.ActActions;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.component.workspace.ActCRUDWindow;
+import org.openvpms.web.component.workspace.CRUDWindowListener;
 import org.openvpms.web.echo.button.ButtonSet;
 import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.dialog.PopupDialogListener;
@@ -47,11 +47,10 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.patient.insurance.claim.ClaimEditDialog;
 import org.openvpms.web.workspace.patient.insurance.claim.ClaimSubmitter;
 
-import java.util.Date;
 import java.util.function.Consumer;
 
-import static org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes.CLAIM;
-import static org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes.POLICY;
+import static org.openvpms.archetype.rules.insurance.InsuranceArchetypes.CLAIM;
+import static org.openvpms.archetype.rules.insurance.InsuranceArchetypes.POLICY;
 
 /**
  * CRUD window for patient insurance policies.
@@ -59,6 +58,11 @@ import static org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes
  * @author Tim Anderson
  */
 public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
+
+    /**
+     * If {@code true}, suppress creation of policies and claims.
+     */
+    private final boolean noCreate;
 
     /**
      * New policy button identifier.
@@ -74,6 +78,11 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
      * Submit button identifier.
      */
     private static final String SUBMIT_ID = "button.submit";
+
+    /**
+     * Pay button identifier.
+     */
+    private static final String PAY_ID = "button.payclaim";
 
     /**
      * Cancel claim button identifier.
@@ -98,7 +107,19 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
      * @param help    the help context
      */
     public InsuranceCRUDWindow(Context context, HelpContext help) {
+        this(false, context, help);
+    }
+
+    /**
+     * Constructs an {@link InsuranceCRUDWindow}.
+     *
+     * @param noCreate if {@code true}, suppress creation of policies and claims
+     * @param context  the context
+     * @param help     the help context
+     */
+    protected InsuranceCRUDWindow(boolean noCreate, Context context, HelpContext help) {
         super(Archetypes.create(POLICY, Act.class), InsuranceActions.INSTANCE, context, help);
+        this.noCreate = noCreate;
     }
 
     /**
@@ -108,9 +129,16 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
      */
     @Override
     protected void layoutButtons(ButtonSet buttons) {
-        super.layoutButtons(buttons);
-        buttons.add(CLAIM_ID, action(POLICY, this::claim, "patient.insurance.claim.title"));
+        if (!noCreate) {
+            buttons.add(createNewButton());
+        }
+        buttons.add(createEditButton());
+        buttons.add(createDeleteButton());
+        if (!noCreate) {
+            buttons.add(CLAIM_ID, action(this::claim, false, "patient.insurance.claim.title"));
+        }
         buttons.add(SUBMIT_ID, action(CLAIM, this::submit, "patient.insurance.submit.title"));
+        buttons.add(PAY_ID, action(CLAIM, this::payClaim, "patient.insurance.pay.title"));
         buttons.add(CANCEL_CLAIM_ID, action(CLAIM, this::cancelClaim, "patient.insurance.cancel.title"));
         buttons.add(SETTLE_CLAIM_ID, action(CLAIM, this::settleClaim, "patient.insurance.settle.title"));
         buttons.add(DECLINE_CLAIM_ID, action(CLAIM, this::declineClaim, "patient.insurance.decline.title"));
@@ -142,12 +170,12 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
     protected void enableButtons(ButtonSet buttons, boolean enable) {
         super.enableButtons(buttons, enable);
         Act object = getObject();
-        buttons.setEnabled(CLAIM_ID, enable && TypeHelper.isA(object, POLICY));
         buttons.setEnabled(SUBMIT_ID, enable && getActions().canSubmit(object));
+        buttons.setEnabled(PAY_ID, enable && getActions().canPayClaim(object));
         buttons.setEnabled(CANCEL_CLAIM_ID, enable && getActions().canCancelClaim(object));
         buttons.setEnabled(SETTLE_CLAIM_ID, enable && getActions().canSettleClaim(object));
         buttons.setEnabled(DECLINE_CLAIM_ID, enable && getActions().canDeclineClaim(object));
-        enablePrintPreview(buttons, enable && TypeHelper.isA(object, CLAIM));
+        enablePrintPreview(buttons, enable && object.isA(CLAIM));
     }
 
     /**
@@ -176,23 +204,23 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
     }
 
     /**
-     * Makes a claim against a policy.
+     * Makes a claim.
      *
-     * @param policy the policy
+     * @param act an optional act used to determine the policy number to use. May be {@code null}
      */
-    protected void claim(Act policy) {
-        Date expiryDate = policy.getActivityEndTime();
-        if (expiryDate != null && expiryDate.compareTo(new Date()) <= 0) {
-            ConfirmationDialog.show(Messages.get("patient.insurance.policy.expired.title"),
-                                    Messages.get("patient.insurance.policy.expired.message"),
-                                    ConfirmationDialog.YES_NO, new PopupDialogListener() {
-                        @Override
-                        public void onYes() {
-                            checkExistingClaims(policy);
-                        }
-                    });
-        } else {
+    protected void claim(Act act) {
+        Act policy = null;
+        if (act != null) {
+            if (act.isA(POLICY)) {
+                policy = act;
+            } else if (TypeHelper.isA(act, CLAIM)) {
+                policy = ServiceHelper.getArchetypeService().getBean(act).getTarget("policy", Act.class);
+            }
+        }
+        if (policy != null) {
             checkExistingClaims(policy);
+        } else {
+            createClaim(null);
         }
     }
 
@@ -217,6 +245,20 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
         } else if (Status.POSTED.isA(object.getStatus())) {
             ClaimSubmitter submitter = createSubmitter(getHelpContext());
             submitter.submit(object, createRefreshAction(object, "patient.insurance.submit.title"));
+        }
+    }
+
+    /**
+     * Pays a claim.
+     *
+     * @param object the claim
+     */
+    protected void payClaim(Act object) {
+        if (getActions().canPayClaim(object)) {
+            ClaimSubmitter submitter = createSubmitter(getHelpContext());
+            submitter.pay(object, createRefreshAction(object, "patient.insurance.pay.title"));
+        } else {
+            onRefresh(object);
         }
     }
 
@@ -285,12 +327,32 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
     /**
      * Creates a new claim for a policy.
      *
-     * @param policy the policy
+     * @param policy the policy. May be {@code null}
      */
     protected void createClaim(Act policy) {
-        InsuranceRules rules = ServiceHelper.getBean(InsuranceRules.class);
-        Act claim = rules.createClaim(policy);
+        Act claim;
+        if (policy != null) {
+            InsuranceRules rules = ServiceHelper.getBean(InsuranceRules.class);
+            claim = (Act) rules.createClaim(policy);
+        } else {
+            claim = (Act) ServiceHelper.getArchetypeService().create(CLAIM);
+        }
         edit(claim, null);
+    }
+
+    /**
+     * Invoked when the object needs to be refreshed.
+     *
+     * @param object the object
+     */
+    @Override
+    protected void onRefresh(Act object) {
+        Act refreshed = IMObjectHelper.reload(object); // may be null
+        setObject(refreshed);
+        CRUDWindowListener<Act> listener = getListener();
+        if (listener != null) {
+            listener.refresh(object); // won't be null
+        }
     }
 
     /**
@@ -321,149 +383,4 @@ public class InsuranceCRUDWindow extends ActCRUDWindow<Act> {
         };
     }
 
-    private static class InsuranceActions extends ActActions<Act> {
-
-        public static final InsuranceActions INSTANCE = new InsuranceActions();
-
-        /**
-         * Determines if an act can be edited.
-         *
-         * @param act the act to check
-         * @return {@code true} if the act isn't locked
-         */
-        @Override
-        public boolean canEdit(Act act) {
-            boolean result;
-            if (TypeHelper.isA(act, CLAIM)) {
-                result = Status.PENDING.isA(act.getStatus());
-            } else {
-                result = super.canEdit(act);
-            }
-            return result;
-        }
-
-        /**
-         * Determines if an act can be deleted.
-         *
-         * @param act the act to check
-         * @return {@code true} if the act isn't locked
-         */
-        @Override
-        public boolean canDelete(Act act) {
-            boolean result = super.canDelete(act);
-            if (result) {
-                if (TypeHelper.isA(act, POLICY)) {
-                    result = new ActBean(act).getValues("claims").isEmpty();
-                } else if (TypeHelper.isA(act, CLAIM)) {
-                    result = Status.PENDING.isA(act.getStatus());
-                }
-            }
-            return result;
-        }
-
-        /**
-         * Determines if an act can be posted (i.e finalised).
-         * <p>
-         * This implementation returns {@code true} if the act status isn't {@code POSTED} or {@code CANCELLED}.
-         *
-         * @param act the act to check
-         * @return {@code true} if the act can be posted
-         */
-        @Override
-        public boolean canPost(Act act) {
-            return TypeHelper.isA(act, CLAIM) && Status.PENDING.isA(act.getStatus());
-        }
-
-        /**
-         * Determines if an act is a claim that can be submitted.
-         *
-         * @param act the act
-         * @return {@code true} if the act is a claim that can be submitted
-         */
-        public boolean canSubmit(Act act) {
-            String status = act.getStatus();
-            return TypeHelper.isA(act, CLAIM) && (Status.PENDING.isA(status) || Status.POSTED.isA(status));
-        }
-
-        /**
-         * Determines if an act is a policy with outstanding claims.
-         *
-         * @param act the act
-         * @return {@code true} if the act is a policy with outstanding claims
-         */
-        public boolean hasExistingClaims(Act act) {
-            if (TypeHelper.isA(act, POLICY)) {
-                ActBean bean = new ActBean(act);
-                for (Act claim : bean.getNodeActs("claims")) {
-                    String status = claim.getStatus();
-                    if (!Status.CANCELLED.isA(status) && !Status.DECLINED.isA(claim.getStatus())
-                        && !Status.SETTLED.isA(status)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        /**
-         * Determines if an act is unfinalised, for the purposes of printing.
-         *
-         * @param act the act
-         * @return {@code true} if the act is unfinalised, otherwise {@code false}
-         */
-        @Override
-        public boolean isUnfinalised(Act act) {
-            if (TypeHelper.isA(act, CLAIM)) {
-                return Status.PENDING.isA(act.getStatus());
-            }
-            return super.isUnfinalised(act);
-        }
-
-        /**
-         * Determines if a confirmation should be displayed before printing an unfinalised act.
-         *
-         * @return {@code true}
-         */
-        @Override
-        public boolean warnWhenPrintingUnfinalisedAct() {
-            return true;
-        }
-
-        /**
-         * Determines if a claim can be cancelled.
-         *
-         * @param act the claim act
-         * @return {@code true} if the claim can be cancelled
-         */
-        public boolean canCancelClaim(Act act) {
-            String status = act.getStatus();
-            return TypeHelper.isA(act, CLAIM)
-                   && (Status.PENDING.isA(status) || Status.POSTED.isA(status) || Status.SUBMITTED.isA(status)
-                       || Status.ACCEPTED.isA(status));
-        }
-
-        /**
-         * Determines if a claim can be flagged as settled.
-         *
-         * @param act the claim
-         * @return {@code true} if the claim can be flagged as settled
-         */
-        public boolean canSettleClaim(Act act) {
-            String status = act.getStatus();
-            return TypeHelper.isA(act, CLAIM)
-                   && (Status.SUBMITTED.isA(status) || Status.ACCEPTED.isA(status));
-        }
-
-        /**
-         * Determines if a claim can be flagged as declined.
-         *
-         * @param act the claim
-         * @return {@code true} if the claim can be flagged as declined
-         */
-        public boolean canDeclineClaim(Act act) {
-            String status = act.getStatus();
-            return TypeHelper.isA(act, CLAIM)
-                   && (Status.SUBMITTED.isA(status) || Status.ACCEPTED.isA(status));
-        }
-    }
 }

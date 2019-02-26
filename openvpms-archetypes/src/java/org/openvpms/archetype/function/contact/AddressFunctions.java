@@ -18,7 +18,7 @@ package org.openvpms.archetype.function.contact;
 
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.PartyRules;
-import org.openvpms.component.business.domain.im.party.Contact;
+import org.openvpms.component.model.party.Contact;
 
 /**
  * Location contact functions.

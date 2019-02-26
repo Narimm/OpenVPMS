@@ -149,8 +149,7 @@ public class PatientContextFactory {
      * @return a new context
      */
     public PatientContext createContext(Party patient, Act visit, Party location) {
-        Party customer = patientRules.getOwner((org.openvpms.component.business.domain.im.party.Party) patient,
-                                               visit.getActivityStartTime(), false);
+        Party customer = patientRules.getOwner(patient, visit.getActivityStartTime(), false);
         return createContext(patient, customer, visit, location);
     }
 

@@ -17,23 +17,15 @@
 package org.openvpms.web.workspace.patient.insurance.claim;
 
 import nextapp.echo2.app.Component;
-import org.apache.commons.lang.StringUtils;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.web.component.im.layout.ArchetypeNodes;
+import org.openvpms.web.component.edit.PropertyEditor;
 import org.openvpms.web.component.im.layout.IMObjectTabPane;
 import org.openvpms.web.component.im.layout.IMObjectTabPaneModel;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.im.view.IMObjectComponentFactory;
-import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
-import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.workspace.patient.history.PatientHistoryBrowser;
 import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
@@ -41,7 +33,7 @@ import org.openvpms.web.workspace.patient.history.PatientHistoryQuery;
 import java.util.List;
 
 /**
- * Layout strategy for <em>act.patientInsuranceClaim</em>.
+ * Layout strategy for editing <em>act.patientInsuranceClaim</em>.
  *
  * @author Tim Anderson
  */
@@ -51,6 +43,16 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
      * The patient.
      */
     private final Party patient;
+
+    /**
+     * The insurer.
+     */
+    private final PropertyEditor insurer;
+
+    /**
+     * The policy number.
+     */
+    private final PropertyEditor policyNumber;
 
     /**
      * The items editor.
@@ -68,33 +70,21 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
     private IMObjectTabPane pane;
 
     /**
-     * The message node name.
-     */
-    private static final String MESSAGE = "message";
-
-
-    /**
-     * The nodes to display
-     */
-    private static final ArchetypeNodes NODES = ArchetypeNodes.all().excludeIfEmpty(MESSAGE, "insurerId");
-
-    /**
-     * Default constructor, used for viewing claims.
-     */
-    public ClaimLayoutStrategy() {
-        this(null, null, null);
-    }
-
-    /**
-     * Constructor, used for editing claims.
+     * Constructs a {@link ClaimLayoutStrategy}.
      *
-     * @param patient     the patient
-     * @param items       the claim items
-     * @param attachments the attachments editor
+     * @param patient      the patient
+     * @param insurer      the insurer. If {@code null}, get the insurer from the policy
+     * @param policyNumber the policy number. If {@code null}, get the policy number from the policy
+     * @param items        the claim items
+     * @param attachments  the attachments editor
+     * @param showGapClaim if {@code true}, show the gap claim node
      */
-    public ClaimLayoutStrategy(Party patient,
-                               ClaimItemCollectionEditor items, AttachmentCollectionEditor attachments) {
-        super(NODES);
+    public ClaimLayoutStrategy(Party patient, PropertyEditor insurer, PropertyEditor policyNumber,
+                               ClaimItemCollectionEditor items, AttachmentCollectionEditor attachments,
+                               boolean showGapClaim) {
+        super(showGapClaim);
+        this.insurer = insurer;
+        this.policyNumber = policyNumber;
         this.items = items;
         this.attachments = attachments;
         this.patient = patient;
@@ -122,24 +112,31 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
      */
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
-        IMObjectComponentFactory factory = context.getComponentFactory();
-
-        if (context.isEdit()) {
-            addComponent(new ComponentState(items));
-            addComponent(new ComponentState(attachments));
-        }
-
-        Property message = properties.get(MESSAGE);
-        if (!StringUtils.isEmpty(message.getString())) {
-            addComponent(createTextArea(message, object, context));
-        }
-
-        // render the policy
-        Act policy = getPolicy((Act) object);
-        addComponent(createPolicy(policy, object, properties, factory));
-
-        addComponent(createNotes(object, properties, context));
+        addComponent(new ComponentState(insurer));
+        addComponent(new ComponentState(policyNumber));
+        addComponent(new ComponentState(items));
+        addComponent(new ComponentState(attachments));
         return super.apply(object, properties, parent, context);
+    }
+
+    /**
+     * Returns the insurer property.
+     *
+     * @return the insurer
+     */
+    @Override
+    protected Property getInsurer() {
+        return insurer.getProperty();
+    }
+
+    /**
+     * Returns the policy number property.
+     *
+     * @return the policy number
+     */
+    @Override
+    protected Property getPolicyNumber() {
+        return policyNumber.getProperty();
     }
 
     /**
@@ -166,64 +163,6 @@ public class ClaimLayoutStrategy extends AbstractClaimLayoutStrategy {
 
         pane.setSelectedIndex(0);
         container.add(pane);
-    }
-
-    /**
-     * Creates a place-holder for the insurerId node when the collection is empty.
-     * <p>
-     * This is a workaround for the default single collection rendering that displays a short field containing 'None'.
-     *
-     * @param object    the parent object
-     * @param insurerId the insurerId node
-     * @param factory   the component factory
-     * @return the place-holder
-     */
-    private ComponentState createDummyInsurerId(IMObject object, CollectionProperty insurerId,
-                                                IMObjectComponentFactory factory) {
-        SimpleProperty dummy = new SimpleProperty("dummy", String.class);
-        dummy.setMaxLength(insurerId.getMaxLength());
-        dummy.setReadOnly(true);
-        ComponentState state = factory.create(dummy, object);
-        return new ComponentState(state.getComponent(), insurerId);
-    }
-
-    /**
-     * Creates a component representing the policy.
-     *
-     * @param policy     the policy. May be {@code null}
-     * @param object     the parent object
-     * @param properties the properties
-     * @param factory    the component factory
-     * @return the policy component
-     */
-    private ComponentState createPolicy(Act policy, IMObject object, PropertySet properties,
-                                        IMObjectComponentFactory factory) {
-        String value;
-        if (policy != null) {
-            ActBean bean = new ActBean(policy);
-            Party insurer = (Party) bean.getNodeParticipant("insurer");
-            String insurerName = (insurer != null) ? insurer.getName() : null;
-            ActIdentity identity = bean.getObject("insurerId", ActIdentity.class);
-            String insurerId = (identity != null) ? identity.getIdentity() : null;
-            value = Messages.format("patient.insurance.policy", insurerName, insurerId);
-        } else {
-            value = Messages.get("imobject.none");
-        }
-        SimpleProperty dummy = new SimpleProperty("dummy", value, String.class);
-        dummy.setReadOnly(true);
-        Component component = factory.create(dummy, object).getComponent();
-        return new ComponentState(component, properties.get("policy"));
-    }
-
-    /**
-     * Returns the claim policy.
-     *
-     * @param claim the claim
-     * @return the policy, or {@code null} if none exists
-     */
-    private Act getPolicy(Act claim) {
-        IMObjectBean bean = new IMObjectBean(claim);
-        return bean.getTarget("policy", Act.class);
     }
 
 }

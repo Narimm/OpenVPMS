@@ -628,11 +628,11 @@ public class ReminderTestHelper extends TestHelper {
      * @param patient the patient
      * @return a new alert
      */
-    public static Act createAlert(Party patient, Entity alertType) {
+    public static Act createAlert(org.openvpms.component.model.party.Party patient, Entity alertType) {
         Act act = (Act) create(PatientArchetypes.ALERT);
         ActBean bean = new ActBean(act);
-        bean.setNodeParticipant("patient", patient);
-        bean.setNodeParticipant("alertType", alertType);
+        bean.setTarget("patient", patient);
+        bean.setTarget("alertType", alertType);
         bean.save();
         return act;
     }

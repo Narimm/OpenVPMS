@@ -24,7 +24,9 @@ import org.openvpms.web.component.im.print.InteractiveIMPrinter;
 import org.openvpms.web.component.im.report.ContextDocumentTemplateLocator;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.print.PrinterListener;
+import org.openvpms.web.component.util.ErrorHelper;
 import org.openvpms.web.echo.help.HelpContext;
+import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
 
 
@@ -45,16 +47,6 @@ public class PrintIMObjectTask extends AbstractTask {
     }
 
     /**
-     * The object to print.
-     */
-    private IMObject object;
-
-    /**
-     * The short name of the object to print.
-     */
-    private String shortName;
-
-    /**
      * The mail context. May be {@code null}
      */
     private final MailContext mailContext;
@@ -63,6 +55,16 @@ public class PrintIMObjectTask extends AbstractTask {
      * Determines how objects should be printed.
      */
     private final PrintMode printMode;
+
+    /**
+     * The object to print.
+     */
+    private IMObject object;
+
+    /**
+     * The short name of the object to print.
+     */
+    private String shortName;
 
     /**
      * Determines if the skip button should be displayed if
@@ -131,7 +133,7 @@ public class PrintIMObjectTask extends AbstractTask {
 
     /**
      * Starts the task.
-     * <p/>
+     * <p>
      * The registered {@link TaskListener} will be notified on completion or failure.
      *
      * @param context the task context
@@ -147,7 +149,7 @@ public class PrintIMObjectTask extends AbstractTask {
 
     /**
      * Prints an object.
-     * <p/>
+     * <p>
      * The registered {@link TaskListener} will be notified on completion or failure.
      *
      * @param object  the object to print
@@ -174,7 +176,7 @@ public class PrintIMObjectTask extends AbstractTask {
                 }
 
                 public void cancelled() {
-                    notifyCancelled();
+                    notifyPrintCancelled();
                 }
 
                 public void skipped() {
@@ -182,13 +184,49 @@ public class PrintIMObjectTask extends AbstractTask {
                 }
 
                 public void failed(Throwable cause) {
-                    notifyCancelledOnError(cause);
+                    printFailed(cause, printer);
                 }
             });
             iPrinter.print();
         } catch (OpenVPMSException exception) {
             notifyCancelledOnError(exception);
         }
+    }
+
+    /**
+     * Invoked when a print fails.
+     * <p>
+     * If printing in the background, this delegates to {@link #notifyPrintCancelledOnError(Throwable)},
+     * else it displays the error.
+     *
+     * @param cause   the cause
+     * @param printer the printer
+     */
+    protected void printFailed(Throwable cause, IMPrinter<IMObject> printer) {
+        if (!printer.getInteractive()) {
+            notifyPrintCancelledOnError(cause);
+        } else {
+            String title = Messages.format("imobject.print.title", printer.getDisplayName());
+            ErrorHelper.show(title, cause);
+        }
+    }
+
+    /**
+     * Invoked when the print is cancelled.
+     * <p>
+     * This implementation delegates to {@link #notifyCancelled()}.
+     */
+    protected void notifyPrintCancelled() {
+        notifyCancelled();
+    }
+
+    /**
+     * Invoked when the print is cancelled due to error.
+     * <p>
+     * This implementation delegates to {@link #notifyCancelledOnError(Throwable)}.
+     */
+    protected void notifyPrintCancelledOnError(Throwable cause) {
+        notifyCancelledOnError(cause);
     }
 
     /**
@@ -201,7 +239,7 @@ public class PrintIMObjectTask extends AbstractTask {
      */
     protected InteractiveIMPrinter<IMObject> createPrinter(IMPrinter<IMObject> printer, boolean skip,
                                                            TaskContext context, HelpContext help) {
-        return new InteractiveIMPrinter<IMObject>(printer, skip, context, help);
+        return new InteractiveIMPrinter<>(printer, skip, context, help);
     }
 
     /**

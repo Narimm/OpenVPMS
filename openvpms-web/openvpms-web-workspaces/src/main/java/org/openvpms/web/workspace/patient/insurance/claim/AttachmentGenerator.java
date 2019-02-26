@@ -26,10 +26,8 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
@@ -177,12 +175,12 @@ class AttachmentGenerator {
      */
     private boolean generate(Act attachment, Act claim) {
         boolean result = false;
-        ActBean bean = new ActBean(attachment);
+        IMObjectBean bean = new IMObjectBean(attachment);
         String type = bean.getString("type");
         if (PatientArchetypes.CLINICAL_EVENT.equals(type)) {
             result = generateHistory(bean);
         } else if (bean.getReference("document") == null) {
-            Act original = (Act) bean.getNodeTargetObject("original");
+            Act original = bean.getTarget("original", Act.class);
             if (TypeHelper.isA(original, CustomerAccountArchetypes.INVOICE)) {
                 result = generateInvoice(bean, original, claim);
             } else if (TypeHelper.isA(original, InvestigationArchetypes.PATIENT_INVESTIGATION)) {
@@ -205,9 +203,9 @@ class AttachmentGenerator {
      * @param investigation the investigation
      * @return {@code true} if the investigation was generated successfully
      */
-    private boolean generateInvestigation(ActBean bean, DocumentAct investigation) {
+    private boolean generateInvestigation(IMObjectBean bean, DocumentAct investigation) {
         boolean result = false;
-        IMObjectReference reference = investigation.getDocument();
+        Reference reference = investigation.getDocument();
         IArchetypeRuleService archetypeService = ServiceHelper.getArchetypeService();
         Document document = (reference != null) ? (Document) archetypeService.get(reference) : null;
         if (document == null) {
@@ -229,7 +227,7 @@ class AttachmentGenerator {
         boolean result = false;
         IMObjectBean source = new IMObjectBean(original);
         try {
-            IMObjectReference docRef = source.hasNode("document") ? source.getReference("document") : null;
+            Reference docRef = source.hasNode("document") ? source.getReference("document") : null;
             if (docRef == null) {
                 ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator(original, context);
                 Reporter<Act> reporter = factory.create(original, locator, TemplatedReporter.class);
@@ -267,7 +265,7 @@ class AttachmentGenerator {
      * @return {@code true} if the attachment is a invoice attachment
      */
     private boolean isInvoice(Act attachment) {
-        return CustomerAccountArchetypes.INVOICE.equals(new ActBean(attachment).getString("type"));
+        return CustomerAccountArchetypes.INVOICE.equals(new IMObjectBean(attachment).getString("type"));
     }
 
     /**
@@ -278,7 +276,7 @@ class AttachmentGenerator {
      * @param claim    the claim
      * @return {@code true} if it was saved
      */
-    private boolean generateInvoice(ActBean bean, Act original, Act claim) {
+    private boolean generateInvoice(IMObjectBean bean, Act original, Act claim) {
         ReporterFactory factory = ServiceHelper.getBean(ReporterFactory.class);
         ContextDocumentTemplateLocator locator = new ContextDocumentTemplateLocator("INSURANCE_CLAIM_INVOICE", context);
         Reporter<Act> reporter = factory.create(original, locator, TemplatedReporter.class);
@@ -292,7 +290,7 @@ class AttachmentGenerator {
      * @param bean the attachment
      * @return {@code true} if it was saved
      */
-    private boolean generateHistory(ActBean bean) {
+    private boolean generateHistory(IMObjectBean bean) {
         PatientHistoryQuery query = new PatientHistoryQuery(patient, true);
         PatientHistoryFilter filter = new PatientHistoryFilter(query.getSelectedItemShortNames());
         PatientHistoryIterator summary = new PatientHistoryIterator(query, filter, 3);

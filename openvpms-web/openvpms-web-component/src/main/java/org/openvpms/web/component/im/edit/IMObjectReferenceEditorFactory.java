@@ -16,14 +16,15 @@
 
 package org.openvpms.web.component.im.edit;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.im.archetype.ArchetypeHandler;
 import org.openvpms.web.component.im.archetype.ArchetypeHandlers;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.property.Property;
+
+import java.lang.reflect.InvocationTargetException;
 
 
 /**
@@ -39,12 +40,6 @@ public class IMObjectReferenceEditorFactory {
     private static ArchetypeHandlers<IMObjectReferenceEditor> editors;
 
     /**
-     * The logger.
-     */
-    private static final Log log
-            = LogFactory.getLog(IMObjectReferenceEditorFactory.class);
-
-    /**
      * Prevent construction.
      */
     private IMObjectReferenceEditorFactory() {
@@ -54,24 +49,34 @@ public class IMObjectReferenceEditorFactory {
      * Creates a new editor.
      *
      * @param property the reference property
-     * @param parent   the parent object. May be <code>null</code>
+     * @param parent   the parent object. May be {@code null}
      * @param context  the layout context
-     * @return an editor for <code>property</code>
+     * @return an editor for {@code property}
+     * @throws OpenVPMSException     for any OpenVPMS error
+     * @throws IllegalStateException if a registered editor cannot be created for any other error
      */
     @SuppressWarnings("unchecked")
-    public static <T extends IMObject> IMObjectReferenceEditor<T>
-    create(Property property, IMObject parent, LayoutContext context) {
+    public static <T extends IMObject> IMObjectReferenceEditor<T> create(Property property, IMObject parent,
+                                                                         LayoutContext context) {
         IMObjectReferenceEditor<T> result = null;
 
-        String[] shortNames = property.getArchetypeRange();
-        ArchetypeHandler handler = getEditors().getHandler(shortNames);
+        String[] archetypes = property.getArchetypeRange();
+        ArchetypeHandler handler = getEditors().getHandler(archetypes);
 
         if (handler != null) {
             try {
                 result = (IMObjectReferenceEditor<T>) handler.create(
-                        new Object[]{property, parent, context});
-            } catch (Throwable exception) {
-                log.error(exception, exception);
+                        new Object[]{property, parent, context}, new Class[]{Property.class, IMObject.class,
+                                                                             LayoutContext.class});
+            } catch (InvocationTargetException exception) {
+                if (exception.getCause() instanceof OpenVPMSException) {
+                    throw (OpenVPMSException) exception.getCause();
+                }
+                throw new IllegalStateException("Failed to construct " + handler.getType().getName() + " for "
+                                                + property.getName(), exception);
+            } catch (Throwable throwable) {
+                throw new IllegalStateException("Failed to construct " + handler.getType().getName() + " for "
+                                                + property.getName(), throwable);
             }
         }
         if (result == null) {

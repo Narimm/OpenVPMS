@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
+import org.openvpms.archetype.rules.insurance.InsuranceTestHelper;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.product.ProductTestHelper;
 import org.openvpms.archetype.test.TestHelper;
@@ -30,7 +31,6 @@ import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.insurance.InsuranceTestHelper;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.doc.DocumentTestHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -65,14 +65,15 @@ public class AttachmentCollectionEditorTestCase extends AbstractAppTest {
     public void testDeleteGeneratedDocuments() {
         Party customer = TestHelper.createCustomer();
         Party patient = TestHelper.createPatient(customer);
-        Party insurer = InsuranceTestHelper.createInsurer("Foo");
+        Party insurer = (Party) InsuranceTestHelper.createInsurer("Foo");
         Party location = TestHelper.createLocation();
         User clinician = TestHelper.createClinician();
-        Act policy = InsuranceTestHelper.createPolicy(customer, patient, insurer,
+        Act policy = (Act) InsuranceTestHelper.createPolicy(customer, patient, insurer,
                                                       createActIdentity("actIdentity.insurancePolicy", "POL123456"));
         save(policy);
-        FinancialAct item = InsuranceTestHelper.createClaimItem("VENOM_328", new Date(), new Date());
-        FinancialAct claim = InsuranceTestHelper.createClaim(policy, location, clinician, clinician, item);
+        FinancialAct item = (FinancialAct) InsuranceTestHelper.createClaimItem("VENOM_328", new Date(), new Date());
+        FinancialAct claim = (FinancialAct) InsuranceTestHelper.createClaim(policy, location, clinician, clinician,
+                                                                            item);
         save(claim, item);
 
         PropertySet set = new PropertySetBuilder(claim).build();

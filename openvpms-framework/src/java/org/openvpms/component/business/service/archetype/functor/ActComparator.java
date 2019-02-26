@@ -17,7 +17,7 @@
 package org.openvpms.component.business.service.archetype.functor;
 
 import org.apache.commons.collections4.comparators.ReverseComparator;
-import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.model.act.Act;
 import org.openvpms.component.system.common.util.DateHelper;
 
 import java.util.Comparator;
@@ -49,24 +49,6 @@ public class ActComparator<T extends Act> implements Comparator<T> {
     }
 
     /**
-     * Returns a comparator to order acts on start time, oldest first.
-     */
-    @SuppressWarnings("unchecked")
-    public static <T extends Act> Comparator<T> ascending() {
-        return (ActComparator<T>) ASCENDING;
-    }
-
-    /**
-     * Returns a comparator to sort acts on descending start time.
-     *
-     * @return the comparator
-     */
-    @SuppressWarnings("unchecked")
-    public static <T extends Act> Comparator<T> descending() {
-        return (Comparator<T>) DESCENDING;
-    }
-
-    /**
      * Compares its two arguments for order.  Returns a negative integer,
      * zero, or a positive integer as the first argument is less than, equal
      * to, or greater than the second.<p>
@@ -88,6 +70,24 @@ public class ActComparator<T extends Act> implements Comparator<T> {
             result = Long.compare(o1.getId(), o2.getId());
         }
         return result;
+    }
+
+    /**
+     * Returns a comparator to order acts on start time, oldest first.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends Act> Comparator<T> ascending() {
+        return (ActComparator<T>) ASCENDING;
+    }
+
+    /**
+     * Returns a comparator to sort acts on descending start time.
+     *
+     * @return the comparator
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends Act> Comparator<T> descending() {
+        return (Comparator<T>) DESCENDING;
     }
 
 }

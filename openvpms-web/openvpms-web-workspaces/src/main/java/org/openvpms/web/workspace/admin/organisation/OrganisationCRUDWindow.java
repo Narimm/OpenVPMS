@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.organisation;
@@ -37,7 +37,7 @@ import org.openvpms.web.system.ServiceHelper;
 
 import java.util.List;
 
-import static org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes.INSURANCE_SERVICES;
+import static org.openvpms.archetype.rules.insurance.InsuranceArchetypes.INSURANCE_SERVICES;
 
 /**
  * CRUD window for the Organisation workspace.

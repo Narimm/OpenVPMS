@@ -32,7 +32,7 @@ import java.util.Collection;
 public class IMObjectQueryIterator<T extends IMObject> extends QueryIterator<T> {
 
     /**
-     * The nodes to query.If {@code null} query all nodes.
+     * The nodes to query. If {@code null} query all nodes.
      */
     private final Collection<String> nodes;
 

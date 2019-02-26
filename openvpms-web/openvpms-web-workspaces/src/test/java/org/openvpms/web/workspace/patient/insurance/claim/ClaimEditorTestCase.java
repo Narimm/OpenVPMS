@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.insurance.claim;
@@ -21,19 +21,21 @@ import org.junit.Test;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
 import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
+import org.openvpms.archetype.rules.insurance.InsuranceTestHelper;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.insurance.InsuranceTestHelper;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Relationship;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.SaveHelper;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -55,7 +57,8 @@ import static java.math.BigDecimal.ZERO;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.openvpms.archetype.rules.finance.account.FinancialTestHelper.createChargesInvoice;
+import static org.openvpms.archetype.rules.insurance.InsuranceTestHelper.createClaim;
+import static org.openvpms.archetype.rules.insurance.InsuranceTestHelper.createClaimItem;
 import static org.openvpms.archetype.rules.patient.PatientTestHelper.createAddendum;
 import static org.openvpms.archetype.rules.patient.PatientTestHelper.createEvent;
 import static org.openvpms.archetype.rules.patient.PatientTestHelper.createNote;
@@ -93,6 +96,11 @@ public class ClaimEditorTestCase extends AbstractAppTest {
     private User clinician;
 
     /**
+     * The practice.
+     */
+    private Party practice;
+
+    /**
      * The practice location.
      */
     private Party location;
@@ -114,6 +122,10 @@ public class ClaimEditorTestCase extends AbstractAppTest {
     @Override
     public void setUp() {
         super.setUp();
+
+        // practice
+        practice = TestHelper.getPractice();
+
         // customer
         customer = TestHelper.createCustomer("MS", "J", "Bloggs", "12 Broadwater Avenue", "CAPE_WOOLAMAI", "VIC",
                                              "3925", "9123456", "98765432", "04987654321", "foo@test.com");
@@ -146,11 +158,11 @@ public class ClaimEditorTestCase extends AbstractAppTest {
         InsuranceTestHelper.createDiagnosis("VENOM_328", "Abcess", "328");
 
         // insurer
-        Party insurer = InsuranceTestHelper.createInsurer(TestHelper.randomName("ZInsurer-"));
+        Party insurer = (Party) InsuranceTestHelper.createInsurer(TestHelper.randomName("ZInsurer-"));
 
         // policy
-        policyAct = InsuranceTestHelper.createPolicy(customer, patient, insurer,
-                                                     createActIdentity("actIdentity.insurancePolicy", "POL123456"));
+        policyAct = (Act) InsuranceTestHelper.createPolicy(
+                customer, patient, insurer, createActIdentity("actIdentity.insurancePolicy", "POL123456"));
         save(policyAct);
     }
 
@@ -167,25 +179,29 @@ public class ClaimEditorTestCase extends AbstractAppTest {
         List<FinancialAct> invoice1Acts = createInvoice(getDate("2017-09-27"), invoiceItem1);
         save(invoice1Acts);
 
-        FinancialAct item1Act = InsuranceTestHelper.createClaimItem("VENOM_328", itemDate1, itemDate1, invoiceItem1);
+        FinancialAct item1Act = (FinancialAct) createClaimItem("VENOM_328", itemDate1, itemDate1,
+                                                               invoiceItem1);
 
-        FinancialAct claimAct = InsuranceTestHelper.createClaim(policyAct, location, clinician, user, item1Act);
-        ActBean bean = new ActBean(claimAct);
+        FinancialAct claimAct = (FinancialAct) createClaim(policyAct, location, clinician, user,
+                                                           item1Act);
+        IMObjectBean bean = getBean(claimAct);
 
         // add some attachments
         DocumentAct documentAct1 = PatientTestHelper.createDocumentAttachment(itemDate1, patient);
-        DocumentAct attachment1 = InsuranceTestHelper.createAttachment(documentAct1);
+        DocumentAct attachment1 = (DocumentAct) InsuranceTestHelper.createAttachment(documentAct1);
         Document content1 = (Document) create(DocumentArchetypes.DEFAULT_DOCUMENT);
         content1.setName(documentAct1.getName());
         attachment1.setDocument(content1.getObjectReference());
-        bean.addNodeRelationship("attachments", attachment1);
+        Relationship relationship1 = bean.addTarget("attachments", attachment1);
+        attachment1.addActRelationship((ActRelationship) relationship1);
 
         DocumentAct documentAct2 = PatientTestHelper.createDocumentAttachment(itemDate1, patient);
-        DocumentAct attachment2 = InsuranceTestHelper.createAttachment(documentAct2);
+        DocumentAct attachment2 = (DocumentAct) InsuranceTestHelper.createAttachment(documentAct2);
         Document content2 = (Document) create(DocumentArchetypes.DEFAULT_DOCUMENT);
         content2.setName(documentAct2.getName());
         attachment2.setDocument(content2.getObjectReference());
-        bean.addNodeRelationship("attachments", attachment2);
+        Relationship relationship2 = bean.addTarget("attachments", attachment2);
+        attachment2.addActRelationship((ActRelationship) relationship2);
 
         save(claimAct, item1Act, attachment1, content1, attachment2, content2);
 
@@ -227,19 +243,19 @@ public class ClaimEditorTestCase extends AbstractAppTest {
         FinancialAct invoiceItem1 = createInvoiceItem(date1);
         List<FinancialAct> invoice1Acts = createInvoice(date1, invoiceItem1);
         FinancialAct invoice1 = invoice1Acts.get(0);
+        invoice1.setAllocatedAmount(invoice1.getTotal());  // simulate payment
         save(invoice1Acts);
 
         Date date2 = getDatetime("2017-10-27 15:00:00");
         FinancialAct invoiceItem2 = createInvoiceItem(date2);
         List<FinancialAct> invoice2Acts = createInvoice(date2, invoiceItem2);
         FinancialAct invoice2 = invoice2Acts.get(0);
+        invoice2.setAllocatedAmount(invoice1.getTotal());  // simulate payment
         save(invoice2Acts);
 
-        FinancialAct item1Act = InsuranceTestHelper.createClaimItem("VENOM_328", date1, date1, invoiceItem1);
-        FinancialAct item2Act = InsuranceTestHelper.createClaimItem("VENOM_328", date2, date2, invoiceItem2);
-
-        FinancialAct claimAct = InsuranceTestHelper.createClaim(policyAct, location, clinician, user, item1Act,
-                                                                item2Act);
+        FinancialAct item1Act = (FinancialAct) createClaimItem("VENOM_328", date1, date1, invoiceItem1);
+        FinancialAct item2Act = (FinancialAct) createClaimItem("VENOM_328", date2, date2, invoiceItem2);
+        FinancialAct claimAct = (FinancialAct) createClaim(policyAct, location, clinician, user, item1Act, item2Act);
         save(claimAct, item1Act, item2Act, invoiceItem1, invoiceItem2);
 
         ClaimEditor editor = createEditor(claimAct);
@@ -277,23 +293,26 @@ public class ClaimEditorTestCase extends AbstractAppTest {
         Date itemDate1 = getDatetime("2017-09-27 10:00:00");
         FinancialAct invoiceItem1 = createInvoiceItem(itemDate1);
         List<FinancialAct> invoice1Acts = createInvoice(getDate("2017-09-27"), invoiceItem1);
+        FinancialAct invoice1 = invoice1Acts.get(0);
+        invoice1.setAllocatedAmount(invoice1.getTotal());  // simulate payment
         save(invoice1Acts);
 
-        FinancialAct item1Act = InsuranceTestHelper.createClaimItem("VENOM_328", itemDate1, itemDate1, invoiceItem1);
+        FinancialAct item1Act = (FinancialAct) createClaimItem("VENOM_328", itemDate1, itemDate1, invoiceItem1);
 
-        FinancialAct claimAct = InsuranceTestHelper.createClaim(policyAct, location, clinician, user, item1Act);
-        ActBean bean = new ActBean(claimAct);
+        FinancialAct claimAct = (FinancialAct) createClaim(policyAct, location, clinician, user, item1Act);
+        IMObjectBean bean = getBean(claimAct);
         DocumentAct documentAct = PatientTestHelper.createDocumentAttachment(itemDate1, patient);
         Document content = (Document) create(DocumentArchetypes.DEFAULT_DOCUMENT);
         content.setName(documentAct.getName());
         documentAct.setDocument(content.getObjectReference());
         save(documentAct, content);
 
-        DocumentAct attachment = InsuranceTestHelper.createAttachment(documentAct);
+        DocumentAct attachment = (DocumentAct) InsuranceTestHelper.createAttachment(documentAct);
         Document copy = (Document) create(DocumentArchetypes.DEFAULT_DOCUMENT);
         copy.setName(documentAct.getName());
         attachment.setDocument(copy.getObjectReference());
-        bean.addNodeRelationship("attachments", attachment);
+        Relationship relationship = bean.addTarget("attachments", attachment);
+        attachment.addActRelationship((ActRelationship) relationship);
         save(claimAct, item1Act, documentAct, content, attachment, copy);
 
         ClaimEditor editor = createEditor(claimAct);
@@ -316,8 +335,14 @@ public class ClaimEditorTestCase extends AbstractAppTest {
      * @return a new editor
      */
     private ClaimEditor createEditor(FinancialAct claim) {
-        LayoutContext layout = new DefaultLayoutContext(true, new LocalContext(), new HelpContext("foo", null));
-        ClaimEditor editor = new ClaimEditor(claim, null, layout);
+        LocalContext context = new LocalContext();
+        context.setPatient(patient);
+        context.setCustomer(customer);
+        context.setPractice(practice);
+        context.setLocation(location);
+        context.setUser(user);
+        LayoutContext layout = new DefaultLayoutContext(true, context, new HelpContext("foo", null));
+        ClaimEditor editor = new TestClaimEditor(claim, layout);
         editor.getComponent();
         return editor;
     }
@@ -370,9 +395,10 @@ public class ClaimEditorTestCase extends AbstractAppTest {
      * @return the invoice acs
      */
     private List<FinancialAct> createInvoice(Date date, FinancialAct... items) {
-        List<FinancialAct> invoice = createChargesInvoice(customer, clinician, ActStatus.POSTED, items);
+        List<FinancialAct> invoice = FinancialTestHelper.createChargesInvoice(customer, clinician, ActStatus.POSTED, items);
         invoice.get(0).setActivityStartTime(date);
         save(invoice);
         return invoice;
     }
+
 }

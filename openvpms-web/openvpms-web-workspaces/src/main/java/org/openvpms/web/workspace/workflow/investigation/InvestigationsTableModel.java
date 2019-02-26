@@ -27,10 +27,11 @@ import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.party.Party;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -225,7 +226,7 @@ class InvestigationsTableModel extends DescriptorTableModel<Act> {
      * @param name      the name. May be {@code null}
      * @return a new viewer
      */
-    private Component createViewer(IMObjectReference reference, String name, boolean link) {
+    private Component createViewer(Reference reference, String name, boolean link) {
         Component result;
         LayoutContext context = getLayoutContext();
         ContextSwitchListener listener = (link) ? context.getContextSwitchListener() : null;

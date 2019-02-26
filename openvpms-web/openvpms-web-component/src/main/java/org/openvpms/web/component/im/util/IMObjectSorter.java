@@ -466,8 +466,8 @@ public class IMObjectSorter {
                 archetype = DescriptorHelper.getArchetypeDescriptor(object);
                 if (archetype == null) {
                     throw new IllegalStateException(
-                            "No archetype descriptor found for object, id=" + object.getId() + ", archetypeId="
-                            + object.getArchetypeIdAsString());
+                            "No archetype descriptor found for object, id=" + object.getId() + ", archetype="
+                            + object.getArchetype());
                 }
                 descriptor = archetype.getNodeDescriptor(node);
             }

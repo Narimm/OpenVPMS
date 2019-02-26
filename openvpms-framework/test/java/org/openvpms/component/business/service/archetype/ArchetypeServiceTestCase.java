@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.AbstractArchetypeServiceTest;
 import org.openvpms.component.business.service.lookup.LookupServiceHelper;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.lookup.Lookup;
 import org.springframework.test.context.ContextConfiguration;
 
@@ -272,6 +273,29 @@ public class ArchetypeServiceTestCase extends AbstractArchetypeServiceTest {
         // verify the retrieval fails
         IMObject object = get(reference);
         assertNull(object);
+    }
+
+    /**
+     * Verifies that the {@link IMObjectBean} returned by
+     * {@link ArchetypeService#getBean(org.openvpms.component.model.object.IMObject)}
+     * throws {@code UnsupportedOperationException} for save() methods, as these bypass rules and security proxies.
+     */
+    @Test
+    public void testBeanSave() {
+        Party party1 = createPerson("party.customerperson", "MR", "T", "Anderson");
+        Party party2 = createPerson("party.customerperson", "MR", "J", "Alateras");
+        try {
+            getArchetypeService().getBean(party1).save();
+            fail("Expected save() to fail");
+        } catch (UnsupportedOperationException expected) {
+            // expected behaviour
+        }
+        try {
+            getArchetypeService().getBean(party1).save(party2);
+            fail("Expected save(IMObject...) to fail");
+        } catch (UnsupportedOperationException expected) {
+            // expected behaviour
+        }
     }
 
     /**

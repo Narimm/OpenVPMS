@@ -11,12 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.insurance.service;
 
 import org.openvpms.component.model.party.Party;
+import org.openvpms.domain.practice.Location;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.exception.InsuranceException;
 import org.openvpms.insurance.policy.Policy;
@@ -65,35 +66,23 @@ public interface InsuranceService {
     Declaration getDeclaration(Claim claim);
 
     /**
-     * Determines if the service supports policy validation.
+     * Validates a policy.
      *
-     * @return {@code true} if the service supports policy validation
+     * @param policy   the policy
+     * @param location the practice location
+     * @return the validation status
+     * @throws InsuranceException for any error
      */
-    boolean canValidatePolicies();
-
-    /**
-     * Validate a policy.
-     *
-     * @param policy the policy
-     * @throws InsuranceException if the policy is invalid
-     */
-    void validate(Policy policy);
-
-    /**
-     * Determines if the service supports claim validation.
-     *
-     * @return {@code true} if the service supports claim validation
-     */
-    boolean canValidateClaims();
+    PolicyValidationStatus validate(Policy policy, Location location);
 
     /**
      * Validate a claim, prior to its submission.
      *
      * @param claim the claim
-     * @throws InsuranceException            if the claim is invalid
-     * @throws UnsupportedOperationException if the operation is not supported
+     * @return the validation status
+     * @throws InsuranceException for any error
      */
-    void validate(Claim claim);
+    ClaimValidationStatus validate(Claim claim);
 
     /**
      * Submit a claim.

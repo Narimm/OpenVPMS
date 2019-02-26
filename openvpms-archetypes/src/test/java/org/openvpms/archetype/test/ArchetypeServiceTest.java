@@ -130,7 +130,7 @@ public abstract class ArchetypeServiceTest extends AbstractJUnit4SpringContextTe
      * @return the corresponding object or <tt>null</tt> if no object is found
      */
     @SuppressWarnings("unchecked")
-    protected <T extends IMObject> T get(T object) {
+    protected <T extends org.openvpms.component.model.object.IMObject> T get(T object) {
         return (T) get(object.getObjectReference());
     }
 

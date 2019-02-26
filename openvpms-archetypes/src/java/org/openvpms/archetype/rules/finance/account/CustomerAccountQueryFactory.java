@@ -19,8 +19,8 @@ package org.openvpms.archetype.rules.finance.account;
 import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.party.Party;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.JoinConstraint;
@@ -46,10 +46,8 @@ public class CustomerAccountQueryFactory {
      * @param shortNames the act short names
      * @return a new query
      */
-    public static ArchetypeQuery createUnallocatedObjectSetQuery(
-            Party customer, String[] shortNames) {
-        ArchetypeQuery query = createUnallocatedQuery(customer, shortNames,
-                                                      null);
+    public static ArchetypeQuery createUnallocatedObjectSetQuery(Party customer, String[] shortNames) {
+        ArchetypeQuery query = createUnallocatedQuery(customer, shortNames, null);
         query.add(new NodeSelectConstraint("amount"));
         query.add(new NodeSelectConstraint("allocatedAmount"));
         query.add(new NodeSelectConstraint("credit"));
@@ -61,15 +59,23 @@ public class CustomerAccountQueryFactory {
      *
      * @param customer   the customer
      * @param shortNames the act short names
-     * @param exclude    the act to exclude. May be <tt>null</tt>
+     * @param exclude    the act to exclude. May be {@code null}
      * @return a new query
      */
-    public static ArchetypeQuery createUnallocatedQuery(Party customer,
-                                                        String[] shortNames,
-                                                        Act exclude) {
-        ArchetypeQuery query = createBalanceParticipationQuery(customer,
-                                                               shortNames,
-                                                               exclude);
+    public static ArchetypeQuery createUnallocatedQuery(Party customer, String[] shortNames, Act exclude) {
+        return createUnallocatedQuery(customer.getObjectReference(), shortNames, exclude);
+    }
+
+    /**
+     * Creates a query for unallocated acts for the specified customer.
+     *
+     * @param customer   the customer
+     * @param shortNames the act short names
+     * @param exclude    the act to exclude. May be {@code null}
+     * @return a new query
+     */
+    public static ArchetypeQuery createUnallocatedQuery(Reference customer, String[] shortNames, Act exclude) {
+        ArchetypeQuery query = createBalanceParticipationQuery(customer, shortNames, exclude);
         query.add(Constraints.eq("status", FinancialActStatus.POSTED));
         return query;
     }
@@ -81,8 +87,18 @@ public class CustomerAccountQueryFactory {
      * @param shortNames the act short names
      * @return a new query
      */
-    public static ArchetypeQuery createUnbilledObjectSetQuery(
-            Party customer, String[] shortNames) {
+    public static ArchetypeQuery createUnbilledObjectSetQuery(Party customer, String[] shortNames) {
+        return createUnbilledObjectSetQuery(customer.getObjectReference(), shortNames);
+    }
+
+    /**
+     * Creates a query for unbilled acts for the specified customer.
+     *
+     * @param customer   the customer reference
+     * @param shortNames the act short names
+     * @return a new query
+     */
+    public static ArchetypeQuery createUnbilledObjectSetQuery(Reference customer, String[] shortNames) {
         ArchetypeQuery query = createBalanceParticipationQuery(
                 customer, shortNames, null);
         query.add(Constraints.ne("status", FinancialActStatus.POSTED));
@@ -119,7 +135,7 @@ public class CustomerAccountQueryFactory {
      *
      * @param customer      the customer
      * @param shortNames    the act short names
-     * @param sortAscending if <tt>true</tt>, sort on ascending
+     * @param sortAscending if {@code true}, sort on ascending
      *                      <em>startTime</em>; otherwise sort descending
      * @return a new query
      */
@@ -164,7 +180,7 @@ public class CustomerAccountQueryFactory {
      * @param shortNames the act archetype short names
      * @return the corresponding query
      */
-    public static ArchetypeQuery createQuery(IMObjectReference customer, String[] shortNames) {
+    public static ArchetypeQuery createQuery(Reference customer, String[] shortNames) {
         ShortNameConstraint archetypes = Constraints.shortName("act", shortNames, false);
         ArchetypeQuery query = new ArchetypeQuery(archetypes);
         JoinConstraint join = Constraints.join("customer").add(Constraints.eq("entity", customer));
@@ -189,10 +205,10 @@ public class CustomerAccountQueryFactory {
      *
      * @param customer   the customer
      * @param shortNames the act archetype short names
-     * @param exclude    the act to exclude fromj the result. May be <tt>null</tt>
+     * @param exclude    the act to exclude fromj the result. May be {@code null}
      * @return the corresponding query
      */
-    private static ArchetypeQuery createBalanceParticipationQuery(Party customer, String[] shortNames, Act exclude) {
+    private static ArchetypeQuery createBalanceParticipationQuery(Reference customer, String[] shortNames, Act exclude) {
         ShortNameConstraint archetypes = Constraints.shortName("act", shortNames, false);
         ArchetypeQuery query = new ArchetypeQuery(archetypes);
         JoinConstraint join = Constraints.join("accountBalance").add(Constraints.eq("entity", customer));

@@ -245,7 +245,7 @@ public class AppointmentGenerator {
         Patient result = null;
         while (patients.hasNext()) {
             Party patient = patients.next();
-            Party customer = rules.getOwner(patient);
+            Party customer = (Party) rules.getOwner(patient);
             if (customer != null && customer.isActive()) {
                 result = new Patient(patient, customer);
                 break;

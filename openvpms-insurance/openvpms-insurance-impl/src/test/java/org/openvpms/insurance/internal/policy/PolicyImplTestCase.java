@@ -11,14 +11,15 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.insurance.internal.policy;
 
 import org.junit.Test;
+import org.openvpms.archetype.rules.insurance.InsuranceTestHelper;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
-import org.openvpms.archetype.rules.party.CustomerRules;
+import org.openvpms.archetype.rules.party.PartyRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.util.DateRules;
@@ -29,10 +30,9 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
-import org.openvpms.insurance.InsuranceTestHelper;
-import org.openvpms.insurance.policy.Animal;
+import org.openvpms.domain.customer.Customer;
+import org.openvpms.domain.patient.Patient;
 import org.openvpms.insurance.policy.Policy;
-import org.openvpms.insurance.policy.PolicyHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Date;
@@ -50,12 +50,6 @@ import static org.openvpms.archetype.test.TestHelper.createPhoneContact;
  * @author Tim Anderson
  */
 public class PolicyImplTestCase extends ArchetypeServiceTest {
-
-    /**
-     * The customer rules.
-     */
-    @Autowired
-    private CustomerRules customerRules;
 
     /**
      * The patient rules.
@@ -78,33 +72,34 @@ public class PolicyImplTestCase extends ArchetypeServiceTest {
         Date dateOfBirth = DateRules.getDate(DateRules.getToday(), -1, DateUnits.YEARS);
         Party patient = PatientTestHelper.createPatient("Fido", "CANINE", "PUG", "MALE", dateOfBirth, "123454321",
                                                         "BLACK", customer);
-        Party insurer = InsuranceTestHelper.createInsurer(TestHelper.randomName("ZInsurer-"));
-        Act act = InsuranceTestHelper.createPolicy(customer, patient, insurer,
-                                                   createActIdentity("actIdentity.insurancePolicy", "123456"));
+        Party insurer = (Party) InsuranceTestHelper.createInsurer(TestHelper.randomName("ZInsurer-"));
+        Act act = (Act) InsuranceTestHelper.createPolicy(customer, patient, insurer,
+                                                         createActIdentity("actIdentity.insurancePolicy", "123456"));
 
-        Policy policy = new PolicyImpl(act, (IArchetypeRuleService) getArchetypeService(), customerRules, patientRules);
-        assertEquals("123456", policy.getInsurerId());
-        assertEquals(act.getActivityEndTime(), policy.getExpiryDate());
+        PartyRules partyRules = new PartyRules(getArchetypeService(), getLookupService());
+        Policy policy = new PolicyImpl(act, (IArchetypeRuleService) getArchetypeService(), partyRules, patientRules);
+        assertEquals("123456", policy.getPolicyNumber());
+        assertEquals(act.getActivityEndTime(), DateRules.toDate(policy.getExpiryDate()));
 
-        PolicyHolder policyHolder = policy.getPolicyHolder();
+        Customer policyHolder = policy.getPolicyHolder();
         assertNotNull(policyHolder);
-        assertEquals("Ms J Bloggs", policyHolder.getName());
+        assertEquals("Ms J Bloggs", policyHolder.getFullName());
         assertEquals(address, policyHolder.getAddress());
-        assertEquals(work, policyHolder.getDaytimePhone());
-        assertEquals(home, policyHolder.getEveningPhone());
+        assertEquals(work, policyHolder.getWorkPhone());
+        assertEquals(home, policyHolder.getHomePhone());
         assertEquals(mobile, policyHolder.getMobilePhone());
         assertEquals(email, policyHolder.getEmail());
 
-        Animal animal = policy.getAnimal();
+        Patient animal = policy.getAnimal();
         assertNotNull(animal);
         assertEquals(patient.getId(), animal.getId());
         assertEquals("Fido", animal.getName());
-        assertEquals(dateOfBirth, animal.getDateOfBirth());
-        assertEquals("Canine", animal.getSpecies());
-        assertEquals("Pug", animal.getBreed());
-        assertEquals(Animal.Sex.MALE, animal.getSex());
-        assertEquals("123454321", animal.getMicrochip());
-        assertEquals("Black", animal.getColour());
+        assertEquals(dateOfBirth, DateRules.toDate(animal.getDateOfBirth()));
+        assertEquals("Canine", animal.getSpeciesName());
+        assertEquals("Pug", animal.getBreedName());
+        assertEquals(Patient.Sex.MALE, animal.getSex());
+        assertEquals("123454321", animal.getMicrochip().getIdentity());
+        assertEquals("Black", animal.getColourName());
 
         assertEquals(insurer, policy.getInsurer());
     }

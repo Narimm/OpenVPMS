@@ -92,7 +92,7 @@ public class CustomerPatientSummary {
     public Component getSummary(Party patient) {
         Component result = null;
         if (patient != null) {
-            Party customer = rules.getOwner(patient);
+            Party customer = (Party) rules.getOwner(patient);
             result = getSummary(customer, patient);
         }
         return result;
@@ -119,7 +119,7 @@ public class CustomerPatientSummary {
             if (bean.hasNode("customer")) {
                 customer = (Party) bean.getNodeParticipant("customer");
             } else if (patient != null) {
-                customer = rules.getOwner(patient, act.getActivityStartTime(), false);
+                customer = (Party) rules.getOwner(patient, act.getActivityStartTime(), false);
             } else {
                 customer = null;
             }

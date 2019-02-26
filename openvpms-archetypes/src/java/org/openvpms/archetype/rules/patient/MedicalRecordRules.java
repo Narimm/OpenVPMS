@@ -359,7 +359,7 @@ public class MedicalRecordRules {
      * <em>IN_PROGRESS</em> or <em>COMPLETED</em>
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Act getEvent(Party patient) {
+    public Act getEvent(org.openvpms.component.model.party.Party patient) {
         return getEvent(patient.getObjectReference());
     }
 

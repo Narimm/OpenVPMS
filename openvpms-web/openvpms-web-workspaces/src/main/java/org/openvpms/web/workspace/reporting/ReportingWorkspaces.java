@@ -22,6 +22,7 @@ import org.openvpms.web.component.app.PracticeMailContext;
 import org.openvpms.web.component.mail.MailContext;
 import org.openvpms.web.component.workspace.AbstractWorkspaces;
 import org.openvpms.web.workspace.reporting.deposit.DepositWorkspace;
+import org.openvpms.web.workspace.reporting.insurance.InsuranceWorkspace;
 import org.openvpms.web.workspace.reporting.reminder.ReminderWorkspace;
 import org.openvpms.web.workspace.reporting.report.ReportingWorkspace;
 import org.openvpms.web.workspace.reporting.statement.StatementWorkspace;
@@ -51,6 +52,7 @@ public class ReportingWorkspaces extends AbstractWorkspaces {
         addWorkspace(new StatementWorkspace(context, mailContext));
         addWorkspace(new IncompleteChargesWorkspace(context, mailContext));
         addWorkspace(new ReminderWorkspace(context, mailContext, preferences));
+        addWorkspace(new InsuranceWorkspace(context, mailContext));
         addWorkspace(new ReportingWorkspace(context, mailContext));
     }
 

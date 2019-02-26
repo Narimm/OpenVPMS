@@ -16,14 +16,19 @@
 
 package org.openvpms.web.workspace.patient.insurance.policy;
 
-import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.archetype.rules.util.DateUnits;
+import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.insurance.InsuranceRules;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.ActIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.act.AbstractActEditor;
+import org.openvpms.web.component.im.edit.identity.IdentityCollectionEditor;
+import org.openvpms.web.component.im.edit.identity.IdentityEditor;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
 import org.openvpms.web.component.im.layout.LayoutContext;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.Date;
 
@@ -35,6 +40,17 @@ import java.util.Date;
 public class PolicyEditor extends AbstractActEditor {
 
     /**
+     * The insurance rules.
+     */
+    private final InsuranceRules rules;
+
+    /**
+     * The persistent policy number, used to verify that the policy isn't changed once claims have
+     * been submitted.
+     */
+    private String savedPolicyNumber;
+
+    /**
      * Constructs an {@link PolicyEditor}.
      *
      * @param act     the act to edit
@@ -43,12 +59,13 @@ public class PolicyEditor extends AbstractActEditor {
      */
     public PolicyEditor(Act act, IMObject parent, LayoutContext context) {
         super(act, parent, context);
+        rules = ServiceHelper.getBean(InsuranceRules.class);
         if (act.isNew()) {
             initParticipant("customer", context.getContext().getCustomer());
             initParticipant("patient", context.getContext().getPatient());
-            calculateEndTime();
         }
         addStartEndTimeListeners();
+        savedPolicyNumber = rules.getPolicyNumber(act);
     }
 
     /**
@@ -62,14 +79,46 @@ public class PolicyEditor extends AbstractActEditor {
     }
 
     /**
-     * Invoked when the start time changes. Sets the value to end time if
-     * start time > end time.
-     * The end time is set to startTime + 1 year.
+     * Sets the policy number.
+     *
+     * @param policyNumber the policy number. May be {@code null}
+     */
+    public void setPolicyNumber(String policyNumber) {
+        IdentityCollectionEditor editor = (IdentityCollectionEditor) getEditor("insurerId");
+        IdentityEditor currentEditor = (IdentityEditor) editor.getCurrentEditor();
+        if (currentEditor != null) {
+            currentEditor.getProperty("identity").setValue(policyNumber);
+        } else if (policyNumber != null) {
+            ActIdentity identity = (ActIdentity) editor.create();
+            identity.setIdentity(policyNumber);
+            editor.add(identity);
+        }
+    }
+
+    /**
+     * Save any edits.
+     * <p>
+     * This uses {@link #saveChildren()} to save the children prior to invoking {@link #saveObject()}.
+     *
+     * @throws OpenVPMSException if the save fails
      */
     @Override
-    protected void onStartTimeChanged() {
-        super.onStartTimeChanged();
-        calculateEndTime();
+    protected void doSave() {
+        Act object = getObject();
+        if (!object.isNew()) {
+            // verify that associated claim statuses haven't updated since the policy was edited.
+            // NOTE: there is still a small possibility that a POSTED claim could be submitted immediately after this,
+            // with the original saved policy number.
+            String policyNumber = rules.getPolicyNumber(object);
+            if (!StringUtils.equals(policyNumber, savedPolicyNumber)) {
+                if (!rules.canChangePolicyNumber(object)) {
+                    throw new IllegalStateException("Cannot change policy number as claims have been submitted");
+                }
+            }
+        }
+        super.doSave();
+
+        savedPolicyNumber = rules.getPolicyNumber(object);
     }
 
     /**
@@ -80,16 +129,6 @@ public class PolicyEditor extends AbstractActEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new PolicyLayoutStrategy();
-    }
-
-    /**
-     * Calculates the policy end time as 1 year after the start time.
-     */
-    private void calculateEndTime() {
-        Date startTime = getStartTime();
-        if (startTime != null) {
-            setEndTime(DateRules.getDate(startTime, 1, DateUnits.YEARS));
-        }
     }
 
 }

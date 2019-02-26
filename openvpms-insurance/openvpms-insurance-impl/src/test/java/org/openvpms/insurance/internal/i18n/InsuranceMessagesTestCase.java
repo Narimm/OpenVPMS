@@ -113,19 +113,21 @@ public class InsuranceMessagesTestCase {
     }
 
     /**
-     * Tests the {@link InsuranceMessages#policyHasNoExpiryDate()} method.
-     */
-    @Test
-    public void testPolicyHasNoExpiryDate() {
-        check("INS-0034: Policy has no expiry date", InsuranceMessages.policyHasNoExpiryDate());
-    }
-
-    /**
      * Tests the {@link InsuranceMessages#serviceUnavailable(String)} method.
      */
     @Test
     public void testServiceUnavailable() {
-        check("INS-0040: The foo is currently not available", InsuranceMessages.serviceUnavailable("foo"));
+        check("INS-0040: foo is currently not available", InsuranceMessages.serviceUnavailable("foo"));
+    }
+
+    /**
+     * Tests the  {@link InsuranceMessages#serviceInactive(String, String)} method.
+     */
+    @Test
+    public void testInactive() {
+        check("INS-0041: foo has been deactivated.\n\n" +
+              "This is required by bar to submit claims and validate policies.",
+              InsuranceMessages.serviceInactive("foo", "bar"));
     }
 
     /**

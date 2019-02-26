@@ -324,17 +324,28 @@ public class EditIMObjectTask extends AbstractTask {
                 context.setCurrent(null);
                 String action = dialog.getAction();
                 clear();
-                if (PopupDialog.OK_ID.equals(action)) {
-                    onEditCompleted();
-                } else if (PopupDialog.SKIP_ID.equals(action)) {
-                    onEditSkipped(editor, context);
-                } else {
-                    onEditCancelled(editor, context);
-                }
+                onDialogClose(action, editor, context);
             }
 
         });
         dialog.show();
+    }
+
+    /**
+     * Invoked when the edit dialog closes to complete the task.
+     *
+     * @param action  the dialog action
+     * @param editor  the editor
+     * @param context the task context
+     */
+    protected void onDialogClose(String action, IMObjectEditor editor, TaskContext context) {
+        if (PopupDialog.OK_ID.equals(action)) {
+            onEditCompleted();
+        } else if (PopupDialog.SKIP_ID.equals(action)) {
+            onEditSkipped(editor, context);
+        } else {
+            onEditCancelled(editor, context);
+        }
     }
 
     /**

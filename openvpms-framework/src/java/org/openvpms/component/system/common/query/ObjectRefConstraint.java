@@ -46,7 +46,7 @@ public class ObjectRefConstraint extends ArchetypeIdConstraint {
      *
      * @param reference the object reference
      */
-    public ObjectRefConstraint(IMObjectReference reference) {
+    public ObjectRefConstraint(Reference reference) {
         this(null, reference);
     }
 

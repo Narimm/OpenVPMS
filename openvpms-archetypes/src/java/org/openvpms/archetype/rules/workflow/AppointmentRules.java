@@ -401,7 +401,8 @@ public class AppointmentRules {
      * @param units    the interval units
      * @return the pending appointments for the customer
      */
-    public Iterable<Act> getCustomerAppointments(Party customer, int interval, DateUnits units) {
+    public Iterable<Act> getCustomerAppointments(org.openvpms.component.model.party.Party customer, int interval,
+                                                 DateUnits units) {
         ArchetypeQuery query = createAppointmentQuery(customer, "customer", interval, units);
         return new IterableIMObjectQuery<>(service, query);
     }
@@ -414,7 +415,8 @@ public class AppointmentRules {
      * @param units    the interval units
      * @return the pending appointments for the customer
      */
-    public Iterable<Act> getPatientAppointments(Party patient, int interval, DateUnits units) {
+    public Iterable<Act> getPatientAppointments(org.openvpms.component.model.party.Party patient, int interval,
+                                                DateUnits units) {
         ArchetypeQuery query = createAppointmentQuery(patient, "patient", interval, units);
         return new IterableIMObjectQuery<>(service, query);
     }
@@ -533,7 +535,8 @@ public class AppointmentRules {
      * @param units    the interval units
      * @return a new query
      */
-    protected ArchetypeQuery createAppointmentQuery(Party party, String node, int interval, DateUnits units) {
+    protected ArchetypeQuery createAppointmentQuery(org.openvpms.component.model.party.Party party, String node,
+                                                    int interval, DateUnits units) {
         ArchetypeQuery query = new ArchetypeQuery(ScheduleArchetypes.APPOINTMENT);
         query.add(Constraints.join(node).add(Constraints.eq("entity", party)));
         Date from = new Date();

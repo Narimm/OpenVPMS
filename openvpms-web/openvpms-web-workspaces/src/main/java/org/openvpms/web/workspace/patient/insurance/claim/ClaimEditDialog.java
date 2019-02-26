@@ -43,6 +43,11 @@ import java.util.function.Consumer;
 public class ClaimEditDialog extends EditDialog {
 
     /**
+     * Submit claim button identifier.
+     */
+    public static final String SUBMIT_ID = "button.submit";
+
+    /**
      * The claim.
      */
     private FinancialAct claim;
@@ -56,11 +61,6 @@ public class ClaimEditDialog extends EditDialog {
      * Generate attachments button identifier.
      */
     private static final String GENERATE_ID = "button.generateattachments";
-
-    /**
-     * Submit claim button identifier.
-     */
-    private static final String SUBMIT_ID = "button.submit";
 
     /**
      * The buttons to display.
@@ -93,6 +93,15 @@ public class ClaimEditDialog extends EditDialog {
      */
     public void submit() {
         onSubmit();
+    }
+
+    /**
+     * Show the window.
+     */
+    @Override
+    public void show() {
+        super.show();
+        getEditor().checkGapClaimSubmitTimes();
     }
 
     /**
@@ -176,7 +185,8 @@ public class ClaimEditDialog extends EditDialog {
      * @return a new claim submitter
      */
     private ClaimSubmitter createSubmitter() {
-        return new ClaimSubmitter(ServiceHelper.getArchetypeService(), ServiceHelper.getBean(InsuranceFactory.class), ServiceHelper.getBean(InsuranceServices.class), getContext(), getHelpContext());
+        return new ClaimSubmitter(ServiceHelper.getArchetypeService(), ServiceHelper.getBean(InsuranceFactory.class),
+                                  ServiceHelper.getBean(InsuranceServices.class), getContext(), getHelpContext());
     }
 
     /**

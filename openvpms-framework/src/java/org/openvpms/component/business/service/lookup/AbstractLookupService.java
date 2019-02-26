@@ -254,6 +254,39 @@ public abstract class AbstractLookupService implements ILookupService {
     }
 
     /**
+     * Returns the lookup for an archetype's node and the specified code.
+     *
+     * @param archetype the archetype
+     * @param node      the node name
+     * @param code      the lookup code
+     * @return the lookup or {@code null} if none is found
+     */
+    @Override
+    public Lookup getLookup(String archetype, String node, String code) {
+        Collection<Lookup> lookups = getLookups(archetype, node);
+        for (Lookup lookup  : lookups) {
+            if (lookup.getCode().equals(code)) {
+                return lookup;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the lookup's name for an archetype's node and the specified code.
+     *
+     * @param archetype the archetype
+     * @param node      the node name
+     * @param code      the lookup code
+     * @return the lookup's name or {@code null} if none is found
+     */
+    @Override
+    public String getName(String archetype, String node, String code) {
+        Lookup lookup = getLookup(archetype, node, code);
+        return (lookup != null) ? lookup.getName() : null;
+    }
+
+    /**
      * Replaces one lookup with another.
      * <p>
      * Each lookup must be of the same archetype.

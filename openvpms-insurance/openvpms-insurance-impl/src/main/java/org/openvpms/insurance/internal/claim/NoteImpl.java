@@ -17,16 +17,17 @@
 package org.openvpms.insurance.internal.claim;
 
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.service.archetype.functor.ActComparator;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.act.Act;
 import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.user.User;
 import org.openvpms.insurance.claim.Note;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -78,8 +79,8 @@ public class NoteImpl implements Note {
      * @return the date/time
      */
     @Override
-    public Date getDate() {
-        return act.getActivityStartTime();
+    public OffsetDateTime getDate() {
+        return DateRules.toOffsetDateTime(act.getActivityStartTime());
     }
 
     /**

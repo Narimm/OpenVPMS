@@ -61,7 +61,7 @@ public class SingleReminderItemSource implements ReminderItemSource {
         Party patient = (Party) bean.getNodeParticipant("patient");
         ReminderEvent event = null;
         if (patient != null) {
-            Party customer = ServiceHelper.getBean(PatientRules.class).getOwner(patient);
+            Party customer = (Party) ServiceHelper.getBean(PatientRules.class).getOwner(patient);
             if (customer != null) {
                 event = new ReminderEvent(reminder, item, patient, customer, contact);
             }

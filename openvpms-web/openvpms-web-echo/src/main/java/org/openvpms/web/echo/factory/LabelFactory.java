@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.echo.factory;
@@ -152,7 +152,19 @@ public final class LabelFactory extends ComponentFactory {
      * @return a new label
      */
     public static Label create(String key, boolean multiline) {
-        Label label = create(multiline);
+        return create(key, multiline, false);
+    }
+
+    /**
+     * Create a new label with localised text, and default style.
+     *
+     * @param key       the resource bundle key. May be {@code null}
+     * @param multiline if {@code true}, interprets new lines in the text
+     * @param wrap      if {@code true}, long lines will be wrapped
+     * @return a new label
+     */
+    public static Label create(String key, boolean multiline, boolean wrap) {
+        Label label = create(multiline, wrap);
         if (key != null) {
             label.setText(getString(TYPE, key, false));
         }

@@ -19,7 +19,7 @@ package org.openvpms.insurance.claim;
 import org.openvpms.component.model.lookup.Lookup;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -41,14 +41,14 @@ public interface Condition {
      *
      * @return date when treatment for the condition was started
      */
-    Date getTreatedFrom();
+    OffsetDateTime getTreatedFrom();
 
     /**
      * The date when treatment for the condition was ended.
      *
      * @return date when treatment for the condition was ended
      */
-    Date getTreatedTo();
+    OffsetDateTime getTreatedTo();
 
     /**
      * Returns the diagnosis.

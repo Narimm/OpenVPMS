@@ -31,17 +31,17 @@ import org.openvpms.archetype.rules.supplier.SupplierRules;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.party.Contact;
+import org.openvpms.component.model.party.Party;
 
 import java.math.BigDecimal;
 import java.util.Collections;
@@ -402,7 +402,7 @@ public class PartyFunctions {
      * there is no corresponding <em>contact.location</em> contact
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getCorrespondenceAddress(Party party, boolean singleLine) {
+    public String getCorrespondenceAddress(org.openvpms.component.model.party.Party party, boolean singleLine) {
         return partyRules.getCorrespondenceAddress(party, singleLine);
     }
 
@@ -1323,11 +1323,11 @@ public class PartyFunctions {
     public Party getLetterheadContacts(Party location) {
         Party result = location;
         if (location != null) {
-            EntityBean bean = new EntityBean(location, service);
-            Entity letterhead = bean.getNodeTargetEntity("letterhead");
+            IMObjectBean bean = service.getBean(location);
+            Entity letterhead = bean.getTarget("letterhead", Entity.class);
             if (letterhead != null) {
-                bean = new EntityBean(letterhead, service);
-                IMObjectReference contacts = bean.getNodeTargetObjectRef("contacts");
+                bean = service.getBean(letterhead);
+                Reference contacts = bean.getTargetRef("contacts");
                 if (contacts != null && !contacts.equals(location.getObjectReference())) {
                     result = (Party) service.get(contacts);
                 }

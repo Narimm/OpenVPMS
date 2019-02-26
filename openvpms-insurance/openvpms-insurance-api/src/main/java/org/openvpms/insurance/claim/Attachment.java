@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.insurance.claim;
@@ -19,7 +19,7 @@ package org.openvpms.insurance.claim;
 import org.openvpms.insurance.exception.InsuranceException;
 
 import java.io.InputStream;
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 /**
  * Claim attachment.
@@ -65,9 +65,12 @@ public interface Attachment {
      * <p>
      * An attachment can have a single identifier issued by an insurer. To avoid duplicates, each insurance service must
      * provide a unique archetype.
+     * <br/>
+     * If an attachment needs to be resubmitted with a different identifier, a new id can be assigned, or the existing
+     * one removed by supplying {@code null}.
      *
      * @param archetype the identifier archetype. Must have an <em>actIdentity.insuranceAttachment</em> prefix.
-     * @param id        the claim identifier
+     * @param id        the attachment identifier. If {@code null}, removes the existing identifier
      */
     void setInsurerId(String archetype, String id);
 
@@ -76,7 +79,7 @@ public interface Attachment {
      *
      * @return the date
      */
-    Date getDate();
+    OffsetDateTime getDate();
 
     /**
      * Returns the attachment file name.

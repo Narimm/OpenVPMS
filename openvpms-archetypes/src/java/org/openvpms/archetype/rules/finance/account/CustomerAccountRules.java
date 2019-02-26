@@ -18,6 +18,7 @@ package org.openvpms.archetype.rules.finance.account;
 
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
+import org.openvpms.archetype.rules.finance.tax.CustomerTaxRules;
 import org.openvpms.archetype.rules.finance.till.TillBalanceRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.util.DateUnits;
@@ -27,6 +28,7 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectCopier;
@@ -331,8 +333,7 @@ public class CustomerAccountRules {
             query.add(and);
         }
         query.setMaxResults(1);
-        ObjectSetQueryIterator iterator
-                = new ObjectSetQueryIterator(service, query);
+        ObjectSetQueryIterator iterator = new ObjectSetQueryIterator(service, query);
         return iterator.hasNext();
     }
 
@@ -532,11 +533,12 @@ public class CustomerAccountRules {
      */
     public void setHidden(FinancialAct act, boolean hide) {
         if (canHide(act)) {
-            IMObjectBean bean = new org.openvpms.component.business.service.archetype.helper.IMObjectBean(act, service);
+            IMObjectBean bean = service.getBean(act);
             // NOTE: must use non-rule based service to avoid balance recalculation
             if (hide != bean.getBoolean("hide")) {
                 bean.setValue("hide", hide);
-                bean.save();
+                // NOTE: must use non-rule based service to avoid balance recalculation
+                service.save(act);
             }
         }
     }
@@ -642,6 +644,39 @@ public class CustomerAccountRules {
         act.setTotal(amount);
         IMObjectBean bean = service.getBean(act);
         bean.setTarget("customer", customer);
+        return act;
+    }
+
+    /**
+     * Creates a credit adjustment for a customer.
+     *
+     * @param customer the customer
+     * @param total    the adjustment total
+     * @param location the practice location. May be {@code null}
+     * @param author   the author. May be {@code null}
+     * @param practice the practice, used to determine tax rates
+     * @param notes    optional notes. May be {@code null}
+     * @return a new credit adjustment
+     */
+    public FinancialAct createCreditAdjustment(Party customer, BigDecimal total, Party location, User author,
+                                               Party practice, String notes) {
+        CustomerTaxRules taxRules = new CustomerTaxRules(practice, service);
+        FinancialAct act = (FinancialAct) service.create(CustomerAccountArchetypes.CREDIT_ADJUST);
+        act.setTotal(total);
+        act.setStatus(ActStatus.POSTED); // status is derived, but derived values aren't automatically populated.
+        IMObjectBean bean = ruleService.getBean(act);
+
+        bean.setTarget("customer", customer);
+        if (location != null) {
+            bean.setTarget("location", location);
+        }
+        if (author != null) {
+            bean.setTarget("author", author);
+        }
+        if (notes != null) {
+            bean.setValue("notes", notes);
+        }
+        taxRules.calculateTax(act);
         return act;
     }
 

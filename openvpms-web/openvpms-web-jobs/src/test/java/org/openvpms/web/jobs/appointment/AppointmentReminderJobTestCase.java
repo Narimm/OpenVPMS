@@ -613,7 +613,7 @@ public class AppointmentReminderJobTestCase extends ArchetypeServiceTest {
      */
     private Party createCustomer() {
         Party customer = TestHelper.createCustomer();
-        Contact telephone = customerRules.getContact(customer, ContactArchetypes.PHONE, null);
+        Contact telephone = (Contact) customerRules.getContact(customer, ContactArchetypes.PHONE, null);
         assertNotNull(telephone);
         IMObjectBean phoneBean = new IMObjectBean(telephone);
         phoneBean.setValue("sms", true);

@@ -51,6 +51,7 @@
                     <property name="reporting.deposit" value="Reporting - Deposits"/>
                     <property name="reporting.debtor" value="Reporting - Debtors"/>
                     <property name="reporting.wip" value="Reporting - Work In Progress"/>
+                    <property name="reporting.insurance" value="Reporting - Insurance"/>
                     <property name="reporting.reminder" value="Reporting - Reminders"/>
                     <property name="reporting.report" value="Reporting - Reports"/>
                 </propertyList>

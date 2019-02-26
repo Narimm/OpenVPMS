@@ -151,14 +151,19 @@ public class ActEditDialog extends EditDialog {
     /**
      * Invoked to reload the object being edited when save fails.
      * <p/>
-     * This implementation reloads the editor, but returns {@code false} if the act has been POSTED.
+     * This implementation reloads the editor, but returns {@code false} if the act is saved and has been POSTED.
      *
      * @param editor the editor
-     * @return a {@code true} if the editor was reloaded and the act is not now POSTED.
+     * @return {@code true} if the editor was reloaded and the act is not now POSTED.
      */
     @Override
     protected boolean reload(IMObjectEditor editor) {
-        return super.reload(editor) && !getPosted();
+        boolean result = super.reload(editor);
+        if (result) {
+            IMObjectEditor newEditor = getEditor();
+            result = newEditor.getObject().isNew() || !isPosted();
+        }
+        return result;
     }
 
     /**

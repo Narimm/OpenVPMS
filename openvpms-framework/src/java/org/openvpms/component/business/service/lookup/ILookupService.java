@@ -27,8 +27,28 @@ import org.openvpms.component.model.lookup.Lookup;
 public interface ILookupService extends org.openvpms.component.service.lookup.LookupService {
 
     /**
+     * Returns the lookup for an archetype's node and the specified code.
+     *
+     * @param archetype the archetype
+     * @param node      the node name
+     * @param code      the lookup code
+     * @return the lookup or {@code null} if none is found
+     */
+    Lookup getLookup(String archetype, String node, String code);
+
+    /**
+     * Returns the lookup's name for an archetype's node and the specified code.
+     *
+     * @param archetype the archetype
+     * @param node      the node name
+     * @param code      the lookup code
+     * @return the lookup's name or {@code null} if none is found
+     */
+    String getName(String archetype, String node, String code);
+
+    /**
      * Replaces one lookup with another.
-     * <p/>
+     * <p>
      * Each lookup must be of the same archetype.
      *
      * @param source the lookup to replace

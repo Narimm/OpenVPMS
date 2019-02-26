@@ -16,12 +16,11 @@
 
 package org.openvpms.web.workspace.patient.insurance.policy;
 
-import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
+import org.openvpms.archetype.rules.insurance.InsuranceArchetypes;
+import org.openvpms.archetype.rules.insurance.InsuranceRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.insurance.claim.Claim;
 import org.openvpms.web.component.im.layout.AbstractLayoutStrategy;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -36,6 +35,7 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.PropertySet;
 import org.openvpms.web.echo.style.Styles;
+import org.openvpms.web.system.ServiceHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -76,16 +76,8 @@ public class PolicyLayoutStrategy extends AbstractLayoutStrategy {
         if (!claims.isEmpty()) {
             if (context.isEdit()) {
                 // if a claim exists that isn't PENDING or POSTED, make the policy number read-only
-                IMObjectBean bean = new IMObjectBean(object);
-                boolean pendingOrPosted = true;
-                for (Act claim : bean.getSources("claims", Act.class)) {
-                    String status = claim.getStatus();
-                    if (!Claim.Status.PENDING.isA(status) && !Claim.Status.POSTED.isA(status)) {
-                        pendingOrPosted = false;
-                        break;
-                    }
-                }
-                if (!pendingOrPosted) {
+                InsuranceRules rules = ServiceHelper.getBean(InsuranceRules.class);
+                if (!rules.canChangePolicyNumber((Act) object)) {
                     Property insurerId = properties.get("insurerId");
                     LayoutContext subContext = new DefaultLayoutContext(context);
                     ReadOnlyComponentFactory factory = new ReadOnlyComponentFactory(subContext, Styles.EDIT);

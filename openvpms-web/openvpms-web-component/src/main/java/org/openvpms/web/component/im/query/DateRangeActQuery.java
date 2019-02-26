@@ -21,6 +21,7 @@ import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.SortConstraint;
+import org.openvpms.web.component.property.ModifiableListener;
 
 import java.util.Date;
 
@@ -36,6 +37,11 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      * Determines if acts should be filtered on type.
      */
     private final boolean selectType;
+
+    /**
+     * The date range listener.
+     */
+    private final ModifiableListener dateRangeListener;
 
     /**
      * The date range.
@@ -70,6 +76,7 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
                              ActStatuses statuses, Class type) {
         super(entity, participant, participation, shortNames, statuses, type);
         selectType = true;
+        dateRangeListener = modifiable -> onQuery();
         QueryFactory.initialise(this);
     }
 
@@ -117,6 +124,7 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
                              boolean primaryOnly, String[] statuses, Class type) {
         super(entity, participant, participation, shortNames, primaryOnly, statuses, type);
         selectType = true;
+        dateRangeListener = modifiable -> onQuery();
         QueryFactory.initialise(this);
     }
 
@@ -135,7 +143,10 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      * @param selected the state of the <em>allDates</em> checkbox
      */
     public void setAllDates(boolean selected) {
-        getDateRange().setAllDates(selected);
+        DateRange dateRange = getDateRange();
+        dateRange.removeListener(dateRangeListener);
+        dateRange.setAllDates(selected);
+        dateRange.addListener(dateRangeListener);
     }
 
     /**
@@ -154,7 +165,10 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      * @param date the 'from' date
      */
     public void setFrom(Date date) {
-        getDateRange().setFrom(date);
+        DateRange dateRange = getDateRange();
+        dateRange.removeListener(dateRangeListener);
+        dateRange.setFrom(date);
+        dateRange.addListener(dateRangeListener);
     }
 
     /**
@@ -173,7 +187,10 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
      * @param date the 'to' date
      */
     public void setTo(Date date) {
-        getDateRange().setTo(date);
+        DateRange dateRange = getDateRange();
+        dateRange.removeListener(dateRangeListener);
+        dateRange.setTo(date);
+        dateRange.addListener(dateRangeListener);
     }
 
     /**
@@ -194,16 +211,13 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
     /**
      * Creates a new result set.
      *
-     * @param sort the sort constraint. May be <code>null</code>
+     * @param sort the sort constraint. May be {@code null}
      * @return a new result set
      */
     @Override
     protected ResultSet<T> createResultSet(SortConstraint[] sort) {
-        return new ActResultSet<T>(getArchetypeConstraint(),
-                                   getParticipantConstraint(),
-                                   getFrom(), getTo(), getStatuses(),
-                                   excludeStatuses(), getConstraints(),
-                                   getMaxResults(), sort);
+        return new ActResultSet<>(getArchetypeConstraint(), getParticipantConstraint(), getFrom(), getTo(),
+                                  getStatuses(), excludeStatuses(), getConstraints(), getMaxResults(), sort);
     }
 
     /**
@@ -225,6 +239,7 @@ public abstract class DateRangeActQuery<T extends Act> extends ActQuery<T> {
     protected DateRange getDateRange() {
         if (dateRange == null) {
             dateRange = createDateRange();
+            dateRange.addListener(dateRangeListener);
         }
         return dateRange;
     }

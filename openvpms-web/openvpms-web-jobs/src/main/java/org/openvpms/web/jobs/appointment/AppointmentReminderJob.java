@@ -35,8 +35,9 @@ import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.bean.Policies;
 import org.openvpms.component.model.user.User;
 import org.openvpms.component.system.common.query.IPage;
 import org.openvpms.component.system.common.query.NamedQuery;
@@ -212,7 +213,7 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
         this.locationRules = locationRules;
         this.evaluator = evaluator;
         maxParts = service.getMaxParts();
-        IMObjectBean bean = new IMObjectBean(configuration, archetypeService);
+        IMObjectBean bean = archetypeService.getBean(configuration);
         fromPeriod = getPeriod(bean, "smsFrom", "smsFromUnits", DateUnits.WEEKS);
         toPeriod = getPeriod(bean, "smsTo", "smsToUnits", DateUnits.DAYS);
         notifier = new JobCompletionNotifier(archetypeService);
@@ -411,10 +412,10 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
      */
     protected Party getLocation(ActBean bean) {
         Party location = null;
-        Entity schedule = bean.getNodeParticipant("schedule");
+        Entity schedule = bean.getTarget("schedule", Entity.class);
         if (schedule != null) {
-            IMObjectBean scheduleBean = new IMObjectBean(schedule, archetypeService);
-            location = (Party) scheduleBean.getNodeTargetObject("location");
+            IMObjectBean scheduleBean = archetypeService.getBean(schedule);
+            location = (Party) scheduleBean.getTarget("location", Policies.active());
             if (location == null) {
                 log.warn("Cannot determine the practice location for: " + schedule.getName());
             }
@@ -504,9 +505,9 @@ public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
      * @return the SMS contact, or {@code null} if none exists
      */
     private Contact getSMSContact(Party customer) {
-        Contact contact = customerRules.getSMSContact(customer);
+        Contact contact = (Contact) customerRules.getSMSContact(customer);
         if (contact != null) {
-            IMObjectBean contactBean = new IMObjectBean(contact, archetypeService);
+            IMObjectBean contactBean = archetypeService.getBean(contact);
             if (!StringUtils.isEmpty(contactBean.getString("telephoneNumber"))) {
                 return contact;
             }

@@ -17,6 +17,7 @@
 package org.openvpms.web.test;
 
 import nextapp.echo2.app.ApplicationInstance;
+import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Window;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import nextapp.echo2.app.event.WindowPaneListener;
@@ -37,6 +38,8 @@ import org.openvpms.web.component.prefs.UserPreferences;
 import org.openvpms.web.echo.error.ErrorHandler;
 
 import java.util.List;
+
+import static org.junit.Assert.assertNotNull;
 
 
 /**
@@ -112,6 +115,19 @@ public abstract class AbstractAppTest extends ArchetypeServiceTest {
         if (instance != null) {
             instance.dispose();
         }
+    }
+
+    /**
+     * Finds a component based on its type.
+     *
+     * @param type the component type
+     * @return the corresponding component
+     * @throws AssertionError if the component is not found
+     */
+    protected <T extends Component> T findComponent(Class<T> type) {
+        T component = EchoTestHelper.findComponent(ApplicationInstance.getActive().getDefaultWindow(), type);
+        assertNotNull(component);
+        return component;
     }
 
     /**

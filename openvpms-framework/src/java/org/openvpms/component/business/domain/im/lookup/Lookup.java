@@ -297,11 +297,11 @@ public class Lookup extends IMObject implements org.openvpms.component.model.loo
             return true;
         }
 
-        if (!(obj instanceof Lookup)) {
+        if (!(obj instanceof org.openvpms.component.model.lookup.Lookup)) {
             return false;
         }
-        Lookup rhs = (Lookup) obj;
-        return ObjectUtils.equals(code, rhs.code) && ObjectUtils.equals(getArchetypeId(), rhs.getArchetypeId());
+        org.openvpms.component.model.lookup.Lookup rhs = (org.openvpms.component.model.lookup.Lookup) obj;
+        return ObjectUtils.equals(code, rhs.getCode()) && ObjectUtils.equals(getArchetype(), rhs.getArchetype());
     }
 
     /* (non-Javadoc)

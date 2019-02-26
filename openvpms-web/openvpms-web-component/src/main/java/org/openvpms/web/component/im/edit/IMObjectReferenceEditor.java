@@ -34,9 +34,16 @@ public interface IMObjectReferenceEditor<T extends IMObject> extends PropertyEdi
      *
      * @param object the object. May be {@code null}
      * @return {@code true} if the value was set, {@code false} if it cannot be set due to error, or is the same as
-     *         the existing value
+     * the existing value
      */
     boolean setObject(T object);
+
+    /**
+     * Returns the object corresponding to the reference.
+     *
+     * @return the object, or {@code null} if the reference is {@code null} or the object no longer exists
+     */
+    T getObject();
 
     /**
      * Returns the component.

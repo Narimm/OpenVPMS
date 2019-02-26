@@ -114,13 +114,18 @@
         <constructor-arg ref="txnManager"/>
     </bean>
 
-    <bean id="estimateRules" class="org.openvpms.archetype.rules.finance.estimate.EstimateRules">
+    <bean id="insuranceRules" class="org.openvpms.archetype.rules.insurance.InsuranceRules">
         <constructor-arg ref="archetypeRuleService"/>
+        <constructor-arg ref="txnManager"/>
     </bean>
 
-    <bean id="insuranceRules" class="org.openvpms.archetype.rules.patient.insurance.InsuranceRules">
+    <bean id="creditAllocator" class="org.openvpms.archetype.rules.finance.credit.CreditActAllocator">
         <constructor-arg ref="archetypeService"/>
-        <constructor-arg ref="txnManager"/>
+        <constructor-arg ref="insuranceRules"/>
+    </bean>
+
+    <bean id="estimateRules" class="org.openvpms.archetype.rules.finance.estimate.EstimateRules">
+        <constructor-arg ref="archetypeRuleService"/>
     </bean>
 
     <bean id="partyRules" class="org.openvpms.archetype.rules.party.PartyRules">

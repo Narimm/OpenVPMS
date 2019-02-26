@@ -54,39 +54,12 @@
     <dependencies>
         <dependency>
             <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-framework</artifactId>
+            <artifactId>openvpms-framework-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-archetypes</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-plugin-manager</artifactId>
+            <artifactId>openvpms-domain-api</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openvpms</groupId>
-            <artifactId>openvpms-archetypes</artifactId>
-            <classifier>tests</classifier>
-            <scope>test</scope>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-dbcp2</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>${jdbc.groupId}</groupId>
-            <artifactId>${jdbc.artifactId}</artifactId>
-            <version>${jdbc.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

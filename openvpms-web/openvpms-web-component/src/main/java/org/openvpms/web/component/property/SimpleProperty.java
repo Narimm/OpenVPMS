@@ -128,6 +128,17 @@ public class SimpleProperty extends AbstractProperty {
     /**
      * Constructs a {@link SimpleProperty}.
      *
+     * @param name  the property name
+     * @param value the property value. May be {@code null}
+     * @param type  the property type
+     */
+    public SimpleProperty(String name, Object value, Class type, boolean readOnly) {
+        this(name, value, type, null, readOnly);
+    }
+
+    /**
+     * Constructs a {@link SimpleProperty}.
+     *
      * @param name        the property name
      * @param value       the property value. May be {@code null}
      * @param type        the property type

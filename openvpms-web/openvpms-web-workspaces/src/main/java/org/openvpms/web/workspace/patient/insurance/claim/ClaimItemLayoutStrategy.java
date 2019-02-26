@@ -17,7 +17,7 @@
 package org.openvpms.web.workspace.patient.insurance.claim;
 
 import nextapp.echo2.app.Row;
-import org.openvpms.archetype.rules.patient.insurance.ClaimItemStatus;
+import org.openvpms.archetype.rules.insurance.ClaimItemStatus;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.ArchetypeNodes;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -32,7 +32,7 @@ import org.openvpms.web.echo.style.Styles;
  *
  * @author Tim Anderson
  */
-public class ClaimItemLayoutStrategy extends AbstractClaimLayoutStrategy {
+public class ClaimItemLayoutStrategy extends AbstractInsuranceLayoutStrategy {
 
     /**
      * The euthanasia reason component

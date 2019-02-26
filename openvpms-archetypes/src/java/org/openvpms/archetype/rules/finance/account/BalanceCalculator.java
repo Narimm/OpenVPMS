@@ -79,7 +79,7 @@ public class BalanceCalculator {
      * @return the outstanding balance
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public BigDecimal getBalance(Party customer) {
+    public BigDecimal getBalance(org.openvpms.component.model.party.Party customer) {
         ArchetypeQuery query = CustomerAccountQueryFactory.createUnallocatedObjectSetQuery(customer, DEBITS_CREDITS);
         Iterator<ObjectSet> iterator = new ObjectSetQueryIterator(service, query);
         return calculateBalance(iterator);

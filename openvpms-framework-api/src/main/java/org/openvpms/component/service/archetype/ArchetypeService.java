@@ -54,13 +54,24 @@ public interface ArchetypeService {
     IMObjectBean getBean(IMObject object);
 
     /**
-     * Create a domain object given its archetype.
+     * Creates an object given its archetype.
      *
      * @param archetype the archetype name
-     * @return a new object, or {@code null} if there is no corresponding archetype descriptor for {@code archetype}
+     * @return a new object
      * @throws OpenVPMSException for any error
      */
     IMObject create(String archetype);
+
+    /**
+     * Creates an object given its archetype.
+     *
+     * @param archetype the archetype name
+     * @param type the expected type of the object
+     * @return a new object
+     * @throws OpenVPMSException for any error
+     * @throws ClassCastException if the resulting object is not of the expected type
+     */
+    <T extends IMObject> T create(String archetype, Class<T> type);
 
     /**
      * Saves an object, executing any <em>save</em> rules associated with its archetype.

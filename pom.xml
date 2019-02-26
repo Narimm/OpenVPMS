@@ -724,6 +724,7 @@
         <module>openvpms-framework</module>
         <module>maven-plugins</module>
         <module>openvpms-archetypes</module>
+        <module>openvpms-domain</module>
         <module>openvpms-reports</module>
         <module>openvpms-sms</module>
         <module>openvpms-esci-adapter</module>

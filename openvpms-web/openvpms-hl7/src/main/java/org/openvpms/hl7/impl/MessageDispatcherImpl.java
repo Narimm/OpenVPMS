@@ -94,14 +94,12 @@ public class MessageDispatcherImpl implements MessageDispatcher, DisposableBean,
     /**
      * The queues, keyed on connector reference.
      */
-    private final Map<IMObjectReference, MessageQueue> queueMap
-            = Collections.synchronizedMap(new HashMap<IMObjectReference, MessageQueue>());
+    private final Map<IMObjectReference, MessageQueue> queueMap = Collections.synchronizedMap(new HashMap<>());
 
     /**
      * The receivers, keyed on connector reference.
      */
-    private final Map<IMObjectReference, MessageReceiver> receiverMap
-            = Collections.synchronizedMap(new HashMap<IMObjectReference, MessageReceiver>());
+    private final Map<IMObjectReference, MessageReceiver> receiverMap = Collections.synchronizedMap(new HashMap<>());
 
     /**
      * The demultiplexing receivers, keyed on port.

@@ -22,8 +22,8 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.web.component.bound.BoundCheckBox;
 import org.openvpms.web.component.bound.BoundDateFieldFactory;
 import org.openvpms.web.component.im.view.ComponentState;
-import org.openvpms.web.component.property.Modifiable;
 import org.openvpms.web.component.property.ModifiableListener;
+import org.openvpms.web.component.property.ModifiableListeners;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.property.SimpleProperty;
 import org.openvpms.web.component.util.ComponentHelper;
@@ -55,17 +55,32 @@ public class DateRange {
     /**
      * Indicates if all dates should be selected. If so, the from and to dates are ignored.
      */
-    private SimpleProperty all = new SimpleProperty("all", true, Boolean.class, Messages.get("daterange.all"));
+    private final SimpleProperty all = new SimpleProperty("all", true, Boolean.class, Messages.get("daterange.all"));
 
     /**
      * The from date.
      */
-    private SimpleProperty from = new SimpleProperty("from", null, Date.class, Messages.get("daterange.from"));
+    private final SimpleProperty from = new SimpleProperty("from", null, Date.class, Messages.get("daterange.from"));
 
     /**
      * The to date.
      */
-    private SimpleProperty to = new SimpleProperty("to", null, Date.class, Messages.get("daterange.to"));
+    private final SimpleProperty to = new SimpleProperty("to", null, Date.class, Messages.get("daterange.to"));
+
+    /**
+     * The from property listener.
+     */
+    private final ModifiableListener fromListener;
+
+    /**
+     * The to property listener.
+     */
+    private final ModifiableListener toListener;
+
+    /**
+     * The listeners.
+     */
+    private final ModifiableListeners listeners = new ModifiableListeners();
 
     /**
      * The all-dates component.
@@ -103,28 +118,15 @@ public class DateRange {
         this.showAll = showAll;
         focus = new FocusGroup("DateRange");
         if (showAll) {
-            all.addModifiableListener(new ModifiableListener() {
-                @Override
-                public void modified(Modifiable modifiable) {
-                    onAllDatesChanged();
-                }
-            });
+            all.addModifiableListener(modifiable -> onAllDatesChanged());
         }
-        from.addModifiableListener(new ModifiableListener() {
-            @Override
-            public void modified(Modifiable modifiable) {
-                onFromChanged();
-            }
-        });
-        to.addModifiableListener(new ModifiableListener() {
-            @Override
-            public void modified(Modifiable modifiable) {
-                onToChanged();
-            }
-        });
+        fromListener = modifiable -> onFromChanged();
+        toListener = modifiable -> onToChanged();
         Date today = DateRules.getToday();
         setFrom(today);
         setTo(today);
+        from.addModifiableListener(fromListener);
+        to.addModifiableListener(toListener);
     }
 
     /**
@@ -230,6 +232,24 @@ public class DateRange {
     }
 
     /**
+     * Adds a listener to be notified when this changes.
+     *
+     * @param listener the listener to add
+     */
+    public void addListener(ModifiableListener listener) {
+        listeners.addListener(listener);
+    }
+
+    /**
+     * Removes a listener.
+     *
+     * @param listener the listener to remove
+     */
+    public void removeListener(ModifiableListener listener) {
+        listeners.removeListener(listener);
+    }
+
+    /**
      * Lays out the component.
      *
      * @param container the container
@@ -253,7 +273,7 @@ public class DateRange {
         container.add(toDate.getLabel());
         container.add(toDate.getComponent());
 
-        onAllDatesChanged();
+        setDateFieldsEnabled(!getAllDates());
 
         focus.add(fromDate.getComponent());
         focus.add(toDate.getComponent());
@@ -305,28 +325,35 @@ public class DateRange {
     protected void onAllDatesChanged() {
         boolean enabled = !getAllDates();
         setDateFieldsEnabled(enabled);
+        listeners.notifyListeners(all);
     }
 
     /**
      * Invoked when the 'from' date changes. Sets the 'to' date = 'from' if 'from' is greater.
      */
     private void onFromChanged() {
-        Date from = getFrom();
-        Date to = getTo();
-        if (from != null && to != null && DateRules.compareDates(from, to) > 0) {
-            setTo(from);
+        Date fromDate = getFrom();
+        Date toDate = getTo();
+        if (fromDate != null && toDate != null && DateRules.compareDates(fromDate, toDate) > 0) {
+            to.removeModifiableListener(toListener);
+            setTo(fromDate);
+            to.addModifiableListener(toListener);
         }
+        listeners.notifyListeners(all);
     }
 
     /**
      * Invoked when the 'to' date changes. Sets the 'from' date = 'to' if 'from' is greater.
      */
     private void onToChanged() {
-        Date from = getFrom();
-        Date to = getTo();
-        if (from != null && to != null && DateRules.compareDates(from, to) > 0) {
-            setFrom(to);
+        Date fromDate = getFrom();
+        Date toDate = getTo();
+        if (fromDate != null && toDate != null && DateRules.compareDates(fromDate, toDate) > 0) {
+            from.removeModifiableListener(fromListener);
+            setFrom(toDate);
+            from.addModifiableListener(fromListener);
         }
+        listeners.notifyListeners(to);
     }
 
     /**

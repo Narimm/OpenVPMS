@@ -18,7 +18,7 @@ package org.openvpms.insurance.claim;
 
 import org.openvpms.component.model.user.User;
 
-import java.util.Date;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -33,7 +33,7 @@ public interface Note {
      *
      * @return the date/time
      */
-    Date getDate();
+    OffsetDateTime getDate();
 
     /**
      * Returns the author of the note.

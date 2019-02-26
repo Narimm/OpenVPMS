@@ -17,8 +17,6 @@
 package org.openvpms.archetype.rules.patient;
 
 import org.apache.commons.collections.ComparatorUtils;
-import org.apache.commons.collections.Predicate;
-import org.apache.commons.collections.functors.AndPredicate;
 import org.apache.commons.jxpath.JXPathContext;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.math.Weight;
@@ -27,24 +25,25 @@ import org.openvpms.archetype.rules.party.MergeException;
 import org.openvpms.archetype.rules.practice.PracticeRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.functor.IsA;
-import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.model.archetype.NodeDescriptor;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.bean.Policies;
+import org.openvpms.component.model.bean.Policy;
+import org.openvpms.component.model.bean.Predicates;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.model.object.Relationship;
+import org.openvpms.component.model.party.Party;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
@@ -155,10 +154,11 @@ public class PatientRules {
      * @return the relationship
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public EntityRelationship addPatientOwnerRelationship(Party customer,
-                                                          Party patient) {
-        EntityBean bean = new EntityBean(customer, service);
-        EntityRelationship relationship = bean.addRelationship(PatientArchetypes.PATIENT_OWNER, patient);
+    public EntityRelationship addPatientOwnerRelationship(Party customer, Party patient) {
+        IMObjectBean bean = service.getBean(customer);
+        EntityRelationship relationship = (EntityRelationship) bean.addTarget(
+                "patients", PatientArchetypes.PATIENT_OWNER, patient);
+        patient.addEntityRelationship(relationship);
         relationship.setActiveStartTime(new Date());
         return relationship;
     }
@@ -172,8 +172,10 @@ public class PatientRules {
      * @throws ArchetypeServiceException for any archetype service error
      */
     public EntityRelationship addPatientLocationRelationship(Party customer, Party patient) {
-        EntityBean bean = new EntityBean(customer, service);
-        EntityRelationship relationship = bean.addRelationship(PatientArchetypes.PATIENT_LOCATION, patient);
+        IMObjectBean bean = service.getBean(customer);
+        EntityRelationship relationship = (EntityRelationship) bean.addTarget(
+                "patients", PatientArchetypes.PATIENT_LOCATION, patient);
+        patient.addEntityRelationship(relationship);
         relationship.setActiveStartTime(new Date());
         return relationship;
     }
@@ -236,11 +238,10 @@ public class PatientRules {
      * @param patient the patient
      * @return a reference to the owner, or {@code null} if none can be found
      */
-    public IMObjectReference getOwnerReference(Party patient) {
-        EntityBean bean = new EntityBean(patient);
-        Predicate predicate = AndPredicate.getInstance(new IsA(PatientArchetypes.PATIENT_OWNER),
-                                                       IsActiveRelationship.isActiveNow());
-        EntityRelationship er = bean.getNodeRelationship("customers", predicate);
+    public Reference getOwnerReference(Party patient) {
+        IMObjectBean bean = service.getBean(patient);
+        java.util.function.Predicate<Relationship> isA = Predicates.isA(PatientArchetypes.PATIENT_OWNER);
+        Relationship er = bean.getValue("customers", Relationship.class, isA.and(Predicates.activeNow()));
         return (er != null && er.isActive()) ? er.getSource() : null;
     }
 
@@ -676,7 +677,8 @@ public class PatientRules {
      */
     public void mergePatients(Party from, Party to) {
         PatientMerger merger = new PatientMerger(service);
-        merger.merge(from, to);
+        merger.merge((org.openvpms.component.business.domain.im.party.Party) from,
+                     (org.openvpms.component.business.domain.im.party.Party) to);
     }
 
     /**
@@ -756,13 +758,15 @@ public class PatientRules {
     private Party getSourceParty(Party patient, Date startTime, boolean active, String shortName) {
         Party result = null;
         if (patient != null && startTime != null) {
-            EntityBean bean = new EntityBean(patient, service);
-            result = (Party) bean.getSourceEntity(shortName, startTime, false);
+            Policy<Relationship> policy = Policies.match(active,
+                                                         Predicates.activeAt(startTime).and(Predicates.isA(shortName)));
+            IMObjectBean bean = service.getBean(patient);
+            result = (Party) bean.getSource("customers", policy);
             if (result == null && !active) {
                 // no match for the start time, so try and find a source close to the start time
                 EntityRelationship match = null;
-                List<EntityRelationship> relationships = bean.getRelationships(shortName, false);
-
+                List<EntityRelationship> relationships = bean.getValues("customers", EntityRelationship.class,
+                                                                        Predicates.isA(shortName));
                 for (EntityRelationship relationship : relationships) {
                     if (match == null) {
                         result = get(relationship.getSource());

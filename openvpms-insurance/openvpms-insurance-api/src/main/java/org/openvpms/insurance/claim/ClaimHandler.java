@@ -16,7 +16,8 @@
 
 package org.openvpms.insurance.claim;
 
-import org.openvpms.component.model.party.Contact;
+import org.openvpms.domain.party.Email;
+import org.openvpms.domain.party.Phone;
 
 /**
  * The person responsible for a claim.
@@ -37,13 +38,13 @@ public interface ClaimHandler {
      *
      * @return the hone. May be {@code null}
      */
-    Contact getPhone();
+    Phone getPhone();
 
     /**
      * Returns the claim handler's email address.
      *
      * @return the email address. May be {@code null}
      */
-    Contact getEmail();
+    Email getEmail();
 
 }

@@ -23,8 +23,6 @@ import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.app.ContextHelper;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.property.Modifiable;
-import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.component.property.Property;
 import org.openvpms.web.component.util.ErrorHelper;
 
@@ -36,36 +34,55 @@ import java.math.BigDecimal;
  * <em>act.customerAccountPayment*</em>, <em>act.customerAccountRefund*</em>
  * <em>act.supplierAccountPayment*</em> and <em>act.supplierAccountRefund*</em>
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
+ * @author Tim Anderson
  */
 public class PaymentItemEditor extends AbstractIMObjectEditor {
 
     /**
-     * Creates a new <tt>PaymentItemEditor</tt>.
+     * The amount node.
+     */
+    private static final String AMOUNT = "amount";
+
+    /**
+     * The rounded amount node.
+     */
+    private static final String ROUNDED_AMOUNT = "roundedAmount";
+
+    /**
+     * The tendered node.
+     */
+    private static final String TENDERED = "tendered";
+
+    /**
+     * Constructs a {@link PaymentItemEditor}.
      *
      * @param act     the act to edit
      * @param parent  the parent act
      * @param context the layout context
      */
-    public PaymentItemEditor(FinancialAct act, FinancialAct parent,
-                             LayoutContext context) {
+    public PaymentItemEditor(FinancialAct act, FinancialAct parent, LayoutContext context) {
         super(act, parent, context);
         if (act.isNew() && parent != null) {
             // default the act start time to that of the parent
             act.setActivityStartTime(parent.getActivityStartTime());
         }
-        if (getProperty("roundedAmount") != null) {
+        if (getProperty(ROUNDED_AMOUNT) != null) {
             // need to derive the rounded and tendered amounts from the amount
-            Property amount = getProperty("amount");
-            amount.addModifiableListener(new ModifiableListener() {
-                public void modified(Modifiable modifiable) {
-                    onAmountChanged();
-                }
-            });
+            Property amount = getProperty(AMOUNT);
+            amount.addModifiableListener(modifiable -> onAmountChanged());
             if (act.isNew()) {
                 onAmountChanged();
             }
         }
+    }
+
+    /**
+     * Sets the amount.
+     *
+     * @param amount the amount
+     */
+    public void setAmount(BigDecimal amount) {
+        getProperty(AMOUNT).setValue(amount);
     }
 
     /**
@@ -75,16 +92,16 @@ public class PaymentItemEditor extends AbstractIMObjectEditor {
      */
     private void onAmountChanged() {
         try {
-            BigDecimal amount = (BigDecimal) getProperty("amount").getValue();
+            BigDecimal amount = (BigDecimal) getProperty(AMOUNT).getValue();
             BigDecimal rounded = amount;
-            Property roundedAmount = getProperty("roundedAmount");
+            Property roundedAmount = getProperty(ROUNDED_AMOUNT);
             Currency currency = ContextHelper.getPracticeCurrency(
                     getLayoutContext().getContext());
             if (currency != null) {
                 rounded = currency.roundCash(amount);
             }
             roundedAmount.setValue(rounded);
-            Property tenderedAmount = getProperty("tendered");
+            Property tenderedAmount = getProperty(TENDERED);
             if (tenderedAmount != null) {
                 tenderedAmount.setValue(rounded);
             }

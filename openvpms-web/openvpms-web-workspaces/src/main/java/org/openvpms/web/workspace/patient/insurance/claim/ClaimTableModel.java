@@ -29,7 +29,7 @@ import org.openvpms.web.component.im.table.DescriptorTableModel;
 public class ClaimTableModel extends DescriptorTableModel<Act> {
 
     /**
-     * Constructs a {@link DescriptorTableModel}.
+     * Constructs a {@link ClaimTableModel}.
      *
      * @param shortNames the archetype short names
      * @param context    the layout context

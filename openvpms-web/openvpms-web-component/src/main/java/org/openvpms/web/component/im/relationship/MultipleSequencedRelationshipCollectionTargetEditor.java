@@ -77,7 +77,7 @@ public class MultipleSequencedRelationshipCollectionTargetEditor extends Multipl
             }
 
             @Override
-            protected void swap(IMObject object1, IMObject object2) {
+            public void swap(IMObject object1, IMObject object2) {
                 RelationshipCollectionTargetPropertyEditor editor = getCollectionPropertyEditor();
                 SequencedRelationship r1 = (SequencedRelationship) editor.getRelationship(object1);
                 SequencedRelationship r2 = (SequencedRelationship) editor.getRelationship(object2);

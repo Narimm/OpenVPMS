@@ -19,20 +19,22 @@ package org.openvpms.web.workspace.patient.insurance.claim;
 import net.sf.jasperreports.engine.util.ObjectUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.service.archetype.CachingReadOnlyArchetypeService;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.cache.IMObjectCache;
 import org.openvpms.component.system.common.cache.SoftRefIMObjectCache;
-import org.openvpms.insurance.claim.Claim;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,6 +46,11 @@ import java.util.Set;
 class Charges {
 
     /**
+     * The claim congtext.
+     */
+    private final ClaimContext claimContext;
+
+    /**
      * Caches invoices.
      */
     private final IMObjectCache cache;
@@ -51,7 +58,7 @@ class Charges {
     /**
      * Caches objects returned by the archetype service.
      */
-    private final IArchetypeService cachingService;
+    private final IArchetypeService service;
 
     /**
      * The balance calculator.
@@ -59,18 +66,45 @@ class Charges {
     private final CustomerAccountRules rules;
 
     /**
+     * Claim helper.
+     */
+    private final ClaimHelper claimHelper;
+
+    /**
      * The charges, keyed on reference.
      */
-    private Map<Reference, Act> charges = new HashMap<>();
+    private final Map<Reference, Act> charges = new HashMap<>();
 
     /**
      * Constructs a {@link Charges}.
+     *
+     * @param claimContext the claim context
      */
-    public Charges() {
+    public Charges(ClaimContext claimContext) {
+        this.claimContext = claimContext;
         IArchetypeRuleService service = ServiceHelper.getArchetypeService();
         cache = new SoftRefIMObjectCache(service);
-        cachingService = new CachingReadOnlyArchetypeService(cache, service);
+        this.service = new CachingReadOnlyArchetypeService(cache, service);
         rules = ServiceHelper.getBean(CustomerAccountRules.class);
+        claimHelper = new ClaimHelper(this.service);
+    }
+
+    /**
+     * Determines if charges must be paid or not.
+     *
+     * @return {@code true} if charges must be paid
+     */
+    public boolean getChargesMustBePaid() {
+        return !claimContext.isGapClaim();
+    }
+
+    /**
+     * Determines if gap claims are available.
+     *
+     * @return {@code true} if gap claims are available
+     */
+    public boolean isGapClaimAvailable() {
+        return claimContext.supportsGapClaims();
     }
 
     /**
@@ -119,7 +153,7 @@ class Charges {
     public Set<Reference> getInvoiceRefs() {
         Set<Reference> invoices = new HashSet<>();
         for (Act item : charges.values()) {
-            IMObjectBean bean = new IMObjectBean(item);
+            IMObjectBean bean = service.getBean(item);
             Reference invoiceRef = bean.getSourceRef("invoice");
             if (invoiceRef != null) {
                 invoices.add(invoiceRef);
@@ -129,13 +163,24 @@ class Charges {
     }
 
     /**
+     * Returns the references to each item in an invoice.
+     *
+     * @param invoice the invoice
+     * @return the item references
+     */
+    public List<Reference> getItemRefs(FinancialAct invoice) {
+        return service.getBean(invoice).getTargetRefs("items");
+    }
+
+    /**
      * Determines if an invoice can be claimed.
      * <br/>
      * An invoice can be claimed if:
      * <ul>
      * <li>is POSTED; and</li>
      * <li>hasn't been reversed; and</li>
-     * <li>is paid
+     * <li>is unpaid, for a gap claim; or</li>
+     * <li>is paid for a standard claim</li>
      * </ul>
      *
      * @param invoice the invoice
@@ -144,21 +189,35 @@ class Charges {
     public boolean canClaimInvoice(FinancialAct invoice) {
         boolean result = false;
         if (ActStatus.POSTED.equals(invoice.getStatus())) {
-            if (!isReversed(invoice) && isPaid(invoice)) {
-                result = true;
+            if (!isReversed(invoice)) {
+                if (claimContext.isGapClaim()) {
+                    result = isUnpaid(invoice);
+                } else {
+                    result = isPaid(invoice);
+                }
             }
         }
         return result;
     }
 
     /**
-     * Determines if an invoice has been paid.
+     * Determines if an invoice has been fully paid.
      *
      * @param invoice the invoice
      * @return {@code true} if the invoice has been paid
      */
     public boolean isPaid(FinancialAct invoice) {
         return rules.isAllocated(invoice);
+    }
+
+    /**
+     * Determines if an invoice has no payments.
+     *
+     * @param invoice the invoice
+     * @return {@code true} if the invoice has not been paid
+     */
+    public boolean isUnpaid(FinancialAct invoice) {
+        return MathRules.isZero(invoice.getAllocatedAmount());
     }
 
     /**
@@ -192,6 +251,22 @@ class Charges {
     }
 
     /**
+     * Returns each of the invoices referenced by the charges.
+     *
+     * @return the invoices
+     */
+    public List<FinancialAct> getInvoices() {
+        List<FinancialAct> invoices = new ArrayList<>();
+        for (Reference ref : getInvoiceRefs()) {
+            FinancialAct invoice = (FinancialAct) service.get(ref);
+            if (invoice != null) {
+                invoices.add(invoice);
+            }
+        }
+        return invoices;
+    }
+
+    /**
      * Returns an invoice item associated with a reference, if it belongs to the specified patient.
      *
      * @param item    the invoice item reference
@@ -202,7 +277,7 @@ class Charges {
         Act result = null;
         Act act = (Act) cache.get(item);
         if (act != null) {
-            IMObjectBean itemBean = new IMObjectBean(act);
+            IMObjectBean itemBean = service.getBean(act);
             if (ObjectUtils.equals(patient, itemBean.getTargetRef("patient"))) {
                 result = act;
             }
@@ -225,32 +300,20 @@ class Charges {
      *
      * @param item    the charge item
      * @param exclude the claim to exclude. May be {@code null}
-     * @return the claim that charge item has a relationship to, if it isn't CANCELLED or DECLINED
+     * @return the claim that the charge item has a relationship to, if it isn't CANCELLED or DECLINED
      */
     public Act getClaim(Act item, Act exclude) {
-        Act result = null;
-        IMObjectBean chargeBean = new IMObjectBean(item, cachingService);
-        for (Act claimItem : chargeBean.getSources("claims", Act.class)) {
-            IMObjectBean bean = new IMObjectBean(claimItem, cachingService);
-            Act claim = bean.getSource("claim", Act.class);
-            if (claim != null && (exclude == null || !claim.equals(exclude))) {
-                String status = claim.getStatus();
-                if (!Claim.Status.CANCELLED.isA(status) && !Claim.Status.DECLINED.isA(status)) {
-                    result = claim;
-                    break;
-                }
-            }
-        }
-        return result;
+        return claimHelper.getClaim(item, exclude);
     }
 
     /**
-     * Returns the invoice associated withh an invoice item.
+     * Returns the invoice associated with an invoice item.
      *
-     * @param item the item
-     * @return the corresponding invoice. May be {@code null}
+     * @param item the invoice item
+     * @return the corresponding invoice, or {@code null} if none is found
      */
-    private FinancialAct getInvoice(Act item) {
-        return new IMObjectBean(item, cachingService).getSource("invoice", FinancialAct.class);
+    public FinancialAct getInvoice(Act item) {
+        return service.getBean(item).getSource("invoice", FinancialAct.class);
     }
+
 }

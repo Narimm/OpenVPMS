@@ -16,41 +16,30 @@
 
 package org.openvpms.insurance.internal.claim;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.doc.DocumentArchetypes;
-import org.openvpms.archetype.rules.doc.DocumentHandlers;
-import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
-import org.openvpms.archetype.rules.party.CustomerRules;
-import org.openvpms.archetype.rules.patient.PatientRules;
+import org.openvpms.archetype.rules.insurance.InsuranceTestHelper;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
 import org.openvpms.archetype.rules.util.DateRules;
-import org.openvpms.archetype.rules.util.DateUnits;
-import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.document.Document;
-import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
-import org.openvpms.insurance.InsuranceTestHelper;
+import org.openvpms.component.model.lookup.Lookup;
+import org.openvpms.component.model.user.User;
+import org.openvpms.domain.patient.Patient;
 import org.openvpms.insurance.claim.Claim;
 import org.openvpms.insurance.claim.ClaimHandler;
 import org.openvpms.insurance.claim.Condition;
 import org.openvpms.insurance.claim.Invoice;
 import org.openvpms.insurance.claim.Item;
 import org.openvpms.insurance.claim.Note;
-import org.openvpms.insurance.policy.Animal;
 import org.openvpms.insurance.policy.Policy;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.PlatformTransactionManager;
 
 import java.math.BigDecimal;
 import java.util.Date;
@@ -58,131 +47,34 @@ import java.util.List;
 
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
-import static java.math.BigDecimal.ZERO;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.openvpms.archetype.rules.finance.account.FinancialTestHelper.createChargesInvoice;
+import static org.openvpms.archetype.rules.insurance.InsuranceTestHelper.createClaimItem;
 import static org.openvpms.archetype.rules.patient.PatientTestHelper.createAddendum;
 import static org.openvpms.archetype.rules.patient.PatientTestHelper.createEvent;
 import static org.openvpms.archetype.rules.patient.PatientTestHelper.createNote;
-import static org.openvpms.archetype.rules.patient.PatientTestHelper.createPatient;
 import static org.openvpms.archetype.test.TestHelper.createActIdentity;
 import static org.openvpms.archetype.test.TestHelper.getDate;
 import static org.openvpms.archetype.test.TestHelper.getDatetime;
-import static org.openvpms.insurance.InsuranceTestHelper.checkCondition;
-import static org.openvpms.insurance.InsuranceTestHelper.checkInvoice;
-import static org.openvpms.insurance.InsuranceTestHelper.checkItem;
-import static org.openvpms.insurance.InsuranceTestHelper.checkNote;
-import static org.openvpms.insurance.InsuranceTestHelper.createClaimItem;
-import static org.openvpms.insurance.InsuranceTestHelper.createInsurer;
-import static org.openvpms.insurance.InsuranceTestHelper.createPolicy;
 
 /**
  * Tests the {@link ClaimImpl} class.
  *
  * @author Tim Anderson
  */
-public class ClaimImplTestCase extends ArchetypeServiceTest {
+public class ClaimImplTestCase extends AbstractClaimTest {
 
     /**
-     * The customer rules.
+     * Tests the {@link ClaimImpl} methods.
      */
-    @Autowired
-    private CustomerRules customerRules;
-
-    /**
-     * The patient rules.
-     */
-    @Autowired
-    private PatientRules patientRules;
-
-    /**
-     * The transaction manager.
-     */
-    @Autowired
-    private PlatformTransactionManager transactionManager;
-
-    /**
-     * The document handlers.
-     */
-    private DocumentHandlers handlers;
-
-    /**
-     * The test customer.
-     */
-    private Party customer;
-
-    /**
-     * The test patient.
-     */
-    private Party patient;
-
-    /**
-     * Patient date of birth.
-     */
-    private Date dateOfBirth;
-
-    /**
-     * The test clinician.
-     */
-    private User clinician;
-
-    /**
-     * The practice location.
-     */
-    private Party location;
-
-    /**
-     * Practice location phone.
-     */
-    private Contact locationPhone;
-
-    /**
-     * Practice location email.
-     */
-    private Contact locationEmail;
-
-    /**
-     * The claim handler.
-     */
-    private User user;
-
-    /**
-     * The policy.
-     */
-    private Act policyAct;
-
-
-    /**
-     * Sets up the test case.
-     */
-    @Before
-    public void setUp() {
-        // customer
-        customer = TestHelper.createCustomer("MS", "J", "Bloggs", "12 Broadwater Avenue", "CAPE_WOOLAMAI", "VIC",
-                                             "3925", "9123456", "98765432", "04987654321", "foo@test.com");
-        handlers = new DocumentHandlers(getArchetypeService());
-
-        // practice location
-        locationPhone = TestHelper.createPhoneContact(null, "5123456", false);
-        locationEmail = TestHelper.createEmailContact("vetsrus@test.com");
-        location = TestHelper.createLocation();
-        location.addContact(locationEmail);
-        location.addContact(locationPhone);
-        save(location);
-
-        // clinician
-        clinician = TestHelper.createClinician();
-
-        // claim handler
-        user = TestHelper.createUser("Z", "Smith");
-
-        // patient
-        dateOfBirth = DateRules.getDate(DateRules.getToday(), -1, DateUnits.YEARS);
-        patient = createPatient("Fido", "CANINE", "PUG", "MALE", dateOfBirth, "123454321", "BLACK", customer);
+    @Test
+    public void testClaim() {
+        Date treatFrom1 = getDate("2017-09-27");
+        Date treatTo1 = getDate("2017-09-29");
 
         // patient history
         Act note1 = createNote(getDate("2015-05-01"), patient, clinician, "Note 1");
@@ -194,26 +86,6 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         PatientTestHelper.addAddendum(note3, addendum1);
         PatientTestHelper.addAddendum(note3, addendum2);
         createEvent(getDate("2015-07-01"), patient, note3);
-
-        // diagnosis codes
-        InsuranceTestHelper.createDiagnosis("VENOM_328", "Abcess", "328");
-
-        // insurer
-        Party insurer = createInsurer(TestHelper.randomName("ZInsurer-"));
-
-        // policy
-        policyAct = createPolicy(customer, patient, insurer,
-                                 createActIdentity("actIdentity.insurancePolicy", "POL123456"));
-        save(policyAct);
-    }
-
-    /**
-     * Tests the {@link ClaimImpl} methods.
-     */
-    @Test
-    public void testClaim() {
-        Date treatFrom1 = getDate("2017-09-27");
-        Date treatTo1 = getDate("2017-09-29");
 
         Act note4 = createNote(treatFrom1, patient, clinician, "Note 4");
         createEvent(treatFrom1, treatTo1, patient, clinician, note4);
@@ -246,9 +118,9 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         List<FinancialAct> invoice2Acts = createInvoice(getDate("2017-09-28"), invoiceItem3);
         save(invoice2Acts);
 
-        FinancialAct item1Act = createClaimItem("VENOM_328", treatFrom1, treatTo1, invoiceItem1,
-                                                invoiceItem2, invoiceItem3);
-        Act claimAct = InsuranceTestHelper.createClaim(policyAct, location, clinician, user, item1Act);
+        FinancialAct item1Act = (FinancialAct) createClaimItem("VENOM_328", treatFrom1, treatTo1, invoiceItem1,
+                                                               invoiceItem2, invoiceItem3);
+        Act claimAct = (Act) InsuranceTestHelper.createClaim(policyAct, location, clinician, user, false, item1Act);
         claimAct.addIdentity(createActIdentity("actIdentity.insuranceClaim", "CLM987654"));
         save(policyAct, claimAct, item1Act);
 
@@ -260,7 +132,7 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         assertEquals(Claim.Status.PENDING, claim.getStatus());
         Policy policy = claim.getPolicy();
         assertNotNull(policy);
-        assertEquals("POL123456", policy.getInsurerId());
+        assertEquals("POL123456", policy.getPolicyNumber());
 
         ClaimHandler handler = claim.getClaimHandler();
         assertNotNull(handler);
@@ -269,16 +141,16 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         assertEquals(locationPhone, handler.getPhone());
 
         // check the animal
-        Animal animal = claim.getAnimal();
+        Patient animal = claim.getAnimal();
         assertEquals(patient.getId(), animal.getId());
         assertEquals(patient.getName(), animal.getName());
-        assertEquals(dateOfBirth, animal.getDateOfBirth());
-        assertEquals("Canine", animal.getSpecies());
-        assertEquals("Pug", animal.getBreed());
-        assertEquals(Animal.Sex.MALE, animal.getSex());
-        assertEquals("Black", animal.getColour());
-        assertEquals("123454321", animal.getMicrochip());
-        assertEquals(new IMObjectBean(patient).getDate("createdDate"), animal.getCreatedDate());
+        assertEquals(dateOfBirth, DateRules.toDate(animal.getDateOfBirth()));
+        assertEquals("Canine", animal.getSpeciesName());
+        assertEquals("Pug", animal.getBreedName());
+        assertEquals(Patient.Sex.MALE, animal.getSex());
+        assertEquals("Black", animal.getColourName());
+        assertEquals("123454321", animal.getMicrochip().getIdentity());
+        assertEquals(new IMObjectBean(patient).getDate("createdDate"), DateRules.toDate(animal.getCreated()));
 
         // check the condition
         assertEquals(1, claim.getConditions().size());
@@ -331,9 +203,9 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         assertEquals(4, history.size());
         checkNote(history.get(0), getDate("2015-05-01"), clinician, "Note 1", 0);
         checkNote(history.get(1), getDate("2015-05-02"), clinician, "Note 2", 0);
-        Note note3 = checkNote(history.get(2), getDate("2015-07-01"), clinician, "Note 3", 2);
-        checkNote(note3.getNotes().get(0), getDate("2015-07-03"), clinician, "Note 3 addendum 1", 0);
-        checkNote(note3.getNotes().get(1), getDate("2015-07-04"), clinician, "Note 3 addendum 2", 0);
+        Note n3 = checkNote(history.get(2), getDate("2015-07-01"), clinician, "Note 3", 2);
+        checkNote(n3.getNotes().get(0), getDate("2015-07-03"), clinician, "Note 3 addendum 1", 0);
+        checkNote(n3.getNotes().get(1), getDate("2015-07-04"), clinician, "Note 3 addendum 2", 0);
         checkNote(history.get(3), treatFrom1, clinician, "Note 4", 0);
     }
 
@@ -350,12 +222,11 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         List<FinancialAct> invoice1Acts = createInvoice(getDate("2017-09-27"), invoiceItem1);
         save(invoice1Acts);
 
-        FinancialAct item1Act = createClaimItem("VENOM_328", itemDate1, itemDate1, invoiceItem1);
-        Act claimAct = InsuranceTestHelper.createClaim(policyAct, location, clinician, user, item1Act);
+        FinancialAct item1Act = (FinancialAct) createClaimItem("VENOM_328", itemDate1, itemDate1, invoiceItem1);
+        Act claimAct = (Act) InsuranceTestHelper.createClaim(policyAct, location, clinician, user, false, item1Act);
         save(claimAct, item1Act);
 
-        Claim claim = new ClaimImpl(claimAct, (IArchetypeRuleService) getArchetypeService(), customerRules,
-                                    patientRules, handlers, transactionManager);
+        Claim claim = createClaim(claimAct);
         assertEquals(Claim.Status.PENDING, claim.getStatus());
         assertTrue(claim.canCancel());
 
@@ -371,10 +242,10 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         claim.setStatus(Claim.Status.SETTLED);
         assertFalse(claim.canCancel());
 
-        claim.setStatus(Claim.Status.DECLINED);
+        claimAct.setStatus(Claim.Status.DECLINED.toString());
         assertFalse(claim.canCancel());
 
-        claim.setStatus(Claim.Status.CANCELLING);
+        claimAct.setStatus(Claim.Status.CANCELLING.toString());
         assertFalse(claim.canCancel());
 
         claim.setStatus(Claim.Status.CANCELLED);
@@ -395,12 +266,12 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
         List<FinancialAct> invoice1Acts = createInvoice(getDate("2017-09-27"), invoiceItem1);
         save(invoice1Acts);
 
-        FinancialAct item1Act = createClaimItem("VENOM_328", itemDate1, itemDate1, invoiceItem1);
+        FinancialAct item1Act = (FinancialAct) createClaimItem("VENOM_328", itemDate1, itemDate1, invoiceItem1);
 
-        Act claimAct = InsuranceTestHelper.createClaim(policyAct, location, clinician, user, item1Act);
+        Act claimAct = (Act) InsuranceTestHelper.createClaim(policyAct, location, clinician, user, false, item1Act);
         ActBean bean = new ActBean(claimAct);
         DocumentAct documentAct = PatientTestHelper.createDocumentAttachment(itemDate1, patient);
-        DocumentAct attachment = InsuranceTestHelper.createAttachment(documentAct);
+        DocumentAct attachment = (DocumentAct) InsuranceTestHelper.createAttachment(documentAct);
         Document content = (Document) create(DocumentArchetypes.DEFAULT_DOCUMENT);
         content.setName(documentAct.getName());
         attachment.setDocument(content.getObjectReference());
@@ -429,45 +300,120 @@ public class ClaimImplTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Creates a claim.
-     *
-     * @param act the claim act
-     * @return a new claim
+     * Verifies the claim policy can be changed.
      */
-    private Claim createClaim(Act act) {
-        return new ClaimImpl(act, (IArchetypeRuleService) getArchetypeService(), customerRules, patientRules,
-                             handlers, transactionManager);
+    @Test
+    public void testSetPolicy() {
+        FinancialAct item1Act = (FinancialAct) createClaimItem("VENOM_328", new Date(), new Date());
+        Act claimAct1 = (Act) InsuranceTestHelper.createClaim(policyAct, location, clinician, user, false, item1Act);
+        save(policyAct, claimAct1, item1Act);
+
+        Party insurer2 = (Party) InsuranceTestHelper.createInsurer(TestHelper.randomName("ZInsurer-"));
+
+        Claim claim1 = createClaim(claimAct1);
+        Policy existing = claim1.getPolicy();
+        Policy update1 = claim1.setPolicy(insurer1, "POL123456");
+        assertEquals(existing, update1);                 // policy should not change
+        checkPolicy(update1, insurer1, "POL123456");
+
+        Policy update2 = claim1.setPolicy(insurer2, "POL123456");
+        assertNotEquals(update1, update2);               // policy should be changed
+        assertEquals(existing.getId(), update2.getId()); // but should be same underlying act
+        checkPolicy(update2, insurer2, "POL123456");
+
+        Policy update3 = claim1.setPolicy(insurer2, "POL987654");
+        assertNotEquals(update2, update3);               // policy should be changed
+        assertEquals(existing.getId(), update3.getId()); // but should be same underlying act
+        checkPolicy(update3, insurer2, "POL987654");
+
+        // associate the policy with another claim.
+        policyAct = get(policyAct);
+        FinancialAct item2Act = (FinancialAct) createClaimItem("VENOM_328", new Date(), new Date());
+        Act claimAct2 = (Act) InsuranceTestHelper.createClaim(policyAct, location, clinician, user, false, item2Act);
+        save(policyAct, claimAct2, item2Act);
+
+        claim1 = createClaim(claimAct1);
+        Policy update4 = claim1.setPolicy(insurer2, "POL1111111");
+        assertNotEquals(update3, update4);              // policy should be changed
+        assertEquals(existing.getId(), update3.getId()); // as should the underlying act
+        assertNotEquals(update4.getId(), policyAct.getId());
+        checkPolicy(update4, insurer2, "POL1111111");
     }
 
     /**
-     * Creates an invoice item.
+     * Verifies a condition matches that expected.
      *
-     * @param date     the date
-     * @param product  the product
-     * @param quantity the quantity
-     * @param price    the unit price
-     * @param discount the discount
-     * @param tax      the tax
-     * @return the new invoice item
+     * @param condition   the condition to check
+     * @param treatedFrom the expected treated-from date
+     * @param treatedTo   the expected treated-to date
+     * @param diagnosis   the expected diagnosis code
      */
-    private FinancialAct createInvoiceItem(Date date, Product product, BigDecimal quantity, BigDecimal price,
-                                           BigDecimal discount, BigDecimal tax) {
-        return FinancialTestHelper.createInvoiceItem(date, patient, clinician, product, quantity, ZERO, price,
-                                                     discount, tax);
+    private void checkCondition(Condition condition, Date treatedFrom, Date treatedTo, String diagnosis) {
+        assertEquals(treatedFrom, DateRules.toDate(condition.getTreatedFrom()));
+        assertEquals(treatedTo, DateRules.toDate(condition.getTreatedTo()));
+        Lookup lookup = condition.getDiagnosis();
+        assertNotNull(lookup);
+        assertEquals(diagnosis, lookup.getCode());
     }
 
     /**
-     * Creates and saves a POSTED invoice.
+     * Verifies a note matches that expected.
      *
-     * @param date  the invoice date
-     * @param items the invoice items
-     * @return the invoice acs
+     * @param note      the note to check
+     * @param date      the expected date
+     * @param clinician the expected clinician
+     * @param text      the expected tex
+     * @param notes     the expected no. of addenda
+     * @return the note
      */
-    private List<FinancialAct> createInvoice(Date date, FinancialAct... items) {
-        List<FinancialAct> invoice = createChargesInvoice(customer, clinician, ActStatus.POSTED, items);
-        invoice.get(0).setActivityStartTime(date);
-        save(invoice);
-        return invoice;
+    private Note checkNote(Note note, Date date, User clinician, String text, int notes) {
+        assertEquals(date, DateRules.toDate(note.getDate()));
+        assertEquals(clinician, note.getClinician());
+        assertEquals(text, note.getText());
+        assertEquals(notes, note.getNotes().size());
+        return note;
+    }
+
+    /**
+     * Verifies an invoice matches that expected.
+     *
+     * @param invoice     the invoice to check
+     * @param id          the expected id
+     * @param discount    the expected discount
+     * @param discountTax the expected discount tax
+     * @param tax         the expected tax
+     * @param total       the expected total
+     */
+    private void checkInvoice(Invoice invoice, long id, BigDecimal discount,
+                              BigDecimal discountTax, BigDecimal tax, BigDecimal total) {
+        assertEquals(id, invoice.getId());
+        checkEquals(discount, invoice.getDiscount());
+        checkEquals(discountTax, invoice.getDiscountTax());
+        checkEquals(tax, invoice.getTotalTax());
+        checkEquals(total, invoice.getTotal());
+    }
+
+    /**
+     * Verifies an invoice item matches that expected.
+     *
+     * @param item        the invoice item to check
+     * @param id          the expected id
+     * @param date        the expected date
+     * @param product     the expected product
+     * @param discount    the expected discount
+     * @param discountTax the expected discount tax
+     * @param tax         the expected tax
+     * @param total       the expected total
+     */
+    private void checkItem(Item item, long id, Date date, org.openvpms.component.model.product.Product product, BigDecimal discount,
+                           BigDecimal discountTax, BigDecimal tax, BigDecimal total) {
+        assertEquals(id, item.getId());
+        assertEquals(date, DateRules.toDate(item.getDate()));
+        assertEquals(product, item.getProduct());
+        checkEquals(discount, item.getDiscount());
+        checkEquals(discountTax, item.getDiscountTax());
+        checkEquals(tax, item.getTotalTax());
+        checkEquals(total, item.getTotal());
     }
 
 }

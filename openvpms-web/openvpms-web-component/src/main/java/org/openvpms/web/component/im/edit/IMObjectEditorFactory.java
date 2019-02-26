@@ -18,11 +18,13 @@ package org.openvpms.web.component.im.edit;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.exception.OpenVPMSException;
 import org.openvpms.web.component.im.archetype.ArchetypeHandler;
 import org.openvpms.web.component.im.archetype.ArchetypeHandlers;
 import org.openvpms.web.component.im.layout.LayoutContext;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 
 /**
@@ -102,7 +104,8 @@ public class IMObjectEditorFactory {
      * @param parent  the parent object. May be {@code null}
      * @param context the layout context
      * @return an editor for {@code object}
-     * @throws IllegalStateException if a registered editor cannot be created
+     * @throws OpenVPMSException for any OpenVPMS error
+     * @throws IllegalStateException if a registered editor cannot be created for any other error
      */
     public IMObjectEditor create(IMObject object, IMObject parent, LayoutContext context) {
         IMObjectEditor result;
@@ -116,6 +119,12 @@ public class IMObjectEditorFactory {
             if (ctor != null) {
                 try {
                     result = (IMObjectEditor) ctor.newInstance(object, parent, context);
+                } catch (InvocationTargetException exception) {
+                    if (exception.getCause() instanceof OpenVPMSException) {
+                        throw (OpenVPMSException) exception.getCause();
+                    }
+                    throw new IllegalStateException("Failed to construct " + type.getName() + " for "
+                                                    + object.getArchetypeId().getShortName(), exception);
                 } catch (Throwable throwable) {
                     throw new IllegalStateException("Failed to construct " + type.getName() + " for "
                                                     + object.getArchetypeId().getShortName(), throwable);

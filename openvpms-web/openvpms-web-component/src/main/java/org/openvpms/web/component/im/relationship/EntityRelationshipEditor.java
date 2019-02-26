@@ -16,6 +16,7 @@
 
 package org.openvpms.web.component.im.relationship;
 
+import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.web.component.im.layout.LayoutContext;
@@ -25,7 +26,7 @@ import org.openvpms.web.component.im.layout.LayoutContext;
  *
  * @author Tim Anderson
  */
-public class EntityRelationshipEditor extends AbstractRelationshipEditor {
+public class EntityRelationshipEditor extends AbstractRelationshipEditor<Entity> {
 
     /**
      * Constructs an {@link EntityRelationshipEditor}.

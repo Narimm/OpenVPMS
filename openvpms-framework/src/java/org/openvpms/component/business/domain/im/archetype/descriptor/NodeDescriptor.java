@@ -468,7 +468,7 @@ public class NodeDescriptor extends Descriptor implements org.openvpms.component
      * the list of children, an empty list or  null
      */
     @SuppressWarnings("unchecked")
-    public List<IMObject> getChildren(IMObject target) {
+    public List<IMObject> getChildren(org.openvpms.component.model.object.IMObject target) {
         List<IMObject> children = null;
         if (isCollection()) {
             try {

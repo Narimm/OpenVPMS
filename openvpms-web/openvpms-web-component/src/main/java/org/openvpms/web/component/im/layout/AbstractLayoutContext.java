@@ -374,8 +374,8 @@ public abstract class AbstractLayoutContext implements LayoutContext {
             result = DescriptorHelper.getArchetypeDescriptor(object);
             if (result == null) {
                 throw new IllegalStateException(
-                        "No archetype descriptor found for object, id=" + object.getId() + ", archetypeId="
-                        + object.getArchetypeIdAsString());
+                        "No archetype descriptor found for object, id=" + object.getId() + ", archetype="
+                        + object.getArchetype());
             }
         }
         return result;

@@ -20,12 +20,11 @@ import org.apache.commons.jxpath.JXPathContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.component.business.domain.archetype.ArchetypeId;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.AssertionDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.descriptor.cache.IArchetypeDescriptorCache;
+import org.openvpms.component.model.object.IMObject;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 
 import java.util.ArrayList;
@@ -89,23 +88,23 @@ class IMObjectValidator {
      */
     @SuppressWarnings("unchecked")
     protected void validate(IMObject object, List<org.openvpms.component.service.archetype.ValidationError> errors) {
-        ArchetypeId id = object.getArchetypeId();
+        String archetype = object.getArchetype();
         if (log.isDebugEnabled()) {
-            log.debug("Validating object of type " + id.getShortName() + " with id " + object.getId()
+            log.debug("Validating object of type " + archetype + " with id " + object.getId()
                       + " and version " + object.getVersion());
         }
 
-        ArchetypeDescriptor archetype = cache.getArchetypeDescriptor(id);
-        if (archetype == null) {
-            addError(errors, object, null, "No archetype definition for " + id);
-            log.error("No archetype definition for " + id);
+        ArchetypeDescriptor descriptor = cache.getArchetypeDescriptor(archetype);
+        if (descriptor == null) {
+            addError(errors, object, null, "No archetype definition for " + archetype);
+            log.error("No archetype definition for " + archetype);
         } else {
             // if there are nodes attached to the archetype then validate the
             // associated assertions
-            Map nodeDescriptors = archetype.getNodeDescriptors();
+            Map nodeDescriptors = descriptor.getNodeDescriptors();
             if (nodeDescriptors.size() > 0) {
                 JXPathContext context = JXPathHelper.newContext(object);
-                validateNodes(object, context, archetype, (Map<String, NodeDescriptor>) nodeDescriptors, errors);
+                validateNodes(object, context, descriptor, (Map<String, NodeDescriptor>) nodeDescriptors, errors);
             }
         }
     }
@@ -300,11 +299,11 @@ class IMObjectValidator {
      */
     private void addError(List<org.openvpms.component.service.archetype.ValidationError> errors, IMObject object,
                           NodeDescriptor node, String message) {
-        String shortName = object.getArchetypeId().getShortName();
+        String archetype = object.getArchetype();
         String nodeName = (node != null) ? node.getName() : null;
         errors.add(new ValidationError(object.getObjectReference(), nodeName, message));
         if (log.isDebugEnabled()) {
-            log.debug("Validation failed: archetype=" + shortName + ", node=" + nodeName + ", message=" +
+            log.debug("Validation failed: archetype=" + archetype + ", node=" + nodeName + ", message=" +
                       message);
         }
     }

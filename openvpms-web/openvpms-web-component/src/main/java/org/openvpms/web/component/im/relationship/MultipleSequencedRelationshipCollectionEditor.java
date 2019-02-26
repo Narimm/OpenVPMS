@@ -150,7 +150,7 @@ public abstract class MultipleSequencedRelationshipCollectionEditor extends Rela
              * @param object2 the second object
              */
             @Override
-            protected void swap(RelationshipState object1, RelationshipState object2) {
+            public void swap(RelationshipState object1, RelationshipState object2) {
                 IMObjectEditor editor1 = getEditor(object1.getRelationship());
                 IMObjectEditor editor2 = getEditor(object2.getRelationship());
                 Property property1 = editor1.getProperty("sequence");

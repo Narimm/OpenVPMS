@@ -74,6 +74,7 @@
                     <property name="INSURANCE_CLAIM_INVOICE" value="Insurance Claim Invoice"/>
                     <property name="INSURANCE_CLAIM_MEDICAL_RECORDS" value="Insurance Claim Medical Records"/>
                     <property name="INSURANCE_CLAIM" value="Insurance Claim - Custom"/>
+                    <property name="INSURANCE_CLAIMS_REPORT" value="Insurance Claims Report"/>
                 </propertyList>
             </assertion>
         </node>

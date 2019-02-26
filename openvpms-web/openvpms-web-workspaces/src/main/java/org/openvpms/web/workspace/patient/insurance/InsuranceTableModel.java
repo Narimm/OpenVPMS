@@ -16,11 +16,11 @@
 
 package org.openvpms.web.workspace.patient.insurance;
 
-import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
-import org.openvpms.archetype.rules.patient.insurance.InsuranceRules;
+import org.openvpms.archetype.rules.insurance.InsuranceRules;
+import org.openvpms.archetype.rules.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.party.Party;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.DescriptorTableColumn;
 import org.openvpms.web.component.im.table.DescriptorTableModel;

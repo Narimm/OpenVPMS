@@ -167,11 +167,11 @@ public class ArchetypeServiceFunctions {
      * @throws OpenVPMSException         if the call cannot complete
      * @see NodeResolver
      */
-    public String lookup(IMObject object, String node) {
+    public String lookup(org.openvpms.component.model.object.IMObject object, String node) {
         if (object == null) {
             return null;
         }
-        return LookupHelper.getName(service, lookups, object, node);
+        return LookupHelper.getName(service, lookups, (IMObject) object, node);
     }
 
     /**

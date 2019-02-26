@@ -139,7 +139,7 @@ public abstract class SequencedTable<T> {
      * @param object1 the first object
      * @param object2 the second object
      */
-    protected abstract void swap(T object1, T object2);
+    public abstract void swap(T object1, T object2);
 
     /**
      * Moves the selected relationship up in the table.

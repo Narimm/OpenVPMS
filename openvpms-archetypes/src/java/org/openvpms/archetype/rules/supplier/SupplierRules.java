@@ -34,6 +34,7 @@ import org.openvpms.component.business.service.archetype.functor.RefEquals;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.Policies;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
@@ -78,9 +79,9 @@ public class SupplierRules {
      * for the time frame
      * @throws ArchetypeServiceException for any archetype service error
      */
-    public Party getReferralVetPractice(Party vet, Date time) {
-        EntityBean bean = new EntityBean(vet, service);
-        return (Party) bean.getNodeSourceEntity("practices", time);
+    public Party getReferralVetPractice(org.openvpms.component.model.party.Party vet, Date time) {
+        org.openvpms.component.model.bean.IMObjectBean bean = service.getBean(vet);
+        return (Party) bean.getSource("practices", Policies.active(time));
     }
 
     /**

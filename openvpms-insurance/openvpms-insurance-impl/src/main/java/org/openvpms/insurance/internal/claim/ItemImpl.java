@@ -17,15 +17,16 @@
 package org.openvpms.insurance.internal.claim;
 
 import org.openvpms.archetype.rules.math.MathRules;
-import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.model.act.Act;
 import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.model.product.Product;
 import org.openvpms.insurance.claim.Item;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.OffsetDateTime;
 
 import static org.openvpms.component.model.bean.Policies.active;
 
@@ -79,8 +80,8 @@ public class ItemImpl implements Item {
      * @return the date
      */
     @Override
-    public Date getDate() {
-        return act.getActivityStartTime();
+    public OffsetDateTime getDate() {
+        return DateRules.toOffsetDateTime(act.getActivityStartTime());
     }
 
     /**

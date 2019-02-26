@@ -116,7 +116,7 @@ public abstract class AbstractMonitoringIMObjectCache<T extends IMObject> implem
      */
     protected void load() {
         ArchetypeQuery query = new ArchetypeQuery(shortNames, true, true);
-        IMObjectQueryIterator<T> iter = new IMObjectQueryIterator<T>(service, query);
+        IMObjectQueryIterator<T> iter = new IMObjectQueryIterator<>(service, query);
         while (iter.hasNext()) {
             addObject(iter.next());
         }

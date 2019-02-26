@@ -221,7 +221,8 @@ public class AppointmentEditor extends AbstractCalendarEventEditor {
     /**
      * Creates a new instance of the editor, with the latest instance of the object to edit.
      *
-     * @return {@code null}
+     * @return a new instance
+     * @throws OpenVPMSException if a new instance cannot be created
      */
     @Override
     public IMObjectEditor newInstance() {

@@ -27,6 +27,7 @@ import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.component.system.common.query.BaseArchetypeConstraint;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
@@ -207,7 +208,7 @@ public class CustomerPatientHistoryQuery extends AbstractQuery<CustomerPatient> 
                 : allPatients.toArray(new SelectionHistory.Selection[allPatients.size()])) {
             Party patient = (Party) selection.getObject();
             if (patient != null) {
-                IMObjectReference customerRef = rules.getOwnerReference(patient);
+                Reference customerRef = rules.getOwnerReference(patient);
                 Party customer = (Party) IMObjectHelper.getObject(customerRef, context);
                 Date patientSelect = selection.getTime();
                 Date customerSelect = (customer != null) ? customers.getSelected(customer) : null;

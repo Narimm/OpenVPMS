@@ -16,11 +16,11 @@
 
 package org.openvpms.web.workspace.patient.insurance.claim;
 
-import net.sf.jasperreports.engine.util.ObjectUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.customer.CustomerArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
+import org.openvpms.archetype.rules.insurance.InsuranceArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.archetype.rules.patient.insurance.InsuranceArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
@@ -220,25 +220,6 @@ class AttachmentCollectionEditor extends ActRelationshipCollectionEditor impleme
     }
 
     /**
-     * Removes an attachment, and its associated document, if any.
-     *
-     * @param object the attachment act
-     */
-    protected void remove(DocumentAct object) {
-        IMObjectReference reference = object.getDocument();
-        if (!object.isNew()) {
-            service.remove(object);
-        }
-        if (reference != null && !reference.isNew()) {
-            // TODO - would be improved by OBF-247
-            Document document = (Document) service.get(reference);
-            if (document != null) {
-                service.remove(document);
-            }
-        }
-    }
-
-    /**
      * Invoked when the "Add" button is pressed. Creates a new instance of the selected archetype, and displays it in
      * an editor.
      *
@@ -265,6 +246,25 @@ class AttachmentCollectionEditor extends ActRelationshipCollectionEditor impleme
         });
         dialog.show();
         return null;
+    }
+
+    /**
+     * Removes an attachment, and its associated document, if any.
+     *
+     * @param object the attachment act
+     */
+    private void remove(DocumentAct object) {
+        IMObjectReference reference = object.getDocument();
+        if (!object.isNew()) {
+            service.remove(object);
+        }
+        if (reference != null && !reference.isNew()) {
+            // TODO - would be improved by OBF-247
+            Document document = (Document) service.get(reference);
+            if (document != null) {
+                service.remove(document);
+            }
+        }
     }
 
     /**

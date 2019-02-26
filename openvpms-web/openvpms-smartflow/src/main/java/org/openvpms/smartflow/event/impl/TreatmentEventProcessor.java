@@ -154,7 +154,7 @@ public class TreatmentEventProcessor extends EventProcessor<TreatmentEvent> {
         if (visit != null) {
             patient = getPatient(visit);
             if (patient != null) {
-                customer = rules.getOwner(patient);
+                customer = (Party) rules.getOwner(patient);
             }
         }
         Product product = getProduct(treatment);

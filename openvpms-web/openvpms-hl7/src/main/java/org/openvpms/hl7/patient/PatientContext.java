@@ -21,11 +21,11 @@ import org.openvpms.archetype.rules.math.Weight;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
 import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientRules;
-import org.openvpms.component.business.domain.im.party.Contact;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
 import org.openvpms.component.model.act.Act;
+import org.openvpms.component.model.party.Contact;
 import org.openvpms.component.model.party.Party;
 import org.openvpms.component.model.user.User;
 

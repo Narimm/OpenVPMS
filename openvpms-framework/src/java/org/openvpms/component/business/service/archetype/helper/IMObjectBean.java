@@ -22,6 +22,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.archetype.descriptor.ArchetypeDescriptor;
 import org.openvpms.component.business.domain.im.archetype.descriptor.NodeDescriptor;
+import org.openvpms.component.business.domain.im.common.Beanable;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
@@ -104,7 +105,7 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
      */
     public IMObjectBean(org.openvpms.component.model.object.IMObject object, IArchetypeService service) {
         this.service = service;
-        this.properties = new NodePropertySet((IMObject) object);
+        this.properties = new NodePropertySet(cast(object));
     }
 
     /**
@@ -118,7 +119,7 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
                         ILookupService lookups) {
         this.service = service;
         this.lookups = lookups;
-        this.properties = new NodePropertySet((IMObject) object);
+        this.properties = new NodePropertySet(cast(object));
     }
 
     /**
@@ -3161,6 +3162,19 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
         JXPathContext context = JXPathHelper.newContext(properties.getObject());
         result = context.getValue(expression);
         return result;
+    }
+
+    /**
+     * Casts an {@link org.openvpms.component.model.object.IMObject} to an {@link IMObject}, unwrapping any
+     * {@link Beanable} instances.
+     * @param object the object to cast
+     * @return the cast object
+     */
+    private IMObject cast(org.openvpms.component.model.object.IMObject object) {
+        if (object instanceof Beanable) {
+            return ((Beanable) object).getObject();
+        }
+        return (IMObject) object;
     }
 
     /**

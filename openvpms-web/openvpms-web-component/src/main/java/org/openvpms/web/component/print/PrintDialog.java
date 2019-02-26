@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.print;
@@ -224,7 +224,7 @@ public class PrintDialog extends PopupDialog {
                     printerNames.add(defaultPrinter);
                 }
                 set.retainAll(printerNames);
-                result = set.toArray(new String[set.size()]);
+                result = set.toArray(new String[0]);
             } else {
                 result = available;
             }

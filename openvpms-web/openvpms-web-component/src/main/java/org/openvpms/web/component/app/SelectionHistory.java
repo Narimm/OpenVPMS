@@ -18,6 +18,7 @@ package org.openvpms.web.component.app;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.util.ArrayList;
@@ -132,7 +133,7 @@ public class SelectionHistory {
         /**
          * The object reference.
          */
-        private final IMObjectReference reference;
+        private final Reference reference;
 
         /**
          * The selection time.
@@ -151,7 +152,7 @@ public class SelectionHistory {
          * @param reference the object reference
          * @param context   the context
          */
-        public Selection(IMObjectReference reference, Context context) {
+        public Selection(Reference reference, Context context) {
             this(reference, new Date(), context);
         }
 
@@ -162,7 +163,7 @@ public class SelectionHistory {
          * @param time      the time the selection occurred
          * @param context   the context
          */
-        protected Selection(IMObjectReference reference, Date time, Context context) {
+        protected Selection(Reference reference, Date time, Context context) {
             this.reference = reference;
             this.time = time;
             this.context = context;
@@ -173,7 +174,7 @@ public class SelectionHistory {
          *
          * @return the object reference
          */
-        public IMObjectReference getReference() {
+        public Reference getReference() {
             return reference;
         }
 
