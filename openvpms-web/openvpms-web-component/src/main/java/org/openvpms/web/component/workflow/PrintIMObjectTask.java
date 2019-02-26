@@ -224,6 +224,8 @@ public class PrintIMObjectTask extends AbstractTask {
      * Invoked when the print is cancelled due to error.
      * <p>
      * This implementation delegates to {@link #notifyCancelledOnError(Throwable)}.
+     *
+     * @param cause the cause of the error
      */
     protected void notifyPrintCancelledOnError(Throwable cause) {
         notifyCancelledOnError(cause);

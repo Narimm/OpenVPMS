@@ -1034,6 +1034,13 @@ public class ClaimSubmitter {
                 protected void notifyPrintCancelled() {
                     notifySkipped();
                 }
+
+                @Override
+                protected void notifyPrintCancelledOnError(Throwable cause) {
+                    // if the print fails, don't cancel the workflow
+                    ErrorHelper.show(cause);
+                    notifySkipped();
+                }
             };
             print.setRequired(false);
             print.setEnableSkip(false); // don't want a skip button. Cancel will act as skip
