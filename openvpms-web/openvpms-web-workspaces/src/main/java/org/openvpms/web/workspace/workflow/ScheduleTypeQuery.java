@@ -115,16 +115,6 @@ public abstract class ScheduleTypeQuery extends AbstractIMObjectQuery<Entity> {
     }
 
     /**
-     * Determines if the query should be run automatically.
-     *
-     * @return {@code true} if the query should be run automatically; otherwise {@code false}
-     */
-    @Override
-    public boolean isAuto() {
-        return (schedule != null);
-    }
-
-    /**
      * Determines if the query selects a particular object reference.
      *
      * @param reference the object reference to check
