@@ -11,15 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
 
-import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.WindowPaneEvent;
 import org.apache.commons.collections.Predicate;
-import org.apache.commons.collections.functors.AndPredicate;
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.product.ProductSupplier;
 import org.openvpms.archetype.rules.supplier.SupplierRules;
@@ -28,17 +26,18 @@ import org.openvpms.component.business.domain.im.common.EntityLink;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.service.archetype.functor.IsActiveRelationship;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.NodeEquals;
-import org.openvpms.component.business.service.archetype.functor.RefEquals;
-import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.bean.Policies;
+import org.openvpms.component.model.bean.Predicates;
 import org.openvpms.component.system.common.query.ArchetypeQueryException;
 import org.openvpms.web.component.im.edit.AbstractIMObjectReferenceEditor;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
-import org.openvpms.web.component.im.query.AbstractQueryBrowser;
 import org.openvpms.web.component.im.query.Browser;
 import org.openvpms.web.component.im.query.BrowserDialog;
+import org.openvpms.web.component.im.query.BrowserFactory;
 import org.openvpms.web.component.im.query.DefaultIMObjectTableBrowser;
 import org.openvpms.web.component.im.query.ListQuery;
 import org.openvpms.web.component.im.query.Query;
@@ -67,6 +66,10 @@ public class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Prod
      */
     private final ProductParticipationEditor editor;
 
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
 
     /**
      * Constructs a {@link ProductReferenceEditor}.
@@ -79,6 +82,7 @@ public class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Prod
         super(property, editor.getParent(), new DefaultLayoutContext(context,
                                                                      context.getHelpContext().topic("product")));
         this.editor = editor;
+        service = ServiceHelper.getArchetypeService();
     }
 
     /**
@@ -223,17 +227,14 @@ public class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Prod
      * @param product the product
      */
     private void checkSupplier(final Product product) {
-        SupplierRules rules = new SupplierRules(ServiceHelper.getArchetypeService());
+        SupplierRules rules = ServiceHelper.getBean(SupplierRules.class);
         Entity otherSupplier;
 
-        if (!rules.isSuppliedBy(editor.getSupplier(), product)
-            && (otherSupplier = getSupplier(product)) != null) {
+        if (!rules.isSuppliedBy(editor.getSupplier(), product) && (otherSupplier = getSupplier(product)) != null) {
             String title = Messages.get("product.othersupplier.title");
-            String message = Messages.format("product.othersupplier.message",
-                                             product.getName(),
+            String message = Messages.format("product.othersupplier.message", product.getName(),
                                              otherSupplier.getName());
-            final ConfirmationDialog dialog
-                    = new ConfirmationDialog(title, message);
+            ConfirmationDialog dialog = new ConfirmationDialog(title, message);
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
                     if (ConfirmationDialog.OK_ID.equals(dialog.getAction())) {
@@ -258,7 +259,7 @@ public class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Prod
      * {@code false}
      */
     private boolean hasSuppliers(Product product) {
-        EntityBean bean = new EntityBean(product);
+        IMObjectBean bean = service.getBean(product);
         return bean.hasNode("suppliers");
     }
 
@@ -269,8 +270,8 @@ public class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Prod
      * @return the supplier, or {@code null} if none is found
      */
     private Entity getSupplier(Product product) {
-        EntityBean bean = new EntityBean(product);
-        return bean.getNodeTargetEntity("suppliers");
+        IMObjectBean bean = service.getBean(product);
+        return bean.getTarget("suppliers", Entity.class, Policies.active());
     }
 
     /**
@@ -296,8 +297,8 @@ public class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Prod
             String title = Messages.get("product.supplier.type");
             LayoutContext context = new DefaultLayoutContext(getLayoutContext());
             context.setComponentFactory(new TableComponentFactory(context));
-            final Browser<EntityLink> browser = new ProductSupplierBrowser(query, context);
-            final BrowserDialog<EntityLink> dialog = new BrowserDialog<>(title, browser, context.getHelpContext());
+            Browser<EntityLink> browser = BrowserFactory.create(query, context);
+            BrowserDialog<EntityLink> dialog = new BrowserDialog<>(title, browser, context.getHelpContext());
 
             dialog.addWindowPaneListener(new WindowPaneListener() {
                 public void onClose(WindowPaneEvent event) {
@@ -343,37 +344,9 @@ public class ProductReferenceEditor extends AbstractIMObjectReferenceEditor<Prod
      * @return the active relationships
      */
     private List<EntityLink> getSupplierRelationships(Product product) {
-        EntityBean bean = new EntityBean(product);
+        IMObjectBean bean = service.getBean(product);
         Party supplier = editor.getSupplier();
-        Predicate predicate = new AndPredicate(IsActiveRelationship.isActiveNow(), RefEquals.getTargetEquals(supplier));
-        return bean.getValues("suppliers", predicate, EntityLink.class);
-    }
-
-    /**
-     * Browser to display a product supplier relationships.
-     */
-    private static class ProductSupplierBrowser
-            extends AbstractQueryBrowser<EntityLink> {
-
-        /**
-         * Constructs a ProductSupplierBrowser that queries objects using the specified query, displaying them in the
-         * table.
-         *
-         * @param query   the query
-         * @param context the layout context
-         */
-        public ProductSupplierBrowser(Query<EntityLink> query, LayoutContext context) {
-            super(query, null, new ProductSupplierTableModel(query.getShortNames(), context, true), context);
-        }
-
-        /**
-         * Lays out this component.
-         *
-         * @param container the container
-         */
-        @Override
-        protected void doLayout(Component container) {
-            // no-op
-        }
+        return bean.getValues("suppliers", EntityLink.class,
+                              Predicates.<EntityLink>activeNow().and(Predicates.targetEquals(supplier)));
     }
 }

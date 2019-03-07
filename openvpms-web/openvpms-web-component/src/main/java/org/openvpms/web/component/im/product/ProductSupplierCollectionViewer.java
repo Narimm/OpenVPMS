@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
@@ -56,8 +56,7 @@ public class ProductSupplierCollectionViewer extends RelationshipCollectionViewe
     @SuppressWarnings("unchecked")
     protected IMTableModel<RelationshipState> createTableModel(
         LayoutContext context) {
-        IMTableModel model = new ProductSupplierTableModel(
-            getProperty().getArchetypeRange(), context, parentIsSource());
+        IMTableModel model = new ProductSupplierTableModel(getProperty().getArchetypeRange(), context);
         return new DelegatingRelationshipStateTableModel(model, context);
     }
 }

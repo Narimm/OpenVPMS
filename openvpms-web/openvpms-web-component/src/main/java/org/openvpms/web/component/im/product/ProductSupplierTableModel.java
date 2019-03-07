@@ -11,14 +11,18 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.product;
 
 import org.openvpms.component.business.domain.im.common.EntityLink;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.relationship.RelationshipDescriptorTableModel;
+import org.openvpms.web.component.im.table.DescriptorTableColumn;
+import org.openvpms.web.system.ServiceHelper;
 
 
 /**
@@ -27,6 +31,11 @@ import org.openvpms.web.component.im.relationship.RelationshipDescriptorTableMod
  * @author Tim Anderson
  */
 public class ProductSupplierTableModel extends RelationshipDescriptorTableModel<EntityLink> {
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
 
     /**
      * The nodes to include in the table.
@@ -39,12 +48,36 @@ public class ProductSupplierTableModel extends RelationshipDescriptorTableModel<
      * <p/>
      * Enables selection if the context is in edit mode.
      *
-     * @param shortNames    the archetype short names
-     * @param context       the layout context
-     * @param displayTarget if {@code true} display the target node, otherwise display the source node
+     * @param shortNames the archetype short names
+     * @param context    the layout context
      */
-    public ProductSupplierTableModel(String[] shortNames, LayoutContext context, boolean displayTarget) {
-        super(shortNames, context, displayTarget);
+    public ProductSupplierTableModel(String[] shortNames, LayoutContext context) {
+        super(shortNames, context, true);
+        service = ServiceHelper.getArchetypeService();
+    }
+
+    /**
+     * Returns a value for a given column.
+     *
+     * @param object the object to operate on
+     * @param column the column
+     * @param row    the row
+     * @return the value for the column
+     */
+    @Override
+    protected Object getValue(EntityLink object, DescriptorTableColumn column, int row) {
+        Object result;
+        if ("description".equals(column.getName())) {
+            // render the reorder description if present, falling back to the reorder code if there is none.
+            IMObjectBean bean = service.getBean(object);
+            result = bean.getString("reorderDescription");
+            if (result == null) {
+                result = bean.getString("reorderCode");
+            }
+        } else {
+            result = super.getValue(object, column, row);
+        }
+        return result;
     }
 
     /**
