@@ -11,16 +11,14 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
     <archetype name="product.medication.1.0" latest="true"
                type="org.openvpms.component.business.domain.im.product.Product" displayName="Medication">
         <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
-        <node name="name" path="/name" type="java.lang.String" minCardinality="1" maxLength="100">
-            <assertion name="propercase"/>
-        </node>
+        <node name="name" path="/name" type="java.lang.String" minCardinality="1" maxLength="100"/>
         <node name="description" type="java.lang.String" path="/description" minCardinality="0"/>
         <node name="printedName" path="/details/printedName" type="java.lang.String" minCardinality="0"/>
         <node name="drugSchedule" path="/details/drugSchedule" type="java.lang.String" minCardinality="0">
