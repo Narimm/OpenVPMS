@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.table;
@@ -131,6 +131,18 @@ public class IMObjectTableModelFactory {
             result = new DefaultDescriptorTableModel<>(shortNames, context);
         }
         return result;
+    }
+
+    /**
+     * Determines if there is a model for the specified archetypes implementing the specified type.
+     *
+     * @param archetypes the archetypes
+     * @param type       the table model type
+     * @return {@code true} if a model exists
+     */
+    public static boolean hasModel(String[] archetypes, Class<? extends IMObjectTableModel> type) {
+        ArchetypeHandler handler = getTableModels().getHandler(archetypes);
+        return (handler != null && type.isAssignableFrom(handler.getType()));
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -24,6 +24,8 @@ import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.view.IMTableCollectionViewer;
 import org.openvpms.web.component.property.CollectionProperty;
@@ -107,6 +109,12 @@ public class RelationshipCollectionViewer extends IMTableCollectionViewer<Relati
      * @return a new table model
      */
     protected IMTableModel<RelationshipState> createTableModel(LayoutContext context) {
+        String[] archetypes = getProperty().getArchetypeRange();
+        if (IMObjectTableModelFactory.hasModel(archetypes, RelationshipDescriptorTableModel.class)) {
+            // delegate to a RelationshipDescriptorTableModel if one is present for the archetypes
+            IMObjectTableModel<IMObjectRelationship> model = IMObjectTableModelFactory.create(archetypes, context);
+            return new DelegatingRelationshipStateTableModel(model, context);
+        }
         return new RelationshipStateTableModel(context, parentIsSource);
     }
 

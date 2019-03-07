@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -20,11 +20,17 @@ import nextapp.echo2.app.CheckBox;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectRelationship;
+import org.openvpms.web.component.im.edit.IMObjectEditor;
 import org.openvpms.web.component.im.edit.IMTableCollectionEditor;
+import org.openvpms.web.component.im.layout.DefaultLayoutContext;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.ResultSet;
+import org.openvpms.web.component.im.table.IMObjectTableModel;
+import org.openvpms.web.component.im.table.IMObjectTableModelFactory;
 import org.openvpms.web.component.im.table.IMTableModel;
 import org.openvpms.web.component.im.table.PagedIMTable;
+import org.openvpms.web.component.im.view.TableComponentFactory;
+import org.openvpms.web.component.property.Property;
 import org.openvpms.web.echo.button.ButtonRow;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.CheckBoxFactory;
@@ -38,17 +44,22 @@ import java.util.List;
 
 /**
  * Editor for collections of {@link IMObjectRelationship}s.
+ * <p/>
+ * This ensures that if a relationship has a 'default' node name, only one relationship may be selected as default.
  *
  * @author Tim Anderson
  */
-public class RelationshipCollectionEditor
-        extends IMTableCollectionEditor<RelationshipState> {
+public class RelationshipCollectionEditor extends IMTableCollectionEditor<RelationshipState> {
 
     /**
      * Determines if inactive relationships should be displayed.
      */
     private CheckBox hideInactive;
 
+    /**
+     * Default relationship node name.
+     */
+    private static final String DEFAULT = "default";
 
     /**
      * Constructs a {@link RelationshipCollectionEditor}.
@@ -70,6 +81,16 @@ public class RelationshipCollectionEditor
      */
     protected IMTableModel<RelationshipState> createTableModel(LayoutContext context) {
         RelationshipCollectionPropertyEditor editor = getCollectionPropertyEditor();
+        String[] archetypes = editor.getArchetypeRange();
+        if (IMObjectTableModelFactory.hasModel(archetypes, RelationshipDescriptorTableModel.class)) {
+            // delegate to a RelationshipDescriptorTableModel if one is present for the archetypes
+            if (!(context.getComponentFactory() instanceof TableComponentFactory)) {
+                context = new DefaultLayoutContext(context);
+                context.setComponentFactory(new TableComponentFactory(context));
+            }
+            IMObjectTableModel<IMObjectRelationship> model = IMObjectTableModelFactory.create(archetypes, context);
+            return new DelegatingRelationshipStateTableModel(model, context);
+        }
         return new RelationshipStateTableModel(context, editor.parentIsSource());
     }
 
@@ -137,7 +158,7 @@ public class RelationshipCollectionEditor
      */
     protected ResultSet<RelationshipState> createResultSet() {
         RelationshipCollectionPropertyEditor editor = getCollectionPropertyEditor();
-        List<RelationshipState> relationships = new ArrayList<RelationshipState>(editor.getRelationships());
+        List<RelationshipState> relationships = new ArrayList<>(editor.getRelationships());
         return new RelationshipStateResultSet(relationships, ROWS);
     }
 
@@ -174,6 +195,38 @@ public class RelationshipCollectionEditor
     }
 
     /**
+     * Invoked when the current editor is modified.
+     */
+    @Override
+    protected void onCurrentEditorModified() {
+        IMObjectEditor currentEditor = getCurrentEditor();
+        if (currentEditor != null) {
+            updateDefaults(currentEditor);
+        }
+        super.onCurrentEditorModified();
+    }
+
+    /**
+     * Ensures that if the current object is specified as a default, no other object is.
+     *
+     * @param currentEditor the current editor
+     */
+    protected void updateDefaults(IMObjectEditor currentEditor) {
+        IMObject current = currentEditor.getObject();
+        Property property = currentEditor.getProperty(DEFAULT);
+        if (property != null && property.getBoolean()) {
+            for (IMObject object : getCurrentObjects()) {
+                if (!current.equals(object)) {
+                    IMObjectEditor editor = getEditor(object);
+                    if (editor != null) {
+                        editor.getProperty(DEFAULT).setValue(false);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Invoked when the 'hide inactive' checkbox changes.
      */
     private void onHideInactiveChanged() {
@@ -187,5 +240,4 @@ public class RelationshipCollectionEditor
 
         refresh();
     }
-
 }

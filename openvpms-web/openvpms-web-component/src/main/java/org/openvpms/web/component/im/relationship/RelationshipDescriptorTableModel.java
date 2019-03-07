@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.relationship;
@@ -71,9 +71,8 @@ public class RelationshipDescriptorTableModel<T extends IMObjectRelationship> ex
     /**
      * Returns the node names for a set of archetypes.
      * <p/>
-     * This is prepended by the <em>source</em> or <em>target</em> node,
-     * depending on the value of the {@link #displayTarget} parameter passed at
-     * construction.
+     * This is prepended by the <em>source</em> or <em>target</em> node, depending on the value of the
+     * {@link #displayTarget} parameter passed at construction.
      *
      * @param archetypes the archetype descriptors
      * @param context    the layout context
@@ -81,7 +80,9 @@ public class RelationshipDescriptorTableModel<T extends IMObjectRelationship> ex
      */
     @Override
     protected List<String> getNodeNames(List<ArchetypeDescriptor> archetypes, LayoutContext context) {
-        List<String> result = new ArrayList<String>(super.getNodeNames(archetypes, context));
+        List<String> result = new ArrayList<>(super.getNodeNames(archetypes, context));
+        result.remove("target");
+        result.remove("source");
         String entity = (displayTarget) ? "target" : "source";
         result.add(0, entity);
         return result;

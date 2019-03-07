@@ -17,6 +17,7 @@
 package org.openvpms.web.workspace.workflow.checkin;
 
 import org.apache.commons.lang.StringUtils;
+import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
@@ -239,6 +240,28 @@ class TaskPanel {
                 schedule = null;
             }
             initWorkListEditor();
+        }
+
+        /**
+         * Returns a default work list.
+         * <p/>
+         * This returns the default work list associated with the schedule, if check-in was launched from an
+         * appointment and the schedule has {@code useAllWorkLists = true}.
+         *
+         * @return a default work list, or {@code null} if there is no default
+         */
+        @Override
+        protected Entity getDefaultWorkList() {
+            Entity result = null;
+            if (schedule != null) {
+                IMObjectBean bean = getBean(schedule);
+                boolean useAllWorkLists = bean.getBoolean("useAllWorkLists", true);
+                if (!useAllWorkLists) {
+                    IArchetypeService service = ServiceHelper.getArchetypeService();
+                    result = EntityRelationshipHelper.getDefaultTarget(schedule, "workLists", false, service);
+                }
+            }
+            return result;
         }
 
         /**
