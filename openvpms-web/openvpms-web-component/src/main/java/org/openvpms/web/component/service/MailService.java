@@ -11,13 +11,14 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.service;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.DateUtils;
 import org.openvpms.archetype.rules.practice.MailServer;
 import org.springframework.mail.MailAuthenticationException;
 import org.springframework.mail.MailException;
@@ -63,14 +64,10 @@ public abstract class MailService implements JavaMailSender {
     private boolean debugAuth = false;
 
     /**
-     * The connection timeout, or {@code 0} to use the default timeout.
+     * The connection timeout in milliseconds, or {@code 0} to use the timeout specified by the
+     * {@link MailServer#getTimeout()}.
      */
     private long connectionTimout = 0;
-
-    /**
-     * The timeout, or {@code 0} to use the default timeout.
-     */
-    private long timeout = 0;
 
     /**
      * Property name for STARTTLS flag.
@@ -78,14 +75,27 @@ public abstract class MailService implements JavaMailSender {
     private static final String MAIL_SMTP_STARTTLS_ENABLE = "mail.smtp.starttls.enable";
 
     /**
-     * Property name for the connection timeout.
+     * Property name for the connection timeout. From the JavaMail docs:<br/>
+     * Socket connection timeout value in milliseconds. This timeout is implemented by java.net.Socket.
+     * Default is infinite timeout.
      */
-    private static final String NAIL_SMTP_CONNECTION_TIMEOUT = "mail.smtp.connectiontimeout";
+    private static final String MAIL_SMTP_CONNECTION_TIMEOUT = "mail.smtp.connectiontimeout";
 
     /**
-     * Property name for the timeout.
+     * Property name for the read timeout. From the JavaMail docs:<br/>
+     * Socket read timeout value in milliseconds. This timeout is implemented by java.net.Socket.
+     * Default is infinite timeout.
      */
-    private static final String NAIL_SMTP_TIMEOUT = "mail.smtp.timeout";
+    private static final String MAIL_SMTP_READ_TIMEOUT = "mail.smtp.timeout";
+
+    /**
+     * Property name for the write timeout. From the JavaMail docs:<br/>
+     * Socket write timeout value in milliseconds. This timeout is implemented by using a
+     * java.util.concurrent.ScheduledExecutorService per connection that schedules a thread to close the socket if the
+     * timeout expires. Thus, the overhead of using this timeout is one thread per connection.
+     * Default is infinite timeout.
+     */
+    private static final String MAIL_SMTP_WRITE_TIMEOUT = "mail.smtp.writetimeout";
 
     /**
      * Property name for authentication flag.
@@ -221,22 +231,15 @@ public abstract class MailService implements JavaMailSender {
      * Sets the timeout for establishing an SMTP connection.
      * <p>
      * This corresponds to the <em>mail.smtp.connectiontimeout</em> property.
-     *
-     * @param timeout the timeout, in seconds. Use {@code <= 0} for the default timeout
-     */
-    public void setConnectionTimeout(long timeout) {
-        this.connectionTimout = timeout * 1000;
-    }
-
-    /**
-     * Sets the timeout for sending a message.
      * <p>
-     * This corresponds to the <em>mail.smtp.timeout</em> property.
+     * If not specified, this defaults to the {@link MailServer#getTimeout()} property.
+     * <p/>
+     * This is provided to enable a shorter connection timeout to be set than the timeout for sending a message.
      *
      * @param timeout the timeout, in seconds. Use {@code <= 0} for the default timeout
      */
-    public void setTimeout(long timeout) {
-        this.timeout = timeout * 1000;
+    public void setConnectionTimeout(int timeout) {
+        this.connectionTimout = toMillis(timeout);
     }
 
     /**
@@ -310,11 +313,19 @@ public abstract class MailService implements JavaMailSender {
         }
         properties.setProperty(MAIL_DEBUG, Boolean.toString(debug));
         properties.setProperty(MAIL_DEBUG_AUTH, Boolean.toString(debugAuth));
-        if (connectionTimout > 0) {
-            properties.setProperty(NAIL_SMTP_CONNECTION_TIMEOUT, Long.toString(connectionTimout));
+        long timeout = toMillis(settings.getTimeout());
+        long connect = (connectionTimout > 0) ? connectionTimout : timeout;
+        if (connect > 0) {
+            properties.setProperty(MAIL_SMTP_CONNECTION_TIMEOUT, Long.toString(connect));
         }
         if (timeout > 0) {
-            properties.setProperty(NAIL_SMTP_TIMEOUT, Long.toString(timeout));
+            // use the timeout to set both the read and write timeouts. The latter starts a thread  in order to
+            // terminate the connection when the timeout expires.
+            // NOTE that this does not represent the maximum amount of time allowed to send a message. It determines
+            // how long individual socket reads or writes may take.
+            String value = Long.toString(timeout);
+            properties.setProperty(MAIL_SMTP_READ_TIMEOUT, value);
+            properties.setProperty(MAIL_SMTP_WRITE_TIMEOUT, value);
         }
         return result;
     }
@@ -338,6 +349,16 @@ public abstract class MailService implements JavaMailSender {
      * @return the settings, or {@code null} if none is configured
      */
     protected abstract MailServer getMailServer();
+
+    /**
+     * Converts seconds to milliseconds.
+     *
+     * @param seconds the seconds
+     * @return the corresponding millseconds
+     */
+    private long toMillis(int seconds) {
+        return seconds * DateUtils.MILLIS_PER_SECOND;
+    }
 
     /**
      * Register the sender and settings used to configure it.

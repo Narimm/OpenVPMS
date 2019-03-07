@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.practice;
@@ -64,6 +64,11 @@ public class MailServer {
     private final Security security;
 
     /**
+     * The send timeout, in seconds, or 0 to use the default timeout.
+     */
+    private final int timeout;
+
+    /**
      * The settings identifier.
      */
     private long id;
@@ -82,6 +87,7 @@ public class MailServer {
         username = StringUtils.trimToNull(bean.getString("username"));
         password = StringUtils.trimToNull(bean.getString("password"));
         security = getSecurity(bean.getString("security"));
+        timeout = bean.getInt("timeout");
     }
 
     /**
@@ -139,10 +145,19 @@ public class MailServer {
     }
 
     /**
+     * Returns the send timeout.
+     *
+     * @return the send timeout in seconds, or {@code 0} to use the default timeout
+     */
+    public int getTimeout() {
+        return timeout;
+    }
+
+    /**
      * Indicates whether some other object is "equal to" this one.
      * <p>
      * Equality is determined by the {@code host}, {@code port}, {@code username}, {@code password},
-     * and {@code security}.<br/>
+     * {@code security} and {@code timeout}.<br/>
      * The {@code id} is not considered.
      *
      * @param obj the reference object with which to compare.
@@ -158,7 +173,8 @@ public class MailServer {
             return port == other.port && StringUtils.equals(host, other.host)
                    && StringUtils.equals(username, other.username)
                    && StringUtils.equals(password, other.password)
-                   && security == other.security;
+                   && security == other.security
+                   && timeout == other.timeout;
         }
         return false;
     }
@@ -171,7 +187,7 @@ public class MailServer {
     @Override
     public int hashCode() {
         HashCodeBuilder builder = new HashCodeBuilder().append(host).append(port).append(username).append(password)
-                .append(security);
+                .append(security).append(timeout);
         return builder.toHashCode();
     }
 

@@ -44,11 +44,9 @@
         <constructor-arg ref="practiceService"/>
         <constructor-arg ref="locationRules"/>
 
-        <!-- sets the timeout for establishing a connection, in seconds. Use 0 for the default timeout -->
+        <!-- Sets the timeout for establishing a connection, in seconds.   -->
+        <!-- Use 0 to use the timeout from the entity.mailServer settings. -->
         <property name="connectionTimeout" value="20"/>
-
-        <!-- sets the timeout for sending a message, in seconds. Use 0 for the default timeout -->
-        <property name="timeout" value="60"/>
 
         <!-- Set the following to "true" to turn on JavaMail debugging output -->
         <!-- The debugAuth flag includes protocol authentication commands in  -->

@@ -11,7 +11,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <archetypes>
@@ -22,7 +22,11 @@
         <node name="description" type="java.lang.String" path="/description"/>
         <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
         <node name="host" path="/details/host" type="java.lang.String" minCardinality="1"/>
-        <node name="port" path="/details/port" type="java.lang.Integer" minCardinality="1" defaultValue="25"/>
+        <node name="port" path="/details/port" type="java.lang.Integer" minCardinality="1" defaultValue="25">
+            <assertion name="positive">
+                <errorMessage>Value must be &gt; 0</errorMessage>
+            </assertion>
+        </node>
         <node name="username" path="/details/username" type="java.lang.String" minCardinality="0"/>
         <node name="password" path="/details/password" type="java.lang.String" minCardinality="0">
             <assertion name="password"/>
@@ -34,6 +38,12 @@
                     <property name="STARTTLS" value="STARTTLS"/>
                     <property name="SSL_TLS" value="SSL/TLS"/>
                 </propertyList>
+            </assertion>
+        </node>
+        <node name="timeout" displayName="Timeout (seconds)" path="/details/timeout" type="java.lang.Integer"
+              minCardinality="0" defaultValue="120">
+            <assertion name="nonNegative">
+                <errorMessage>Value must be &gt;= 0</errorMessage>
             </assertion>
         </node>
     </archetype>

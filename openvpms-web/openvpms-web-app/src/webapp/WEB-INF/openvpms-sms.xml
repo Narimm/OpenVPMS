@@ -12,7 +12,7 @@
   ~ for the specific language governing rights and limitations under the
   ~ License.
   ~
-  ~ Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+  ~ Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
   -->
 
 <beans xmlns="http://www.springframework.org/schema/beans"
@@ -31,11 +31,9 @@
     <bean id="practiceMailService" class="org.openvpms.web.component.service.PracticeMailService">
         <constructor-arg ref="practiceService"/>
 
-        <!-- sets the timeout for establishing a connection, in seconds. Use 0 for the default timeout -->
+        <!-- Sets the timeout for establishing a connection, in seconds.   -->
+        <!-- Use 0 to use the timeout from the entity.mailServer settings. -->
         <property name="connectionTimeout" value="20"/>
-
-        <!-- sets the timeout for sending a message, in seconds. Use 0 for the default timeout -->
-        <property name="timeout" value="60"/>
 
         <!-- Set the following to "true" to turn on JavaMail debugging output -->
         <!-- The debugAuth flag includes protocol authentication commands in  -->
