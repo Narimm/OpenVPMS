@@ -11,13 +11,16 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.property;
 
-import java.util.Arrays;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,9 +33,26 @@ import java.util.Map;
 public abstract class AbstractValidator implements Validator {
 
     /**
+     * Determines if debug is enabled.
+     */
+    private final boolean debug = log.isDebugEnabled();
+
+    /**
      * Modifiable instances with their corresponding errors.
      */
-    private Map<Modifiable, List<ValidatorError>> errors = new HashMap<Modifiable, List<ValidatorError>>();
+    private Map<Modifiable, List<ValidatorError>> errors = new HashMap<>();
+
+    /**
+     * The logger.
+     */
+    private static final Logger log = LoggerFactory.getLogger(AbstractValidator.class);
+
+    /**
+     * Default constructor.
+     */
+    protected AbstractValidator() {
+        super();
+    }
 
     /**
      * Validates an object.
@@ -54,7 +74,7 @@ public abstract class AbstractValidator implements Validator {
      */
     @Override
     public void add(Modifiable modifiable, ValidatorError error) {
-        List<ValidatorError> errors = Arrays.asList(error);
+        List<ValidatorError> errors = Collections.singletonList(error);
         add(modifiable, errors);
     }
 
@@ -68,6 +88,14 @@ public abstract class AbstractValidator implements Validator {
     @Override
     public void add(Modifiable modifiable, List<ValidatorError> errors) {
         if (!errors.isEmpty()) {
+            if (debug && this.errors.isEmpty()) {
+                // log the first error
+                try {
+                    log.debug(errors.get(0).toString());
+                } catch (Throwable exception) {
+                    log.debug("Failed to format validation error: " + exception.getMessage(), exception);
+                }
+            }
             this.errors.put(modifiable, errors);
         }
     }
