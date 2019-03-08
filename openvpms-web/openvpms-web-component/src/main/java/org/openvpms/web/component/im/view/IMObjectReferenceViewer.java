@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -51,6 +51,11 @@ public class IMObjectReferenceViewer {
      * The name.
      */
     private final String name;
+
+    /**
+     * The tool tip text.
+     */
+    private final String tooltip;
 
     /**
      * The listener to invoke if the hyperlink is selected. May be {@code null}
@@ -121,8 +126,23 @@ public class IMObjectReferenceViewer {
      * @param context   the context
      */
     public IMObjectReferenceViewer(Reference reference, String name, ContextSwitchListener listener, Context context) {
+        this(reference, name, null, listener, context);
+    }
+
+    /**
+     * Constructs a {@link IMObjectReferenceViewer}.
+     *
+     * @param reference the reference to view. May be {@code null}
+     * @param name      the object name. May be {@code null}
+     * @param tooltip   the tool tip text. May be {@code null}
+     * @param listener  the listener to notify. May be {@code null}
+     * @param context   the context
+     */
+    public IMObjectReferenceViewer(Reference reference, String name, String tooltip, ContextSwitchListener listener,
+                                   Context context) {
         this.reference = reference;
         this.name = name;
+        this.tooltip = tooltip;
         this.listener = listener;
         if (listener != null) {
             linkListener = new ActionListener() {
@@ -136,18 +156,33 @@ public class IMObjectReferenceViewer {
         this.context = context;
     }
 
-
     /**
-     * Constructs a {@link IMObjectReferenceViewer} that invokes an action listenerwhen the reference is selected.
+     * Constructs a {@link IMObjectReferenceViewer} that invokes an action listener when the reference is selected.
      *
      * @param reference the reference to view. May be {@code null}
      * @param name      the object name. May be {@code null}
      * @param listener  the listener to notify. May be {@code null}
      * @param context   the context
      */
-    public IMObjectReferenceViewer(Reference reference, String name, final ActionListener listener, Context context) {
+    public IMObjectReferenceViewer(Reference reference, String name, ActionListener listener,
+                                   Context context) {
+        this(reference, name, null, listener, context);
+    }
+
+    /**
+     * Constructs a {@link IMObjectReferenceViewer} that invokes an action listener when the reference is selected.
+     *
+     * @param reference the reference to view. May be {@code null}
+     * @param name      the object name. May be {@code null}
+     * @param tooltip   the tool tip text. May be {@code null}
+     * @param listener  the listener to notify. May be {@code null}
+     * @param context   the context
+     */
+    public IMObjectReferenceViewer(Reference reference, String name, String tooltip, ActionListener listener,
+                                   Context context) {
         this.reference = reference;
         this.name = name;
+        this.tooltip = tooltip;
         this.listener = null;
         this.linkListener = new ActionListener() {
             public void onAction(ActionEvent event) {
@@ -192,6 +227,9 @@ public class IMObjectReferenceViewer {
                 button.setText(text);
                 button.addActionListener(linkListener);
                 button.setFocusTraversalParticipant(false);
+                if (tooltip != null) {
+                    button.setToolTipText(tooltip);
+                }
                 if (width != -1) {
                     button.setWidth(new Extent(width));
                     result = button;
@@ -263,6 +301,9 @@ public class IMObjectReferenceViewer {
         }
         result.setStyleName(style != null ? style : Styles.DEFAULT);
         result.setText(text);
+        if (tooltip != null) {
+            result.setToolTipText(tooltip);
+        }
         return result;
     }
 }

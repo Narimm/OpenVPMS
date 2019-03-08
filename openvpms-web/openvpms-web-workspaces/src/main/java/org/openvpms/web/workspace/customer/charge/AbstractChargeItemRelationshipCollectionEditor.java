@@ -128,7 +128,9 @@ public abstract class AbstractChargeItemRelationshipCollectionEditor extends Act
     @SuppressWarnings("unchecked")
     protected IMTableModel<IMObject> createTableModel(LayoutContext context) {
         context = new DefaultLayoutContext(context);
-        context.setComponentFactory(new TableComponentFactory(context));
+        TableComponentFactory factory = new TableComponentFactory(context);
+        factory.setTruncateLongText(true);
+        context.setComponentFactory(factory);
         ChargeItemTableModel model = createChargeItemTableModel(context);
         model.getRowMarkModel().addListener(new ListMarkModel.Listener() {
             @Override

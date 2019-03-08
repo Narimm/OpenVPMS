@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -21,10 +21,10 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import org.apache.commons.io.FilenameUtils;
 import org.openvpms.archetype.rules.doc.DocumentException;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.report.openoffice.Converter;
 import org.openvpms.report.openoffice.OpenOfficeException;
 import org.openvpms.web.echo.servlet.DownloadServlet;
@@ -146,7 +146,7 @@ public abstract class Downloader {
      * @throws DocumentException         if the document can't be found
      * @throws OpenOfficeException       if the document cannot be converted
      */
-    protected Document getDocumentByRef(IMObjectReference reference, String mimeType) {
+    protected Document getDocumentByRef(Reference reference, String mimeType) {
         IArchetypeService service = ServiceHelper.getArchetypeService();
         Document result = (Document) service.get(reference);
         if (result == null) {

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -21,49 +21,47 @@ import nextapp.echo2.app.Button;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.event.ActionEvent;
 import org.openvpms.archetype.rules.doc.DocumentException;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.report.openoffice.OpenOfficeException;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
 
 
 /**
- * Downloads a document given its a {@link IMObjectReference}.
- * *
+ * Downloads a document given its a {@link Reference}.
  *
- * @author <a href="mailto:support@openvpms.org">OpenVPMS Team</a>
- * @version $LastChangedDate: 2006-05-02 05:16:31Z $
+ * @author Tim Anderson
  */
 public class DocumentRefDownloader extends Downloader {
 
     /**
      * The document reference.
      */
-    private final IMObjectReference reference;
+    private final Reference reference;
 
     /**
-     * The document name. May be <tt>null</tt>
+     * The document name. May be {@code null}
      */
     private final String name;
 
     /**
-     * Constructs a <tt>DocumentRefDownloader</tt>.
+     * Constructs a {@link DocumentRefDownloader}.
      *
      * @param reference the document reference
      */
-    public DocumentRefDownloader(IMObjectReference reference) {
+    public DocumentRefDownloader(Reference reference) {
         this(reference, null);
     }
 
     /**
-     * Constructs a <tt>DocumentRefDownloader</tt>.
+     * Constructs a {@link DocumentRefDownloader}.
      *
      * @param reference the document reference
-     * @param name      the document name. May be <tt>null</tt>
+     * @param name      the document name. May be {@code null}
      */
-    public DocumentRefDownloader(IMObjectReference reference, String name) {
+    public DocumentRefDownloader(Reference reference, String name) {
         this.reference = reference;
         this.name = name;
     }
@@ -88,7 +86,7 @@ public class DocumentRefDownloader extends Downloader {
     /**
      * Returns the document for download.
      *
-     * @param mimeType the expected mime type. If <tt>null</tt>, then no conversion is required.
+     * @param mimeType the expected mime type. If {@code null}, then no conversion is required.
      * @return the document for download
      * @throws ArchetypeServiceException for any archetype service error
      * @throws DocumentException         if the document can't be found

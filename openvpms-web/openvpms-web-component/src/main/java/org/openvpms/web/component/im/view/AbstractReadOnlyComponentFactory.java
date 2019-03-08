@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -21,6 +21,7 @@ import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.component.app.ContextSwitchListener;
 import org.openvpms.web.component.im.doc.DocumentViewer;
 import org.openvpms.web.component.im.layout.IMObjectLayoutStrategy;
@@ -134,8 +135,7 @@ public abstract class AbstractReadOnlyComponentFactory extends AbstractIMObjectC
      * @param context  the context object
      * @return a component to display the property
      */
-    protected abstract Component createLookup(Property property,
-                                              IMObject context);
+    protected abstract Component createLookup(Property property, IMObject context);
 
     /**
      * Returns a viewer for an object reference.
@@ -156,10 +156,35 @@ public abstract class AbstractReadOnlyComponentFactory extends AbstractIMObjectC
         }
         String[] range = property.getArchetypeRange();
         if (TypeHelper.matches(range, "document.*")) {
-            return new DocumentViewer(ref, context, link, false, layout).getComponent();
+            return createDocumentViewer(context, ref, link, layout);
         }
 
-        return new IMObjectReferenceViewer(ref, listener, getLayoutContext().getContext()).getComponent();
+        return getObjectViewer(ref, listener, layout);
+    }
+
+    /**
+     * Creates a component to view a document.
+     *
+     * @param reference the reference to view. May be {@code null}
+     * @param listener  the listener to notify. May be {@code null}
+     * @param layout    the layout context
+     * @return a component to view the document
+     */
+    protected Component getObjectViewer(Reference reference, ContextSwitchListener listener, LayoutContext layout) {
+        return new IMObjectReferenceViewer(reference, listener, layout.getContext()).getComponent();
+    }
+
+    /**
+     * Creates a component to view a document.
+     *
+     * @param reference the reference to view
+     * @param context   the parent. May be {@code null}
+     * @param link      if {@code true} enable an hyperlink to the object
+     * @param layout    the layout context
+     * @return a component to view the document
+     */
+    protected Component createDocumentViewer(IMObject context, Reference reference, boolean link, LayoutContext layout) {
+        return new DocumentViewer(reference, context, link, false, layout).getComponent();
     }
 
     /**

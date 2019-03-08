@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.view;
@@ -81,10 +81,21 @@ public abstract class AbstractIMObjectComponentFactory
      * @return a new label
      */
     protected Label createLabel(Property property, boolean multiline) {
-        Label label = LabelFactory.create(multiline);
         String value = property.getString();
-        if (value != null) {
-            label.setText(value);
+        return createLabel(value, multiline);
+    }
+
+    /**
+     * Returns a label to display a property.
+     *
+     * @param text      the text to display. May be {@code null}
+     * @param multiline if {@code true}, interprets new lines in the text
+     * @return a new label
+     */
+    protected Label createLabel(String text, boolean multiline) {
+        Label label = LabelFactory.create(multiline);
+        if (text != null) {
+            label.setText(text);
         }
         return label;
     }

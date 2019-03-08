@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.doc;
@@ -26,10 +26,10 @@ import org.apache.commons.lang.StringUtils;
 import org.openvpms.component.business.domain.im.act.DocumentAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.event.ActionListener;
 import org.openvpms.web.echo.factory.ButtonFactory;
@@ -39,7 +39,7 @@ import org.openvpms.web.system.ServiceHelper;
 
 
 /**
- * Viewer for {@link IMObjectReference}s of type <em>document.*</em>.
+ * Viewer for {@link Reference}s of type <em>document.*</em>.
  *
  * @author Tim Anderson
  */
@@ -48,7 +48,7 @@ public class DocumentViewer {
     /**
      * The reference to view.
      */
-    private final IMObjectReference reference;
+    private final Reference reference;
 
     /**
      * The parent object. May be {@code null}
@@ -129,8 +129,7 @@ public class DocumentViewer {
      * @param template  if {@code true}, display as a template, otherwise generate the document if required
      * @param context   the layout context
      */
-    public DocumentViewer(IMObjectReference reference, IMObject parent, boolean link, boolean template,
-                          LayoutContext context) {
+    public DocumentViewer(Reference reference, IMObject parent, boolean link, boolean template, LayoutContext context) {
         this(reference, parent, null, link, template, context);
     }
 
@@ -144,7 +143,7 @@ public class DocumentViewer {
      * @param template  if {@code true}, display as a template, otherwise generate the document if required
      * @param context   the layout context
      */
-    public DocumentViewer(IMObjectReference reference, IMObject parent, String name, boolean link, boolean template,
+    public DocumentViewer(Reference reference, IMObject parent, String name, boolean link, boolean template,
                           LayoutContext context) {
         this.reference = reference;
         this.parent = parent;
@@ -153,7 +152,7 @@ public class DocumentViewer {
         } else if (parent instanceof DocumentAct) {
             this.name = ((DocumentAct) parent).getFileName();
         } else if (reference != null) {
-            this.name = DescriptorHelper.getDisplayName(reference.getArchetypeId().getShortName());
+            this.name = DescriptorHelper.getDisplayName(reference.getArchetype());
         } else {
             this.name = null;
         }
@@ -235,6 +234,19 @@ public class DocumentViewer {
     }
 
     /**
+     * Shortens long names to the specified number of characters.
+     *
+     * @param length the maximum length
+     */
+    public void setNameLength(int length) {
+        if (downloader != null) {
+            downloader.setNameLength(length);
+        } else {
+            this.nameLength = length;
+        }
+    }
+
+    /**
      * Returns a component to view an external investigation, if available.
      *
      * @param bean the act bean
@@ -264,18 +276,5 @@ public class DocumentViewer {
             }
         }
         return result;
-    }
-
-    /**
-     * Shortens long names to the specified number of characters.
-     *
-     * @param length the maximum length
-     */
-    public void setNameLength(int length) {
-        if (downloader != null) {
-            downloader.setNameLength(length);
-        } else {
-            this.nameLength = length;
-        }
     }
 }
