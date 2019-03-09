@@ -11,26 +11,27 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2013 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.esci.adapter.dispatcher.quartz;
 
 import org.openvpms.esci.adapter.dispatcher.ESCIDispatcher;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.InterruptableJob;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.quartz.StatefulJob;
 
 
 /**
  * Integrates {@link ESCIDispatcher} with Quartz so that it may be scheduled.
  * <p/>
- * This implements {@code StatefulJob} so that ESCIDispatcher won't be scheduled concurrently.
+ * This uses {@code DisallowConcurrentExecution} so that ESCIDispatcher won't be scheduled concurrently.
  *
  * @author Tim Anderson
  */
-public class ESCIDispatcherJob implements InterruptableJob, StatefulJob {
+@DisallowConcurrentExecution
+public class ESCIDispatcherJob implements InterruptableJob {
 
 
     /**

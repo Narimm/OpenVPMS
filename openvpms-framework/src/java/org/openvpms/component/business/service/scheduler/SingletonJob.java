@@ -11,15 +11,22 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.scheduler;
 
+import org.quartz.DisallowConcurrentExecution;
+
 /**
  * A marker interface for jobs to indicate that only a single instance of the job class may be run at any given time.
+ * <p/>
+ * This means that only a single configuration containing the job class can exist.
+ * <p/>
+ * Attempting to schedule multiple instances will fail.
  *
  * @author Tim Anderson
  */
+@DisallowConcurrentExecution
 public interface SingletonJob {
 }

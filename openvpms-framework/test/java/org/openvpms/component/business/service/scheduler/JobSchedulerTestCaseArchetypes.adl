@@ -1,0 +1,70 @@
+<!--
+  ~ Version: 1.0
+  ~
+  ~ The contents of this file are subject to the OpenVPMS License Version
+  ~ 1.0 (the 'License'); you may not use this file except in compliance with
+  ~ the License. You may obtain a copy of the License at
+  ~ http://www.openvpms.org/license/
+  ~
+  ~ Software distributed under the License is distributed on an 'AS IS' basis,
+  ~ WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+  ~ for the specific language governing rights and limitations under the
+  ~ License.
+  ~
+  ~ Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
+  -->
+
+<archetypes>
+    <archetype name="entity.jobTest.1.0" latest="true" type="org.openvpms.component.business.domain.im.common.Entity"
+               displayName="Test Job">
+        <node name="id" path="/id" type="java.lang.Long" readOnly="true"/>
+        <node name="name" path="/name" type="java.lang.String" minCardinality="1" maxLength="100"
+              defaultValue="'Test Job 1'"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+        <node name="class" path="/details/class" type="java.lang.String" minCardinality="1" readOnly="true"
+              hidden="true"/>
+        <node name="seconds" path="/details/seconds" type="java.lang.String" minCardinality="1" maxLength="50"
+              defaultValue="'*'"/>
+        <node name="minutes" path="/details/minutes" type="java.lang.String" minCardinality="1" maxLength="50"
+              defaultValue="'*'"/>
+        <node name="hours" path="/details/hours" type="java.lang.String" minCardinality="1" maxLength="50"
+              defaultValue="'*'"/>
+        <node name="dayOfMonth" path="/details/dayOfMonth" type="java.lang.String" minCardinality="1" maxLength="50"
+              defaultValue="'*'"/>
+        <node name="month" path="/details/month" type="java.lang.String" minCardinality="1" maxLength="50"
+              defaultValue="'*'"/>
+        <node name="dayOfWeek" path="/details/dayOfWeek" type="java.lang.String" minCardinality="1" maxLength="50"
+              defaultValue="'?'"/>
+        <node name="expression" path="/details/expression" type="java.lang.String" minCardinality="1" derived="true"
+              derivedValue="concat(/details/seconds, ' ', /details/minutes,' ', /details/hours,' ',/details/dayOfMonth,' ',/details/month,' ',/details/dayOfWeek)"
+              hidden="true"/>
+        <node name="runAs" path="/sourceEntityRelationships"
+              type="java.util.HashSet" baseName="EntityRelationship" minCardinality="1" maxCardinality="1"
+              filter="entityRelationship.jobUser"/>
+    </archetype>
+
+    <archetype name="entityRelationship.jobUser.1.0"
+               latest="true" type="org.openvpms.component.business.domain.im.common.EntityRelationship"
+               displayName="Job User">
+        <node name="source" path="/source"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1"
+              filter="entity.job*"/>
+        <node name="target" displayName="User" path="/target"
+              type="org.openvpms.component.business.domain.im.common.IMObjectReference" minCardinality="1"
+              filter="security.user"/>
+    </archetype>
+
+    <archetype name="security.user.1.0"
+               latest="true" primary="true"
+               type="org.openvpms.component.business.domain.im.security.User" displayName="User">
+        <node name="id" path="/id"
+              type="java.lang.Long"/>
+        <node name="username" path="/username" type="java.lang.String" displayName="Login Name"
+              minCardinality="1" maxLength="20"/>
+        <node name="name" path="/name" type="java.lang.String" displayName="Full Name"
+              minCardinality="1"/>
+        <node name="description" path="/description" type="java.lang.String" displayName="Description"/>
+        <node name="active" path="/active" type="java.lang.Boolean" defaultValue="true()"/>
+    </archetype>
+
+</archetypes>

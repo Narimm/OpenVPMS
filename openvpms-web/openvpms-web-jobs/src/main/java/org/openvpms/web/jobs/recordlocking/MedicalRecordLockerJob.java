@@ -29,6 +29,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.business.service.scheduler.SingletonJob;
 import org.openvpms.component.model.user.User;
 import org.openvpms.web.jobs.JobCompletionNotifier;
 import org.openvpms.web.resource.i18n.Messages;
@@ -37,7 +38,6 @@ import org.quartz.InterruptableJob;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
-import org.quartz.StatefulJob;
 import org.quartz.Trigger;
 import org.springframework.transaction.PlatformTransactionManager;
 
@@ -49,7 +49,7 @@ import java.util.Set;
  *
  * @author Tim Anderson
  */
-public class MedicalRecordLockerJob implements InterruptableJob, StatefulJob {
+public class MedicalRecordLockerJob implements InterruptableJob, SingletonJob {
 
     /**
      * The job configuration.

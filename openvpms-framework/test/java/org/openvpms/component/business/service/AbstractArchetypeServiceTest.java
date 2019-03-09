@@ -76,7 +76,7 @@ public abstract class AbstractArchetypeServiceTest extends AbstractJUnit4SpringC
      */
     protected IMObjectBean createBean(String shortName) {
         IMObject object = create(shortName);
-        return new IMObjectBean(object);
+        return new IMObjectBean(object, service);
     }
 
     /**

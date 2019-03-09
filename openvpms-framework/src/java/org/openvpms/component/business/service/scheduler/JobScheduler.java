@@ -11,23 +11,26 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.scheduler;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.archetype.AbstractArchetypeServiceListener;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.DescriptorHelper;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.exception.OpenVPMSException;
-import org.openvpms.component.system.common.query.ArchetypeQuery;
-import org.openvpms.component.system.common.query.IMObjectQueryIterator;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.entity.Entity;
+import org.openvpms.component.model.object.IMObject;
+import org.openvpms.component.query.criteria.CriteriaBuilder;
+import org.openvpms.component.query.criteria.CriteriaQuery;
+import org.openvpms.component.query.criteria.Root;
 import org.quartz.CronScheduleBuilder;
+import org.quartz.DisallowConcurrentExecution;
+import org.quartz.Job;
 import org.quartz.JobBuilder;
 import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
@@ -37,6 +40,7 @@ import org.quartz.StatefulJob;
 import org.quartz.Trigger;
 import org.quartz.TriggerBuilder;
 import org.quartz.TriggerKey;
+import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -44,16 +48,26 @@ import org.springframework.context.ApplicationContextAware;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Schedules jobs configured via <em>entity.job*</em> archetypes.
+ * <p/>
+ * By default, all jobs may run concurrently. To force a job to run sequentially either:
+ * <ul>
+ * <li>annotate the implementation class with {@link DisallowConcurrentExecution}.<br/>
+ * This prevents the same <em>entity.job*</em> being launched concurrently</li>
+ * <li>implement the {@link SingletonJob} interface.<br/>
+ * This prevents multiple <em>entity.job*</em> that use the class being launched concurrently</li>
+ * </ul>
+ * NOTE: only one <em>entity.job*</em> can use a {@link SingletonJob} implementation, as the last one to save
+ * unschedules any existing instance. On startup, the first implementation of a {@link SingletonJob} is scheduled.<br/>
+ * To avoid unexpected behaviour, prevent multiple configurations of a {@link SingletonJob} from being created.
  *
  * @author Tim Anderson
  */
-public class JobScheduler implements ApplicationContextAware, InitializingBean {
+public class JobScheduler implements ApplicationContextAware, InitializingBean, DisposableBean {
 
     /**
      * The Quartz scheduler.
@@ -66,6 +80,11 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
     private final IArchetypeService service;
 
     /**
+     * The update listener.
+     */
+    private final UpdateListener listener;
+
+    /**
      * The application context.
      */
     private ApplicationContext context;
@@ -74,17 +93,17 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      * The set of configurations pending removal. These are used to ensure that previous jobs are unscheduled if
      * their name changes.
      */
-    private Map<Long, IMObject> pending = Collections.synchronizedMap(new HashMap<Long, IMObject>());
+    private Map<Long, Entity> pending = Collections.synchronizedMap(new HashMap<>());
+
+    /**
+     * The job archetype short name prefix.
+     */
+    static final String JOB_ARCHETYPE = "entity.job*";
 
     /**
      * The logger.
      */
     private static final Log log = LogFactory.getLog(JobScheduler.class);
-
-    /**
-     * The job archetype short name prefix.
-     */
-    private static final String JOB_SHORT_NAME = "entity.job*";
 
 
     /**
@@ -96,6 +115,7 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
     public JobScheduler(Scheduler scheduler, IArchetypeService service) {
         this.scheduler = scheduler;
         this.service = service;
+        listener = new UpdateListener();
     }
 
     /**
@@ -115,11 +135,16 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
     @Override
     public void afterPropertiesSet() {
         scheduleJobs();
-        String[] shortNames = DescriptorHelper.getShortNames(JOB_SHORT_NAME);
-        UpdateListener listener = new UpdateListener();
-        for (String shortName : shortNames) {
-            service.addListener(shortName, listener);
-        }
+        // NOTE: this will not pick up jobs whose archetype was loaded after the scheduler started
+        service.addListener(JOB_ARCHETYPE, listener);
+    }
+
+    /**
+     * Destroys this.
+     */
+    @Override
+    public void destroy() {
+        service.removeListener(JOB_ARCHETYPE, listener);
     }
 
     /**
@@ -128,7 +153,7 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      * @param configuration the job configuration
      * @throws SchedulerException for any error
      */
-    public void schedule(IMObject configuration) {
+    public void schedule(Entity configuration) {
         JobConfig config = getJobConfig(configuration);
         JobDetail job = config.createJobDetail(context, service);
         Trigger trigger = config.createTrigger();
@@ -151,7 +176,7 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      * @param configuration the job configuration
      * @throws SchedulerException for any error
      */
-    public void run(IMObject configuration) {
+    public void run(Entity configuration) {
         String name = getJobName(configuration);
         if (log.isInfoEnabled()) {
             log.info("Running " + configuration.getName() + " (" + configuration.getId() + ") with job name " + name);
@@ -171,7 +196,7 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      * @return the next scheduled time, or {@code null} if it is not schedule to run
      * @throws SchedulerException for any error
      */
-    public Date getNextRunTime(IMObject configuration) {
+    public Date getNextRunTime(Entity configuration) {
         Date result = null;
         try {
             String name = getJobName(configuration);
@@ -191,12 +216,15 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      * @param type the job archetype
      * @return the job configurations
      */
-    public List<IMObject> getJobs(String type) {
-        List<IMObject> result;
-        if (TypeHelper.matches(type, JOB_SHORT_NAME)) {
-            ArchetypeQuery query = new ArchetypeQuery(type, true);
-            query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
-            result = service.get(query).getResults();
+    public List<Entity> getJobs(String type) {
+        List<Entity> result;
+        if (TypeHelper.matches(type, JOB_ARCHETYPE)) {
+            CriteriaBuilder builder = service.getCriteriaBuilder();
+            CriteriaQuery<Entity> query = builder.createQuery(Entity.class);
+            Root<Entity> root = query.from(Entity.class, type);
+            query.where(builder.equal(root.get("active"), true));
+            query.orderBy(builder.asc(root.get("id")));
+            result = service.createQuery(query).getResultList();
         } else {
             result = Collections.emptyList();
         }
@@ -209,7 +237,7 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      * @param configuration the configuration
      * @return the job name
      */
-    public String getJobName(IMObject configuration) {
+    public String getJobName(Entity configuration) {
         return getJobConfig(configuration).getJobName();
     }
 
@@ -217,11 +245,10 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      * Schedules all active configured jobs.
      */
     protected void scheduleJobs() {
-        ArchetypeQuery query = new ArchetypeQuery(JOB_SHORT_NAME, true);
-        Iterator<IMObject> iterator = new IMObjectQueryIterator<>(query);
-        while (iterator.hasNext()) {
+        List<Entity> jobs = getJobs(JOB_ARCHETYPE);
+        for (Entity job : jobs) {
             try {
-                schedule(iterator.next());
+                schedule(job);
             } catch (Throwable exception) {
                 log.error(exception, exception);
             }
@@ -234,14 +261,14 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      * @param configuration the job configuration
      */
     private void unschedule(IMObject configuration) {
-        IMObject existing = pending.get(configuration.getId());
-        String name = (existing != null) ? getJobName(existing) : getJobName(configuration);
+        Entity existing = pending.get(configuration.getId());
+        String name = (existing != null) ? getJobName(existing) : getJobName((Entity) configuration);
         if (log.isInfoEnabled()) {
             log.info("Unscheduling " + name + " (" + configuration.getId() + ")");
         }
         try {
             scheduler.unscheduleJob(new TriggerKey(name));
-        } catch (org.quartz.SchedulerException exception) {
+        } catch (Throwable exception) {
             log.error(exception, exception);
         }
         pending.remove(configuration.getId());
@@ -256,7 +283,12 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
     private void onSaved(IMObject configuration) {
         unschedule(configuration);
         if (configuration.isActive()) {
-            schedule(configuration);
+            try {
+                schedule((Entity) configuration);
+            } catch (Throwable exception) {
+                log.error("Failed to schedule job " + configuration.getName() + " (" + configuration.getId() + "): "
+                          + exception.getMessage(), exception);
+            }
         }
     }
 
@@ -271,7 +303,7 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
      */
     private void addPending(IMObject configuration) {
         if (!configuration.isNew() && !pending.containsKey(configuration.getId())) {
-            IMObject original = service.get(configuration.getObjectReference());
+            Entity original = (Entity) service.get(configuration.getObjectReference());
             if (original != null) {
                 pending.put(configuration.getId(), original);
             }
@@ -299,19 +331,46 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
         return new JobConfig(configuration, service);
     }
 
+    private class UpdateListener extends AbstractArchetypeServiceListener {
+
+        @Override
+        public void save(org.openvpms.component.business.domain.im.common.IMObject object) {
+            addPending(object);
+        }
+
+        @Override
+        public void saved(org.openvpms.component.business.domain.im.common.IMObject object) {
+            onSaved(object);
+        }
+
+        @Override
+        public void remove(org.openvpms.component.business.domain.im.common.IMObject object) {
+            addPending(object);
+        }
+
+        @Override
+        public void removed(org.openvpms.component.business.domain.im.common.IMObject object) {
+            unschedule(object);
+        }
+
+        @Override
+        public void rollback(org.openvpms.component.business.domain.im.common.IMObject object) {
+            removePending(object);
+        }
+    }
+
     private static final class JobConfig {
 
         private final IMObjectBean config;
 
         private Class<?> jobClass;
 
-        public JobConfig(IMObject config, IArchetypeService service) {
-            this(new IMObjectBean(config, service));
+        JobConfig(IMObject config, IArchetypeService service) {
+            this(service.getBean(config));
         }
 
-        public JobConfig(IMObjectBean config) {
+        JobConfig(IMObjectBean config) {
             this.config = config;
-
         }
 
         /**
@@ -319,19 +378,23 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
          * <p>
          * If the job class implements {@link SingletonJob}, the returned name will be the job class name prefixed with
          * "singleton:".<br/>
-         * For all other job classes, the returned name will be the configuration name prefixed with
+         * For all other job classes, the returned name will be the configuration id and name prefixed with
          * "job:".<br/>
          * This ensures that only a single instance of a {@link SingletonJob} can ever be scheduled.
+         * <br/>
+         * The job: name includes the configuration identifier to allow two configurations with the
+         * same name to be scheduled.
          *
          * @return the job name
          */
-        public String getJobName() {
+        String getJobName() {
             String name;
             Class type = getJobClass();
             if (SingletonJob.class.isAssignableFrom(type)) {
                 name = "singleton:" + type.getName();
             } else {
-                name = "job:" + config.getObject().getName();
+                IMObject object = config.getObject();
+                name = "job:" + object.getId() + ":" + object.getName();
             }
             return name;
         }
@@ -342,7 +405,7 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
          * @return the job class
          * @throws SchedulerException for any error
          */
-        public Class<?> getJobClass() {
+        Class<?> getJobClass() {
             if (jobClass == null) {
                 try {
                     jobClass = Class.forName(config.getString("class"));
@@ -358,8 +421,20 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
          *
          * @return the runner class
          */
-        public Class getRunner() {
-            return StatefulJob.class.isAssignableFrom(getJobClass()) ? StatefulJobRunner.class : JobRunner.class;
+        Class<? extends Job> getRunner() {
+            return disallowConcurrentExecution(getJobClass()) ? StatefulJobRunner.class : JobRunner.class;
+        }
+
+        /**
+         * Determines if concurrent execution should be disallowed for a particular job.
+         *
+         * @param jobClass the job class
+         * @return {@code true} if concurrent execution should be disallowed
+         */
+        boolean disallowConcurrentExecution(Class<?> jobClass) {
+            return StatefulJob.class.isAssignableFrom(jobClass)
+                   || SingletonJob.class.isAssignableFrom(jobClass)
+                   || jobClass.getAnnotation(DisallowConcurrentExecution.class) != null;
         }
 
         /**
@@ -368,7 +443,7 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
          * @return a new {@code JobDetail}
          * @throws SchedulerException for any error
          */
-        public JobDetail createJobDetail(ApplicationContext context, IArchetypeService service) {
+        JobDetail createJobDetail(ApplicationContext context, IArchetypeService service) {
             JobDataMap map = new JobDataMap();
             map.put("Configuration", config.getObject());
             map.put("ApplicationContext", context);
@@ -383,45 +458,18 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean {
          *
          * @return a new trigger
          */
-        public Trigger createTrigger() {
+        Trigger createTrigger() {
             String jobName = getJobName();
             CronScheduleBuilder expression = CronScheduleBuilder.cronSchedule(config.getString("expression"));
             Trigger trigger;
             try {
                 TriggerBuilder<Trigger> builder = TriggerBuilder.newTrigger();
-                trigger = builder.withIdentity(jobName, Scheduler.DEFAULT_GROUP).withSchedule(expression).build();
+                trigger = builder.withIdentity(jobName, Scheduler.DEFAULT_GROUP).withSchedule(expression)
+                        .forJob(jobName).build();
             } catch (Throwable exception) {
                 throw new SchedulerException(exception);
             }
             return trigger;
-        }
-    }
-
-    private class UpdateListener extends AbstractArchetypeServiceListener {
-
-        @Override
-        public void save(IMObject object) {
-            addPending(object);
-        }
-
-        @Override
-        public void saved(IMObject object) {
-            onSaved(object);
-        }
-
-        @Override
-        public void remove(IMObject object) {
-            addPending(object);
-        }
-
-        @Override
-        public void removed(IMObject object) {
-            unschedule(object);
-        }
-
-        @Override
-        public void rollback(IMObject object) {
-            removePending(object);
         }
     }
 }

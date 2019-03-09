@@ -50,11 +50,11 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.resource.i18n.format.DateFormatter;
 import org.openvpms.web.workspace.workflow.appointment.reminder.AppointmentReminderEvaluator;
 import org.openvpms.web.workspace.workflow.appointment.reminder.AppointmentReminderException;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.InterruptableJob;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
-import org.quartz.StatefulJob;
 import org.quartz.Trigger;
 import org.quartz.UnableToInterruptJobException;
 
@@ -75,7 +75,8 @@ import java.util.TreeSet;
  *
  * @author Tim Anderson
  */
-public class AppointmentReminderJob implements InterruptableJob, StatefulJob {
+@DisallowConcurrentExecution
+public class AppointmentReminderJob implements InterruptableJob {
 
     /**
      * The job configuration.

@@ -24,6 +24,7 @@ import org.openvpms.archetype.rules.practice.PracticeService;
 import org.openvpms.archetype.rules.workflow.SystemMessageReason;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.business.service.scheduler.SingletonJob;
 import org.openvpms.component.model.act.FinancialAct;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.entity.Entity;
@@ -38,7 +39,6 @@ import org.quartz.InterruptableJob;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
-import org.quartz.StatefulJob;
 import org.quartz.Trigger;
 
 import java.util.Date;
@@ -60,7 +60,7 @@ import java.util.Set;
  *
  * @author Tim Anderson
  */
-public class PharmacyOrderDiscontinuationJob implements InterruptableJob, StatefulJob {
+public class PharmacyOrderDiscontinuationJob implements InterruptableJob, SingletonJob {
 
     /**
      * The job configuration.
@@ -269,6 +269,5 @@ public class PharmacyOrderDiscontinuationJob implements InterruptableJob, Statef
         }
         return new DateTime().minus(period).toDate();
     }
-
 
 }

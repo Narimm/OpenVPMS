@@ -37,6 +37,7 @@ import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.business.service.scheduler.SingletonJob;
 import org.openvpms.component.model.user.User;
 import org.openvpms.web.component.retry.AbstractRetryable;
 import org.openvpms.web.component.retry.Retryer;
@@ -45,7 +46,6 @@ import org.openvpms.web.resource.i18n.Messages;
 import org.quartz.InterruptableJob;
 import org.quartz.JobExecutionContext;
 import org.quartz.Scheduler;
-import org.quartz.StatefulJob;
 import org.quartz.Trigger;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
@@ -61,7 +61,7 @@ import java.util.Set;
  *
  * @author Tim Anderson
  */
-public class PatientReminderQueueJob implements InterruptableJob, StatefulJob {
+public class PatientReminderQueueJob implements InterruptableJob, SingletonJob {
 
     /**
      * The job configuration archetype.

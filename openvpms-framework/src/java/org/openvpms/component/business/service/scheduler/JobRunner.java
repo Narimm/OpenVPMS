@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.business.service.scheduler;
@@ -21,8 +21,8 @@ import org.apache.commons.logging.LogFactory;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.business.service.security.RunAs;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.quartz.InterruptableJob;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
@@ -124,13 +124,10 @@ public class JobRunner implements InterruptableJob {
         log.info("Job " + getName(configuration) + " - starting");
 
         User user = getUser();
-        Callable<Void> callable = new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                job = createJob();
-                job.execute(context);
-                return null;
-            }
+        Callable<Void> callable = () -> {
+            job = createJob();
+            job.execute(context);
+            return null;
         };
         try {
             RunAs.run(user, callable);
@@ -163,7 +160,7 @@ public class JobRunner implements InterruptableJob {
      */
     private Job createJob() throws ClassNotFoundException {
         Job result;
-        IMObjectBean bean = new IMObjectBean(configuration, service);
+        IMObjectBean bean = service.getBean(configuration);
         Class type = Class.forName(bean.getString("class"));
         DefaultListableBeanFactory factory = new DefaultListableBeanFactory(context);
         factory.registerSingleton("jobConfiguration", configuration);
@@ -183,8 +180,8 @@ public class JobRunner implements InterruptableJob {
      * @throws JobExecutionException if the user isn't configured
      */
     private User getUser() throws JobExecutionException {
-        IMObjectBean bean = new IMObjectBean(configuration, service);
-        User user = (User) bean.getNodeTargetObject("runAs");
+        IMObjectBean bean = service.getBean(configuration);
+        User user = (User) bean.getTarget("runAs");
         if (user == null) {
             throw new JobExecutionException("User not found");
         }

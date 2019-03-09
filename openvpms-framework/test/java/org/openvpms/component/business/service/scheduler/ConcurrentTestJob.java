@@ -16,13 +16,26 @@
 
 package org.openvpms.component.business.service.scheduler;
 
-import org.quartz.DisallowConcurrentExecution;
+import org.openvpms.component.model.entity.Entity;
 
 /**
- * An {@link JobRunner} that may not run concurrently with jobs of the same name.
+ * A job that can execute concurrently.
  *
  * @author Tim Anderson
  */
-@DisallowConcurrentExecution
-public class StatefulJobRunner extends JobRunner {
+class ConcurrentTestJob extends TestJob {
+
+    /**
+     * The job state.
+     */
+    public static final JobState state = new JobState();
+
+    /**
+     * Constructs a {@link ConcurrentTestJob}.
+     *
+     * @param configuration the job configuration
+     */
+    public ConcurrentTestJob(Entity configuration) {
+        super(state, configuration);
+    }
 }

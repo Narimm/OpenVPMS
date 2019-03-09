@@ -37,6 +37,7 @@ import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.rule.IArchetypeRuleService;
+import org.openvpms.component.business.service.scheduler.SingletonJob;
 import org.openvpms.component.model.user.User;
 import org.openvpms.sms.ConnectionFactory;
 import org.openvpms.web.component.im.report.ReporterFactory;
@@ -57,7 +58,6 @@ import org.openvpms.web.workspace.reporting.reminder.ReminderSMSProcessor;
 import org.quartz.InterruptableJob;
 import org.quartz.JobExecutionContext;
 import org.quartz.Scheduler;
-import org.quartz.StatefulJob;
 import org.quartz.Trigger;
 
 import java.util.Date;
@@ -68,7 +68,7 @@ import java.util.Set;
  *
  * @author Tim Anderson
  */
-public class PatientReminderSenderJob implements InterruptableJob, StatefulJob {
+public class PatientReminderSenderJob implements InterruptableJob, SingletonJob {
 
     /**
      * The job configuration.

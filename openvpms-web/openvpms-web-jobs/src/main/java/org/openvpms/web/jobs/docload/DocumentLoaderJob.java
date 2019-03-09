@@ -34,11 +34,11 @@ import org.openvpms.etl.tools.doc.LoaderListener;
 import org.openvpms.etl.tools.doc.LoggingLoaderListener;
 import org.openvpms.web.jobs.JobCompletionNotifier;
 import org.openvpms.web.resource.i18n.Messages;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.InterruptableJob;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.quartz.Scheduler;
-import org.quartz.StatefulJob;
 import org.quartz.Trigger;
 import org.quartz.UnableToInterruptJobException;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -54,7 +54,8 @@ import java.util.regex.Pattern;
  *
  * @author Tim Anderson
  */
-public class DocumentLoaderJob implements InterruptableJob, StatefulJob {
+@DisallowConcurrentExecution
+public class DocumentLoaderJob implements InterruptableJob {
 
     /**
      * The job configuration.

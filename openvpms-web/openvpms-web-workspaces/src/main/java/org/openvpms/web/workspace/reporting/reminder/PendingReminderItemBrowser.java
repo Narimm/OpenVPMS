@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.reporting.reminder;
@@ -20,8 +20,8 @@ import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
 import nextapp.echo2.app.Label;
-import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.service.scheduler.JobScheduler;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.system.common.query.ObjectSet;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.query.Browser;
@@ -86,11 +86,11 @@ class PendingReminderItemBrowser extends ReminderItemBrowser {
             super.doLayout(container, hasResults);
             if (!hasResults) {
                 JobScheduler scheduler = ServiceHelper.getBean(JobScheduler.class);
-                List<IMObject> jobs = scheduler.getJobs("entity.jobPatientReminderQueue");
+                List<Entity> jobs = scheduler.getJobs("entity.jobPatientReminderQueue");
                 if (jobs.isEmpty()) {
                     label.setText(Messages.get("reporting.reminder.send.nojob"));
                 } else {
-                    IMObject configuration = jobs.get(0);
+                    Entity configuration = jobs.get(0);
                     Date date = scheduler.getNextRunTime(configuration);
                     if (date == null) {
                         label.setText(Messages.format("reporting.reminder.send.notscheduled",
