@@ -70,6 +70,11 @@ import java.util.Map;
 public class JobScheduler implements ApplicationContextAware, InitializingBean, DisposableBean {
 
     /**
+     * The job archetype prefix.
+     */
+    public static final String JOB_ARCHETYPE = "entity.job*";
+
+    /**
      * The Quartz scheduler.
      */
     private final Scheduler scheduler;
@@ -94,11 +99,6 @@ public class JobScheduler implements ApplicationContextAware, InitializingBean, 
      * their name changes.
      */
     private Map<Long, Entity> pending = Collections.synchronizedMap(new HashMap<>());
-
-    /**
-     * The job archetype short name prefix.
-     */
-    static final String JOB_ARCHETYPE = "entity.job*";
 
     /**
      * The logger.

@@ -18,15 +18,21 @@ package org.openvpms.archetype.rules.user;
 
 import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.component.business.domain.im.common.Entity;
+import org.openvpms.component.business.domain.im.common.EntityRelationship;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.functor.SequenceComparator;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
+import org.openvpms.component.business.service.scheduler.JobScheduler;
 import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.model.lookup.Lookup;
 import org.openvpms.component.model.object.Reference;
+import org.openvpms.component.query.TypedQuery;
+import org.openvpms.component.query.criteria.CriteriaBuilder;
+import org.openvpms.component.query.criteria.CriteriaQuery;
+import org.openvpms.component.query.criteria.Root;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IArchetypeQuery;
@@ -277,6 +283,30 @@ public class UserRules {
         query.setMaxResults(ArchetypeQuery.ALL_RESULTS);
         List results = service.get(query).getResults();
         return (List<User>) results;
+    }
+
+    /**
+     * Returns the first active <em>entity.job*</em> where a user is referenced by the <em>runAs</em> or
+     * <em>notify</em> node.
+     *
+     * @param user the user
+     * @return the first active job, or {@code null} if none is found
+     */
+    public org.openvpms.component.model.entity.Entity getJobUsedBy(org.openvpms.component.model.user.User user) {
+        CriteriaBuilder builder = service.getCriteriaBuilder();
+        CriteriaQuery<Entity> query = builder.createQuery(Entity.class);
+        Root<Entity> job = query.from(Entity.class, JobScheduler.JOB_ARCHETYPE);
+        query.select(job);
+        Root<EntityRelationship> relationship = query.from(EntityRelationship.class, "entityRelationship.jobUser",
+                                                           "entityRelationship.jobUserGroup");
+        query.where(builder.equal(job.get("id"), relationship.get("source")),
+                    builder.equal(relationship.get("target"), user.getId()),
+                    builder.equal(job.get("active"), true));
+        query.orderBy(builder.asc(job.get("id")));
+        TypedQuery<Entity> typedQuery = service.createQuery(query);
+        typedQuery.setMaxResults(1);
+        List<Entity> list = typedQuery.getResultList();
+        return (!list.isEmpty()) ? list.get(0) : null;
     }
 
     /**

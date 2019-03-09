@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.user;
@@ -23,11 +23,12 @@ import org.openvpms.archetype.rules.util.EntityRelationshipHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.common.EntityRelationship;
+import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
 
 import java.util.List;
 
@@ -108,14 +109,13 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
 
 
     /**
-     * Tests the {@link UserRules#isClinician(User)} method.
+     * Tests the {@link UserRules#isClinician(org.openvpms.component.model.user.User)} method.
      */
     @Test
     public void testIsClinician() {
         User user = TestHelper.createUser();
         assertFalse(rules.isClinician(user));
-        Lookup clinicianClassification
-                = TestHelper.getLookup("lookup.userType", "CLINICIAN");
+        Lookup clinicianClassification = TestHelper.getLookup("lookup.userType", "CLINICIAN");
         user.addClassification(clinicianClassification);
         assertTrue(rules.isClinician(user));
     }
@@ -145,16 +145,16 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
     public void testGetLocationsByUserAndPractice() {
         User user = TestHelper.createUser();
         Party practice = (Party) create(PracticeArchetypes.PRACTICE);
-        IMObjectBean practiceBean = new IMObjectBean(practice);
+        IMObjectBean practiceBean = getBean(practice);
         Party location1 = TestHelper.createLocation();
         Party location2 = TestHelper.createLocation();
         Party location3 = TestHelper.createLocation();
-        practiceBean.addNodeTarget("locations", location1);
-        practiceBean.addNodeTarget("locations", location2);
+        practiceBean.addTarget("locations", location1);
+        practiceBean.addTarget("locations", location2);
 
-        EntityBean bean = new EntityBean(user);
-        bean.addNodeTarget("locations", location1);
-        bean.addNodeTarget("locations", location3);  // not linked to the practice
+        IMObjectBean bean = getBean(user);
+        bean.addTarget("locations", location1);
+        bean.addTarget("locations", location3);  // not linked to the practice
         List<Party> locations = rules.getLocations(user, practice);
         assertEquals(1, locations.size());
         assertTrue(locations.contains(location1));
@@ -249,14 +249,46 @@ public class UserRulesTestCase extends ArchetypeServiceTest {
     }
 
     /**
+     * Tests the {@link UserRules#getJobUsedBy(org.openvpms.component.model.user.User)} method
+     */
+    @Test
+    public void testGetJobUsedBy() {
+        User user1 = TestHelper.createUser();
+        User user2 = TestHelper.createUser();
+
+        assertNull(rules.getJobUsedBy(user1));
+        assertNull(rules.getJobUsedBy(user2));
+
+        IMObject job1 = create("entity.jobPharmacyOrderDiscontinuation");
+        IMObjectBean bean1 = getBean(job1);
+        bean1.addTarget("runAs", user1);
+        bean1.save();
+
+        assertEquals(job1, rules.getJobUsedBy(user1));
+
+        IMObject job2 = create("entity.jobPharmacyOrderDiscontinuation");
+        IMObjectBean bean2 = getBean(job2);
+        bean2.addTarget("runAs", user1);
+        bean2.addTarget("notify", user2);
+        bean2.save();
+
+        assertEquals(job2, rules.getJobUsedBy(user2));
+
+        // deactivate job1 and verify it is no longer returned
+        job1.setActive(false);
+        save(job1);
+        assertEquals(job2, rules.getJobUsedBy(user1));
+    }
+
+    /**
      * Adds a relationship between a party and practice location.
      *
      * @param party    the party
      * @param location the practice location
      */
     private void addLocation(Party party, Party location) {
-        IMObjectBean bean = new IMObjectBean(party);
-        bean.addNodeTarget("locations", location);
+        IMObjectBean bean = getBean(party);
+        bean.addTarget("locations", location);
         bean.save();
     }
 }

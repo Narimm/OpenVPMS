@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.delete;
@@ -25,7 +25,6 @@ import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.IMObjectEditorFactory;
 import org.openvpms.web.echo.help.HelpContext;
@@ -125,12 +124,10 @@ public class EntityDeletionHandlerTestCase extends AbstractAppTest {
 
         Entity entity = ProductTestHelper.createProductType();
         Party party = TestHelper.createCustomer(false);
-        User user = TestHelper.createClinician(false);
         Product product = TestHelper.createProduct();
 
         assertTrue(factory.create(entity) instanceof EntityDeletionHandler);
         assertTrue(factory.create(party) instanceof EntityDeletionHandler);
-        assertTrue(factory.create(user) instanceof EntityDeletionHandler);
         assertTrue(factory.create(product) instanceof EntityDeletionHandler);
     }
 

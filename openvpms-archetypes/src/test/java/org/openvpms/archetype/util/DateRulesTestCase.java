@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.archetype.util;
 
@@ -102,18 +102,27 @@ public class DateRulesTestCase {
         assertTrue(DateRules.isToday(now));
         assertFalse(DateRules.isToday(yesterday));
         assertFalse(DateRules.isToday(tomorrow));
+    }
 
-        int offsetSeconds = now.getOffset().getTotalSeconds();
-        ZoneOffset plus1 = ZoneOffset.ofTotalSeconds(offsetSeconds + 60 * 60);
-        ZoneOffset minus1 = ZoneOffset.ofTotalSeconds(offsetSeconds - 60 * 60);
+    /**
+     * Tests the {@link DateRules#isToday(OffsetDateTime)} when the supplied date is from a different timezone.
+     */
+    @Test
+    public void testIsTodayDifferentTimeZone() {
+        OffsetDateTime now = OffsetDateTime.now();
+        if (now.getHour() < 23) {  // can't test after 11pm
+            int offsetSeconds = now.getOffset().getTotalSeconds();
+            ZoneOffset plus1 = ZoneOffset.ofTotalSeconds(offsetSeconds + 60 * 60);
+            ZoneOffset minus1 = ZoneOffset.ofTotalSeconds(offsetSeconds - 60 * 60);
 
-        OffsetDateTime nowPlus1Zone = now.withOffsetSameInstant(plus1);
-        assertFalse(DateRules.isToday(nowPlus1Zone.withHour(0).truncatedTo(HOURS)));        // previous day 11pm local
-        assertTrue(DateRules.isToday(nowPlus1Zone.withHour(23).withMinute(59)));            // 10:59pm local
+            OffsetDateTime nowPlus1Zone = now.withOffsetSameInstant(plus1);
+            assertFalse(DateRules.isToday(nowPlus1Zone.withHour(0).truncatedTo(HOURS)));        // previous day 11pm local
+            assertTrue(DateRules.isToday(nowPlus1Zone.withHour(23).withMinute(59)));            // 10:59pm local
 
-        OffsetDateTime nowMinus1Zone = now.withOffsetSameInstant(minus1);
-        assertTrue(DateRules.isToday(nowMinus1Zone.withHour(0).truncatedTo(HOURS)));        // 1am local time
-        assertFalse(DateRules.isToday(nowMinus1Zone.withHour(23).withMinute(59)));          // 00:59am local tomorrow
+            OffsetDateTime nowMinus1Zone = now.withOffsetSameInstant(minus1);
+            assertTrue(DateRules.isToday(nowMinus1Zone.withHour(0).truncatedTo(HOURS)));        // 1am local time
+            assertFalse(DateRules.isToday(nowMinus1Zone.withHour(23).withMinute(59)));          // 00:59am local tomorrow
+        }
     }
 
     /**
@@ -127,18 +136,31 @@ public class DateRulesTestCase {
         assertTrue(DateRules.isTomorrow(tomorrow));
         assertFalse(DateRules.isTomorrow(now));
         assertFalse(DateRules.isTomorrow(yesterday));
+    }
 
-        int offsetSeconds = tomorrow.getOffset().getTotalSeconds();
-        ZoneOffset plus1 = ZoneOffset.ofTotalSeconds(offsetSeconds + 60 * 60);
-        ZoneOffset minus1 = ZoneOffset.ofTotalSeconds(offsetSeconds - 60 * 60);
 
-        OffsetDateTime tomPlus1Zone = tomorrow.withOffsetSameInstant(plus1);
-        assertFalse(DateRules.isTomorrow(tomPlus1Zone.withHour(0).truncatedTo(HOURS)));      // today 11pm local
-        assertTrue(DateRules.isTomorrow(tomPlus1Zone.withHour(23).withMinute(59)));          // tomorrow 10:59pm local
+    /**
+     * Tests the {@link DateRules#isTomorrow(OffsetDateTime)} method when the supplied date is from a different
+     * timezone.
+     */
+    @Test
+    public void testIsTomorrowDifferentTimeZone() {
+        OffsetDateTime now = OffsetDateTime.now();
+        if (now.getHour() < 23) {  // can't test after 11pm
+            OffsetDateTime tomorrow = now.plusDays(1);
 
-        OffsetDateTime tomMinus1Zone = tomorrow.withOffsetSameInstant(minus1);
-        assertTrue(DateRules.isTomorrow(tomMinus1Zone.withHour(0).truncatedTo(HOURS)));      // tomorrow 1am local time
-        assertFalse(DateRules.isTomorrow(tomMinus1Zone.withHour(23).withMinute(59)));        // 00:59am local following
+            int offsetSeconds = tomorrow.getOffset().getTotalSeconds();
+            ZoneOffset plus1 = ZoneOffset.ofTotalSeconds(offsetSeconds + 60 * 60);
+            ZoneOffset minus1 = ZoneOffset.ofTotalSeconds(offsetSeconds - 60 * 60);
+
+            OffsetDateTime tomPlus1Zone = tomorrow.withOffsetSameInstant(plus1);
+            assertFalse(DateRules.isTomorrow(tomPlus1Zone.withHour(0).truncatedTo(HOURS))); // today 11pm local
+            assertTrue(DateRules.isTomorrow(tomPlus1Zone.withHour(23).withMinute(59)));     // tomorrow 10:59pm local
+
+            OffsetDateTime tomMinus1Zone = tomorrow.withOffsetSameInstant(minus1);
+            assertTrue(DateRules.isTomorrow(tomMinus1Zone.withHour(0).truncatedTo(HOURS))); // tomorrow 1am local time
+            assertFalse(DateRules.isTomorrow(tomMinus1Zone.withHour(23).withMinute(59)));   // 00:59am local following
+        }
     }
 
 }

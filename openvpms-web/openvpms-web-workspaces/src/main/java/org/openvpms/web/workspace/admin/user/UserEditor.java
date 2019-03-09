@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.user;
@@ -20,6 +20,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.user.UserRules;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.model.entity.Entity;
 import org.openvpms.web.component.bound.BoundTextComponentFactory;
 import org.openvpms.web.component.im.edit.AbstractIMObjectEditor;
 import org.openvpms.web.component.im.layout.ComponentSet;
@@ -101,11 +102,12 @@ public class UserEditor extends AbstractIMObjectEditor {
      * Validates the object.
      *
      * @param validator the validator
-     * @return <tt>true</tt> if the object and its descendants are valid otherwise <tt>false</tt>
+     * @return {@code true} if the object and its descendants are valid otherwise {@code false}
      */
     @Override
     protected boolean doValidation(Validator validator) {
-        return super.doValidation(validator) && validateUniqueUserName(validator) && validatePassword(validator);
+        return super.doValidation(validator) && validateUniqueUserName(validator) && validatePassword(validator)
+               && validateActive(validator);
     }
 
     /**
@@ -116,6 +118,26 @@ public class UserEditor extends AbstractIMObjectEditor {
     @Override
     protected IMObjectLayoutStrategy createLayoutStrategy() {
         return new LayoutStrategy();
+    }
+
+    /**
+     * Validates that a user cannot be marked inactive while it is in use by a job.
+     *
+     * @param validator the validator
+     * @return if the user is active, or
+     */
+    private boolean validateActive(Validator validator) {
+        boolean valid = true;
+        IMObject object = getObject();
+        if (!object.isNew() && !getProperty("active").getBoolean()) {
+            UserRules rules = ServiceHelper.getBean(UserRules.class);
+            Entity job = rules.getJobUsedBy((User) object);
+            if (job != null) {
+                valid = false;
+                validator.add(this, new ValidatorError(Messages.format("admin.user.requiredbyjob", job.getName())));
+            }
+        }
+        return valid;
     }
 
     /**

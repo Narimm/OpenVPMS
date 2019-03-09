@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.admin.job;
@@ -19,7 +19,7 @@ package org.openvpms.web.workspace.admin.job;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.security.User;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.NodeSelectConstraint;
@@ -46,6 +46,11 @@ import java.util.regex.Pattern;
 public abstract class AbstractJobConfigurationEditor extends AbstractIMObjectEditor {
 
     /**
+     * The bean.
+     */
+    private IMObjectBean bean;
+
+    /**
      * The 'Run As' node name.
      */
     private static final String RUN_AS = "runAs";
@@ -64,6 +69,7 @@ public abstract class AbstractJobConfigurationEditor extends AbstractIMObjectEdi
      */
     public AbstractJobConfigurationEditor(Entity object, IMObject parent, LayoutContext layoutContext) {
         super(object, parent, layoutContext);
+        bean = getBean(object);
         if (object.isNew()) {
             User user = layoutContext.getContext().getUser();
             if (user != null) {
@@ -84,7 +90,8 @@ public abstract class AbstractJobConfigurationEditor extends AbstractIMObjectEdi
         boolean valid = super.doValidation(validator);
         if (valid) {
             valid = validateMinutes(validator) && validateHours(validator) && validateDayOfMonth(validator)
-                    && validateMonth(validator) && validateDayOfWeek(validator);
+                    && validateMonth(validator) && validateDayOfWeek(validator)
+                    && validateRunAs(validator) && validateNotify(validator);
             if (valid) {
                 // try and parse the expression
                 Property property = getProperty("expression");
@@ -133,7 +140,6 @@ public abstract class AbstractJobConfigurationEditor extends AbstractIMObjectEdi
      */
     protected void initRunAs(User user) {
         if (getProperty(RUN_AS) != null) {
-            IMObjectBean bean = new IMObjectBean(getObject());
             bean.setTarget(RUN_AS, user);
         }
     }
@@ -145,7 +151,6 @@ public abstract class AbstractJobConfigurationEditor extends AbstractIMObjectEdi
      */
     protected void initNotify(User user) {
         if (getProperty(NOTIFY) != null) {
-            IMObjectBean bean = new IMObjectBean(getObject());
             bean.setTarget(NOTIFY, user);
         }
     }
@@ -220,4 +225,46 @@ public abstract class AbstractJobConfigurationEditor extends AbstractIMObjectEdi
         }
         return valid;
     }
+
+    /**
+     * Ensures that any 'run as' user is active.
+     *
+     * @param validator the validator
+     * @return {@code true} if there is no user, or the user is active
+     */
+    private boolean validateRunAs(Validator validator) {
+        return validateUser(RUN_AS, validator);
+    }
+
+    /**
+     * Ensures that any 'notify' user is active.
+     *
+     * @param validator the validator
+     * @return {@code true} if there is no user, or the user is active
+     */
+    private boolean validateNotify(Validator validator) {
+        return validateUser(NOTIFY, validator);
+    }
+
+    /**
+     * Ensures that any user associated with the named property is active.
+     *
+     * @param name      the property name
+     * @param validator the validator
+     * @return {@code true} if there is no property/user or there is, and the user is active
+     */
+    private boolean validateUser(String name, Validator validator) {
+        boolean valid = true;
+        Property property = getProperty(name);
+        if (property != null) {
+            User user = (User) getObject(bean.getTargetRef(name));
+            if (user != null && !user.isActive()) {
+                validator.add(property, new ValidatorError(Messages.format("admin.job.user.inactive",
+                                                                           property.getDisplayName())));
+                valid = false;
+            }
+        }
+        return valid;
+    }
+
 }
