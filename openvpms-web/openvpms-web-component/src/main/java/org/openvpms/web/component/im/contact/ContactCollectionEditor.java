@@ -11,14 +11,13 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.contact;
 
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
 import org.openvpms.component.exception.OpenVPMSException;
@@ -116,9 +115,9 @@ public class ContactCollectionEditor extends IMObjectTableCollectionEditor {
             Contact current = (Contact) editor.getObject();
             Property property = editor.getProperty(PREFERRED);
             if (property != null && property.getBoolean()) {
-                for (org.openvpms.component.model.party.Contact c : ((Party) getObject()).getContacts()) {
+                for (IMObject c : getCurrentObjects()) {
                     Contact contact = (Contact) c;
-                    if (!current.equals(contact) && current.getArchetypeId().equals(contact.getArchetypeId())) {
+                    if (!current.equals(contact) && current.getArchetype().equals(contact.getArchetype())) {
                         IMObjectEditor contactEditor = getEditor(contact);
                         if (contactEditor != null) {
                             contactEditor.getProperty(PREFERRED).setValue(false);
@@ -221,7 +220,7 @@ public class ContactCollectionEditor extends IMObjectTableCollectionEditor {
          *
          * @param property the collection property
          */
-        public ContactCollectionPropertyEditor(CollectionProperty property) {
+        ContactCollectionPropertyEditor(CollectionProperty property) {
             super(property);
         }
 
@@ -230,7 +229,7 @@ public class ContactCollectionEditor extends IMObjectTableCollectionEditor {
          *
          * @param excludeUnmodified if {@code true}, exclude unmodified objects from validation and saving
          */
-        public void setExcludeUnmodified(boolean excludeUnmodified) {
+        void setExcludeUnmodified(boolean excludeUnmodified) {
             this.excludeUnmodified = excludeUnmodified;
         }
 
@@ -239,7 +238,7 @@ public class ContactCollectionEditor extends IMObjectTableCollectionEditor {
          *
          * @return {@code true} if unmodified objects are excluded from validation and saving
          */
-        public boolean excludeUnmodified() {
+        boolean excludeUnmodified() {
             return excludeUnmodified;
         }
 
@@ -249,7 +248,7 @@ public class ContactCollectionEditor extends IMObjectTableCollectionEditor {
          * @param shortName the contact archetype short name
          * @return the the first unmodified object, or {@code null} if none is found
          */
-        public IMObject getUnmodified(String shortName) {
+        IMObject getUnmodified(String shortName) {
             return shortName != null ? IMObjectHelper.getObject(shortName, pending) : null;
         }
 
@@ -265,8 +264,7 @@ public class ContactCollectionEditor extends IMObjectTableCollectionEditor {
             if (pending.isEmpty()) {
                 result = super.getObjects();
             } else {
-                result = new ArrayList<>();
-                result.addAll(super.getObjects());
+                result = new ArrayList<>(super.getObjects());
                 for (IMObject object : pending) {
                     if (!result.contains(object)) {
                         result.add(object);
@@ -322,7 +320,7 @@ public class ContactCollectionEditor extends IMObjectTableCollectionEditor {
         @Override
         protected boolean doValidation(Validator validator) {
             // commit any pending objects that have been modified
-            for (IMObject object : pending.toArray(new IMObject[pending.size()])) {
+            for (IMObject object : pending.toArray(new IMObject[0])) {
                 IMObjectEditor editor = getEditor(object);
                 if (editor != null && editor.isModified()) {
                     getProperty().add(object);
