@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -139,6 +139,9 @@ public class VisitEditorDialog extends PopupDialog {
                 break;
             case VisitEditor.REMINDER_TAB:
                 onRemindersSelected();
+                break;
+            case VisitEditor.ALERT_TAB:
+                onAlertsSelected();
                 break;
             case VisitEditor.DOCUMENT_TAB:
                 onDocumentsSelected();
@@ -344,11 +347,20 @@ public class VisitEditorDialog extends PopupDialog {
     }
 
     /**
-     * Invoked when the reminders/alert tab is selected.
+     * Invoked when the reminders tab is selected.
      * <p/>
      * Updates the dialog buttons
      */
     private void onRemindersSelected() {
+        editor.setButtons(setDefaultButtons(false));
+    }
+
+    /**
+     * Invoked when the alerts tab is selected.
+     * <p/>
+     * Updates the dialog buttons
+     */
+    private void onAlertsSelected() {
         editor.setButtons(setDefaultButtons(false));
     }
 

@@ -18,7 +18,6 @@ package org.openvpms.web.workspace.patient.visit;
 
 import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.archetype.rules.patient.reminder.ReminderArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.system.common.query.NodeSortConstraint;
@@ -33,16 +32,16 @@ import org.openvpms.web.component.im.query.Query;
 import org.openvpms.web.echo.help.HelpContext;
 
 /**
- * Links a patient reminder/alerts browser to a CRUD window.
+ * Links a patient alert browser to a CRUD window.
  *
  * @author Tim Anderson
  */
-public class ReminderBrowserCRUDWindow extends VisitBrowserCRUDWindow<Act> {
+public class AlertBrowserCRUDWindow extends VisitBrowserCRUDWindow<Act> {
 
     /**
      * The reminder statuses to query.
      */
-    private static final ActStatuses STATUSES = new ActStatuses(ReminderArchetypes.REMINDER);
+    private static final ActStatuses STATUSES = new ActStatuses(PatientArchetypes.ALERT);
 
     /**
      * The default sort constraint.
@@ -52,18 +51,18 @@ public class ReminderBrowserCRUDWindow extends VisitBrowserCRUDWindow<Act> {
 
 
     /**
-     * Constructs a {@code ReminderBrowserCRUDWindow}.
+     * Constructs an {@link AlertBrowserCRUDWindow}.
      *
      * @param patient the patient
      * @param context the context
      * @param help    the help context
      */
-    public ReminderBrowserCRUDWindow(Party patient, Context context, HelpContext help) {
-        Query<Act> query = createReminderAlertQuery(patient);
+    public AlertBrowserCRUDWindow(Party patient, Context context, HelpContext help) {
+        Query<Act> query = createQuery(patient);
         Browser<Act> browser = BrowserFactory.create(query, new DefaultLayoutContext(context, help));
         setBrowser(browser);
 
-        VisitReminderCRUDWindow window = new VisitReminderCRUDWindow(context, help);
+        VisitAlertCRUDWindow window = new VisitAlertCRUDWindow(context, help);
         setWindow(window);
     }
 
@@ -72,10 +71,10 @@ public class ReminderBrowserCRUDWindow extends VisitBrowserCRUDWindow<Act> {
      *
      * @return a new query
      */
-    private Query<Act> createReminderAlertQuery(Party patient) {
-        String[] archetypes = {ReminderArchetypes.REMINDER};
+    private Query<Act> createQuery(Party patient) {
+        String[] shortNames = {PatientArchetypes.ALERT};
         DefaultActQuery<Act> query = new DefaultActQuery<>(
-                patient, "patient", PatientArchetypes.PATIENT_PARTICIPATION, archetypes, STATUSES);
+                patient, "patient", PatientArchetypes.PATIENT_PARTICIPATION, shortNames, STATUSES);
         query.setStatus(ActStatus.IN_PROGRESS);
         query.setDefaultSortConstraint(DEFAULT_SORT);
         return query;

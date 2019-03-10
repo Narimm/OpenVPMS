@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2017 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.patient.visit;
@@ -80,32 +80,37 @@ public class VisitEditor {
     /**
      * The id of the patient problem tab.
      */
-    public static final int PROBLEM_TAB = 1;
+    public static final int PROBLEM_TAB = HISTORY_TAB + 1;
 
     /**
      * The id of the invoice tab.
      */
-    public static final int INVOICE_TAB = 2;
+    public static final int INVOICE_TAB = PROBLEM_TAB + 1;
 
     /**
-     * The id of the reminders/alerts tab.
+     * The id of the reminder tab.
      */
-    public static final int REMINDER_TAB = 3;
+    public static final int REMINDER_TAB = INVOICE_TAB + 1;
+
+    /**
+     * The id of the alert tab.
+     */
+    public static final int ALERT_TAB = REMINDER_TAB + 1;
 
     /**
      * The id of the document tab.
      */
-    public static final int DOCUMENT_TAB = 4;
+    public static final int DOCUMENT_TAB = ALERT_TAB + 1;
 
     /**
      * The id of the prescription tab.
      */
-    public static final int PRESCRIPTION_TAB = 5;
+    public static final int PRESCRIPTION_TAB = DOCUMENT_TAB + 1;
 
     /**
      * The id of the estimates tab.
      */
-    public static final int ESTIMATE_TAB = 6;
+    public static final int ESTIMATE_TAB = PRESCRIPTION_TAB + 1;
 
     /**
      * The CRUD window for editing events and their items.
@@ -138,19 +143,29 @@ public class VisitEditor {
     private final Preferences preferences;
 
     /**
-     * The problem CRUD window, or {@code null} if problem view is disabled.
-     */
-    private VisitProblemBrowserCRUDWindow problemWindow;
-
-    /**
      * The invoice CRUD window.
      */
     private final VisitChargeCRUDWindow chargeWindow;
 
     /**
-     * The reminders/alerts CRUD window.
+     * The patient.
+     */
+    private final Party patient;
+
+    /**
+     * The problem CRUD window, or {@code null} if problem view is disabled.
+     */
+    private VisitProblemBrowserCRUDWindow problemWindow;
+
+    /**
+     * The reminder CRUD window.
      */
     private VisitBrowserCRUDWindow<Act> reminderWindow;
+
+    /**
+     * The alert CRUD window.
+     */
+    private VisitBrowserCRUDWindow<Act> alertWindow;
 
     /**
      * The patient document browser window.
@@ -171,11 +186,6 @@ public class VisitEditor {
      * The listener to notify of visit browser events. May be {@code null}
      */
     private VisitEditorListener listener;
-
-    /**
-     * The patient.
-     */
-    private final Party patient;
 
     /**
      * The container.
@@ -243,6 +253,8 @@ public class VisitEditor {
         chargeWindow.setObject(invoice);
 
         reminderWindow = createReminderCRUDWindow(context);
+
+        alertWindow = createAlertCRUDWindow(context);
 
         documentWindow = createDocumentBrowserCRUDWindow(context);
 
@@ -602,6 +614,18 @@ public class VisitEditor {
     }
 
     /**
+     * Creates a window to view alerts.
+     *
+     * @param context the context
+     * @return a new window
+     */
+    protected AlertBrowserCRUDWindow createAlertCRUDWindow(Context context) {
+        AlertBrowserCRUDWindow result = new AlertBrowserCRUDWindow(patient, context, help.subtopic("alert"));
+        result.setId(ALERT_TAB);
+        return result;
+    }
+
+    /**
      * Creates a window to view patient documents.
      *
      * @param context the context
@@ -660,7 +684,8 @@ public class VisitEditor {
             addProblemTab(model);
         }
         addInvoiceTab(model);
-        addRemindersAlertsTab(model);
+        addRemindersTab(model);
+        addAlertsTab(model);
         addDocumentsTab(model);
         addPrescriptionsTab(model);
         addEstimatesTab(model);
@@ -755,12 +780,21 @@ public class VisitEditor {
     }
 
     /**
-     * Adds a tab to display reminders and alerts.
+     * Adds a tab to display reminders.
      *
      * @param model the tab pane model to add to
      */
-    protected void addRemindersAlertsTab(ObjectTabPaneModel<VisitEditorTab> model) {
+    protected void addRemindersTab(ObjectTabPaneModel<VisitEditorTab> model) {
         addTab("button.reminder", model, reminderWindow, REMINDER_TAB);
+    }
+
+    /**
+     * Adds a tab to display alerts.
+     *
+     * @param model the tab pane model to add to
+     */
+    protected void addAlertsTab(ObjectTabPaneModel<VisitEditorTab> model) {
+        addTab("button.alert", model, alertWindow, ALERT_TAB);
     }
 
     /**
@@ -815,13 +849,6 @@ public class VisitEditor {
     }
 
     /**
-     * Updates the visit status based on the charge status.
-     */
-    private void updateVisitStatus() {
-        Retryer.run(new VisitStatusUpdater());
-    }
-
-    /**
      * Follow a hyperlink.
      * <p/>
      * If the object is a:
@@ -843,13 +870,20 @@ public class VisitEditor {
         }
     }
 
+    /**
+     * Updates the visit status based on the charge status.
+     */
+    private void updateVisitStatus() {
+        Retryer.run(new VisitStatusUpdater());
+    }
+
     private class VisitStatusUpdater extends AbstractRetryable {
 
         /**
          * Runs the action.
          *
          * @return {@code true} if the action completed successfully, {@code false} if it failed, and should not be
-         *         retried
+         * retried
          * @throws RuntimeException if the action fails and may be retried
          */
         @Override

@@ -20,22 +20,22 @@ import nextapp.echo2.app.Component;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.echo.help.HelpContext;
-import org.openvpms.web.workspace.patient.mr.ReminderCRUDWindow;
+import org.openvpms.web.workspace.patient.mr.AlertCRUDWindow;
 
 /**
- * Visit reminder CRUD window.
+ * Visit alert CRUD window.
  *
  * @author Tim Anderson
  */
-public class VisitReminderCRUDWindow extends ReminderCRUDWindow {
+public class VisitAlertCRUDWindow extends AlertCRUDWindow {
 
     /**
-     * Constructs a {@code VisitReminderCRUDWindow}.
+     * Constructs a {@link VisitAlertCRUDWindow}.
      *
      * @param context the context
      * @param help    the help context
      */
-    public VisitReminderCRUDWindow(Context context, HelpContext help) {
+    public VisitAlertCRUDWindow(Context context, HelpContext help) {
         super(context, help);
     }
 
