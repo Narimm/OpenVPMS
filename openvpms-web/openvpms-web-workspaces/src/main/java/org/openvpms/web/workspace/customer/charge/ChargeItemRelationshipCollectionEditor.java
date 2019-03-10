@@ -37,6 +37,7 @@ import org.openvpms.web.component.property.CollectionProperty;
 import org.openvpms.web.component.property.ModifiableListener;
 import org.openvpms.web.resource.i18n.Messages;
 import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.web.workspace.customer.PriceActItemEditor;
 import org.openvpms.web.workspace.customer.StockOnHand;
 import org.openvpms.web.workspace.patient.charge.TemplateChargeItems;
 import org.openvpms.web.workspace.patient.mr.Prescriptions;
@@ -321,8 +322,14 @@ public class ChargeItemRelationshipCollectionEditor extends AbstractChargeItemRe
         EditorQueue queue = getEditorQueue();
         if (!acts.isEmpty() && !queue.isComplete()) {
             // the collection is considered invalid while there are popups, so force a validation check when
-            // popups have all closed.
-            queue.queue(this::isValid);
+            // popups have all closed, and move focus to the product
+            queue.queue(() -> {
+                isValid();
+                IMObjectEditor currentEditor = getCurrentEditor();
+                if (currentEditor instanceof PriceActItemEditor) {
+                    ((PriceActItemEditor) currentEditor).moveFocusToProduct();
+                }
+            });
         }
         return acts;
     }

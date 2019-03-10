@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer;
@@ -205,6 +205,19 @@ public abstract class PriceActItemEditor extends ActItemEditor {
         setMinimumQuantity(null);
         super.setProduct(product, template);
         setMinimumQuantity(product != null ? product.getLowQuantity() : null);
+    }
+
+    /**
+     * Moves the focus to the product editor, if one exists.
+     */
+    public void moveFocusToProduct() {
+        ProductParticipationEditor productEditor = getProductEditor();
+        if (productEditor != null) {
+            FocusGroup group = productEditor.getFocusGroup();
+            if (group != null) {
+                group.setFocus();
+            }
+        }
     }
 
     /**
@@ -579,19 +592,6 @@ public abstract class PriceActItemEditor extends ActItemEditor {
         property.setValue(serviceRatio);
         property.addModifiableListener(serviceRatioListener);
         return serviceRatio;
-    }
-
-    /**
-     * Helper to move the focus to the product editor.
-     */
-    protected void moveFocusToProduct() {
-        ProductParticipationEditor productEditor = getProductEditor();
-        if (productEditor != null) {
-            FocusGroup group = productEditor.getFocusGroup();
-            if (group != null) {
-                group.setFocus();
-            }
-        }
     }
 
     /**
