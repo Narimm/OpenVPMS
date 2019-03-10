@@ -212,13 +212,6 @@
         </properties>
     </style>
 
-    <style name="AlertDialog" base-name="PopupWindow" type="nextapp.echo2.app.WindowPane">
-        <properties>
-            <property name="width" value="${AlertDialog.width}"/>
-            <property name="height" value="${AlertDialog.height}"/>
-        </properties>
-    </style>
-
     <style name="button.communication" type="nextapp.echo2.app.Button">
         <properties>
             <property name="icon" type="nextapp.echo2.app.HttpImageReference">

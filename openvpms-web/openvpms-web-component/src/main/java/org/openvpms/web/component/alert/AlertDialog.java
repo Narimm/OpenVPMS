@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.alert;
@@ -76,7 +76,7 @@ public class AlertDialog extends ModalDialog {
      * @param help    the help context
      */
     public AlertDialog(Alert alert, Context context, HelpContext help) {
-        super(Messages.format("alert.dialog.title", alert.getName()), "AlertDialog", OK);
+        super(Messages.format("alert.dialog.title", alert.getName()), null, OK);
         this.alert = alert;
         this.context = context;
         this.help = help;
@@ -88,6 +88,7 @@ public class AlertDialog extends ModalDialog {
                 }
             });
         }
+        resize("AlertDialog.size");
     }
 
     /**

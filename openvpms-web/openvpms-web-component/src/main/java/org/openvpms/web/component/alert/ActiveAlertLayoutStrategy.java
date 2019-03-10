@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.alert;
@@ -78,7 +78,7 @@ public class ActiveAlertLayoutStrategy extends AbstractLayoutStrategy {
     @Override
     public ComponentState apply(IMObject object, PropertySet properties, IMObject parent, LayoutContext context) {
         Property notes = properties.get("notes");
-        addComponent(createComponent(notes, null, new Extent(4, Extent.EM), object, context));
+        addComponent(createComponent(notes, null, new Extent(15, Extent.EM), object, context));
         return super.apply(object, properties, parent, context);
     }
 
