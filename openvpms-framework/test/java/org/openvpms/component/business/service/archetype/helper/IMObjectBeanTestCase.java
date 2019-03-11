@@ -194,7 +194,7 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
     @Test
     public void testGetValue() {
         IMObjectBean bean = createBean("party.customerperson");
-        assertEquals(bean.getValue("firstName"), null);
+        assertNull(bean.getValue("firstName"));
         bean.setValue("firstName", "Joe");
         assertEquals("Joe", bean.getValue("firstName"));
     }
@@ -205,11 +205,11 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
     @Test
     public void testGetBoolean() {
         IMObjectBean bean = createBean("act.types");
-        assertEquals(false, bean.getBoolean("flag"));
-        assertEquals(true, bean.getBoolean("flag", true));
+        assertFalse(bean.getBoolean("flag"));
+        assertTrue(bean.getBoolean("flag", true));
 
         bean.setValue("flag", true);
-        assertEquals(true, bean.getBoolean("flag"));
+        assertTrue(bean.getBoolean("flag"));
     }
 
     /**
@@ -274,7 +274,7 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         assertEquals(expected, bean.getBigDecimal("amount"));
 
         // quantity has a default value
-        assertTrue(BigDecimal.ONE.compareTo(bean.getBigDecimal("quantity")) == 0);
+        assertEquals(0, BigDecimal.ONE.compareTo(bean.getBigDecimal("quantity")));
     }
 
     /**
@@ -660,7 +660,8 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
 
     /**
      * Tests the {@link IMObjectBean#getTarget}, {@link IMObjectBean#getTarget(String, Class)},
-     * and {@link IMObjectBean#getTarget(String, Class, Policy)} methods.
+     * {@link IMObjectBean#getTarget(String, Class, Policy)}, {@link IMObjectBean#getTarget(Collection, Policy)}
+     * and {@link IMObjectBean#getTarget(Collection, Class, Policy)} methods.
      */
     @Test
     public void testGetTarget() {
@@ -676,10 +677,16 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         assertEquals(patient, bean.getTarget("owns", Party.class));
         assertEquals(patient, bean.getTarget("owns", IMObject.class, Policies.active()));
 
+        // test the collection form
+        Policy<org.openvpms.component.model.entity.EntityRelationship> active
+                = Policies.active(org.openvpms.component.model.entity.EntityRelationship.class);
+        assertEquals(patient, bean.getTarget(customer.getSourceEntityRelationships(), active));
+        assertEquals(patient, bean.getTarget(customer.getSourceEntityRelationships(), Party.class, active));
+
+        // set the relationship times to the past verify it is filtered out
         Date start1 = new Date(now.getTime() - 60 * 1000);
         Date end1 = new Date(now.getTime() - 50 * 1000);
 
-        // set the relationship times to the past verify it is filtered out
         owns.setActiveStartTime(start1);
         owns.setActiveEndTime(end1);
 
@@ -687,6 +694,10 @@ public class IMObjectBeanTestCase extends AbstractIMObjectBeanTestCase {
         assertEquals(patient, bean.getTarget("owns", Party.class));
         assertNull(bean.getTarget("owns", Party.class, Policies.active()));
         assertEquals(patient, bean.getTarget("owns", Party.class, Policies.any()));
+
+        // test the collection form
+        assertNull(bean.getTarget(customer.getSourceEntityRelationships(), active));
+        assertNull(bean.getTarget(customer.getSourceEntityRelationships(), Party.class, active));
     }
 
     /**

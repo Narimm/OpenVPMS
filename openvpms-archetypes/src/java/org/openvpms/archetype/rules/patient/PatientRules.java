@@ -413,19 +413,6 @@ public class PatientRules {
     }
 
     /**
-     * Returns the Desex status of the patient associated with an act.
-     *
-     * @param act the act connected to the patient
-     * @return the age in string format
-     * @throws ArchetypeServiceException for any archetype service error
-     *                                   todo - should be localised
-     */
-    public String getPatientDesexStatus(Act act) {
-        Party patient = getPatient(act);
-        return getPatientDesexStatus(patient);
-    }
-
-    /**
      * Returns the patient date of birth.
      *
      * @param patient the patient
@@ -543,18 +530,6 @@ public class PatientRules {
             result = (String) set.get("act.description");
         }
         return result;
-    }
-
-    /**
-     * Returns the description node of the most recent
-     * <em>act.patientWeight</em> for a patient associated with an Act.
-     *
-     * @param act the act linked to the patient
-     * @return the description node or {@code null} if no act can be found
-     */
-    public String getPatientWeight(Act act) {
-        Party patient = getPatient(act);
-        return (patient != null) ? getPatientWeight(patient) : null;
     }
 
     /**

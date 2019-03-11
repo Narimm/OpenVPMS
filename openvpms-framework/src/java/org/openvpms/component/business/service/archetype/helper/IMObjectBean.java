@@ -551,7 +551,7 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     public <T extends org.openvpms.component.model.object.IMObject> T getValue(
             String name, Class<T> type, java.util.function.Predicate<T> predicate) {
         Optional<T> first = getValues(name, type).stream().filter(predicate).findFirst();
-        return first.isPresent() ? first.get() : null;
+        return first.orElse(null);
     }
 
     /**
@@ -689,6 +689,33 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
     public <T extends org.openvpms.component.model.object.IMObject, R extends Relationship> T getTarget(
             String name, Class<T> type, Policy<R> policy) {
         return type.cast(getRelatedObject(name, policy, false));
+    }
+
+    /**
+     * Returns the target object from the first {@link Relationship} for the specified collection matching the policy.
+     *
+     * @param relationships the relationship collection
+     * @param policy        the policy for relationship selection and object retrieval
+     * @return the target object, or {@code null} if none is found
+     */
+    @Override
+    public <R extends Relationship> org.openvpms.component.model.object.IMObject getTarget(Collection<R> relationships,
+                                                                                           Policy<R> policy) {
+        return getRelatedObject(relationships, policy, false);
+    }
+
+    /**
+     * Returns the target object from the first {@link Relationship} for the specified collection matching the policy.
+     *
+     * @param relationships the relationship collection
+     * @param type          the object type
+     * @param policy        the policy for relationship selection and object retrieval
+     * @return the target object, or {@code null} if none is found
+     */
+    @Override
+    public <T extends org.openvpms.component.model.object.IMObject, R extends Relationship> T getTarget(
+            Collection<R> relationships, Class<T> type, Policy<R> policy) {
+        return type.cast(getTarget(relationships, policy));
     }
 
     /**
@@ -2789,7 +2816,8 @@ public class IMObjectBean implements org.openvpms.component.model.bean.IMObjectB
      * @throws ArchetypeServiceException for any archetype service error
      */
     protected <R extends Relationship> IMObject getRelatedObject(
-            List<org.openvpms.component.model.object.IMObject> relationships, Policy<R> policy, boolean source) {
+            Collection<? extends org.openvpms.component.model.object.IMObject> relationships, Policy<R> policy,
+            boolean source) {
         IMObject result = null;
         Function<Relationship, Reference> accessor = getAccessor(source);
         Class<R> type = policy.getType();

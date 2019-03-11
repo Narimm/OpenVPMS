@@ -29,6 +29,7 @@ import org.openvpms.archetype.rules.finance.account.FinancialTestHelper;
 import org.openvpms.archetype.rules.finance.estimate.EstimateTestHelper;
 import org.openvpms.archetype.rules.math.WeightUnits;
 import org.openvpms.archetype.rules.party.ContactArchetypes;
+import org.openvpms.archetype.rules.party.CustomerRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.patient.PatientTestHelper;
@@ -37,23 +38,23 @@ import org.openvpms.archetype.rules.workflow.AppointmentStatus;
 import org.openvpms.archetype.rules.workflow.ScheduleTestHelper;
 import org.openvpms.archetype.test.ArchetypeServiceTest;
 import org.openvpms.archetype.test.TestHelper;
-import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
 import org.openvpms.component.business.domain.im.common.IMObject;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
 import org.openvpms.component.business.domain.im.party.Contact;
-import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceFunctions;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.act.Act;
 import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.party.Party;
 import org.openvpms.component.system.common.jxpath.JXPathHelper;
 import org.openvpms.component.system.common.jxpath.ObjectFunctions;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -82,6 +83,12 @@ import static org.openvpms.archetype.rules.util.DateUnits.YEARS;
 public class PartyFunctionsTestCase extends ArchetypeServiceTest {
 
     /**
+     * The customer rules.
+     */
+    @Autowired
+    private CustomerRules rules;
+
+    /**
      * Test customer.
      */
     private Party customer;
@@ -101,6 +108,9 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
      */
     private Act item;
 
+    /**
+     * Sets up the test case.
+     */
     @Before
     public void setUp() {
         customer = TestHelper.createCustomer("Foo", "Bar", false, true);
@@ -113,7 +123,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link PartyFunctions#getPartyFullName(Party)}, {@link PartyFunctions#getPartyFullName(Act)} and
+     * Tests the {@link PartyFunctions#getPartyFullName(Object)} and
      * {@link PartyFunctions#getPartyFullName(ExpressionContext)} methods.
      */
     @Test
@@ -133,10 +143,13 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         // test the Act version
         assertEquals("Mr Foo Bar", context2.getValue("party:getPartyFullName(.)"));
         assertEquals("Mr Foo Bar", context3.getValue("party:getPartyFullName(.)"));
+
+        // null handling
+        assertEquals("", context1.getValue("party:getPartyFullName(null)"));
     }
 
     /**
-     * Tests the {@link PartyFunctions#getPatientOwner(Party)}, {@link PartyFunctions#getPatientOwner(Act)} and
+     * Tests the {@link PartyFunctions#getPatientOwner(Object)} and
      * {@link PartyFunctions#getPatientOwner(ExpressionContext)} methods.
      */
     @Test
@@ -153,10 +166,14 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
 
         // test the Act version
         assertEquals(customer, context2.getValue("party:getPatientOwner(.)"));
+
+        // null handling
+        assertNull(context1.getValue("party:getPatientOwner(null)"));
     }
 
     /**
-     * Tests the {@link PartyFunctions#getTelephone(Party)} and {@link PartyFunctions#getTelephone(Act)} methods.
+     * Tests the {@link PartyFunctions#getTelephone(Object)} and {@link PartyFunctions#getTelephone(ExpressionContext)}
+     * methods.
      */
     @Test
     public void testGetTelephone() {
@@ -167,17 +184,30 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         assertEquals("", context2.getValue("party:getTelephone(.)"));
         assertEquals("", context3.getValue("party:getTelephone(.)"));
 
+        // ExpressionContext form
+        assertEquals("", context1.getValue("party:getTelephone()"));
+        assertEquals("", context2.getValue("party:getTelephone()"));
+        assertEquals("", context3.getValue("party:getTelephone()"));
+
         customer.addContact(createPhone("12345", false, "HOME"));
         customer.addContact(createPhone("45678", true, null));  // preferred
         save(customer);
         assertEquals("(03) 45678", context1.getValue("party:getTelephone(.)"));
         assertEquals("(03) 45678", context2.getValue("party:getTelephone(.)"));
         assertEquals("(03) 45678", context3.getValue("party:getTelephone(.)"));
+
+        // ExpressionContext form
+        assertEquals("(03) 45678", context1.getValue("party:getTelephone()"));
+        assertEquals("(03) 45678", context2.getValue("party:getTelephone()"));
+        assertEquals("(03) 45678", context3.getValue("party:getTelephone()"));
+
+        // null handling
+        assertEquals("", context1.getValue("party:getTelephone(null)"));
     }
 
     /**
-     * Tests the {@link PartyFunctions#getHomeTelephone(Party)} and {@link PartyFunctions#getHomeTelephone(Act)}
-     * methods.
+     * Tests the {@link PartyFunctions#getHomeTelephone(Object)}
+     * and {@link PartyFunctions#getHomeTelephone(ExpressionContext)} methods.
      */
     @Test
     public void testGetHomeTelephone() {
@@ -188,12 +218,22 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         assertEquals("", context2.getValue("party:getHomeTelephone(.)"));
         assertEquals("", context3.getValue("party:getHomeTelephone(.)"));
 
+        // ExpressionContext form
+        assertEquals("", context1.getValue("party:getHomeTelephone()"));
+        assertEquals("", context2.getValue("party:getHomeTelephone()"));
+        assertEquals("", context3.getValue("party:getHomeTelephone()"));
+
         Contact home = createPhone("12345", true, "HOME");
         customer.addContact(home);
         save(customer);
         assertEquals("(03) 12345", context1.getValue("party:getHomeTelephone(.)"));
         assertEquals("(03) 12345", context2.getValue("party:getHomeTelephone(.)"));
         assertEquals("(03) 12345", context3.getValue("party:getHomeTelephone(.)"));
+
+        // ExpressionContext form
+        assertEquals("(03) 12345", context1.getValue("party:getHomeTelephone()"));
+        assertEquals("(03) 12345", context2.getValue("party:getHomeTelephone()"));
+        assertEquals("(03) 12345", context3.getValue("party:getHomeTelephone()"));
 
         // remove the home contact
         customer.removeContact(home);
@@ -202,6 +242,11 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         assertEquals("", context2.getValue("party:getHomeTelephone(.)"));
         assertEquals("", context3.getValue("party:getHomeTelephone(.)"));
 
+        // ExpressionContext form
+        assertEquals("", context1.getValue("party:getHomeTelephone()"));
+        assertEquals("", context2.getValue("party:getHomeTelephone()"));
+        assertEquals("", context3.getValue("party:getHomeTelephone()"));
+
         // add a work contact, and verify it is returned. See OVPMS-718
         customer.addContact(createPhone("56789", true, "WORK"));
         save(customer);
@@ -209,11 +254,19 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         assertEquals("(03) 56789", context1.getValue("party:getHomeTelephone(.)"));
         assertEquals("(03) 56789", context2.getValue("party:getHomeTelephone(.)"));
         assertEquals("(03) 56789", context3.getValue("party:getHomeTelephone(.)"));
+
+        // ExpressionContext form
+        assertEquals("(03) 56789", context1.getValue("party:getHomeTelephone()"));
+        assertEquals("(03) 56789", context2.getValue("party:getHomeTelephone()"));
+        assertEquals("(03) 56789", context3.getValue("party:getHomeTelephone()"));
+
+        // null handling
+        assertEquals("", context1.getValue("party:getHomeTelephone(null)"));
     }
 
     /**
-     * Tests the {@link PartyFunctions#getWorkTelephone(Party)} and {@link PartyFunctions#getWorkTelephone(Act)}
-     * methods.
+     * Tests the {@link PartyFunctions#getWorkTelephone(Object)} and
+     * {@link PartyFunctions#getWorkTelephone(ExpressionContext)} methods.
      */
     @Test
     public void testGetWorkTelephone() {
@@ -225,18 +278,169 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         assertEquals("", context2.getValue("party:getWorkTelephone(.)"));
         assertEquals("", context3.getValue("party:getWorkTelephone(.)"));
 
+        // ExpressionContext form
+        assertEquals("", context1.getValue("party:getWorkTelephone()"));
+        assertEquals("", context2.getValue("party:getWorkTelephone()"));
+        assertEquals("", context3.getValue("party:getWorkTelephone()"));
+
         customer.addContact(createPhone("56789", true, "WORK"));
         save(customer);
         assertEquals("(03) 56789", context1.getValue("party:getWorkTelephone(.)"));
         assertEquals("(03) 56789", context2.getValue("party:getWorkTelephone(.)"));
         assertEquals("(03) 56789", context3.getValue("party:getWorkTelephone(.)"));
+
+        // ExpressionContext form
+        assertEquals("(03) 56789", context1.getValue("party:getWorkTelephone()"));
+        assertEquals("(03) 56789", context2.getValue("party:getWorkTelephone()"));
+        assertEquals("(03) 56789", context3.getValue("party:getWorkTelephone()"));
+
+        // null handling
+        assertEquals("", context1.getValue("party:getWorkTelephone(null)"));
     }
 
     /**
-     * Tests the {@link PartyFunctions#getBillingAddress(Party)},
-     * {@link PartyFunctions#getBillingAddress(Act, boolean)},  {@link PartyFunctions#getBillingAddress(Act)},
-     * {@link PartyFunctions#getBillingAddress(Act, boolean)} and
-     * {@link PartyFunctions#getBillingAddress(ExpressionContext)} methods.
+     * Tests the {@link PartyFunctions#getMobileTelephone(Object)} and
+     * {@link PartyFunctions#getMobileTelephone(ExpressionContext)} methods.
+     */
+    @Test
+    public void testGetMobileTelephone() {
+        JXPathContext context1 = createContext(customer);
+        JXPathContext context2 = createContext(estimate);
+        JXPathContext context3 = createContext(item);
+
+        assertEquals("", context1.getValue("party:getMobileTelephone(.)"));
+        assertEquals("", context2.getValue("party:getMobileTelephone(.)"));
+        assertEquals("", context3.getValue("party:getMobileTelephone(.)"));
+
+        // ExpressionContext form
+        assertEquals("", context1.getValue("party:getMobileTelephone()"));
+        assertEquals("", context2.getValue("party:getMobileTelephone()"));
+        assertEquals("", context3.getValue("party:getMobileTelephone()"));
+
+        customer.addContact(createPhone("56789", true, "MOBILE"));
+        save(customer);
+        assertEquals("(03) 56789", context1.getValue("party:getMobileTelephone(.)"));
+        assertEquals("(03) 56789", context2.getValue("party:getMobileTelephone(.)"));
+        assertEquals("(03) 56789", context3.getValue("party:getMobileTelephone(.)"));
+
+        // ExpressionContext form
+        assertEquals("(03) 56789", context1.getValue("party:getMobileTelephone()"));
+        assertEquals("(03) 56789", context2.getValue("party:getMobileTelephone()"));
+        assertEquals("(03) 56789", context3.getValue("party:getMobileTelephone()"));
+
+        // null handling
+        assertEquals("", context1.getValue("party:getMobileTelephone(null)"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getFaxNumber(Object)} and
+     * {@link PartyFunctions#getFaxNumber(ExpressionContext)} methods.
+     */
+    @Test
+    public void testGetFaxNumber() {
+        JXPathContext context1 = createContext(customer);
+        JXPathContext context2 = createContext(estimate);
+        JXPathContext context3 = createContext(item);
+
+        assertEquals("", context1.getValue("party:getFaxNumber(.)"));
+        assertEquals("", context2.getValue("party:getFaxNumber(.)"));
+        assertEquals("", context3.getValue("party:getFaxNumber(.)"));
+
+        // ExpressionContext form
+        assertEquals("", context1.getValue("party:getFaxNumber()"));
+        assertEquals("", context2.getValue("party:getFaxNumber()"));
+        assertEquals("", context3.getValue("party:getFaxNumber()"));
+
+        customer.addContact(createPhone("56789", true, "FAX"));
+        save(customer);
+        assertEquals("(03) 56789", context1.getValue("party:getFaxNumber(.)"));
+        assertEquals("(03) 56789", context2.getValue("party:getFaxNumber(.)"));
+        assertEquals("(03) 56789", context3.getValue("party:getFaxNumber(.)"));
+
+        // ExpressionContext form
+        assertEquals("(03) 56789", context1.getValue("party:getFaxNumber()"));
+        assertEquals("(03) 56789", context2.getValue("party:getFaxNumber()"));
+        assertEquals("(03) 56789", context3.getValue("party:getFaxNumber()"));
+
+        // null handling
+        assertEquals("", context1.getValue("party:getFaxNumber(null)"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getEmailAddress(Object)} and
+     * {@link PartyFunctions#getEmailAddress(ExpressionContext)} methods.
+     */
+    @Test
+    public void testGetEmailAddress() {
+        JXPathContext context1 = createContext(customer);
+        JXPathContext context2 = createContext(estimate);
+        JXPathContext context3 = createContext(item);
+
+        assertEquals("", context1.getValue("party:getEmailAddress(.)"));
+        assertEquals("", context2.getValue("party:getEmailAddress(.)"));
+        assertEquals("", context3.getValue("party:getEmailAddress(.)"));
+
+        // ExpressionContext form
+        assertEquals("", context1.getValue("party:getEmailAddress()"));
+        assertEquals("", context2.getValue("party:getEmailAddress()"));
+        assertEquals("", context3.getValue("party:getEmailAddress()"));
+
+        customer.addContact(TestHelper.createEmailContact("foo@bar.com"));
+        save(customer);
+        assertEquals("foo@bar.com", context1.getValue("party:getEmailAddress(.)"));
+        assertEquals("foo@bar.com", context2.getValue("party:getEmailAddress(.)"));
+        assertEquals("foo@bar.com", context3.getValue("party:getEmailAddress(.)"));
+
+        // ExpressionContext form
+        assertEquals("foo@bar.com", context1.getValue("party:getEmailAddress()"));
+        assertEquals("foo@bar.com", context2.getValue("party:getEmailAddress()"));
+        assertEquals("foo@bar.com", context3.getValue("party:getEmailAddress()"));
+
+        // null handling
+        assertEquals("", context1.getValue("party:getEmailAddress(null)"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getWebsite(Object)} method.
+     */
+    @Test
+    public void testGetWebsite() {
+        Party customer = TestHelper.createCustomer(false);
+        JXPathContext context = createContext(customer);
+
+        assertEquals("", context.getValue("party:getWebsite(.)"));
+
+        Contact contact = (Contact) create(ContactArchetypes.WEBSITE);
+        IMObjectBean bean = getBean(contact);
+        bean.setValue("url", "http://wwww.openvpms.org");
+        customer.addContact(contact);
+
+        assertEquals("http://wwww.openvpms.org", context.getValue("party:getWebsite(.)"));
+
+        // null handling
+        assertEquals("", context.getValue("party:getWebsite(null)"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getContactPurposes(ExpressionContext)} method.
+     */
+    @Test
+    public void testGetContactPurposes() {
+        Contact contact = TestHelper.createPhoneContact(null, "123456789");
+
+        JXPathContext context = createContext(contact);
+        assertEquals("", context.getValue("party:getContactPurposes()"));
+
+        contact.addClassification(TestHelper.getLookup(ContactArchetypes.PURPOSE, "HOME"));
+        contact.addClassification(TestHelper.getLookup(ContactArchetypes.PURPOSE, "WORK"));
+
+        assertEquals("(Home, Work)", context.getValue("party:getContactPurposes()"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getBillingAddress(ExpressionContext)},
+     * {@link PartyFunctions#getBillingAddress(Object)} and {@link PartyFunctions#getBillingAddress(Object, boolean)}
+     * methods.
      */
     @Test
     public void testGetBillingAddress() {
@@ -262,6 +466,12 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         customer.addContact(work);
         save(customer);
 
+        // single argument form
+        assertEquals("123 4th Avenue\nSawtell Nsw 2452", context1.getValue("party:getBillingAddress(.)"));
+        assertEquals("123 4th Avenue\nSawtell Nsw 2452", context2.getValue("party:getBillingAddress(.)"));
+        assertEquals("123 4th Avenue\nSawtell Nsw 2452", context3.getValue("party:getBillingAddress(.)"));
+
+        // multiple argument form
         assertEquals("123 4th Avenue, Sawtell Nsw 2452", context1.getValue("party:getBillingAddress(., true())"));
         assertEquals("123 4th Avenue\nSawtell Nsw 2452", context1.getValue("party:getBillingAddress(., false())"));
         assertEquals("123 4th Avenue, Sawtell Nsw 2452", context2.getValue("party:getBillingAddress(., true())"));
@@ -269,17 +479,18 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         assertEquals("123 4th Avenue, Sawtell Nsw 2452", context3.getValue("party:getBillingAddress(., true())"));
         assertEquals("123 4th Avenue\nSawtell Nsw 2452", context3.getValue("party:getBillingAddress(., false())"));
 
-        // test the ExpressionContext form
+        // ExpressionContext form
         assertEquals("123 4th Avenue\nSawtell Nsw 2452", context1.getValue("party:getBillingAddress()"));
         assertEquals("123 4th Avenue\nSawtell Nsw 2452", context2.getValue("party:getBillingAddress()"));
         assertEquals("123 4th Avenue\nSawtell Nsw 2452", context3.getValue("party:getBillingAddress()"));
+
+        // test nulls
+        assertEquals("", context1.getValue("party:getBillingAddress(null)"));
     }
 
     /**
-     * Tests the {@link PartyFunctions#getCorrespondenceAddress(Party)},
-     * {@link PartyFunctions#getCorrespondenceAddress(Act, boolean)},
-     * {@link PartyFunctions#getCorrespondenceAddress(Act)},
-     * {@link PartyFunctions#getCorrespondenceAddress(Act, boolean)} and
+     * Tests the {@link PartyFunctions#getCorrespondenceAddress(Object)},
+     * {@link PartyFunctions#getCorrespondenceAddress(Object, boolean)} and
      * {@link PartyFunctions#getCorrespondenceAddress(ExpressionContext)} methods.
      */
     @Test
@@ -323,6 +534,9 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         assertEquals("123 4th Avenue\nSawtell Nsw 2452", context1.getValue("party:getCorrespondenceAddress()"));
         assertEquals("123 4th Avenue\nSawtell Nsw 2452", context2.getValue("party:getCorrespondenceAddress()"));
         assertEquals("123 4th Avenue\nSawtell Nsw 2452", context3.getValue("party:getCorrespondenceAddress()"));
+
+        // null handling
+        assertEquals("", context1.getValue("party:getCorrespondenceAddress(null)"));
     }
 
     /**
@@ -343,44 +557,46 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     }
 
     /**
-     * Tests the {@link PartyFunctions#identities(ExpressionContext)} method.
+     * Tests the {@link PartyFunctions#identities(Object)} and {@link PartyFunctions#identities(ExpressionContext)}
+     * methods.
      */
     @Test
     public void testIdentities() {
-        Party party = TestHelper.createPatient(false);
-
-        JXPathContext ctx = createContext(party);
-        assertEquals("", ctx.getValue("party:identities()"));
-
-        String tag = "1234567";
-        party.addIdentity(createPetTag(tag));
-        assertEquals("Pet Tag: " + tag, ctx.getValue("party:identities()"));
-    }
-
-    /**
-     * Tests the {@link PartyFunctions#identities(Party)} method.
-     */
-    @Test
-    public void testIdentitiesForParty() {
         Act act = (Act) create("act.customerEstimationItem");
         Party party = TestHelper.createPatient();
 
-        JXPathContext ctx = createContext(act);
+        JXPathContext context1 = createContext(party);
+        JXPathContext context2 = createContext(act);
 
-        assertEquals("", ctx.getValue("party:identities(openvpms:get(., 'patient.entity'))"));
-        String tag = "1234567";
-        party.addIdentity(createPetTag(tag));
+        assertEquals("", context1.getValue("party:identities(.)"));
+        assertEquals("", context2.getValue("party:identities(.)"));
+
+        // ExpressionContext form
+        assertEquals("", context1.getValue("party:identities()"));
+        assertEquals("", context2.getValue("party:identities()"));
+
+        // now set up a tag
+        party.addIdentity(createPetTag("1234567"));
         save(party);
 
-        ActBean bean = new ActBean(act);
-        bean.addNodeParticipation("patient", party);
+        IMObjectBean bean = getBean(act);
+        bean.setTarget("patient", party);
 
-        assertEquals("Pet Tag: " + tag, ctx.getValue("party:identities(openvpms:get(., 'patient.entity'))"));
+        String expected = "Pet Tag: 1234567";
+        assertEquals(expected, context1.getValue("party:identities(.)"));
+        assertEquals(expected, context2.getValue("party:identities(.)"));
+
+        // ExpressionContext form
+        assertEquals(expected, context1.getValue("party:identities()"));
+        assertEquals(expected, context2.getValue("party:identities()"));
+
+        // null handling
+        assertEquals("", context1.getValue("party:identities(null)"));
     }
 
-
     /**
-     * Tests the {@link PartyFunctions#getPatientMicrochip(Party)} method.
+     * Tests the {@link PartyFunctions#getPatientMicrochip(Object)} and
+     * {@link PartyFunctions#getPatientMicrochip(ExpressionContext)} methods.
      */
     @Test
     public void testGetPatientMicrochip() {
@@ -388,18 +604,22 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         JXPathContext ctx = createContext(patient);
 
         assertEquals("", ctx.getValue("party:getPatientMicrochip(.)"));
+        assertEquals("", ctx.getValue("party:getPatientMicrochip()")); // ExpressionContext form
 
-        EntityIdentity microchip = (EntityIdentity) create(
-                "entityIdentity.microchip");
+        EntityIdentity microchip = (EntityIdentity) create("entityIdentity.microchip");
         IMObjectBean tagBean = getBean(microchip);
         tagBean.setValue("microchip", "1234567");
         patient.addIdentity(microchip);
 
         assertEquals("1234567", ctx.getValue("party:getPatientMicrochip(.)"));
+        assertEquals("1234567", ctx.getValue("party:getPatientMicrochip()")); // ExpressionContext form
+
+        // null handling
+        assertEquals("", ctx.getValue("party:getPatientMicrochip(null)"));
     }
 
     /**
-     * Tests the {@link PartyFunctions#getPatientMicrochips(Party)} method.
+     * Tests the {@link PartyFunctions#getPatientMicrochips(Object)} method.
      */
     @Test
     public void testGetPatientMicrochips() {
@@ -423,86 +643,131 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         save(patient);
 
         assertEquals("456, 123", ctx.getValue("party:getPatientMicrochips(.)"));
+
+        // null handling
+        assertEquals("", ctx.getValue("party:getPatientMicrochips(null)"));
     }
 
     /**
-     * Tests the {@link PartyFunctions#getWeight(Party)} and {@link PartyFunctions#getWeight(Party, String)} methods.
+     * Tests the {@link PartyFunctions#getWeight(Object)}, {@link PartyFunctions#getWeight(Object, String)},
+     * and {@link PartyFunctions#getWeight(ExpressionContext)} methods.
      */
     @Test
     public void testGetWeight() {
         Party patient = TestHelper.createPatient();
-        JXPathContext ctx = createContext(patient);
-        assertEquals(ZERO, ctx.getValue("party:getWeight(.)"));
 
-        Act weight1 = PatientTestHelper.createWeight(patient, ONE, WeightUnits.KILOGRAMS);
-        checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(.)"));
-        checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(., 'KILOGRAMS')"));
-        checkEquals(ONE_THOUSAND, (BigDecimal) ctx.getValue("party:getWeight(., 'GRAMS')"));
-        assertEquals(new BigDecimal("2.20462262"), ctx.getValue("party:getWeight(., 'POUNDS')"));
-
-        remove(weight1);
-        Act weight2 = PatientTestHelper.createWeight(patient, ONE_THOUSAND, WeightUnits.GRAMS);
-        checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(.)"));
-        checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(., 'KILOGRAMS')"));
-        checkEquals(ONE_THOUSAND, (BigDecimal) ctx.getValue("party:getWeight(., 'GRAMS')"));
-        assertEquals(new BigDecimal("2.20462262"), ctx.getValue("party:getWeight(., 'POUNDS')"));
-
-        remove(weight2);
-
-        PatientTestHelper.createWeight(patient, ONE, WeightUnits.POUNDS);
-        checkEquals(ONE_POUND_IN_KILOS, (BigDecimal) ctx.getValue("party:getWeight(.)"));
-        checkEquals(ONE_POUND_IN_KILOS, (BigDecimal) ctx.getValue("party:getWeight(., 'KILOGRAMS')"));
-        checkEquals(ONE_POUND_IN_GRAMS, (BigDecimal) ctx.getValue("party:getWeight(., 'GRAMS')"));
-        assertEquals(ONE, ctx.getValue("party:getWeight(., 'POUNDS')"));
-    }
-
-    /**
-     * Tests the {@link PartyFunctions#getWeight(Act)} and {@link PartyFunctions#getWeight(Act, String)} methods.
-     */
-    @Test
-    public void testActGetWeight() {
-        Party patient = TestHelper.createPatient();
         Act visit = (Act) create(PatientArchetypes.CLINICAL_EVENT);
-        ActBean bean = new ActBean(visit);
-        bean.addNodeParticipation("patient", patient);
+        IMObjectBean bean = getBean(visit);
+        bean.setTarget("patient", patient);
 
-        JXPathContext ctx = createContext(visit);
-        assertEquals(ZERO, ctx.getValue("party:getWeight(.)"));
+        JXPathContext context1 = createContext(patient);
+        JXPathContext context2 = createContext(visit);
+
+        assertEquals(ZERO, context1.getValue("party:getWeight(.)"));
+        assertEquals(ZERO, context2.getValue("party:getWeight(.)"));
 
         Act weight1 = PatientTestHelper.createWeight(patient, ONE, WeightUnits.KILOGRAMS);
-        checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(.)"));
-        checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(., 'KILOGRAMS')"));
-        checkEquals(ONE_THOUSAND, (BigDecimal) ctx.getValue("party:getWeight(., 'GRAMS')"));
-        assertEquals(new BigDecimal("2.20462262"), ctx.getValue("party:getWeight(., 'POUNDS')"));
+        checkEquals(ONE, (BigDecimal) context1.getValue("party:getWeight(.)"));
+        checkEquals(ONE, (BigDecimal) context1.getValue("party:getWeight(., 'KILOGRAMS')"));
+        checkEquals(ONE_THOUSAND, (BigDecimal) context1.getValue("party:getWeight(., 'GRAMS')"));
+        assertEquals(new BigDecimal("2.20462262"), context1.getValue("party:getWeight(., 'POUNDS')"));
+
+        checkEquals(ONE, (BigDecimal) context2.getValue("party:getWeight(.)"));
+        checkEquals(ONE, (BigDecimal) context2.getValue("party:getWeight(., 'KILOGRAMS')"));
+        checkEquals(ONE_THOUSAND, (BigDecimal) context2.getValue("party:getWeight(., 'GRAMS')"));
+        assertEquals(new BigDecimal("2.20462262"), context2.getValue("party:getWeight(., 'POUNDS')"));
+
+        // ExpressionContext form
+        checkEquals(ONE, (BigDecimal) context1.getValue("party:getWeight()"));
+        checkEquals(ONE, (BigDecimal) context2.getValue("party:getWeight()"));
+
+        // null handling
+        checkEquals(ZERO, (BigDecimal) context1.getValue("party:getWeight(null)"));
+        checkEquals(ZERO, (BigDecimal) context2.getValue("party:getWeight(null)"));
+
+        checkEquals(ZERO, (BigDecimal) context1.getValue("party:getWeight(null, 'KILOGRAMS')"));
+        checkEquals(ZERO, (BigDecimal) context2.getValue("party:getWeight(null, 'KILOGRAMS')"));
 
         remove(weight1);
         Act weight2 = PatientTestHelper.createWeight(patient, ONE_THOUSAND, WeightUnits.GRAMS);
-        checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(.)"));
-        checkEquals(ONE, (BigDecimal) ctx.getValue("party:getWeight(., 'KILOGRAMS')"));
-        checkEquals(ONE_THOUSAND, (BigDecimal) ctx.getValue("party:getWeight(., 'GRAMS')"));
-        assertEquals(new BigDecimal("2.20462262"), ctx.getValue("party:getWeight(., 'POUNDS')"));
+        checkEquals(ONE, (BigDecimal) context1.getValue("party:getWeight(.)"));
+        checkEquals(ONE, (BigDecimal) context1.getValue("party:getWeight(., 'KILOGRAMS')"));
+        checkEquals(ONE_THOUSAND, (BigDecimal) context1.getValue("party:getWeight(., 'GRAMS')"));
+        assertEquals(new BigDecimal("2.20462262"), context1.getValue("party:getWeight(., 'POUNDS')"));
+
+        checkEquals(ONE, (BigDecimal) context2.getValue("party:getWeight(.)"));
+        checkEquals(ONE, (BigDecimal) context2.getValue("party:getWeight(., 'KILOGRAMS')"));
+        checkEquals(ONE_THOUSAND, (BigDecimal) context2.getValue("party:getWeight(., 'GRAMS')"));
+        assertEquals(new BigDecimal("2.20462262"), context2.getValue("party:getWeight(., 'POUNDS')"));
 
         remove(weight2);
 
         PatientTestHelper.createWeight(patient, ONE, WeightUnits.POUNDS);
-        checkEquals(ONE_POUND_IN_KILOS, (BigDecimal) ctx.getValue("party:getWeight(.)"));
-        checkEquals(ONE_POUND_IN_KILOS, (BigDecimal) ctx.getValue("party:getWeight(., 'KILOGRAMS')"));
-        checkEquals(ONE_POUND_IN_GRAMS, (BigDecimal) ctx.getValue("party:getWeight(., 'GRAMS')"));
-        assertEquals(ONE, ctx.getValue("party:getWeight(., 'POUNDS')"));
+        checkEquals(ONE_POUND_IN_KILOS, (BigDecimal) context1.getValue("party:getWeight(.)"));
+        checkEquals(ONE_POUND_IN_KILOS, (BigDecimal) context1.getValue("party:getWeight(., 'KILOGRAMS')"));
+        checkEquals(ONE_POUND_IN_GRAMS, (BigDecimal) context1.getValue("party:getWeight(., 'GRAMS')"));
+        assertEquals(ONE, context1.getValue("party:getWeight(., 'POUNDS')"));
+
+        checkEquals(ONE_POUND_IN_KILOS, (BigDecimal) context2.getValue("party:getWeight(.)"));
+        checkEquals(ONE_POUND_IN_KILOS, (BigDecimal) context2.getValue("party:getWeight(., 'KILOGRAMS')"));
+        checkEquals(ONE_POUND_IN_GRAMS, (BigDecimal) context2.getValue("party:getWeight(., 'GRAMS')"));
+        assertEquals(ONE, context2.getValue("party:getWeight(., 'POUNDS')"));
     }
 
     /**
-     * Tests the {@link PartyFunctions#getPatientMicrochip(Act)} and {@link PartyFunctions#getMicrochip(Act)}
-     * methods.
+     * Tests the {@link PartyFunctions#getPatientWeight(Object)} and
+     * {@link PartyFunctions#getPatientWeight(ExpressionContext)} methods.
      */
     @Test
-    public void testActGetPatientMicrochip() {
-        Act act = (Act) create("act.customerEstimation");
-        Party patient = TestHelper.createPatient(false);
+    public void testGetPatientWeight() {
+        Party patient = TestHelper.createPatient();
 
-        JXPathContext ctx = createContext(act);
-        assertEquals("", ctx.getValue("party:getPatientMicrochip(.)"));
-        assertNull(ctx.getValue("party:getMicrochip(.)"));
+        Act visit = (Act) create(PatientArchetypes.CLINICAL_EVENT);
+        IMObjectBean bean = getBean(visit);
+        bean.setTarget("patient", patient);
+
+        JXPathContext context1 = createContext(patient);
+        JXPathContext context2 = createContext(visit);
+
+        assertEquals("", context1.getValue("party:getPatientWeight(.)"));
+        assertEquals("", context2.getValue("party:getPatientWeight(.)"));
+
+        PatientTestHelper.createWeight(patient, ONE, WeightUnits.KILOGRAMS);
+        assertEquals("1 Kilograms", context1.getValue("party:getPatientWeight(.)"));
+        assertEquals("1 Kilograms", context2.getValue("party:getPatientWeight(.)"));
+
+        // ExpressionContext form
+        assertEquals("1 Kilograms", context1.getValue("party:getPatientWeight()"));
+        assertEquals("1 Kilograms", context2.getValue("party:getPatientWeight()"));
+
+        // null handling
+        assertEquals("", context1.getValue("party:getPatientWeight(null)"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getPatientMicrochip(Object)}, {@link PartyFunctions#getMicrochip(Object)}
+     * {@link PartyFunctions#getPatientMicrochip(ExpressionContext)}, and
+     * {@link PartyFunctions#getMicrochip(ExpressionContext)} methods.
+     */
+    @Test
+    public void tesGetPatientMicrochip() {
+        Party patient = TestHelper.createPatient(false);
+        Act act = (Act) create("act.customerEstimationItem");
+
+        JXPathContext context1 = createContext(patient);
+        JXPathContext context2 = createContext(act);
+
+        assertEquals("", context1.getValue("party:getPatientMicrochip(.)")); // by Party
+        assertNull(context1.getValue("party:getMicrochip(.)"));
+
+        assertEquals("", context2.getValue("party:getPatientMicrochip(.)")); // by Act
+        assertNull(context2.getValue("party:getMicrochip(.)"));
+
+        // ExpressionContext form
+        assertEquals("", context1.getValue("party:getPatientMicrochip()"));
+        assertEquals("", context2.getValue("party:getPatientMicrochip()"));
+        assertNull(context1.getValue("party:getMicrochip()"));
+        assertNull(context2.getValue("party:getMicrochip()"));
 
         EntityIdentity microchip = (EntityIdentity) create("entityIdentity.microchip");
         IMObjectBean tagBean = getBean(microchip);
@@ -510,96 +775,67 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         patient.addIdentity(microchip);
         save(patient);
 
-        ActBean bean = new ActBean(act);
-        bean.addParticipation("participation.patient", patient);
+        IMObjectBean bean = getBean(act);
+        bean.setTarget("patient", patient);
 
-        assertEquals("1234567", ctx.getValue("party:getPatientMicrochip(.)"));
-        assertEquals(microchip, ctx.getValue("party:getMicrochip(.)"));
-        assertEquals("1234567", ctx.getValue("openvpms:get(party:getMicrochip(.), 'microchip')"));
+        // by Party
+        assertEquals("1234567", context1.getValue("party:getPatientMicrochip(.)"));
+        assertEquals(microchip, context1.getValue("party:getMicrochip(.)"));
+        assertEquals("1234567", context1.getValue("openvpms:get(party:getMicrochip(.), 'microchip')"));
+
+        // by Act
+        assertEquals("1234567", context2.getValue("party:getPatientMicrochip(.)"));
+        assertEquals(microchip, context2.getValue("party:getMicrochip(.)"));
+        assertEquals("1234567", context2.getValue("openvpms:get(party:getMicrochip(.), 'microchip')"));
+
+        // ExpressionContext
+        assertEquals("1234567", context1.getValue("party:getPatientMicrochip()"));
+        assertEquals(microchip, context1.getValue("party:getMicrochip()"));
+
+        // null handling
+        assertEquals("", context1.getValue("party:getPatientMicrochip(null)"));
+        assertNull(context1.getValue("party:getMicrochip(null)"));
     }
 
     /**
-     * Tests the {@link PartyFunctions#getPatientReferralVet(Act)} and
-     * {@link PartyFunctions#getPatientReferralVet(ExpressionContext)} methods.
-     */
-    @Test
-    public void testActGetPatientReferralVet() {
-        Party patient = TestHelper.createPatient();
-        Party vet = TestHelper.createSupplierVet();
-        EntityBean bean = new EntityBean(patient);
-        bean.addRelationship(PatientArchetypes.REFERRED_FROM, vet);
-        save(patient, vet);
-        Act act = (Act) create("act.customerEstimationItem");
-
-        JXPathContext ctx = createContext(act);
-        assertNull(ctx.getValue("party:getPatientReferralVet()"));  // invokes getPatientReferralVet(ExpressionContext)
-        assertNull(ctx.getValue("party:getPatientReferralVet(.)")); // invokes getPatientReferralVet(Act)
-
-        ActBean actBean = new ActBean(act);
-        actBean.addNodeParticipation("patient", patient);
-
-        assertEquals(vet, ctx.getValue("party:getPatientReferralVet()"));
-        assertEquals(vet, ctx.getValue("party:getPatientReferralVet(.)"));
-    }
-
-    /**
-     * Tests the {@link PartyFunctions#getPatientReferralVet(Party)} and
-     * {@link PartyFunctions#getPatientReferralVet(ExpressionContext)} methods.
+     * Tests the {@link PartyFunctions#getPatientReferralVet(Object)} and
+     * {@link PartyFunctions#getPatientReferralVet(ExpressionContext)} methods when invoked with either a
+     * patient or an act referencing a patient.
      */
     @Test
     public void testGetPatientReferralVet() {
         Party patient = TestHelper.createPatient();
         Party vet = TestHelper.createSupplierVet();
-
-        JXPathContext ctx = createContext(patient);
-
-        // verify that if the patient can't be resolved, null is returned
-        assertNull(ctx.getValue("party:getPatientReferralVet()"));  // invokes getPatientReferralVet(ExpressionContext)
-        assertNull(ctx.getValue("party:getPatientReferralVet(.)")); // invokes getPatientReferralVet(Party)
-
-        EntityBean bean = new EntityBean(patient);
-        bean.addRelationship(PatientArchetypes.REFERRED_TO, vet);
-        assertEquals(vet, ctx.getValue("party:getPatientReferralVet()"));
-        assertEquals(vet, ctx.getValue("party:getPatientReferralVet(.)"));
-    }
-
-    /**
-     * Tests the {@link PartyFunctions#getPatientReferralVetPractice(Act)} and
-     * {@link PartyFunctions#getPatientReferralVetPractice(ExpressionContext)} methods.
-     */
-    @Test
-    public void testActGetPatientReferralVetPractice() {
-        Party patient = TestHelper.createPatient();
-        Party vet = TestHelper.createSupplierVet();
-        Party practice = TestHelper.createSupplierVetPractice();
-
-        // create relationships between the patient, vet, and vet practice
-        EntityBean bean = new EntityBean(patient);
-        bean.addRelationship(PatientArchetypes.REFERRED_FROM, vet);
-        EntityBean practiceBean = new EntityBean(practice);
-        practiceBean.addNodeRelationship("veterinarians", vet);
-        save(patient, vet, practice);
-
         Act act = (Act) create("act.customerEstimationItem");
-        JXPathContext ctx = createContext(act);
 
-        // verify that if the patient can't be resolved, null is returned
-        assertNull(ctx.getValue("party:getPatientReferralVetPractice()"));
-        // invokes getPatientReferralVetPractice(ExpressionContext)
+        JXPathContext context1 = createContext(patient);
+        JXPathContext context2 = createContext(act);
 
-        assertNull(ctx.getValue("party:getPatientReferralVetPractice(.)"));
-        // invokes getPatientReferralVetPractice(Act)
+        assertNull(context1.getValue("party:getPatientReferralVet()"));  // getPatientReferralVet(ExpressionContext)
+        assertNull(context1.getValue("party:getPatientReferralVet(.)")); // getPatientReferralVet(Object)
 
-        // add the patient to the act, and verify the practice can be retrieved
-        ActBean actBean = new ActBean(act);
-        actBean.addNodeParticipation("patient", patient);
+        assertNull(context2.getValue("party:getPatientReferralVet()"));  // getPatientReferralVet(ExpressionContext)
+        assertNull(context2.getValue("party:getPatientReferralVet(.)")); // getPatientReferralVet(Object)
 
-        assertEquals(practice, ctx.getValue("party:getPatientReferralVetPractice()"));
-        assertEquals(practice, ctx.getValue("party:getPatientReferralVetPractice(.)"));
+        IMObjectBean bean = getBean(patient);
+        bean.addTarget("referrals", PatientArchetypes.REFERRED_FROM, vet);
+        save(patient, vet);
+
+        IMObjectBean actBean = getBean(act);
+        actBean.setTarget("patient", patient);
+
+        assertEquals(vet, context1.getValue("party:getPatientReferralVet()"));
+        assertEquals(vet, context1.getValue("party:getPatientReferralVet(.)"));
+
+        assertEquals(vet, context2.getValue("party:getPatientReferralVet()"));
+        assertEquals(vet, context2.getValue("party:getPatientReferralVet(.)"));
+
+        // null handling
+        assertNull(context1.getValue("party:getPatientReferralVet(null)"));
     }
 
     /**
-     * Tests the {@link PartyFunctions#getPatientReferralVetPractice(Party)} and
+     * Tests the {@link PartyFunctions#getPatientReferralVetPractice(Object)} and
      * {@link PartyFunctions#getPatientReferralVetPractice(ExpressionContext)} methods.
      */
     @Test
@@ -607,26 +843,34 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         Party patient = TestHelper.createPatient();
         Party vet = TestHelper.createSupplierVet();
         Party practice = TestHelper.createSupplierVetPractice();
+        Act act = (Act) create("act.customerEstimationItem");
+        JXPathContext context1 = createContext(patient);
+        JXPathContext context2 = createContext(act);
 
-        JXPathContext ctx = createContext(patient);
+        assertNull(context1.getValue("party:getPatientReferralVetPractice()"));   // ExpressionContext method
+        assertNull(context1.getValue("party:getPatientReferralVetPractice(.)"));  // Object method
 
-        // verify that if the vet can't be resolved, null is returned
-        assertNull(ctx.getValue("party:getPatientReferralVetPractice()"));
-        // invokes getPatientReferralVetPractice(ExpressionContext)
-
-        assertNull(ctx.getValue("party:getPatientReferralVetPractice(.)"));
-        // invokes getPatientReferralVetPractice(Party)
+        assertNull(context2.getValue("party:getPatientReferralVetPractice()"));   // ExpressionContext method
+        assertNull(context2.getValue("party:getPatientReferralVetPractice(.)"));  // Object method
 
         // create relationships between the patient, vet, and vet practice
-        EntityBean bean = new EntityBean(patient);
-        bean.addRelationship(PatientArchetypes.REFERRED_TO, vet);
-        EntityBean practiceBean = new EntityBean(practice);
-        practiceBean.addNodeRelationship("veterinarians", vet);
+        IMObjectBean bean = getBean(patient);
+        bean.addTarget("referrals", PatientArchetypes.REFERRED_FROM, vet);
+        IMObjectBean practiceBean = getBean(practice);
+        practiceBean.addTarget("veterinarians", vet);
         save(patient, vet, practice);
 
-        // verify the practice can be retrieved
-        assertEquals(practice, ctx.getValue("party:getPatientReferralVetPractice()"));
-        assertEquals(practice, ctx.getValue("party:getPatientReferralVetPractice(.)"));
+        IMObjectBean actBean = getBean(act);
+        actBean.setTarget("patient", patient);
+
+        assertEquals(practice, context1.getValue("party:getPatientReferralVetPractice()"));
+        assertEquals(practice, context1.getValue("party:getPatientReferralVetPractice(.)"));
+
+        assertEquals(practice, context2.getValue("party:getPatientReferralVetPractice()"));
+        assertEquals(practice, context2.getValue("party:getPatientReferralVetPractice(.)"));
+
+        // null handling
+        assertNull(context1.getValue("party:getPatientReferralVetPractice(null)"));
     }
 
     /**
@@ -649,23 +893,30 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
 
         JXPathContext ctx2 = createContext(invoice.get(1));
         checkEquals(total, (BigDecimal) ctx2.getValue("party:getAccountBalance(.)"));
+
+        // null handling
+        checkEquals(BigDecimal.ZERO, (BigDecimal) ctx1.getValue("party:getAccountBalance(null)"));
     }
 
     /**
-     * Tests the {@link PartyFunctions#getPatientRabiesTag(Party) and {@link PartyFunctions#getPatientRabiesTag(Act)}}
-     * methods.
+     * Tests the {@link PartyFunctions#getPatientRabiesTag(ExpressionContext)}
+     * and {@link PartyFunctions#getPatientRabiesTag(Object)} methods.
      */
     @Test
     public void testGetPatientRabiesTag() {
         Party patient = TestHelper.createPatient();
         Act visit = (Act) create(PatientArchetypes.CLINICAL_EVENT);
-        ActBean bean = new ActBean(visit);
-        bean.addNodeParticipation("patient", patient);
+        IMObjectBean bean = getBean(visit);
+        bean.setTarget("patient", patient);
 
-        JXPathContext patientCtx = createContext(patient);
-        JXPathContext visitCtx = createContext(visit);
-        assertEquals("", patientCtx.getValue("party:getPatientRabiesTag(.)"));
-        assertEquals("", visitCtx.getValue("party:getPatientRabiesTag(.)"));
+        JXPathContext context1 = createContext(patient);
+        JXPathContext context2 = createContext(visit);
+        assertEquals("", context1.getValue("party:getPatientRabiesTag(.)"));
+        assertEquals("", context2.getValue("party:getPatientRabiesTag(.)"));
+
+        // ExpressionContext form
+        assertEquals("", context1.getValue("party:getPatientRabiesTag()"));
+        assertEquals("", context2.getValue("party:getPatientRabiesTag()"));
 
         EntityIdentity tag = (EntityIdentity) create("entityIdentity.rabiesTag");
         String identity = "1234567890";
@@ -673,30 +924,19 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         patient.addIdentity(tag);
         getArchetypeService().save(patient, false);  // need to disabled validation as rabies tags are not enabled
 
-        assertEquals(identity, patientCtx.getValue("party:getPatientRabiesTag(.)"));
-        assertEquals(identity, visitCtx.getValue("party:getPatientRabiesTag(.)"));
+        assertEquals(identity, context1.getValue("party:getPatientRabiesTag(.)"));
+        assertEquals(identity, context2.getValue("party:getPatientRabiesTag(.)"));
+
+        // ExpressionContext form
+        assertEquals(identity, context1.getValue("party:getPatientRabiesTag()"));
+        assertEquals(identity, context2.getValue("party:getPatientRabiesTag()"));
+
+        // null handling
+        assertEquals("", context2.getValue("party:getPatientRabiesTag(null)"));
     }
 
     /**
-     * Tests the {@link PartyFunctions#getWebsite(Party)} method.
-     */
-    @Test
-    public void testGetWebsite() {
-        Party customer = TestHelper.createCustomer(false);
-        JXPathContext context = createContext(customer);
-
-        assertEquals("", context.getValue("party:getWebsite(.)"));
-
-        Contact contact = (Contact) create(ContactArchetypes.WEBSITE);
-        IMObjectBean bean = getBean(contact);
-        bean.setValue("url", "http://wwww.openvpms.org");
-        customer.addContact(contact);
-
-        assertEquals("http://wwww.openvpms.org", context.getValue("party:getWebsite(.)"));
-    }
-
-    /**
-     * Tests the {@link PartyFunctions#getLetterheadContacts(Party)} method.
+     * Tests the {@link PartyFunctions#getLetterheadContacts(Object)} method.
      */
     @Test
     public void testGetLetterheadContacts() {
@@ -714,14 +954,17 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         EntityBean bean = new EntityBean(letterhead);
         bean.setValue("name", "Z Test Letterhead");
         bean.setValue("logoFile", "logo.png");
-        EntityBean locationBean = new EntityBean(location1);
-        locationBean.addNodeTarget("letterhead", letterhead);
+        IMObjectBean locationBean = getBean(location1);
+        locationBean.setTarget("letterhead", letterhead);
         save(location1, letterhead);
         assertEquals(location1, context.getValue("party:getLetterheadContacts($location)"));
 
-        bean.addNodeTarget("contacts", location2);
+        bean.addTarget("contacts", location2);
         bean.save();
         assertEquals(location2, context.getValue("party:getLetterheadContacts($location)"));
+
+        // null handling
+        assertNull(context.getValue("party:getLetterheadContacts(null)"));
     }
 
     /**
@@ -785,7 +1028,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
         assertTrue(patient.isActive());
         JXPathContext context = createContext(patient);
         context.getValue("party:setPatientInactive(.)");
-        IMObject object = get(patient);
+        Party object = get(patient);
         assertFalse(object.isActive());
     }
 
@@ -796,7 +1039,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     public void testSetDeceased() {
         JXPathContext context = createContext(patient);
         context.getValue("party:setPatientDeceased(.)");
-        IMObject object = get(patient);
+        Party object = get(patient);
         assertFalse(object.isActive());
         IMObjectBean bean = getBean(object);
         assertTrue(bean.getBoolean("deceased"));
@@ -810,9 +1053,25 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
     public void testSetDesexed() {
         JXPathContext context = createContext(patient);
         context.getValue("party:setPatientDesexed(.)");
-        IMObject object = get(patient);
+        Party object = get(patient);
         IMObjectBean bean = getBean(object);
         assertTrue(bean.getBoolean("desexed"));
+    }
+
+    /**
+     * Tests the {@link PartyFunctions#getBpayId(Object)} and {@link PartyFunctions#getBpayId(ExpressionContext)}
+     * methods.
+     */
+    @Test
+    public void testGetBpayId() {
+        JXPathContext context = createContext(customer);
+        String expected = rules.getBpayId(customer);
+
+        assertEquals(expected, context.getValue("party:getBpayId(.)"));
+        assertEquals(expected, context.getValue("party:getBpayId()"));  // ExpressionContext form
+
+        // null handling
+        assertNull(expected, context.getValue("party:getBpayId(null)"));
     }
 
     /**
@@ -887,7 +1146,7 @@ public class PartyFunctionsTestCase extends ArchetypeServiceTest {
      * @param object the context object
      * @return a new JXPathContext
      */
-    private JXPathContext createContext(IMObject object) {
+    private JXPathContext createContext(org.openvpms.component.model.object.IMObject object) {
         // use the non-rules based archetype service, as that is what is used at deployment
         IArchetypeService service = applicationContext.getBean("defaultArchetypeService", IArchetypeService.class);
         ILookupService lookups = getLookupService();

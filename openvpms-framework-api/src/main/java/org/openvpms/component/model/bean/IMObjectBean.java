@@ -24,6 +24,7 @@ import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.model.object.Relationship;
 
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.function.Predicate;
@@ -400,6 +401,26 @@ public interface IMObjectBean {
      * @return the target object, or {@code null} if none is found
      */
     <R extends Relationship> IMObject getTarget(String name, Policy<R> policy);
+
+    /**
+     * Returns the target object from the first {@link Relationship} for the specified collection matching the policy.
+     *
+     * @param relationships the relationship collection
+     * @param policy        the policy for relationship selection and object retrieval
+     * @return the target object, or {@code null} if none is found
+     */
+    <R extends Relationship> IMObject getTarget(Collection<R> relationships, Policy<R> policy);
+
+    /**
+     * Returns the target object from the first {@link Relationship} for the specified collection matching the policy.
+     *
+     * @param relationships the relationship collection
+     * @param type          the object type
+     * @param policy        the policy for relationship selection and object retrieval
+     * @return the target object, or {@code null} if none is found
+     */
+    <T extends IMObject, R extends Relationship> T getTarget(Collection<R> relationships, Class<T> type,
+                                                             Policy<R> policy);
 
     /**
      * Returns the target object from the first {@link Relationship} for the specified node matching the policy.

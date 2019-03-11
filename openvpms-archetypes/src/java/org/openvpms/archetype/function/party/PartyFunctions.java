@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.function.party;
@@ -32,12 +32,14 @@ import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.EntityIdentity;
-import org.openvpms.component.business.service.archetype.ArchetypeServiceException;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.TypeHelper;
 import org.openvpms.component.business.service.lookup.ILookupService;
+import org.openvpms.component.model.act.Participation;
 import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.bean.Policies;
+import org.openvpms.component.model.bean.Policy;
+import org.openvpms.component.model.bean.Predicates;
 import org.openvpms.component.model.entity.Entity;
 import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.model.party.Contact;
@@ -46,6 +48,7 @@ import org.openvpms.component.model.party.Party;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -83,6 +86,18 @@ public class PartyFunctions {
     private final AppointmentRules appointmentRules;
 
     /**
+     * Policy to return the first customer participation from an act.
+     */
+    private static final Policy<Participation> CUSTOMER_PARTICIPATION
+            = Policies.any(Participation.class, Predicates.isA(CustomerArchetypes.CUSTOMER_PARTICIPATION));
+
+    /**
+     * Policy to return the first patient participation from an act.
+     */
+    private static final Policy<Participation> PATIENT_PARTICIPATION
+            = Policies.any(Participation.class, Predicates.isA(PatientArchetypes.PATIENT_PARTICIPATION));
+
+    /**
      * Constructs a {@link PartyFunctions}.
      *
      * @param service          the archetype service
@@ -102,102 +117,72 @@ public class PartyFunctions {
     /**
      * Returns a specified node for a customer.
      *
-     * @param customer the customer
+     * @param object   the object. May be a party or act
      * @param nodeName to node to return
      * @return the node Object, or {@code null} if none can be found
      */
     @Deprecated
-    public Object getCustomerNode(Party customer, String nodeName) {
-        return partyRules.getCustomerNode(customer, nodeName);
+    public Object getCustomerNode(Object object, String nodeName) {
+        Party customer = unwrapParty(object);
+        return (customer != null) ? partyRules.getCustomerNode(customer, nodeName) : null;
     }
 
     /**
-     * Returns the specified node of a customer associated with an act.
-     *
-     * @param act      the act
-     * @param nodeName to node to return
-     * @return the node Object, or {@code null}
-     */
-    public Object getCustomerNode(Act act, String nodeName) {
-        return partyRules.getCustomerNode(getCustomer(act), nodeName);
-    }
-
-    /**
-     * Returns the full name for the passed party.
+     * Returns the full name for a party.
      *
      * @param context the expression context. Expected to reference a party or an act.
      * @return the party's full name.
+     * @see #getPartyFullName(Object object)
      */
     public String getPartyFullName(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
-        Object value = pointer.getValue();
-        if (value instanceof Party) {
-            return getPartyFullName((Party) value);
-        } else if (value instanceof Act) {
-            return getPartyFullName((Act) value);
-        }
-        return null;
+        return getPartyFullName(pointer.getValue());
     }
 
     /**
      * Returns a formatted name for a party.
-     *
-     * @param party the party
-     * @return the party's formatted name
-     */
-    public String getPartyFullName(Party party) {
-        return partyRules.getFullName(party);
-    }
-
-    /**
-     * Returns a formatted name for a customer associated with an act.
-     * <p>
-     * The customer is retrieved via an <em>participation.customer</em> participation.
+     * <p/>
+     * If the supplied object is an act, the party is retrieved via an <em>participation.customer</em> participation.
      * If there is none, then the owner of the patient associated with any <em>participation.patient</em> is used.
      *
-     * @param act the act
-     * @return the party's formatted name
+     * @param object the object. May be a party or act, or {@code null}
+     * @return the party's formatted name, or an empty string if the party cannot be found
      */
-    public String getPartyFullName(Act act) {
-        return getPartyFullName(getCustomer(act));
-    }
-
-    /**
-     * Returns the current owner party for the passed party.
-     *
-     * @param context the expression context. Expected to reference a patient party or act containing an
-     *                <em>participation.patient</em>
-     * @return the patients current owner Party. May be {@code null}
-     */
-    public Party getPatientOwner(ExpressionContext context) {
-        Pointer pointer = context.getContextNodePointer();
-        Object value = pointer.getValue();
-        if (value instanceof Party) {
-            return getPatientOwner((Party) value);
-        } else if (value instanceof Act) {
-            return getPatientOwner((Act) value);
-        }
-        return null;
+    public String getPartyFullName(Object object) {
+        Party party = unwrapParty(object);
+        return (party != null) ? partyRules.getFullName(party) : "";
     }
 
     /**
      * Returns the owner of a patient.
      *
-     * @param patient the patient
-     * @return the patient's owner, or {@code null} if none can be found
+     * @param context the expression context. Expected to reference a party or act
+     * @return the patient's owner. May be {@code null}
+     * @see #getPatientOwner(Object)
      */
-    public Party getPatientOwner(Party patient) {
-        return patientRules.getOwner(patient);
+    public Party getPatientOwner(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        return getPatientOwner(pointer.getValue());
     }
 
     /**
-     * Returns the owner of a patient associated with an act.
+     * Returns the owner of a patient.
+     * <p/>
+     * If the supplied object is an act, then the returned owner will be that whose ownership period encompasses the
+     * act start time. If there is no such owner, the returned owner will be that whose ownership began
+     * closest to the act start time.
      *
-     * @param act the act
-     * @return the associated patients owner, or {@code null}
+     * @param object the patient, or an act referring to the patient, or {@code null}
+     * @return the patient's owner, or {@code null} if none can be found
      */
-    public Party getPatientOwner(Act act) {
-        return patientRules.getOwner(act);
+    public Party getPatientOwner(Object object) {
+        object = unwrap(object);
+        if (object instanceof Party) {
+            return patientRules.getOwner((Party) object);
+        } else if (object instanceof Act) {
+            return patientRules.getOwner((Act) object);
+        }
+        return null;
     }
 
     /**
@@ -211,23 +196,19 @@ public class PartyFunctions {
     }
 
     /**
-     * Returns the location for the patient associated with an act.
+     * Returns the location for the patient.
      *
-     * @param patient the patient
+     * @param object the patient, or an act referring to the patient
      * @return the associated party at the patient location, or {@code null}
      */
-    public Party getPatientLocation(Party patient) {
-        return patientRules.getLocation(patient);
-    }
-
-    /**
-     * Returns the location for the patient associated with an act.
-     *
-     * @param act the act. May be {@code null}
-     * @return the associated party at the patient location, or {@code null}
-     */
-    public Party getPatientLocation(Act act) {
-        return patientRules.getLocation(act);
+    public Party getPatientLocation(Object object) {
+        object = unwrap(object);
+        if (object instanceof Party) {
+            return patientRules.getLocation((Party) object);
+        } else if (object instanceof Act) {
+            return patientRules.getLocation((Act) object);
+        }
+        return null;
     }
 
     /**
@@ -270,179 +251,113 @@ public class PartyFunctions {
     /**
      * Returns a formatted list of preferred contacts for a party.
      *
-     * @param context the expression context. Expected to reference a party.
-     * @return a formatted list of contacts. May be {@code null}
+     * @param context the expression context. Expected to reference a party or an act.
+     * @return a formatted list of contacts, or an empty string if there are none
+     * @see #getPreferredContacts(Object)
      */
     public String getPreferredContacts(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
-        if (pointer == null || !(pointer.getValue() instanceof Party)) {
-            return null;
-        }
-
-        return getPreferredContacts((Party) pointer.getValue());
+        return getPreferredContacts(pointer.getValue());
     }
 
     /**
      * Returns a formatted list of preferred contacts for a party.
+     * <p/>
+     * If the supplied object is an act, the party is retrieved via an <em>participation.customer</em> participation.
+     * If there is none, then the owner of the patient associated with any <em>participation.patient</em> is used.
      *
-     * @param party the party
-     * @return a formatted list of contacts
+     * @param object the object. May be a party or act, or {@code null}
+     * @return a formatted list of contacts, or an empty string if there are none
      */
-    public String getPreferredContacts(Party party) {
-        if (party != null) {
-            return partyRules.getPreferredContacts(party);
-        }
-        return "";
+    public String getPreferredContacts(Object object) {
+        Party party = unwrapParty(object);
+        return (party != null) ? partyRules.getPreferredContacts(party) : "";
     }
 
     /**
      * Returns a formatted billing address for a party.
      *
      * @param context the expression context. Expected to reference a party or act
-     * @return a formatted billing address, or {@code null}
+     * @return a formatted billing address, or an empty string if there is no corresponding
+     * <em>contact.location</em> contact
+     * @see #getBillingAddress(Object)
      */
-
     public String getBillingAddress(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
-        Object value = pointer.getValue();
-        if (value instanceof Party) {
-            return getBillingAddress((Party) value);
-
-        } else if (value instanceof Act) {
-            return getBillingAddress((Act) value);
-        }
-        return null;
+        return getBillingAddress(pointer.getValue());
     }
 
     /**
      * Returns a formatted billing address for a party.
+     * <br/>
+     * If the supplied object is an act, the party is retrieved via an <em>participation.customer</em> participation.
+     * If there is none, then the owner of the patient associated with any <em>participation.patient</em> is used.
      *
-     * @param party the party. May be {@code null}.
-     * @return a formatted billing address for the party, or an empty string if the party is null or if the party has
-     * no corresponding <em>contact.location</em> contact
+     * @param object the object. May be a party or act, or {@code null}
+     * @return a formatted billing address, or an empty string if there is no corresponding
+     * <em>contact.location</em> contact
      */
-    public String getBillingAddress(Party party) {
-        return getBillingAddress(party, false);
+    public String getBillingAddress(Object object) {
+        return getBillingAddress(object, false);
     }
 
     /**
      * Returns a formatted billing address for a party.
+     * <br/>
+     * If the supplied object is an act, the party is retrieved via an <em>participation.customer</em> participation.
+     * If there is none, then the owner of the patient associated with any <em>participation.patient</em> is used.
      *
-     * @param party      the party. May be {@code null}.
+     * @param object     the object. May be a party or act, or {@code null}
      * @param singleLine if {@code true}, return the address as a single line
-     * @return a formatted billing address for the party, or an empty string if the party is null or if the party has
-     * no corresponding <em>contact.location</em> contact
+     * @return a formatted billing address, or an empty string if there is no corresponding
+     * <em>contact.location</em> contact
      */
-    public String getBillingAddress(Party party, boolean singleLine) {
-        return partyRules.getBillingAddress(party, singleLine);
+    public String getBillingAddress(Object object, boolean singleLine) {
+        Party customer = unwrapParty(object);
+        return (customer != null) ? partyRules.getBillingAddress(customer, singleLine) : "";
     }
 
     /**
-     * Returns a formatted billing address for a customer associated with an
-     * act via an <em>participation.customer</em> participation.
-     *
-     * @param act the act. May be {@code null}
-     * @return a formatted billing address for a party. May be empty if the act has no customer party or the party has
-     * no corresponding <em>contact.location</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public String getBillingAddress(Act act) {
-        return getBillingAddress(act, false);
-    }
-
-    /**
-     * Returns a formatted billing address for a customer associated with an
-     * act via an <em>participation.customer</em> participation.
-     *
-     * @param act        the act. May be {@code null}
-     * @param singleLine if {@code true}, return the address as a single line
-     * @return a formatted billing address for a party. May be empty if the act has no customer party or the party has
-     * no corresponding <em>contact.location</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public String getBillingAddress(Act act, boolean singleLine) {
-        return partyRules.getBillingAddress(getCustomer(act), singleLine);
-    }
-
-    /**
-     * Returns a formatted billing address for a party.
+     * Returns a formatted correspondence address for a party.
      *
      * @param context the expression context. Expected to reference a party or act
-     * @return a formatted billing address, or {@code null}
+     * @return a formatted correspondence address for a party. May be empty if there is no corresponding
+     * <em>contact.location</em> contact
+     * @see #getCorrespondenceAddress(Object)
      */
     public String getCorrespondenceAddress(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
-        Object value = pointer.getValue();
-        if (value instanceof Party) {
-            return getCorrespondenceAddress((Party) value);
-        } else if (value instanceof Act) {
-            return getCorrespondenceAddress((Act) value);
-        }
-        return null;
+        return getCorrespondenceAddress(pointer.getValue());
     }
 
     /**
      * Returns a formatted correspondence address for a party.
+     * <br/>
+     * If the supplied object is an act, the party is retrieved via an <em>participation.customer</em> participation.
+     * If there is none, then the owner of the patient associated with any <em>participation.patient</em> is used.
      *
-     * @param party the party. May be {@code null}
+     * @param object the object. May be a party, or an act, or {@code null}
      * @return a formatted correspondence address for a party. May be empty if there is no corresponding
      * <em>contact.location</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getCorrespondenceAddress(Party party) {
-        return getCorrespondenceAddress(party, false);
+    public String getCorrespondenceAddress(Object object) {
+        return getCorrespondenceAddress(object, false);
     }
 
     /**
      * Returns a formatted correspondence address for a party.
+     * <br/>
+     * If the supplied object is an act, the party is retrieved via an <em>participation.customer</em> participation.
+     * If there is none, then the owner of the patient associated with any <em>participation.patient</em> is used.
      *
-     * @param party      the party. May be {@code null}
+     * @param object     the object. May be a party, or an act, or {@code null}
      * @param singleLine if {@code true}, return the address as a single line
      * @return a formatted correspondence address for a party. May be empty if
      * there is no corresponding <em>contact.location</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getCorrespondenceAddress(org.openvpms.component.model.party.Party party, boolean singleLine) {
-        return partyRules.getCorrespondenceAddress(party, singleLine);
-    }
-
-    /**
-     * Returns a formatted correspondence address for a customer associated with
-     * an act via an <em>participation.customer</em> participation.
-     *
-     * @param act the act. May be {@code null}
-     * @return a formatted correspondence address for a party. May be empty if the act has no customer party or the
-     * party has no corresponding <em>contact.location</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public String getCorrespondenceAddress(Act act) {
-        return getCorrespondenceAddress(act, false);
-    }
-
-    /**
-     * Returns a formatted correspondence address for a customer associated with
-     * an act via an <em>participation.customer</em> participation.
-     *
-     * @param act the act. May be {@code null}
-     * @return a formatted correspondence address for a party. May be empty if the act has no customer party or the
-     * party has no corresponding <em>contact.location</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public String getCorrespondenceAddress(Act act, boolean singleLine) {
-        return partyRules.getCorrespondenceAddress(getCustomer(act), singleLine);
-    }
-
-    /**
-     * Returns a formatted correspondence name and address for a customer associated with
-     * an act via an <em>participation.customer</em> participation.
-     *
-     * @return a formatted name and billing address for a party. May be empty if
-     * the act has no customer party or the party has no corresponding
-     * <em>contact.location</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public String getCorrespondenceNameAddress(Act act) {
-        return partyRules.getCorrespondenceNameAddress(getCustomer(act), false);
+    public String getCorrespondenceAddress(Object object, boolean singleLine) {
+        Party party = unwrapParty(object);
+        return (party != null) ? partyRules.getCorrespondenceAddress(party, singleLine) : "";
     }
 
     /**
@@ -454,7 +369,6 @@ public class PartyFunctions {
      * @param party   the party
      * @param purpose the contact purpose of the address
      * @return a formatted address. May be empty if there is no corresponding <em>contact.location</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
      */
     public String getAddress(Party party, String purpose) {
         return getAddress(party, purpose, false);
@@ -470,219 +384,214 @@ public class PartyFunctions {
      * @param purpose    the contact purpose of the address
      * @param singleLine if {@code true}, return the address as a single line
      * @return a formatted address. May be empty if there is no corresponding <em>contact.location</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
      */
     public String getAddress(Party party, String purpose, boolean singleLine) {
         return partyRules.getAddress(party, purpose, singleLine);
     }
 
     /**
-     * Returns a formatted telephone number for a customer.
+     * Returns a formatted telephone number for a party.
      *
-     * @param party the customer
-     * @return a formatted telephone number. party. May be empty if there is no corresponding
+     * @param context the expression context. Expected to reference a party or an act.
+     * @return a formatted telephone number. May be empty if there is no corresponding
      * <em>contact.phoneNumber</em> contact.
-     * @throws ArchetypeServiceException for any archetype service error
+     * @see #getTelephone(Object)
      */
-    public String getTelephone(Party party) {
+    public String getTelephone(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        return getTelephone(pointer.getValue());
+    }
+
+    /**
+     * Returns a formatted telephone number for a party.
+     * <br/>
+     * If the supplied object is an act, the party is retrieved via an <em>participation.customer</em> participation.
+     * If there is none, then the owner of the patient associated with any <em>participation.patient</em> is used.
+     *
+     * @param object the object. May be a party, or an act, or {@code null}
+     * @return a formatted telephone number. May be empty if there is no corresponding
+     * <em>contact.phoneNumber</em> contact.
+     */
+    public String getTelephone(Object object) {
+        Party party = unwrapParty(object);
         return (party != null) ? partyRules.getTelephone(party) : "";
     }
 
     /**
-     * Returns a formatted telephone number for a customer associated with
-     * an act via an <em>participation.customer</em> participation.
+     * Returns a formatted home telephone number for a party.
      *
-     * @param act the act. May be {@code null}
-     * @return a formatted telephone number. party. May be empty if there is no corresponding
-     * <em>contact.phoneNumber</em> contact.
-     * @throws ArchetypeServiceException for any archetype service error
+     * @param context the expression context. Expected to reference a party or an act
+     * @return a formatted home telephone number for the party. May be empty if there is no corresponding
+     * <em>contact.phoneNumber</em> contact
+     * @see #getHomeTelephone(Object)
      */
-    public String getTelephone(Act act) {
-        return partyRules.getTelephone(getCustomer(act));
+    public String getHomeTelephone(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        return getHomeTelephone(pointer.getValue());
     }
 
     /**
      * Returns a formatted home telephone number for a party.
      * <p>
      * This will return a phone contact with HOME purpose, or any phone contact if there is none.
+     * <br/>
+     * If the supplied object is an act, the party is retrieved via an <em>participation.customer</em> participation.
+     * If there is none, then the owner of the patient associated with any <em>participation.patient</em> is used.
      *
-     * @param party the party
+     * @param object the object. May be a party, or an act, or {@code null}
      * @return a formatted home telephone number for the party. May be empty if there is no corresponding
      * <em>contact.phoneNumber</em> contact
      */
-    public String getHomeTelephone(Party party) {
-        return partyRules.getHomeTelephone(party);
+    public String getHomeTelephone(Object object) {
+        Party party = unwrapParty(object);
+        return (party != null) ? partyRules.getHomeTelephone(party) : "";
     }
 
     /**
-     * Returns a formatted home telephone number for a customer associated with
-     * an act via an <em>participation.customer</em> participation.
+     * Returns a formatted work telephone number for a party.
      *
-     * @param act the act
-     * @return a formatted telephone number for the party. May be empty if
-     * the act has no customer party or the party has no corresponding
-     * <em>contact.phoneNumber</em> contact with <em>HOME</em> purpose
-     * @throws ArchetypeServiceException for any archetype service error
+     * @param context the expression context. Expected to reference a party or an act.
+     * @return a formatted home telephone number for the party. May be empty if there is no corresponding
+     * <em>contact.phoneNumber</em> contact
+     * @see #getWorkTelephone(Object)
      */
-    public String getHomeTelephone(Act act) {
-        return partyRules.getHomeTelephone(getCustomer(act));
+    public String getWorkTelephone(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        return getWorkTelephone(pointer.getValue());
     }
 
     /**
-     * Retuurns a formatted work telephone number for a customer.
+     * Returns a formatted work telephone number for a party.
+     * <p>
+     * This will only return a phone contact with WORK purpose.
+     * <br/>
+     * If the supplied object is an act, the party is retrieved via an <em>participation.customer</em> participation.
+     * If there is none, then the owner of the patient associated with any <em>participation.patient</em> is used.
      *
-     * @param party the customer
-     * @return a formatted telephone number for the party. May be empty if
-     * there is no corresponding <em>contact.phoneNumber</em> contact
-     * with <em>WORK</em> purpose
-     */
-    public String getWorkTelephone(Party party) {
-        return partyRules.getWorkTelephone(party);
-    }
-
-    /**
-     * Returns a formatted work telephone number for a customer associated with
-     * an act via an <em>participation.customer</em> participation.
-     *
-     * @param act the act
-     * @return a formatted telephone number for the party. May be empty if
-     * the act has no customer party or the party has no corresponding
+     * @param object the object. May be a party, or an act, or {@code null}
+     * @return a formatted telephone number for the party. May be empty if there is no corresponding
      * <em>contact.phoneNumber</em> contact with <em>WORK</em> purpose
-     * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getWorkTelephone(Act act) {
-        return partyRules.getWorkTelephone(getCustomer(act));
+    public String getWorkTelephone(Object object) {
+        Party party = unwrapParty(object);
+        return (party != null) ? partyRules.getWorkTelephone(party) : "";
     }
 
     /**
-     * Returns a formatted mobile telephone number for a customer.
+     * Returns a formatted mobile telephone number for a party.
      *
-     * @param party the customer
-     * @return a formatted telephone number for the party. May be empty if
-     * there is no corresponding <em>contact.phoneNumber</em> contact
-     * with <em>MOBILE</em> purpose
+     * @param context the expression context. Expected to reference a party or an act.
+     * @return a formatted home telephone number for the party. May be empty if there is no corresponding
+     * <em>contact.phoneNumber</em> contact
+     * @see #getMobileTelephone(Object)
      */
-    public String getMobileTelephone(Party party) {
-        return partyRules.getMobileTelephone(party);
+    public String getMobileTelephone(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        return getMobileTelephone(pointer.getValue());
     }
 
     /**
-     * Returns a formatted mobile telephone number for a customer associated with
-     * an act via an <em>participation.customer</em> participation.
+     * Returns a formatted mobile telephone number for a party.
+     * <p>
+     * This will only return a phone contact with MOBILE purpose.
+     * <br/>
+     * If the supplied object is an act, the party is retrieved via an <em>participation.customer</em> participation.
+     * If there is none, then the owner of the patient associated with any <em>participation.patient</em> is used.
      *
-     * @param act the act
-     * @return a formatted telephone number for the party. May be empty if
-     * the act has no customer party or the party has no corresponding
+     * @param object the object. May be a party, or an act, or {@code null}
+     * @return a formatted telephone number for the party. May be empty if there is no corresponding
      * <em>contact.phoneNumber</em> contact with <em>MOBILE</em> purpose
-     * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getMobileTelephone(Act act) {
-        return partyRules.getMobileTelephone(getCustomer(act));
+    public String getMobileTelephone(Object object) {
+        Party party = unwrapParty(object);
+        return (party != null) ? partyRules.getMobileTelephone(party) : "";
     }
 
     /**
      * Returns a formatted fax number for a party.
      *
-     * @param context the expression context. Expected to reference a party
+     * @param context the expression context. Expected to reference a party or an act.
      * @return a formatted fax number. party. May be empty if there is no corresponding <em>contact.phoneNumber</em>
      * contact with a FAX purpose
+     * @see #getFaxNumber(Object)
      */
     public String getFaxNumber(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
-        Object value = pointer.getValue();
-        if (value instanceof Party) {
-            return getFaxNumber((Party) value);
-        } else if (value instanceof Act) {
-            return getFaxNumber((Act) value);
-        }
-        return "";
+        return getFaxNumber(pointer.getValue());
     }
 
     /**
      * Returns a formatted fax number for a party.
+     * <p>
+     * This will only return a phone contact with FAX purpose.
+     * <br/>
+     * If the supplied object is an act, the party is retrieved via an <em>participation.customer</em> participation.
+     * If there is none, then the owner of the patient associated with any <em>participation.patient</em> is used.
      *
+     * @param object the object. May be a party, or an act, or {@code null}
      * @return a formatted fax number. party. May be empty if there is no corresponding <em>contact.phoneNumber</em>
      * contact with a FAX purpose
-     * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getFaxNumber(Party party) {
-        if (party != null) {
-            return partyRules.getFaxNumber(party);
-        }
-        return "";
-    }
-
-    /**
-     * Returns a formatted fax number for an act.
-     *
-     * @return a formatted fax number. party. May be empty if there is no corresponding <em>contact.phoneNumber</em>
-     * contact with a FAX purpose
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public String getFaxNumber(Act act) {
-        return partyRules.getFaxNumber(getCustomer(act));
+    public String getFaxNumber(Object object) {
+        Party party = unwrapParty(object);
+        return (party != null) ? partyRules.getFaxNumber(party) : "";
     }
 
     /**
      * Returns a formatted email address for a party.
      *
-     * @param context the expression context. Expected to reference a party
-     * @return a formatted email address. party. May be empty if
-     * there is no corresponding <em>contact.email</em> contact
+     * @param context the expression context. Expected to reference a party or an act.
+     * @return a formatted email address. May be empty if there is no corresponding <em>contact.email</em> contact
+     * @see #getEmailAddress(Object)
      */
     public String getEmailAddress(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
-        Object value = pointer.getValue();
-        if (value instanceof Party) {
-            return getEmailAddress((Party) value);
-        } else if (value instanceof Act) {
-            return getEmailAddress((Act) value);
-        }
-        return "";
+        return getEmailAddress(pointer.getValue());
     }
 
     /**
      * Returns a formatted email address for a party.
+     * <br/>
+     * If the supplied object is an act, the party is retrieved via an <em>participation.customer</em> participation.
+     * If there is none, then the owner of the patient associated with any <em>participation.patient</em> is used.
      *
-     * @return a formatted email address for a party. May be empty if
-     * there is no corresponding <em>contact.email</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
+     * @param object the object. May be a party, or an act, or {@code null}
+     * @return a formatted email address for a party. May be empty if there is no corresponding <em>contact.email</em>
+     * contact
      */
-    public String getEmailAddress(Party party) {
-        if (party != null) {
-            return partyRules.getEmailAddress(party);
-        }
-        return "";
+    public String getEmailAddress(Object object) {
+        Party party = unwrapParty(object);
+        return (party != null) ? partyRules.getEmailAddress(party) : "";
     }
 
     /**
-     * Returns a formatted email Address for an act.
+     * Returns a website URL for a party.
      *
-     * @return a formatted email Address for a party. May be empty if
-     * there is no corresponding <em>contact.email</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
+     * @param context the expression context. Expected to reference a party or an act.
+     * @return the website URL of the party. May be empty if there is no corresponding <em>contact.website</em> contact
+     * @see #getWebsite(Object)
      */
-    public String getEmailAddress(Act act) {
-        return partyRules.getEmailAddress(getCustomer(act));
+    public String getWebsite(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        return getWebsite(pointer.getValue());
     }
 
     /**
      * Returns the website URL for a party.
      *
-     * @param party the party. May be {@code null}
+     * @param object the object. May be a party, or an act, or {@code null}
      * @return the website URL of the party. May be empty if there is no corresponding <em>contact.website</em> contact
-     * @throws ArchetypeServiceException for any archetype service error
      */
-    public String getWebsite(Party party) {
-        return partyRules.getWebsite(party);
+    public String getWebsite(Object object) {
+        Party party = unwrapParty(object);
+        return (party != null) ? partyRules.getWebsite(party) : "";
     }
 
     /**
      * Returns a formatted contact purpose string for the Contact.
      *
      * @param context the expression context. Expected to reference a contact.
-     * @return a formatted string with the contacts contact purposes,
-     * or {@code null}
+     * @return a formatted string with the contacts contact purposes, or an empty string if none are present
      */
     public String getContactPurposes(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
@@ -701,24 +610,18 @@ public class PartyFunctions {
      */
     public String identities(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
-        if (pointer == null || !(pointer.getValue() instanceof Party)) {
-            return "";
-        }
-        Party party = (Party) pointer.getValue();
-        return identities(party);
+        return identities(pointer.getValue());
     }
 
     /**
      * Returns a stringified form of a party's identities.
      *
-     * @param party the party. May be {@code null}
+     * @param object the object. May be {@code null}
      * @return the stringified form of the party's identities
      */
-    public String identities(Party party) {
-        if (party == null) {
-            return "";
-        }
-        return partyRules.getIdentities(party);
+    public String identities(Object object) {
+        Party party = unwrapPatient(object);
+        return (party != null) ? partyRules.getIdentities(party) : "";
     }
 
     /**
@@ -728,44 +631,27 @@ public class PartyFunctions {
      * @return the account balance
      */
     public BigDecimal getAccountBalance(ExpressionContext context) {
-        BigDecimal result = BigDecimal.ZERO;
         Pointer pointer = context.getContextNodePointer();
-        Object value = pointer.getValue();
-        if (value instanceof Party) {
-            result = getAccountBalance((Party) value);
-
-        } else if (value instanceof Act) {
-            result = getAccountBalance((Act) value);
-        }
-        return result;
+        return getAccountBalance(pointer.getValue());
     }
 
     /**
      * Returns the account balance for a party.
+     * <br/>
+     * If the supplied object is an act, the party is retrieved via an <em>participation.customer</em> participation.
+     * If there is none, then the owner of the patient associated with any <em>participation.patient</em> is used.
      *
-     * @param party the party. May be {@code null}.
+     * @param object the object. May be a party, or an act, or {@code null}
      * @return the current account Balance
      */
-    public BigDecimal getAccountBalance(Party party) {
+    public BigDecimal getAccountBalance(Object object) {
         BigDecimal result = BigDecimal.ZERO;
+        Party party = unwrapParty(object);
         if (party != null) {
             BalanceCalculator calculator = new BalanceCalculator(service);
             result = calculator.getBalance(party);
         }
         return result;
-    }
-
-    /**
-     * Returns the current account balance for a customer associated with an
-     * act via an <em>participation.customer</em> or <em>participation.patient</em>
-     * participation.
-     *
-     * @param act the act
-     * @return the current account balance
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public BigDecimal getAccountBalance(Act act) {
-        return getAccountBalance(getCustomer(act));
     }
 
     /**
@@ -784,51 +670,37 @@ public class PartyFunctions {
      */
     public Party getPatientReferralVet(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
-        Object value = pointer.getValue();
-        if (value instanceof Act) {
-            return getPatientReferralVet((Act) value);
-        } else if (value instanceof Party) {
-            return getPatientReferralVet((Party) value);
-        }
-        return null;
-    }
-
-    /**
-     * Returns the referral vet for a patient linked to an act.
-     * <p>
-     * This is the patient's associated party from the first matching
-     * <em>entityRelationship.referredFrom</em> or
-     * <em>entityRelationship.referredTo</em> overlapping the act's start time.
-     *
-     * @param act the act. May be {@code null}
-     * @return the referral vet, or {@code null} if there is no patient associated with the act, the act has no start
-     * time, or the patient isn't being referred
-     */
-    public Party getPatientReferralVet(Act act) {
-        Party vet = null;
-        if (act != null) {
-            Date startTime = act.getActivityStartTime();
-            Party patient = getPatient(act);
-            if (patient != null && startTime != null) {
-                PatientRules rules = patientRules;
-                vet = rules.getReferralVet(patient, startTime);
-            }
-        }
-        return vet;
+        return getPatientReferralVet(pointer.getValue());
     }
 
     /**
      * Returns the referral vet for a patient.
-     * <p>
-     * This is the patient's associated party from the first matching <em>entityRelationship.referredFrom</em> or
-     * <em>entityRelationship.referredTo</em> overlapping the current time.
+     * <p/>
+     * If a patient is supplied, this is the patient's associated party from the first matching
+     * <em>entityRelationship.referredFrom</em> or <em>entityRelationship.referredTo</em> overlapping the current time.
+     * <br/>
+     * If an act is supplied, this is the patient's associated party from the first matching
+     * <em>entityRelationship.referredFrom</em> or <em>entityRelationship.referredTo</em> overlapping the act's start
+     * time.
      *
-     * @param patient the patient. May be {@code null}
+     * @param object the object. May be {@code null}
      * @return the referral vet, or {@code null} if there is no patient associated with the act, the act has no start
      * time, or the patient isn't being referred
      */
-    public Party getPatientReferralVet(Party patient) {
-        return (patient != null) ? patientRules.getReferralVet(patient, new Date()) : null;
+    public Party getPatientReferralVet(Object object) {
+        Party vet = null;
+        object = unwrap(object);
+        if (object instanceof Party) {
+            vet = patientRules.getReferralVet((Party) object, new Date());
+        } else if (object instanceof Act) {
+            Act act = (Act) object;
+            Date startTime = act.getActivityStartTime();
+            Party patient = getPatient(act);
+            if (patient != null && startTime != null) {
+                vet = patientRules.getReferralVet(patient, startTime);
+            }
+        }
+        return vet;
     }
 
     /**
@@ -838,26 +710,21 @@ public class PartyFunctions {
      * @return the practice the vet is associated with or {@code null} if the vet is not associated with any practice
      */
     public Party getPatientReferralVetPractice(ExpressionContext context) {
-        Party result = null;
         Pointer pointer = context.getContextNodePointer();
-        Object value = pointer.getValue();
-        if (value instanceof Act) {
-            result = getPatientReferralVetPractice((Act) value);
-        } else if (value instanceof Party) {
-            result = getPatientReferralVetPractice((Party) value);
-        }
-        return result;
+        return getPatientReferralVetPractice(pointer.getValue());
     }
 
     /**
      * Returns the referral vet practice for a vet associated with the supplied act's patient.
      *
-     * @param act the act. May be {@code null}
+     * @param object the act. May be {@code null}
      * @return the practice the vet is associated with or {@code null} if the vet is not associated with any practice
      */
-    public Party getPatientReferralVetPractice(Act act) {
+    public Party getPatientReferralVetPractice(Object object) {
         Party result = null;
-        if (act != null) {
+        object = unwrap(object);
+        if (object instanceof Act) {
+            Act act = (Act) object;
             Date startTime = act.getActivityStartTime();
             if (startTime != null) {
                 Party vet = getPatientReferralVet(act);
@@ -865,20 +732,8 @@ public class PartyFunctions {
                     result = getReferralVetPractice(vet, startTime);
                 }
             }
-        }
-        return result;
-    }
-
-    /**
-     * Returns the referral vet practice for a vet associated with the supplied patient.
-     *
-     * @param patient the patient. May be {@code null}
-     * @return the practice the vet is associated with or {@code null} if the vet is not associated with any practice
-     */
-    public Party getPatientReferralVetPractice(Party patient) {
-        Party result = null;
-        if (patient != null) {
-            Party vet = getPatientReferralVet(patient);
+        } else if (object instanceof Party) {
+            Party vet = getPatientReferralVet(object);
             if (vet != null) {
                 result = getReferralVetPractice(vet, new Date());
             }
@@ -887,13 +742,11 @@ public class PartyFunctions {
     }
 
     /**
-     * Returns the referral vet practice for a vet overlapping the specified
-     * time.
+     * Returns the referral vet practice for a vet overlapping the specified time.
      *
      * @param vet  the vet
      * @param time the time
-     * @return the practice the vet is associated with or {@code null} if
-     * the vet is not associated with any practice
+     * @return the practice the vet is associated with or {@code null} if the vet is not associated with any practice
      */
     public Party getReferralVetPractice(Party vet, Date time) {
         return supplierRules.getReferralVetPractice(vet, time);
@@ -909,10 +762,7 @@ public class PartyFunctions {
      */
     public String getPatientAge(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
-        if (pointer == null || !(pointer.getValue() instanceof Party)) {
-            return null;
-        }
-        return getPatientAge((Party) pointer.getValue());
+        return getPatientAge(pointer.getValue());
     }
 
     /**
@@ -920,21 +770,35 @@ public class PartyFunctions {
      * <p>
      * If the patient is deceased, the age of the patient when they died will be returned
      *
-     * @param patient the patient
+     * @param object the patient
      * @return the stringified form of the patient's age
      */
-    public String getPatientAge(Party patient) {
-        return patientRules.getPatientAge(patient);
+    public String getPatientAge(Object object) {
+        Party patient = unwrapPatient(object);
+        return (patient != null) ? patientRules.getPatientAge(patient) : "";
     }
 
     /**
      * Returns the patient microchip.
      *
-     * @param patient the patient. May be {@code null}
+     * @param context the expression context. Expected to reference an patient, or an act containing a patient
      * @return the microchip, or an empty string if none is found
      */
-    public String getPatientMicrochip(Party patient) {
+    public String getPatientMicrochip(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        return getPatientMicrochip(pointer.getValue());
+    }
+
+
+    /**
+     * Returns the patient microchip.
+     *
+     * @param object the object. May be a patient, act, or {@code null}
+     * @return the microchip, or an empty string if none is found
+     */
+    public String getPatientMicrochip(Object object) {
         String result = null;
+        Party patient = unwrapPatient(object);
         if (patient != null) {
             result = patientRules.getMicrochipNumber(patient);
         }
@@ -944,56 +808,16 @@ public class PartyFunctions {
     /**
      * Returns the patient microchips, separated by commas.
      *
-     * @param patient the patient. May be {@code null}
+     * @param object the object. May be a patient, act, or {@code null}
      * @return the microchips, or an empty string if none is found
      */
-    public String getPatientMicrochips(Party patient) {
+    public String getPatientMicrochips(Object object) {
         String result = null;
+        Party patient = unwrapPatient(object);
         if (patient != null) {
             result = patientRules.getMicrochipNumbers(patient);
         }
         return (result != null) ? result : "";
-    }
-
-    /**
-     * Returns the microchip of a patient associated with an act.
-     *
-     * @param act the act
-     * @return the microchip, or an empty string if none is found
-     */
-    public String getPatientMicrochip(Act act) {
-        return getPatientMicrochip(getPatient(act));
-    }
-
-    /**
-     * Returns the microchips of a patient associated with an act.
-     *
-     * @param act the act
-     * @return the microchips, or an empty string if none is found
-     */
-    public String getPatientMicrochips(Act act) {
-        return getPatientMicrochips(getPatient(act));
-    }
-
-    /**
-     * Returns the most recent active microchip identity for a party.
-     *
-     * @param party the party
-     * @return the active microchip object, or {@code null} if none is found
-     */
-    public EntityIdentity getMicrochip(Party party) {
-        return patientRules.getMicrochip(party);
-    }
-
-    /**
-     * Returns the most recent active microchip identity for a patient.
-     *
-     * @param act the act
-     * @return the active microchip object, or {@code null} if none is found
-     */
-    public EntityIdentity getMicrochip(Act act) {
-        Party party = getPatient(act);
-        return patientRules.getMicrochip(party);
     }
 
     /**
@@ -1002,106 +826,87 @@ public class PartyFunctions {
      * @param context the expression context
      * @return the active microchip object, or {@code null} if none is found
      */
-    public Object getMicrochip(ExpressionContext context) {
-        Object result = null;
+    public EntityIdentity getMicrochip(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
-        Object value = pointer.getValue();
-        if (value instanceof Act) {
-            result = getMicrochip((Act) value);
-        } else if (value instanceof Party) {
-            result = getMicrochip((Party) value);
-        }
-        return result;
+        return getMicrochip(pointer.getValue());
+    }
+
+    /**
+     * Returns the most recent active microchip identity for a party.
+     *
+     * @param object the object. May be a patient, act, or {@code null}
+     * @return the active microchip object, or {@code null} if none is found
+     */
+    public EntityIdentity getMicrochip(Object object) {
+        Party patient = unwrapPatient(object);
+        return (patient != null) ? patientRules.getMicrochip(patient) : null;
     }
 
     /**
      * Returns the patient pet tag.
      *
-     * @param patient the patient
+     * @param object the object. May be a patient, act, or {@code null}
      * @return the pet tag, or an empty string if none is found
      */
-    public String getPatientPetTag(Party patient) {
-        String result = patientRules.getPetTag(patient);
+    public String getPatientPetTag(Object object) {
+        String result = null;
+        Party patient = unwrapPatient(object);
+        if (patient != null) {
+            result = patientRules.getPetTag(patient);
+        }
         return (result != null) ? result : "";
-    }
-
-    /**
-     * Returns the pet tag of a patient associated with an act.
-     *
-     * @param act the act
-     * @return the pet tag, or an empty string if none is found
-     */
-    public String getPatientPetTag(Act act) {
-        Party patient = getPatient(act);
-        return (patient != null) ? getPatientPetTag(patient) : "";
     }
 
     /**
      * Returns the patient rabies tag.
      *
-     * @param patient the patient
+     * @param context the expression context
      * @return the rabies tag, or an empty string if none is found
      */
-    public String getPatientRabiesTag(Party patient) {
-        String result = patientRules.getRabiesTag(patient);
-        return (result != null) ? result : "";
+    public String getPatientRabiesTag(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        return getPatientRabiesTag(pointer.getValue());
     }
 
     /**
-     * Returns the rabies tag of a patient associated with an act.
+     * Returns the patient rabies tag.
      *
-     * @param act the act
+     * @param object the object. May be a patient, act, or {@code null}
      * @return the rabies tag, or an empty string if none is found
      */
-    public String getPatientRabiesTag(Act act) {
-        Party patient = getPatient(act);
-        return (patient != null) ? getPatientRabiesTag(patient) : "";
+    public String getPatientRabiesTag(Object object) {
+        String result = null;
+        Party patient = unwrapPatient(object);
+        if (patient != null) {
+            result = patientRules.getRabiesTag(patient);
+        }
+        return (result != null) ? result : "";
     }
 
     /**
      * Returns the most recent weight in string format for a patient.
      *
-     * @param context the expression context. Expected to reference a party or
-     *                act
-     * @return a formatted weight , or {@code null}
+     * @param context the expression context. Expected to reference a party or act
+     * @return a formatted weight, or an empty string is none is recorded
      */
-
     public String getPatientWeight(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
-        Object value = pointer.getValue();
-        if (value instanceof Party) {
-            return getPatientWeight((Party) value);
-
-        } else if (value instanceof Act) {
-            return getPatientWeight((Act) value);
-        }
-        return null;
+        return getPatientWeight(pointer.getValue());
     }
 
     /**
      * Returns a formatted weight for a patient.
      *
-     * @param party the patient. May be {@code null}.
-     * @return a formatted weight for the party, or an empty string
+     * @param object the object. May be a patient, act, or {@code null}
+     * @return a formatted weight, or an empty string is none is recorded
      */
-    public String getPatientWeight(Party party) {
-        if (party != null) {
-            return patientRules.getPatientWeight(party);
+    public String getPatientWeight(Object object) {
+        String result = null;
+        Party patient = unwrapPatient(object);
+        if (patient != null) {
+            result = patientRules.getPatientWeight(patient);
         }
-        return "";
-    }
-
-    /**
-     * Returns a formatted weight for a patient given a act.
-     *
-     * @param act the act. May be {@code null}.
-     * @return a formatted weight for the party, or an empty string
-     */
-    public String getPatientWeight(Act act) {
-        if (act != null) {
-            return patientRules.getPatientWeight(act);
-        }
-        return "";
+        return (result != null) ? result : "";
     }
 
     /**
@@ -1109,10 +914,24 @@ public class PartyFunctions {
      * <p>
      * This uses the most recent recorded weight for the patient.
      *
-     * @param patient the patient. May be {@code null}
-     * @return the patient weight, in kilos
+     * @param context the expression context. May be a patient, act, or {@code null}
+     * @return the patient weight, in kilos, or {@link BigDecimal#ZERO} if none exists
      */
-    public BigDecimal getWeight(Party patient) {
+    public BigDecimal getWeight(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        return getWeight(pointer.getValue());
+    }
+
+    /**
+     * Returns the patient weight, in kilos.
+     * <p>
+     * This uses the most recent recorded weight for the patient.
+     *
+     * @param object the object. May be a patient, act, or {@code null}
+     * @return the patient weight, in kilos, or {@link BigDecimal#ZERO} if none exists
+     */
+    public BigDecimal getWeight(Object object) {
+        Party patient = unwrapPatient(object);
         return (patient != null) ? patientRules.getWeight(patient).toKilograms() : BigDecimal.ZERO;
     }
 
@@ -1121,12 +940,13 @@ public class PartyFunctions {
      * <p>
      * This uses the most recent recorded weight for the patient.
      *
-     * @param patient the patient. May be {@code null}
-     * @param units   the units. One of {@code KILOGRAMS}, {@code GRAMS}, or {@code POUNDS}
+     * @param object the object. May be a patient, act, or {@code null}
+     * @param units  the units. One of {@code KILOGRAMS}, {@code GRAMS}, or {@code POUNDS}
      * @return the patient weight in the specified units
      */
-    public BigDecimal getWeight(Party patient, String units) {
+    public BigDecimal getWeight(Object object, String units) {
         BigDecimal result = BigDecimal.ZERO;
+        Party patient = unwrapPatient(object);
         if (patient != null) {
             Weight weight = patientRules.getWeight(patient);
             result = weight.convert(WeightUnits.valueOf(units));
@@ -1135,73 +955,25 @@ public class PartyFunctions {
     }
 
     /**
-     * Returns the patient weight, in kilos, for the patient associated with an act.
-     * <p>
-     * This uses the most recent recorded weight for the patient.
+     * Returns the desex status of a patient.
      *
-     * @param act the act. May be {@code null}.
-     * @return the patient weight, in kilos
+     * @param context the expression context. Expected to reference a party or act
+     * @return the desex status, or an empty string
      */
-    public BigDecimal getWeight(Act act) {
-        Party patient = getPatient(act);
-        return getWeight(patient);
-    }
-
-    /**
-     * Returns the patient weight, in kilos, for the patient associated with an act.
-     * <p>
-     * This uses the most recent recorded weight for the patient.
-     *
-     * @param act   the act. May be {@code null}.
-     * @param units the units. One of {@code KILOGRAMS}, {@code GRAMS}, or {@code POUNDS}
-     * @return the patient weight in the specified units
-     */
-    public BigDecimal getWeight(Act act, String units) {
-        Party patient = getPatient(act);
-        return getWeight(patient, units);
-    }
-
-    /**
-     * Returns the Desex status of a Patient.
-     *
-     * @param context the expression context. Expected to reference a party or
-     *                act
-     * @return desex status, or an empty string
-     */
-
     public String getPatientDesexStatus(ExpressionContext context) {
         Pointer pointer = context.getContextNodePointer();
-        Object value = pointer.getValue();
-        if (value instanceof Party) {
-            return getPatientDesexStatus((Party) value);
-
-        } else if (value instanceof Act) {
-            return getPatientDesexStatus((Act) value);
-        }
-        return null;
+        return getPatientDesexStatus(pointer.getValue());
     }
 
     /**
-     * Returns the Desex status of a Patient.
+     * Returns the desex status of a patient.
      *
-     * @param party the patient. May be {@code null}.
-     * @return desex status, or an empty string
+     * @param object the object. May be a patient, act, or {@code null}
+     * @return the desex status, or an empty string
      */
-    public String getPatientDesexStatus(Party party) {
-        return patientRules.getPatientDesexStatus(party);
-    }
-
-    /**
-     * Returns the Desex Status for a Patient.
-     *
-     * @param act the act. May be {@code null}.
-     * @return desex status, or an empty string
-     */
-    public String getPatientDesexStatus(Act act) {
-        if (act != null) {
-            return patientRules.getPatientDesexStatus(act);
-        }
-        return "";
+    public String getPatientDesexStatus(Object object) {
+        Party patient = unwrapPatient(object);
+        return (patient != null) ? patientRules.getPatientDesexStatus(patient) : "";
     }
 
     /**
@@ -1252,7 +1024,6 @@ public class PartyFunctions {
      */
     public String getPracticeTelephone() {
         return partyRules.getPracticeTelephone();
-
     }
 
     /**
@@ -1265,50 +1036,40 @@ public class PartyFunctions {
     }
 
     /**
-     * Returns the Bpay ID for a customer.
+     * Returns the BPAY Id for a customer.
      *
      * @param context the expression context. Expected to reference a party or act
      * @return a Bpay ID for the customer, or {@code null}
+     * @deprecated due to inconsistent naming
      */
-
+    @Deprecated
     public String getBpayID(ExpressionContext context) {
-        Pointer pointer = context.getContextNodePointer();
-        Object value = pointer.getValue();
-        if (value instanceof Party) {
-            return getBpayId((Party) value);
-
-        } else if (value instanceof Act) {
-            return getBpayId((Act) value);
-        }
-        return null;
+        return getBpayId(context);
     }
 
     /**
-     * Returns a Bpay Id for the Party.
-     * Utilises the party uid and adds a check digit using a Luntz 10 algorithm.
+     * Returns the BPAY Id for a customer.
      *
-     * @param party the party
+     * @param context the expression context. Expected to reference a party or act
+     * @return a BPAY Id for the customer, or {@code null}
+     * @see #getBpayId(Object)
+     */
+    public String getBpayId(ExpressionContext context) {
+        Pointer pointer = context.getContextNodePointer();
+        return getBpayId(pointer.getValue());
+    }
+
+    /**
+     * Returns a BPAY Id for a party.
+     * <p/>
+     * This uses the party id and adds a check digit using a Luntz 10 algorithm.
+     *
+     * @param object the party, or {@code null}
      * @return string bpay id
      */
-    public String getBpayId(Party party) {
-        return partyRules.getBpayId(party);
-    }
-
-    /**
-     * Returns the Bpay ID for customer associated with an
-     * act via an <em>participation.customer</em> or <em>participation.patient</em>
-     * participation.
-     *
-     * @param act the act
-     * @return the Bpay ID
-     * @throws ArchetypeServiceException for any archetype service error
-     */
-    public String getBpayId(Act act) {
-        if (act != null) {
-            Party party = getCustomer(act);
-            return (party != null) ? getBpayId(party) : null;
-        }
-        return null;
+    public String getBpayId(Object object) {
+        Party party = unwrapParty(object);
+        return party != null ? partyRules.getBpayId(party) : null;
     }
 
     /**
@@ -1317,18 +1078,21 @@ public class PartyFunctions {
      * If the supplied practice location has a letterhead, and specifies that a different location should be used
      * for contacts, then this is returned, otherwise the supplied location is returned.
      *
-     * @param location the practice location
+     * @param object the practice location
      * @return the location to use for contacts, or {@code null} if {@code location} is {@code null}
      */
-    public Party getLetterheadContacts(Party location) {
-        Party result = location;
-        if (location != null) {
-            IMObjectBean bean = service.getBean(location);
+    public Party getLetterheadContacts(Object object) {
+        Party result = null;
+        object = unwrap(object);
+        if (object instanceof Party) {
+            Party party = (Party) object;
+            result = party;
+            IMObjectBean bean = service.getBean(party);
             Entity letterhead = bean.getTarget("letterhead", Entity.class);
             if (letterhead != null) {
                 bean = service.getBean(letterhead);
                 Reference contacts = bean.getTargetRef("contacts");
-                if (contacts != null && !contacts.equals(location.getObjectReference())) {
+                if (contacts != null && !contacts.equals(party.getObjectReference())) {
                     result = (Party) service.get(contacts);
                 }
             }
@@ -1356,6 +1120,46 @@ public class PartyFunctions {
     }
 
     /**
+     * Unwraps a customer from the supplied object.
+     * <p/>
+     * If the supplied object object is an act, returns the customer associated with an act via an
+     * <em>participation.customer</em> participation, or the the patient owner if there is no customer participation.
+     *
+     * @param object the object. May be {@code null}
+     * @return the corresponding customer, or {@code null} if none is present
+     */
+    private Party unwrapParty(Object object) {
+        Party party = null;
+        object = unwrap(object);
+        if (object instanceof Act) {
+            party = getCustomer((Act) object);
+        } else if (object instanceof Party) {
+            party = (Party) object;
+        }
+        return party;
+    }
+
+    /**
+     * Unwraps a patient from the supplied object.
+     * <p/>
+     * If the supplied object object is an act, returns the patient associated with an act via an
+     * <em>participation.customer</em> participation.
+     *
+     * @param object the object. May be {@code null}
+     * @return the corresponding customer, or {@code null} if none is present
+     */
+    private Party unwrapPatient(Object object) {
+        Party patient = null;
+        object = unwrap(object);
+        if (object instanceof Act) {
+            patient = getPatient((Act) object);
+        } else if (object instanceof Party) {
+            patient = (Party) object;
+        }
+        return patient;
+    }
+
+    /**
      * Returns the customer associated with an act via an <em>participation.customer</em> participation,
      * or the the patient owner if there is no customer participation.
      *
@@ -1365,8 +1169,8 @@ public class PartyFunctions {
     private Party getCustomer(Act act) {
         Party customer = null;
         if (act != null) {
-            ActBean bean = new ActBean(act, service);
-            customer = (Party) bean.getParticipant(CustomerArchetypes.CUSTOMER_PARTICIPATION);
+            IMObjectBean bean = service.getBean(act);
+            customer = bean.getTarget(act.getParticipations(), Party.class, CUSTOMER_PARTICIPATION);
             if (customer == null) {
                 customer = patientRules.getOwner(act);
             }
@@ -1381,11 +1185,29 @@ public class PartyFunctions {
      * @return the patient, or {@code null} if none is found
      */
     private Party getPatient(Act act) {
+        Party patient = null;
         if (act != null) {
-            ActBean bean = new ActBean(act, service);
-            return (Party) bean.getParticipant(PatientArchetypes.PATIENT_PARTICIPATION);
+            IMObjectBean bean = service.getBean(act);
+            patient = bean.getTarget(act.getParticipations(), Party.class, PATIENT_PARTICIPATION);
         }
-        return null;
+        return patient;
+    }
+
+    /**
+     * Helper to get access to the actual object supplied by JXPath.
+     * <p/>
+     * This is a workaround to allow functions to be supplied null arguments, which JXPath handles by wrapping in a
+     * list.
+     *
+     * @param object the object to unwrap
+     * @return the unwrapped object. May be {@code null}
+     */
+    private Object unwrap(Object object) {
+        if (object instanceof List) {
+            List values = (List) object;
+            object = !values.isEmpty() ? values.get(0) : null;
+        }
+        return object;
     }
 
 }

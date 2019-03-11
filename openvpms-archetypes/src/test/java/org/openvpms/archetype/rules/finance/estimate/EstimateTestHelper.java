@@ -11,22 +11,20 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.finance.estimate;
 
-import org.openvpms.archetype.rules.customer.CustomerArchetypes;
-import org.openvpms.archetype.rules.patient.PatientArchetypes;
-import org.openvpms.archetype.rules.product.ProductArchetypes;
-import org.openvpms.archetype.rules.user.UserArchetypes;
 import org.openvpms.archetype.test.TestHelper;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.product.Product;
-import org.openvpms.component.business.domain.im.security.User;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.object.Relationship;
+import org.openvpms.component.model.party.Party;
+import org.openvpms.component.model.product.Product;
+import org.openvpms.component.model.user.User;
 
 import java.math.BigDecimal;
 
@@ -45,16 +43,17 @@ public class EstimateTestHelper {
      * @param items    the estimate items
      * @return a new estimate
      */
-    public static Act createEstimate(Party customer, User author, Act... items) {
+    public static Act createEstimate(Party customer, User author, org.openvpms.component.model.act.Act... items) {
         Act estimate = (Act) TestHelper.create(EstimateArchetypes.ESTIMATE);
-        ActBean bean = new ActBean(estimate);
-        bean.setParticipant(CustomerArchetypes.CUSTOMER_PARTICIPATION, customer);
-        bean.setParticipant(UserArchetypes.AUTHOR_PARTICIPATION, author);
+        IMObjectBean bean = new IMObjectBean(estimate);
+        bean.setTarget("customer", customer);
+        bean.setTarget("author", author);
         BigDecimal lowTotal = BigDecimal.ZERO;
         BigDecimal highTotal = BigDecimal.ZERO;
-        for (Act item : items) {
-            ActBean itemBean = new ActBean(item);
-            bean.addRelationship(EstimateArchetypes.ESTIMATE_ITEM_RELATIONSHIP, item);
+        for (org.openvpms.component.model.act.Act item : items) {
+            IMObjectBean itemBean = new IMObjectBean(item);
+            Relationship relationship = bean.addTarget("items", item);
+            item.addActRelationship((ActRelationship) relationship);
             highTotal = highTotal.add(itemBean.getBigDecimal("highTotal"));
             lowTotal = lowTotal.add(itemBean.getBigDecimal("lowTotal"));
         }
@@ -73,9 +72,9 @@ public class EstimateTestHelper {
      * @return a new estimate item
      */
     public static Act createEstimateItem(Party patient, Product product, User author, BigDecimal fixedPrice) {
-        ActBean bean = createEstimateItem(patient, product, author);
+        IMObjectBean bean = createEstimateItem(patient, product, author);
         bean.setValue("fixedPrice", fixedPrice);
-        Act item = bean.getAct();
+        Act item = (Act) bean.getObject();
         ArchetypeServiceHelper.getArchetypeService().deriveValues(item);
         return item;
     }
@@ -92,10 +91,10 @@ public class EstimateTestHelper {
      */
     public static Act createEstimateItem(Party patient, Product product, User author, BigDecimal quantity,
                                          BigDecimal unitPrice) {
-        ActBean bean = createEstimateItem(patient, product, author);
+        IMObjectBean bean = createEstimateItem(patient, product, author);
         bean.setValue("highQty", quantity);
         bean.setValue("highUnitPrice", unitPrice);
-        Act item = bean.getAct();
+        Act item = (Act) bean.getObject();
         ArchetypeServiceHelper.getArchetypeService().deriveValues(item);
         return item;
     }
@@ -115,8 +114,8 @@ public class EstimateTestHelper {
                                          BigDecimal quantity, BigDecimal unitPrice) {
         Act act = createEstimateItem(patient, product, author, quantity, unitPrice);
         if (template != null) {
-            ActBean bean = new ActBean(act);
-            bean.addNodeParticipation("template", template);
+            IMObjectBean bean = new IMObjectBean(act);
+            bean.setTarget("template", template);
         }
         return act;
     }
@@ -129,12 +128,12 @@ public class EstimateTestHelper {
      * @param author  the author
      * @return a bean wrapping the estimate item
      */
-    private static ActBean createEstimateItem(Party patient, Product product, User author) {
+    private static IMObjectBean createEstimateItem(Party patient, Product product, User author) {
         Act item = (Act) TestHelper.create(EstimateArchetypes.ESTIMATE_ITEM);
-        ActBean bean = new ActBean(item);
-        bean.setParticipant(PatientArchetypes.PATIENT_PARTICIPATION, patient);
-        bean.setParticipant(ProductArchetypes.PRODUCT_PARTICIPATION, product);
-        bean.setParticipant(UserArchetypes.AUTHOR_PARTICIPATION, author);
+        IMObjectBean bean = new IMObjectBean(item);
+        bean.setTarget("patient", patient);
+        bean.setTarget("product", product);
+        bean.setTarget("author", author);
         return bean;
     }
 

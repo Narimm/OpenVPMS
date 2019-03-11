@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.component.model.bean;
@@ -158,6 +158,16 @@ public class Policies {
     }
 
     /**
+     * Returns a policy that selects all relationships, and returns active or inactive objects.
+     *
+     * @param type the relationship type
+     * @return a new policy
+     */
+    public static <R extends Relationship> Policy<R> any(Class<R> type, Predicate<R> predicate) {
+        return new DefaultPolicy<>(Policy.State.ANY, type, predicate);
+    }
+
+    /**
      * Returns a policy that selects relationships using the supplied predicate, and returns active or inactive objects.
      * <p/>
      * This is synonymous with {@link #any(Predicate)}, but makes more sense in terms of collection nodes.
@@ -214,19 +224,19 @@ public class Policies {
 
         private final Comparator<R> comparator;
 
-        public DefaultPolicy(boolean active, Class<R> type, Predicate<R> predicate) {
+        DefaultPolicy(boolean active, Class<R> type, Predicate<R> predicate) {
             this(active, type, predicate, null);
         }
 
-        public DefaultPolicy(boolean active, Class<R> type, Predicate<R> predicate, Comparator<R> comparator) {
+        DefaultPolicy(boolean active, Class<R> type, Predicate<R> predicate, Comparator<R> comparator) {
             this(active ? Policy.State.ACTIVE : Policy.State.ANY, type, predicate, comparator);
         }
 
-        public DefaultPolicy(State state, Class<R> type, Predicate<R> predicate) {
+        DefaultPolicy(State state, Class<R> type, Predicate<R> predicate) {
             this(state, type, predicate, null);
         }
 
-        public DefaultPolicy(State state, Class<R> type, Predicate<R> predicate, Comparator<R> comparator) {
+        DefaultPolicy(State state, Class<R> type, Predicate<R> predicate, Comparator<R> comparator) {
             this.predicate = predicate;
             this.state = state;
             this.type = type;

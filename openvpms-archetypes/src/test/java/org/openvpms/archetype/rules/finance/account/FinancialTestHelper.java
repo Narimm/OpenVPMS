@@ -20,13 +20,15 @@ import org.openvpms.archetype.rules.act.FinancialActStatus;
 import org.openvpms.archetype.rules.finance.till.TillArchetypes;
 import org.openvpms.archetype.rules.util.DateUnits;
 import org.openvpms.archetype.test.TestHelper;
+import org.openvpms.component.business.domain.im.act.ActRelationship;
 import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.lookup.Lookup;
-import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.domain.im.product.Product;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.object.Relationship;
+import org.openvpms.component.model.party.Party;
+import org.openvpms.component.model.product.Product;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -170,7 +172,7 @@ public class FinancialTestHelper extends TestHelper {
     public static List<FinancialAct> createChargesCredit(BigDecimal amount, Party customer, Party patient,
                                                          Product product, String status) {
         List<FinancialAct> result = createCharges(CREDIT, CREDIT_ITEM, amount, customer, patient, product, status);
-        ActBean bean = new ActBean(result.get(0));
+        IMObjectBean bean = new IMObjectBean(result.get(0));
         bean.setValue("notes", "Dummy notes");
         return result;
     }
@@ -214,7 +216,7 @@ public class FinancialTestHelper extends TestHelper {
      */
     public static List<FinancialAct> createRefundCash(BigDecimal amount, Party customer, Party till, String status) {
         List<FinancialAct> result = createPaymentRefund(REFUND, REFUND_CASH, amount, customer, till, status, false);
-        ActBean bean = new ActBean(result.get(0));
+        IMObjectBean bean = new IMObjectBean(result.get(0));
         bean.setValue("notes", "Dummy notes");
         return result;
     }
@@ -324,7 +326,7 @@ public class FinancialTestHelper extends TestHelper {
      */
     public static FinancialAct createRefundCash(BigDecimal amount, Party customer, Party till) {
         FinancialAct result = createPaymentRefund(REFUND, REFUND_CASH, amount, customer, till);
-        ActBean bean = new ActBean(result);
+        IMObjectBean bean = new IMObjectBean(result);
         bean.setValue("notes", "Dummy notes");
         return result;
     }
@@ -340,7 +342,7 @@ public class FinancialTestHelper extends TestHelper {
      */
     public static FinancialAct createRefundCheque(BigDecimal amount, Party customer, Party till) {
         FinancialAct result = createPaymentRefund(REFUND, REFUND_CHEQUE, amount, customer, till);
-        ActBean bean = new ActBean(result);
+        IMObjectBean bean = new IMObjectBean(result);
         bean.setValue("notes", "Dummy notes");
         return result;
     }
@@ -356,7 +358,7 @@ public class FinancialTestHelper extends TestHelper {
      */
     public static FinancialAct createRefundCredit(BigDecimal amount, Party customer, Party till) {
         FinancialAct result = createPaymentRefund(REFUND, REFUND_CREDIT, amount, customer, till);
-        ActBean bean = new ActBean(result);
+        IMObjectBean bean = new IMObjectBean(result);
         bean.setValue("notes", "Dummy notes");
         return result;
     }
@@ -372,7 +374,7 @@ public class FinancialTestHelper extends TestHelper {
      */
     public static FinancialAct createRefundDiscount(BigDecimal amount, Party customer, Party till) {
         FinancialAct result = createPaymentRefund(REFUND, REFUND_DISCOUNT, amount, customer, till);
-        ActBean bean = new ActBean(result);
+        IMObjectBean bean = new IMObjectBean(result);
         bean.setValue("notes", "Dummy notes");
         return result;
     }
@@ -388,7 +390,7 @@ public class FinancialTestHelper extends TestHelper {
      */
     public static FinancialAct createRefundEFT(BigDecimal amount, Party customer, Party till) {
         FinancialAct result = createPaymentRefund(REFUND, REFUND_EFT, amount, customer, till);
-        ActBean bean = new ActBean(result);
+        IMObjectBean bean = new IMObjectBean(result);
         bean.setValue("notes", "Dummy notes");
         return result;
     }
@@ -404,7 +406,7 @@ public class FinancialTestHelper extends TestHelper {
      */
     public static FinancialAct createRefundOther(BigDecimal amount, Party customer, Party till) {
         FinancialAct result = createPaymentRefund(REFUND, REFUND_OTHER, amount, customer, till);
-        ActBean bean = new ActBean(result);
+        IMObjectBean bean = new IMObjectBean(result);
         bean.setValue("notes", "Dummy notes");
         return result;
     }
@@ -464,15 +466,15 @@ public class FinancialTestHelper extends TestHelper {
                                                 BigDecimal quantity, BigDecimal fixedPrice, BigDecimal unitPrice,
                                                 BigDecimal discount, BigDecimal tax) {
         FinancialAct item = (FinancialAct) create(itemShortName);
-        ActBean bean = new ActBean(item);
+        IMObjectBean bean = new IMObjectBean(item);
         if (patient != null) {
-            bean.addNodeParticipation("patient", patient);
+            bean.setTarget("patient", patient);
         }
         if (clinician != null) {
-            bean.addNodeParticipation("clinician", clinician);
+            bean.setTarget("clinician", clinician);
         }
         if (product != null) {
-            bean.addNodeParticipation("product", product);
+            bean.setTarget("product", product);
         }
         bean.setValue("quantity", quantity);
         bean.setValue("fixedPrice", fixedPrice);
@@ -547,11 +549,11 @@ public class FinancialTestHelper extends TestHelper {
      *
      * @return a new till
      */
-    public static Party createTill() {
+    public static org.openvpms.component.business.domain.im.party.Party createTill() {
         Party till = (Party) create("party.organisationTill");
         till.setName("XTill-" + System.currentTimeMillis());
         save(till);
-        return till;
+        return (org.openvpms.component.business.domain.im.party.Party) till;
     }
 
     /**
@@ -561,8 +563,8 @@ public class FinancialTestHelper extends TestHelper {
      */
     public static FinancialAct createTillBalance(Party till) {
         FinancialAct act = (FinancialAct) create(TillArchetypes.TILL_BALANCE);
-        ActBean bean = new ActBean(act);
-        bean.addNodeParticipation("till", till);
+        IMObjectBean bean = new IMObjectBean(act);
+        bean.setTarget("till", till);
         return act;
     }
 
@@ -575,7 +577,7 @@ public class FinancialTestHelper extends TestHelper {
      */
     public static FinancialAct createPaymentRefundItem(String itemShortName, BigDecimal amount) {
         FinancialAct item = (FinancialAct) create(itemShortName);
-        ActBean itemBean = new ActBean(item);
+        IMObjectBean itemBean = new IMObjectBean(item);
         itemBean.setValue("amount", amount);
         if (itemBean.isA(PAYMENT_CASH, REFUND_CASH)) {
             itemBean.setValue("roundedAmount", amount);
@@ -647,13 +649,14 @@ public class FinancialTestHelper extends TestHelper {
         BigDecimal tax = BigDecimal.ZERO;
         FinancialAct act = createAct(shortName, amount, customer, clinician, status);
         result.add(act);
-        ActBean chargeBean = new ActBean(act);
+        IMObjectBean chargeBean = new IMObjectBean(act);
         for (FinancialAct item : items) {
             IMObjectBean itemBean = new IMObjectBean(item);
             tax = tax.add(itemBean.getBigDecimal("tax", BigDecimal.ZERO));
             amount = amount.add(itemBean.getBigDecimal("total", BigDecimal.ZERO));
             result.add(item);
-            chargeBean.addNodeRelationship("items", item);
+            Relationship relationship = chargeBean.addTarget("items", item);
+            item.addActRelationship((ActRelationship) relationship);
         }
         chargeBean.setValue("amount", amount);
         chargeBean.setValue("tax", tax);
@@ -690,9 +693,9 @@ public class FinancialTestHelper extends TestHelper {
     private static FinancialAct createPaymentRefund(String shortName, BigDecimal amount, Party customer, Party till,
                                                     String status) {
         FinancialAct act = createAct(shortName, amount, customer, null, status);
-        ActBean bean = new ActBean(act);
+        IMObjectBean bean = new IMObjectBean(act);
         bean.setValue("amount", amount);
-        bean.addNodeParticipation("till", till);
+        bean.setTarget("till", till);
         return act;
     }
 
@@ -736,11 +739,11 @@ public class FinancialTestHelper extends TestHelper {
                                           String status) {
         FinancialAct act = (FinancialAct) create(shortName);
         act.setStatus(status);
-        ActBean bean = new ActBean(act);
+        IMObjectBean bean = new IMObjectBean(act);
         bean.setValue("amount", amount);
-        bean.addNodeParticipation("customer", customer);
+        bean.setTarget("customer", customer);
         if (clinician != null) {
-            bean.addNodeParticipation("clinician", clinician);
+            bean.setTarget("clinician", clinician);
         }
         return act;
     }
