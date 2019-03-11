@@ -16,10 +16,8 @@
 
 package org.openvpms.web.workspace.workflow.checkin;
 
-import nextapp.echo2.app.Alignment;
 import nextapp.echo2.app.Column;
 import nextapp.echo2.app.Component;
-import nextapp.echo2.app.Label;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.web.component.im.layout.LayoutContext;
 import org.openvpms.web.component.im.table.IMTableModel;
@@ -28,7 +26,6 @@ import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
-import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.resource.i18n.Messages;
 
 import java.util.Collection;
@@ -183,21 +180,6 @@ class DocumentPanel {
             doLayout(container);
             setComponent(container);
             query();
-        }
-
-        /**
-         * Lays out the container when there are no results to display.
-         *
-         * @param container the container
-         */
-        protected void doLayoutForNoResults(Component container) {
-            Label label = LabelFactory.create("browser.noresults", Styles.BOLD);
-            label.setLayoutData(ColumnFactory.layout(Alignment.ALIGN_CENTER));
-
-            Column wrapper = ColumnFactory.create(Styles.LARGE_INSET, label);
-            wrapper.setLayoutData(ColumnFactory.layout(Alignment.ALIGN_CENTER));
-
-            container.add(wrapper);
         }
 
         /**

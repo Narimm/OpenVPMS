@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2015 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.component.im.query;
@@ -208,6 +208,8 @@ public abstract class AbstractTableBrowser<T> extends AbstractBrowser<T> {
 
     /**
      * Lays out the container when there are no results to display.
+     * <p/>
+     * This implementation supports {@link SplitPane} and {@link Column} containers
      *
      * @param container the container
      */
@@ -216,7 +218,11 @@ public abstract class AbstractTableBrowser<T> extends AbstractBrowser<T> {
         label.setLayoutData(ColumnFactory.layout(Alignment.ALIGN_CENTER));
 
         Column wrapper = ColumnFactory.create(Styles.LARGE_INSET, label);
-        wrapper.setLayoutData(SplitPaneFactory.layout(Alignment.ALIGN_CENTER));
+        if (container instanceof SplitPane) {
+            wrapper.setLayoutData(SplitPaneFactory.layout(Alignment.ALIGN_CENTER));
+        } else if (container instanceof Column) {
+            wrapper.setLayoutData(ColumnFactory.layout(Alignment.ALIGN_CENTER));
+        }
 
         container.add(wrapper);
     }
