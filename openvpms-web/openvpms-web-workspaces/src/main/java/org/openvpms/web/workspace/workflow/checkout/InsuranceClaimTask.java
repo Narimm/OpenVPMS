@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkout;
@@ -74,10 +74,13 @@ public class InsuranceClaimTask extends Tasks {
         InsuranceRules rules = ServiceHelper.getBean(InsuranceRules.class);
         Party insurer = rules.getInsurer(policy);
         if (insurer != null) {
-            String title = Messages.get("patient.insurance.claim.title");
-            String message = Messages.format("patient.insurance.claim.message", insurer.getName());
-            ConfirmationTask confirm = new ConfirmationTask(title, message, ConfirmationTask.Type.YES_NO,
-                                                            context.getHelpContext());
+            String title = (gapClaim) ? "patient.insurance.gapclaim.title"
+                                      : "patient.insurance.claim.title";
+            String message = (gapClaim) ? "patient.insurance.gapclaim.message"
+                                        : "patient.insurance.claim.message";
+            ConfirmationTask confirm = new ConfirmationTask(Messages.get(title),
+                                                            Messages.format(message, insurer.getName()),
+                                                            ConfirmationTask.Type.YES_NO, context.getHelpContext());
             addTask(new ConditionalTask(confirm, new EditClaimTask(rules)));
         }
     }

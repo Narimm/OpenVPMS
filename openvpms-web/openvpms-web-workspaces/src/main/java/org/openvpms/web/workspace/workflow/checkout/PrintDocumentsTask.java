@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkout;
@@ -23,12 +23,12 @@ import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
 import org.openvpms.component.business.domain.im.common.IMObject;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.document.Document;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.service.archetype.ArchetypeServiceHelper;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.web.component.im.layout.DefaultLayoutContext;
@@ -73,7 +73,7 @@ class PrintDocumentsTask extends AbstractTask {
     /**
      * The patients to print documents for.
      */
-    private final Set<IMObjectReference> patients;
+    private final Set<Reference> patients;
 
     /**
      * The time to select unprinted documents from.
@@ -107,13 +107,13 @@ class PrintDocumentsTask extends AbstractTask {
 
 
     /**
-     * Constructs a {@code PrintDocumentsTask}.
+     * Constructs a {@link PrintDocumentsTask}.
      *
      * @param patients  the patients to print documents for
      * @param startTime the act start time
      * @param help      the help context
      */
-    public PrintDocumentsTask(Set<IMObjectReference> patients, Date startTime, HelpContext help) {
+    public PrintDocumentsTask(Set<Reference> patients, Date startTime, HelpContext help) {
         this.patients = patients;
         this.startTime = startTime;
         this.help = help;
@@ -200,7 +200,7 @@ class PrintDocumentsTask extends AbstractTask {
      */
     private Map<IMObject, Boolean> getPatientActs() {
         Map<IMObject, Boolean> result = new LinkedHashMap<>();
-        for (IMObjectReference patient : patients) {
+        for (Reference patient : patients) {
             result.putAll(getUnprintedActs(DOCUMENTS, patient, "patient"));
         }
         return result;
@@ -217,7 +217,7 @@ class PrintDocumentsTask extends AbstractTask {
      * @param node       the participation node to query
      * @return the unprinted acts
      */
-    private Map<IMObject, Boolean> getUnprintedActs(String[] shortNames, IMObjectReference party, String node) {
+    private Map<IMObject, Boolean> getUnprintedActs(String[] shortNames, Reference party, String node) {
         Map<IMObject, Boolean> result = new LinkedHashMap<>();
         ArchetypeQuery query = new ArchetypeQuery(shortNames, false, true);
         query.setFirstResult(0);

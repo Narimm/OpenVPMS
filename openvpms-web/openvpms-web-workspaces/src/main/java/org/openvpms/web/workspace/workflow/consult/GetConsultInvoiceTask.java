@@ -11,21 +11,23 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 package org.openvpms.web.workspace.workflow.consult;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.openvpms.archetype.rules.act.ActStatus;
-import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.act.ActRelationship;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.exception.OpenVPMSException;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.web.component.im.util.IMObjectHelper;
 import org.openvpms.web.component.workflow.TaskContext;
+import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.workflow.GetInvoiceTask;
 
 
@@ -38,6 +40,18 @@ import org.openvpms.web.workspace.workflow.GetInvoiceTask;
  * @author Tim Anderson
  */
 public class GetConsultInvoiceTask extends GetInvoiceTask {
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
+     * Constructs a new {@link GetConsultInvoiceTask}.
+     */
+    public GetConsultInvoiceTask() {
+        this.service = ServiceHelper.getArchetypeService();
+    }
 
     /**
      * Executes the task.
@@ -66,19 +80,44 @@ public class GetConsultInvoiceTask extends GetInvoiceTask {
         Act event = (Act) context.getObject(PatientArchetypes.CLINICAL_EVENT);
         Act invoice = null;
         if (event != null) {
-            ActBean bean = new ActBean(event);
-            for (ActRelationship relationship : bean.getRelationships(PatientArchetypes.CLINICAL_EVENT_CHARGE_ITEM)) {
-                Act item = (Act) IMObjectHelper.getObject(relationship.getTarget(), context);
-                if (item != null) {
-                    ActBean itemBean = new ActBean(item);
-                    IMObjectReference invoiceRef = itemBean.getSourceObjectRef(
-                            item.getTargetActRelationships(), CustomerAccountArchetypes.INVOICE_ITEM_RELATIONSHIP);
-                    if (invoiceRef != null
-                        && (invoice == null || !ObjectUtils.equals(invoice.getObjectReference(), invoiceRef))) {
-                        invoice = (Act) IMObjectHelper.getObject(invoiceRef, context);
-                        if (invoice != null && !ActStatus.POSTED.equals(invoice.getStatus())) {
-                            // now if there are multiple non-POSTED invoices, which one to select? TODO
-                            break;
+            invoice = getInvoice(event, context);
+        }
+        return invoice;
+    }
+
+    /**
+     * Returns the invoice associated with an event, if it belongs to the current customer.
+     *
+     * @param event   the event
+     * @param context the context
+     * @return the invoice associated with the event, or {@code null} if none is present. The invoice may be POSTED
+     */
+    protected Act getInvoice(Act event, TaskContext context) {
+        Act invoice = null;
+        Party customer = context.getCustomer();
+        if (customer == null) {
+            throw new IllegalStateException("Context has no customer");
+        }
+        Reference customerRef = customer.getObjectReference();
+        IMObjectBean bean = service.getBean(event);
+        for (ActRelationship relationship : bean.getValues("chargeItems", ActRelationship.class)) {
+            Act item = (Act) IMObjectHelper.getObject(relationship.getTarget(), context);
+            if (item != null) {
+                IMObjectBean itemBean = service.getBean(item);
+                Reference invoiceRef = itemBean.getSourceRef("invoice");
+                if (invoiceRef != null && (invoice == null
+                                           || !ObjectUtils.equals(invoice.getObjectReference(), invoiceRef))) {
+                    Act act = (Act) IMObjectHelper.getObject(invoiceRef, context);
+                    if (act != null) {
+                        IMObjectBean invoiceBean = service.getBean(act);
+                        if (ObjectUtils.equals(customerRef, invoiceBean.getTargetRef("customer"))) {
+                            if (invoice == null) {
+                                invoice = act;
+                            }
+                            if (!ActStatus.POSTED.equals(act.getStatus())) {
+                                // now if there are multiple non-POSTED invoices, which one to select? TODO
+                                break;
+                            }
                         }
                     }
                 }

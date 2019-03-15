@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.insurance;
@@ -246,6 +246,34 @@ public class InsuranceRulesTestCase extends ArchetypeServiceTest {
         assertTrue(claim.isA(InsuranceArchetypes.CLAIM));
         IMObjectBean bean = service.getBean(claim);
         assertEquals(policy, bean.getTarget("policy"));
+    }
+
+    /**
+     * Tests the {@link InsuranceRules#isClaimed(org.openvpms.component.model.act.FinancialAct)} method.
+     */
+    @Test
+    public void testIsClaimed() {
+        Act policy = rules.createPolicy(customer, patient, InsuranceTestHelper.createInsurer(), null, null);
+        save(policy);
+
+        User clinician = TestHelper.createClinician();
+        FinancialAct invoice1Item1 = createInvoiceItem();
+        FinancialAct invoice1Item2 = createInvoiceItem();
+        FinancialAct invoice1Item3 = createInvoiceItem();
+        FinancialAct invoice1 = createInvoice(FinancialActStatus.POSTED, invoice1Item1, invoice1Item2, invoice1Item3);
+
+        assertFalse(rules.isClaimed(invoice1));
+
+        FinancialAct claim1Item1 = (FinancialAct) createClaimItem(invoice1Item1);
+        FinancialAct claim1Item2 = (FinancialAct) createClaimItem(invoice1Item2);
+        FinancialAct claim1 = (FinancialAct) createClaim(policy, TestHelper.createLocation(), clinician, clinician,
+                                                         claim1Item1, claim1Item2);
+        save(claim1, claim1Item1, claim1Item2);
+        assertTrue(rules.isClaimed(invoice1));
+
+        claim1.setStatus(ClaimStatus.CANCELLED);
+        save(claim1);
+        assertFalse(rules.isClaimed(invoice1));
     }
 
     /**

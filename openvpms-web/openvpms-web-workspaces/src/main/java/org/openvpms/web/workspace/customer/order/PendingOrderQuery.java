@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.order;
@@ -32,6 +32,7 @@ import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.system.ServiceHelper;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -57,16 +58,26 @@ public class PendingOrderQuery extends AbstractQuery<Act> {
     private final Party patient;
 
     /**
+     * The order rules.
+     */
+    private final OrderRules rules;
+
+    /**
+     * The focus group.
+     */
+    private final FocusGroup group = new FocusGroup("PendingOrderQuery");
+
+    /**
      * Orders to exclude from the results.
      */
     private List<Act> exclude;
 
     /**
-     * The order rules.
+     * Constructs a {@link PendingOrderQuery}.
      */
-    private final OrderRules rules;
-
-    private final FocusGroup group = new FocusGroup("PendingOrderQuery");
+    public PendingOrderQuery(Party customer) {
+        this(customer, null, Collections.emptyList());
+    }
 
     /**
      * Constructs an {@link PendingOrderQuery}.

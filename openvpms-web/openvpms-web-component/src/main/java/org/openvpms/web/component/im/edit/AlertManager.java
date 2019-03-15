@@ -84,7 +84,7 @@ public class AlertManager {
         listener = new AlertListener() {
             @Override
             public long onAlert(String message) {
-                return showAlert(message);
+                return show(message);
             }
 
             @Override
@@ -113,12 +113,12 @@ public class AlertManager {
     }
 
     /**
-     * Invoked to display an alert.
+     * Displays an alert.
      *
      * @param message the alert message
      * @return a handle to cancel the alert
      */
-    protected long showAlert(String message) {
+    public long show(String message) {
         if (alerts.size() < maxAlerts) {
             final WindowPane pane = new InformationMessage(message);
             int y = OFFSET;
@@ -137,6 +137,35 @@ public class AlertManager {
             return System.identityHashCode(pane);
         }
         return -1;
+    }
+
+    /**
+     * Returns the content pane for alerts.
+     *
+     * @return the content pane
+     */
+    protected Component getContentPane() {
+        Component component = container;
+        while (component != null && !(component instanceof ContentPane)) {
+            component = component.getParent();
+        }
+        if (component == null) {
+            component = ApplicationInstance.getActive().getDefaultWindow().getContent();
+        }
+        return component;
+    }
+
+    /**
+     * Invoked to cancel an alert.
+     *
+     * @param id the alert identifier
+     */
+    protected void cancelAlert(long id) {
+        for (WindowPane alert : alerts.toArray(new WindowPane[0])) {
+            if (System.identityHashCode(alert) == id) {
+                alert.userClose();
+            }
+        }
     }
 
     /**
@@ -178,35 +207,6 @@ public class AlertManager {
         }
     }
 
-    /**
-     * Returns the content pane for alerts.
-     *
-     * @return the content pane
-     */
-    protected Component getContentPane() {
-        Component component = container;
-        while (component != null && !(component instanceof ContentPane)) {
-            component = component.getParent();
-        }
-        if (component == null) {
-            component = ApplicationInstance.getActive().getDefaultWindow().getContent();
-        }
-        return component;
-    }
-
-    /**
-     * Invoked to cancel an alert.
-     *
-     * @param id the alert identifier
-     */
-    protected void cancelAlert(long id) {
-        for (WindowPane alert : alerts.toArray(new WindowPane[0])) {
-            if (System.identityHashCode(alert) == id) {
-                alert.userClose();
-            }
-        }
-    }
-
     private static class InformationMessage extends WindowPane {
         InformationMessage(String message) {
             setStyleName("InformationMessage");
@@ -240,7 +240,7 @@ public class AlertManager {
         /**
          * Returns the height of the alert.
          *
-         * @param message    the message
+         * @param message  the message
          * @param fontSize the font size
          * @return the height
          */

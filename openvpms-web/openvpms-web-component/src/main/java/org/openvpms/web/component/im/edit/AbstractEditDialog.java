@@ -363,6 +363,17 @@ public abstract class AbstractEditDialog extends PopupDialog {
     }
 
     /**
+     * Sets the action and closes the window.
+     *
+     * @param action the action
+     */
+    @Override
+    public void close(String action) {
+        alerts.clear();
+        super.close(action);
+    }
+
+    /**
      * Sets the editor.
      * <p>
      * If there is an existing editor, its selection path will be set on the editor.

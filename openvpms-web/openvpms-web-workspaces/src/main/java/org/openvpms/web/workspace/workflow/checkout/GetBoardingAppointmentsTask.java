@@ -127,7 +127,7 @@ class GetBoardingAppointmentsTask extends AbstractTask {
             dialog.addWindowPaneListener(new PopupDialogListener() {
                 @Override
                 public void onOK() {
-                    onSelected(dialog.getSelected());
+                    onSelected(dialog.getSelected(), context);
                 }
 
                 @Override
@@ -139,8 +139,14 @@ class GetBoardingAppointmentsTask extends AbstractTask {
         }
     }
 
-    private void onSelected(List<Visit> visits) {
+    private void onSelected(List<Visit> visits, TaskContext context) {
         this.visits.addAll(visits);
+        if (visits.size() == 1) {
+            Visit visit = visits.get(0);
+            context.addObject(visit.getEvent());
+            context.addObject(visit.getAppointment());
+            context.addObject(visit.getPatient());
+        }
         notifyCompleted();
     }
 

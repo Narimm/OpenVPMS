@@ -32,6 +32,7 @@ import org.openvpms.web.echo.dialog.ConfirmationDialog;
 import org.openvpms.web.echo.factory.ColumnFactory;
 import org.openvpms.web.echo.factory.LabelFactory;
 import org.openvpms.web.echo.factory.RowFactory;
+import org.openvpms.web.echo.focus.FocusGroup;
 import org.openvpms.web.echo.help.HelpContext;
 import org.openvpms.web.echo.style.Styles;
 import org.openvpms.web.system.ServiceHelper;
@@ -104,11 +105,16 @@ public class ClinicianSelectionDialog extends ConfirmationDialog {
         Column column = ColumnFactory.create(Styles.WIDE_CELL_SPACING, message, editor.getComponent());
         Row row = RowFactory.create(Styles.LARGE_INSET, column);
         getLayout().add(row);
+        FocusGroup group = getFocusGroup();
+        group.add(editor.getFocusGroup());
+        group.setDefault(editor.getComponent());
+
         if (clinician != null) {
             setDefaultButton(OK_ID);
         } else {
             getButtons().setEnabled(OK_ID, false);
         }
+        group.setFocus();
     }
 
     @Override

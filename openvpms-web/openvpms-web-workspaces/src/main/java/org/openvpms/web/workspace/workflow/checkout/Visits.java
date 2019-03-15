@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkout;
@@ -24,9 +24,10 @@ import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.CageType;
 import org.openvpms.component.business.domain.im.act.Act;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
-import org.openvpms.component.business.service.archetype.helper.ActBean;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.object.Reference;
 import org.openvpms.component.system.common.query.ArchetypeQuery;
 import org.openvpms.component.system.common.query.Constraints;
 import org.openvpms.component.system.common.query.IMObjectQueryIterator;
@@ -35,8 +36,6 @@ import org.openvpms.web.component.im.util.IMObjectHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -63,11 +62,6 @@ class Visits implements Iterable<Visit> {
     private final Party customer;
 
     /**
-     * The visits.
-     */
-    private List<Visit> visits = new ArrayList<>();
-
-    /**
      * The appointment rules.
      */
     private final AppointmentRules appointmentRules;
@@ -78,16 +72,29 @@ class Visits implements Iterable<Visit> {
     private final PatientRules patientRules;
 
     /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
+     * The visits.
+     */
+    private List<Visit> visits = new ArrayList<>();
+
+    /**
      * Constructs a {@link Visits}.
      *
      * @param customer         the customer
-     * @param patientRules     the patient rules
      * @param appointmentRules the appointment rules
+     * @param patientRules     the patient rules
+     * @param service          the archetype service
      */
-    public Visits(Party customer, AppointmentRules appointmentRules, PatientRules patientRules) {
+    public Visits(Party customer, AppointmentRules appointmentRules, PatientRules patientRules,
+                  IArchetypeService service) {
         this.customer = customer;
         this.appointmentRules = appointmentRules;
         this.patientRules = patientRules;
+        this.service = service;
     }
 
     /**
@@ -98,7 +105,7 @@ class Visits implements Iterable<Visit> {
      * @return a new visit
      */
     public Visit create(Act event, Act appointment) {
-        return new Visit(event, appointment, appointmentRules, patientRules);
+        return new Visit(event, appointment, appointmentRules, patientRules, service);
     }
 
     /**
@@ -144,11 +151,11 @@ class Visits implements Iterable<Visit> {
      *
      * @return the patients associated with the events
      */
-    public Set<IMObjectReference> getPatients() {
-        Set<IMObjectReference> patients = new LinkedHashSet<>(); // TODO - should guarantee no duplicate patients
+    public Set<Reference> getPatients() {
+        Set<Reference> patients = new LinkedHashSet<>(); // TODO - should guarantee no duplicate patients
         for (Visit visit : visits) {
-            ActBean bean = new ActBean(visit.getEvent());
-            IMObjectReference patient = bean.getNodeParticipantRef("patient");
+            IMObjectBean bean = service.getBean(visit.getEvent());
+            Reference patient = bean.getTargetRef("patient");
             if (patient != null) {
                 patients.add(patient);
             }
@@ -195,11 +202,7 @@ class Visits implements Iterable<Visit> {
         for (Visit visit : visits) {
             VisitKey key = VisitKey.create(visit, endTime);
             if (key != null) {
-                List<Visit> list = map.get(key);
-                if (list == null) {
-                    list = new ArrayList<>();
-                    map.put(key, list);
-                }
+                List<Visit> list = map.computeIfAbsent(key, k -> new ArrayList<>());
                 list.add(visit);
             }
         }
@@ -237,20 +240,17 @@ class Visits implements Iterable<Visit> {
      * @param visits the visits to sort
      */
     private void sortOnWeight(List<Visit> visits) {
-        Collections.sort(visits, new Comparator<Visit>() {
-            @Override
-            public int compare(Visit o1, Visit o2) {
-                BigDecimal weight1 = o1.getWeight().toKilograms();
-                BigDecimal weight2 = o2.getWeight().toKilograms();
-                int result = weight1.compareTo(weight2);
-                if (result == 0) {
-                    result = Long.compare(o1.getPatient().getId(), o2.getPatient().getId());
-                } else {
-                    // sort on descending weight
-                    result = -result;
-                }
-                return result;
+        visits.sort((o1, o2) -> {
+            BigDecimal weight1 = o1.getWeight().toKilograms();
+            BigDecimal weight2 = o2.getWeight().toKilograms();
+            int result = weight1.compareTo(weight2);
+            if (result == 0) {
+                result = Long.compare(o1.getPatient().getId(), o2.getPatient().getId());
+            } else {
+                // sort on descending weight
+                result = -result;
             }
+            return result;
         });
     }
 
@@ -281,13 +281,13 @@ class Visits implements Iterable<Visit> {
         }
         query.add(Constraints.not(Constraints.in("id", ids.toArray())));
 
-        IMObjectQueryIterator<Act> iterator = new IMObjectQueryIterator<>(query);
+        IMObjectQueryIterator<Act> iterator = new IMObjectQueryIterator<>(service, query);
         while (iterator.hasNext()) {
             Act event = iterator.next();
-            ActBean bean = new ActBean(event);
-            Act appointment = (Act) bean.getNodeSourceObject("appointment");
+            IMObjectBean bean = service.getBean(event);
+            Act appointment = bean.getSource("appointment", Act.class);
             if (appointment != null) {
-                ActBean appointmentBean = new ActBean(appointment);
+                IMObjectBean appointmentBean = service.getBean(appointment);
                 if (appointmentBean.getBoolean(Visit.BOARDING_CHARGED)
                     && appointmentBean.getBoolean(Visit.FIRST_PET_RATE)) {
                     result = true;
@@ -300,13 +300,13 @@ class Visits implements Iterable<Visit> {
 
     private static class VisitKey {
 
-        private final IMObjectReference schedule;
+        private final Reference schedule;
 
         private final Date start;
 
         private final Date end;
 
-        public VisitKey(IMObjectReference schedule, Date startTime, Date endTime) {
+        VisitKey(Reference schedule, Date startTime, Date endTime) {
             this.schedule = schedule;
             this.start = DateRules.getDate(startTime);
             Date date = DateRules.getDate(endTime);
@@ -314,20 +314,6 @@ class Visits implements Iterable<Visit> {
                 date = DateRules.getPreviousDate(date);
             }
             this.end = date;
-        }
-
-        public static VisitKey create(Visit visit, Date endTime) {
-            IMObjectReference schedule = visit.getScheduleRef();
-            if (visit.getEndTime() != null) {
-                endTime = visit.getEndTime();
-            }
-            if (schedule != null && endTime != null && visit.getCageType() != null) {
-                CageType cageType = visit.getCageType();
-                if (cageType.hasSecondPetProducts()) {
-                    return new VisitKey(schedule, visit.getStartTime(), endTime);
-                }
-            }
-            return null;
         }
 
         /**
@@ -357,6 +343,20 @@ class Visits implements Iterable<Visit> {
         @Override
         public int hashCode() {
             return new HashCodeBuilder().append(schedule).append(start).append(end).toHashCode();
+        }
+
+        public static VisitKey create(Visit visit, Date endTime) {
+            Reference schedule = visit.getScheduleRef();
+            if (visit.getEndTime() != null) {
+                endTime = visit.getEndTime();
+            }
+            if (schedule != null && endTime != null && visit.getCageType() != null) {
+                CageType cageType = visit.getCageType();
+                if (cageType.hasSecondPetProducts()) {
+                    return new VisitKey(schedule, visit.getStartTime(), endTime);
+                }
+            }
+            return null;
         }
     }
 

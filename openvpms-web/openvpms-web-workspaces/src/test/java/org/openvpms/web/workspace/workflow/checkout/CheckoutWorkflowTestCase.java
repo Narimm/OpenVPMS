@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkout;
@@ -29,7 +29,7 @@ import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
 import org.openvpms.component.business.service.archetype.helper.EntityBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
+import org.openvpms.component.model.bean.IMObjectBean;
 import org.openvpms.web.component.app.Context;
 import org.openvpms.web.component.app.LocalContext;
 import org.openvpms.web.component.im.edit.EditDialog;
@@ -38,6 +38,7 @@ import org.openvpms.web.workspace.customer.charge.AbstractCustomerChargeActEdito
 import org.openvpms.web.workspace.workflow.WorkflowTestHelper;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -80,6 +81,27 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
      */
     private Party till;
 
+
+    /**
+     * Sets up the test case.
+     */
+    @Before
+    public void setUp() {
+        super.setUp();
+        Party location = TestHelper.createLocation();
+        User user = TestHelper.createUser();
+        context = new LocalContext();
+        context.setLocation(location);
+        context.setUser(user);
+
+        customer = TestHelper.createCustomer();
+        clinician = TestHelper.createClinician();
+        patient = TestHelper.createPatient(customer);
+        till = FinancialTestHelper.createTill();
+        EntityBean bean = new EntityBean(location);
+        bean.addNodeRelationship("tills", till);
+        save(location, till);
+    }
 
     /**
      * Tests the check-out workflow when started with an appointment.
@@ -223,24 +245,39 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
     }
 
     /**
-     * Sets up the test case.
+     * Verifies that a read-only invoice dialog is displayed if the invoice is finalised before check-out.
      */
-    @Before
-    public void setUp() {
-        super.setUp();
-        Party location = TestHelper.createLocation();
-        User user = TestHelper.createUser();
-        context = new LocalContext();
-        context.setLocation(location);
-        context.setUser(user);
+    @Test
+    public void testFinalisedInvoice() {
+        Act appointment = createAppointment(clinician);
+        Act event = createEvent(appointment);
+        BigDecimal amount = BigDecimal.TEN;
+        List<FinancialAct> acts = FinancialTestHelper.createChargesInvoice(
+                amount, customer, patient, TestHelper.createProduct(), ActStatus.POSTED);
+        save(acts);
+        IMObjectBean bean = getBean(event);
+        bean.addTarget("chargeItems", acts.get(1)); // linkt to the invoice item
+        bean.save();
 
-        customer = TestHelper.createCustomer();
-        clinician = TestHelper.createClinician();
-        patient = TestHelper.createPatient(customer);
-        till = FinancialTestHelper.createTill();
-        EntityBean bean = new EntityBean(location);
-        bean.addNodeRelationship("tills", till);
-        save(location, till);
+        CheckoutWorkflowRunner workflow = new CheckoutWorkflowRunner(appointment, getPractice(), context);
+        workflow.start();
+
+        // 1st task to pause should be the invoice viewer dialog
+        InvoiceViewerDialog dialog = workflow.getInvoiceViewerDialog();
+        fireDialogButton(dialog, PopupDialog.OK_ID);
+
+        // 2nd to pause should be a confirmation prompting to pay the invoice
+        workflow.confirm(PopupDialog.YES_ID);
+
+        // 3rd task to pause should be payment editor
+        workflow.addPayment(till);
+        workflow.checkPayment(ActStatus.POSTED, amount);
+
+        // 4th task to pause should be print dialog
+        workflow.print();
+
+        workflow.checkComplete(true);
+        workflow.checkContext(context, customer, patient, till, clinician);
     }
 
     /**
@@ -295,7 +332,7 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
                                            User expectedClinician) {
         context.setUser(user);
         context.setClinician(clinician);
-        IMObjectBean bean = new IMObjectBean(getPractice());
+        IMObjectBean bean = getBean(getPractice());
         bean.setValue("useLoggedInClinician", enabled);
         Act appointment = createAppointment(appointmentClinician);
         checkWorkflow(appointment, expectedClinician);
@@ -440,11 +477,17 @@ public class CheckoutWorkflowTestCase extends AbstractCustomerChargeActEditorTes
         return WorkflowTestHelper.createAppointment(customer, patient, clinician, context.getLocation());
     }
 
+    /**
+     * Creates an event linked to an appointment.
+     *
+     * @param appointment the appointment
+     * @return a new event
+     */
     private Act createEvent(Act appointment) {
         Act event = PatientTestHelper.createEvent(patient);
-        ActBean bean = new ActBean(appointment);
-        bean.addNodeTarget("event", event);
-        save(event, appointment);
+        IMObjectBean bean = getBean(appointment);
+        bean.addTarget("event", event, "appointment");
+        bean.save(event);
         return event;
     }
 

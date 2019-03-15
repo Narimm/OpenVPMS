@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkout;
@@ -100,7 +100,7 @@ public class VisitsTestCase extends ArchetypeServiceTest {
         customer = TestHelper.createCustomer();
         patient1 = TestHelper.createPatient(customer);
         patient2 = TestHelper.createPatient(customer);
-        visits = new Visits(customer, appointmentRules, patientRules);
+        visits = new Visits(customer, appointmentRules, patientRules, getArchetypeService());
 
         Product firstPetProductDay = TestHelper.createProduct(ProductArchetypes.SERVICE, null);
         Product firstPetProductNight = TestHelper.createProduct(ProductArchetypes.SERVICE, null);

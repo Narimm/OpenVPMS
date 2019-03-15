@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkout;
@@ -78,11 +78,9 @@ class BoardingInvoicer extends AbstractInvoicer {
      * @param editor  the invoice editor
      */
     private void chargeBoarding(Visit visit, Date endTime, CustomerChargeActEditor editor) {
-        CageType cageType = visit.getCageType();
-        int days = visit.getDays(endTime);
-        boolean overnight = days > 1 || visit.isOvernight(endTime);
-        Product product = cageType.getProduct(days, overnight, visit.isFirstPet());
+        Product product = visit.getProduct(endTime);
         if (product != null) {
+            int days = visit.getDays(endTime);
             BigDecimal quantity = BigDecimal.valueOf(days);
             addItem(visit.getPatient(), product, quantity, editor);
         }

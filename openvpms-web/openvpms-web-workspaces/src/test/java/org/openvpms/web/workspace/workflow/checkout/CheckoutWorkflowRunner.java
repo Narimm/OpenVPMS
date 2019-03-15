@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2014 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkout;
@@ -48,6 +48,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.openvpms.web.test.EchoTestHelper.findWindowPane;
 import static org.openvpms.web.test.EchoTestHelper.fireDialogButton;
 
 
@@ -87,6 +88,17 @@ class CheckoutWorkflowRunner extends FinancialWorkflowRunner<CheckOutWorkflow> {
         endTime = act.getActivityEndTime();
         status = act.getStatus();
         setWorkflow(new TestWorkflow(act, context, new HelpContext("foo", null)));
+    }
+
+    /**
+     * Returns the invoice viewer.
+     *
+     * @return the invoice viewer
+     */
+    public InvoiceViewerDialog getInvoiceViewerDialog() {
+        InvoiceViewerDialog dialog = findWindowPane(InvoiceViewerDialog.class);
+        assertNotNull(dialog);
+        return dialog;
     }
 
     /**

@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkout;
@@ -23,11 +23,13 @@ import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.CageType;
 import org.openvpms.component.business.domain.im.act.Act;
 import org.openvpms.component.business.domain.im.common.Entity;
-import org.openvpms.component.business.domain.im.common.IMObjectReference;
 import org.openvpms.component.business.domain.im.party.Party;
+import org.openvpms.component.business.domain.im.product.Product;
+import org.openvpms.component.business.service.archetype.IArchetypeService;
 import org.openvpms.component.business.service.archetype.helper.ActBean;
-import org.openvpms.component.business.service.archetype.helper.IMObjectBean;
-import org.openvpms.web.system.ServiceHelper;
+import org.openvpms.component.model.bean.IMObjectBean;
+import org.openvpms.component.model.bean.Policies;
+import org.openvpms.component.model.object.Reference;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -42,24 +44,9 @@ import java.util.HashMap;
 class Visit {
 
     /**
-     * The event. An <em>act.patientClinicalEvent</em>
-     */
-    private final Act event;
-
-    /**
      * Appointment bean. May be {@code null}
      */
-    private final ActBean appointment;
-
-    /**
-     * The patient.
-     */
-    private Party patient;
-
-    /**
-     * The cage type.
-     */
-    private CageType cageType;
+    private final IMObjectBean appointment;
 
     /**
      * The appointment rules.
@@ -70,6 +57,26 @@ class Visit {
      * The patient rules.
      */
     private final PatientRules patientRules;
+
+    /**
+     * The archetype service.
+     */
+    private final IArchetypeService service;
+
+    /**
+     * The event. An <em>act.patientClinicalEvent</em>
+     */
+    private Act event;
+
+    /**
+     * The patient.
+     */
+    private Party patient;
+
+    /**
+     * The cage type.
+     */
+    private CageType cageType;
 
     /**
      * The patient weight.
@@ -98,12 +105,15 @@ class Visit {
      * @param appointment      the appointment. May be {@code null}
      * @param appointmentRules the appointment rules
      * @param patientRules     the patient rules
+     * @param service          the archetype service
      */
-    public Visit(Act event, Act appointment, AppointmentRules appointmentRules, PatientRules patientRules) {
+    public Visit(Act event, Act appointment, AppointmentRules appointmentRules, PatientRules patientRules,
+                 IArchetypeService service) {
         this.event = event;
-        this.appointment = appointment != null ? new ActBean(appointment) : null;
+        this.appointment = appointment != null ? service.getBean(appointment) : null;
         this.appointmentRules = appointmentRules;
         this.patientRules = patientRules;
+        this.service = service;
     }
 
     /**
@@ -116,12 +126,25 @@ class Visit {
     }
 
     /**
+     * Reloads and returns the latest instance of the event.
+     *
+     * @return the event, or {@code null} if it has been removed
+     */
+    public Act reloadEvent() {
+        Act act = (Act) service.get(event.getObjectReference());
+        if (act != null) {
+            event = act;
+        }
+        return act;
+    }
+
+    /**
      * Returns the appointment.
      *
      * @return the appointment. May be {@code null}
      */
     public Act getAppointment() {
-        return (appointment != null) ? appointment.getAct() : null;
+        return (appointment != null) ? (Act) appointment.getObject() : null;
     }
 
     /**
@@ -147,12 +170,12 @@ class Visit {
      */
     public CageType getCageType() {
         if (appointment != null && cageType == null) {
-            Entity schedule = appointment.getNodeParticipant("schedule");
+            Entity schedule = appointment.getTarget("schedule", Entity.class);
             if (schedule != null) {
-                IMObjectBean scheduleBean = new IMObjectBean(schedule);
-                Entity type = (Entity) scheduleBean.getNodeTargetObject("cageType");
+                IMObjectBean scheduleBean = service.getBean(schedule);
+                Entity type = scheduleBean.getTarget("cageType", Entity.class, Policies.active());
                 if (type != null) {
-                    cageType = new CageType(type, ServiceHelper.getArchetypeService());
+                    cageType = new CageType(type, service);
                 }
             }
         }
@@ -273,8 +296,8 @@ class Visit {
      *
      * @return a reference to the appointment schedule, or {@code null} if it is not known
      */
-    public IMObjectReference getScheduleRef() {
-        return appointment != null ? appointment.getNodeParticipantRef("schedule") : null;
+    public Reference getScheduleRef() {
+        return appointment != null ? appointment.getTargetRef("schedule") : null;
     }
 
     /**
@@ -296,6 +319,39 @@ class Visit {
      */
     public boolean isCharged() {
         return appointment != null && appointment.getBoolean(BOARDING_CHARGED, false);
+    }
+
+    /**
+     * Determines if the visit needs to be charged.
+     *
+     * @return {@code true} if the visit hasn't been charged and is linked to a cage type with a product
+     */
+    public boolean needsCharge() {
+        boolean result = false;
+        if (!isCharged()) {
+            result = getProduct(new Date()) != null;
+        }
+        return result;
+    }
+
+    /**
+     * Returns the product to charge if the visit was to end at the specified time.
+     * <p/>
+     * If the visit has already completed, its end time will be used.
+     *
+     * @param endTime the end time
+     * @return the product, or {@code null} if the visit doesn't attract a boarding fee
+     */
+    public Product getProduct(Date endTime) {
+        Product result = null;
+        CageType cageType = getCageType();
+        if (cageType != null) {
+            Date visitEndTime = getEndTime(endTime);
+            int days = getDays(visitEndTime);
+            boolean overnight = days > 1 || isOvernight(visitEndTime);
+            result = cageType.getProduct(days, overnight, isFirstPet());
+        }
+        return result;
     }
 
     /**

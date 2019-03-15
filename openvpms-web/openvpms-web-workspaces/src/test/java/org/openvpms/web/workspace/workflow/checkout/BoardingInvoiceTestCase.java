@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2016 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.workflow.checkout;
@@ -138,7 +138,7 @@ public class BoardingInvoiceTestCase extends AbstractCustomerChargeActEditorTest
 
         Party schedule = ScheduleTestHelper.createSchedule(location, cageType);
 
-        Visits visits = new Visits(customer, appointmentRules, patientRules);
+        Visits visits = new Visits(customer, appointmentRules, patientRules, getArchetypeService());
         Visit visit1 = createVisit("2016-03-24 10:00:00", "2016-03-24 17:00:00", schedule, customer, patient1, visits);
         Visit visit2 = createVisit("2016-03-24 10:00:00", "2016-03-24 17:00:00", schedule, customer, patient2, visits);
         visits.add(visit1);
@@ -192,7 +192,7 @@ public class BoardingInvoiceTestCase extends AbstractCustomerChargeActEditorTest
                                                             Time.valueOf("18:00:00"), lateCheckoutProduct);
         Party schedule = ScheduleTestHelper.createSchedule(location, cageType);
 
-        Visits visits = new Visits(customer, appointmentRules, patientRules);
+        Visits visits = new Visits(customer, appointmentRules, patientRules, getArchetypeService());
         Visit visit1 = createVisit("2016-03-24 10:00:00", "2016-03-29 17:45:00", schedule, customer, patient1, visits);
         Visit visit2 = createVisit("2016-03-24 10:00:00", "2016-03-29 18:30:00", schedule, customer, patient2, visits);
         visits.add(visit1);
@@ -247,7 +247,7 @@ public class BoardingInvoiceTestCase extends AbstractCustomerChargeActEditorTest
         Entity cageType = ScheduleTestHelper.createCageType("Z Test Cage", template, null, null, null);
         Party schedule = ScheduleTestHelper.createSchedule(location, cageType);
 
-        Visits visits = new Visits(customer, appointmentRules, patientRules);
+        Visits visits = new Visits(customer, appointmentRules, patientRules, getArchetypeService());
         Visit visit = createVisit("2016-03-24 10:00:00", "2016-03-29 17:45:00", schedule, customer, patient1, visits);
         visits.add(visit);
         visit.setFirstPet(true);
@@ -302,7 +302,7 @@ public class BoardingInvoiceTestCase extends AbstractCustomerChargeActEditorTest
 
         Party schedule = ScheduleTestHelper.createSchedule(location, cageType);
 
-        Visits visits = new Visits(customer, appointmentRules, patientRules);
+        Visits visits = new Visits(customer, appointmentRules, patientRules, getArchetypeService());
         Visit visit1 = createVisit("2016-03-24 10:00:00", "2016-03-25 09:00:00", schedule, customer, patient1, visits);
         Visit visit2 = createVisit("2016-03-24 10:00:00", "2016-03-25 09:00:00", schedule, customer, patient2, visits);
         visits.add(visit1);

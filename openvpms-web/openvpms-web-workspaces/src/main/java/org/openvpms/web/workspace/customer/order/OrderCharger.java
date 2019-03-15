@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.web.workspace.customer.order;
@@ -432,6 +432,7 @@ public class OrderCharger {
      */
     private void charge(FinancialAct act, FinancialAct current, OrderInvoicer invoicer, CompletionListener listener) {
         DefaultLayoutContext context = new DefaultLayoutContext(this.context, help);
+        context.setEdit(true);
         if (current == null) {
             // no current invoice
             doCharge(act, invoicer, null, context, listener);

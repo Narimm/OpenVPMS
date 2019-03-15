@@ -11,7 +11,7 @@
  * for the specific language governing rights and limitations under the
  * License.
  *
- * Copyright 2018 (C) OpenVPMS Ltd. All Rights Reserved.
+ * Copyright 2019 (C) OpenVPMS Ltd. All Rights Reserved.
  */
 
 package org.openvpms.archetype.rules.insurance;
@@ -40,6 +40,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -316,6 +317,28 @@ public class InsuranceRules {
         IMObjectBean bean = service.getBean(policy);
         Identity insurerId = bean.getObject("insurerId", Identity.class);
         return (insurerId != null) ? insurerId.getIdentity() : null;
+    }
+
+    /**
+     * Determines if an invoice is fully or partially claimed.
+     * <p/>
+     * This excludes claims with CANCELLED status.
+     *
+     * @param invoice the invoice
+     * @return {@code true} if the invoice is claimed
+     */
+    public boolean isClaimed(FinancialAct invoice) {
+        ArchetypeQuery query = new ArchetypeQuery(InsuranceArchetypes.CLAIM);
+        query.setMaxResults(1);
+        query.setDistinct(true);
+        query.add(Constraints.ne("status", ClaimStatus.CANCELLED));
+        query.add(join("items", "conditions").add(
+                join("target", "condition").add(
+                        join("items", "charges").add(
+                                join("target", "item").add(
+                                        join("invoice").add(eq("source", invoice)))))));
+        Iterator<FinancialAct> iterator = new IMObjectQueryIterator<>(service, query);
+        return iterator.hasNext();
     }
 
     /**

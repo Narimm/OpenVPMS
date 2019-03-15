@@ -22,12 +22,14 @@ import org.openvpms.archetype.rules.act.ActStatus;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountArchetypes;
 import org.openvpms.archetype.rules.finance.account.CustomerAccountRules;
 import org.openvpms.archetype.rules.insurance.InsuranceRules;
+import org.openvpms.archetype.rules.math.MathRules;
 import org.openvpms.archetype.rules.patient.PatientArchetypes;
 import org.openvpms.archetype.rules.patient.PatientRules;
 import org.openvpms.archetype.rules.util.DateRules;
 import org.openvpms.archetype.rules.workflow.AppointmentRules;
 import org.openvpms.archetype.rules.workflow.ScheduleArchetypes;
 import org.openvpms.component.business.domain.im.act.Act;
+import org.openvpms.component.business.domain.im.act.FinancialAct;
 import org.openvpms.component.business.domain.im.party.Party;
 import org.openvpms.component.business.domain.im.security.User;
 import org.openvpms.component.business.service.archetype.IArchetypeService;
@@ -83,9 +85,9 @@ import org.openvpms.web.system.ServiceHelper;
 import org.openvpms.web.workspace.customer.charge.UndispensedOrderChecker;
 import org.openvpms.web.workspace.customer.charge.UndispensedOrderDialog;
 import org.openvpms.web.workspace.workflow.GetClinicalEventTask;
-import org.openvpms.web.workspace.workflow.GetInvoiceTask;
 import org.openvpms.web.workspace.workflow.MandatoryCustomerAlertTask;
 import org.openvpms.web.workspace.workflow.MandatoryPatientAlertTask;
+import org.openvpms.web.workspace.workflow.consult.GetConsultInvoiceTask;
 import org.openvpms.web.workspace.workflow.payment.PaymentWorkflow;
 
 import java.math.BigDecimal;
@@ -148,7 +150,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
 
 
     /**
-     * Constructs a {@code CheckOutWorkflow} from an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
+     * Constructs a {@link CheckOutWorkflow} from an <em>act.customerAppointment</em> or <em>act.customerTask</em>.
      *
      * @param act     the act
      * @param context the external context to access and update
@@ -163,7 +165,8 @@ public class CheckOutWorkflow extends WorkflowImpl {
         service = ServiceHelper.getArchetypeService();
         appointmentRules = ServiceHelper.getBean(AppointmentRules.class);
         insuranceRules = ServiceHelper.getBean(InsuranceRules.class);
-        visits = new Visits(context.getCustomer(), appointmentRules, ServiceHelper.getBean(PatientRules.class));
+        visits = new Visits(context.getCustomer(), appointmentRules, ServiceHelper.getBean(PatientRules.class),
+                            service);
         flowSheetServiceFactory = ServiceHelper.getBean(FlowSheetServiceFactory.class);
 
         initialise(act, getHelpContext());
@@ -260,9 +263,10 @@ public class CheckOutWorkflow extends WorkflowImpl {
         addTask(new MandatoryCustomerAlertTask());
         addTask(new MandatoryPatientAlertTask());
 
-        final Act appointment = getAppointment(act, patient);
+        Act appointment = getAppointment(act, patient);
         if (appointment != null && appointmentRules.isBoardingAppointment(appointment)) {
             addTask(new GetBoardingAppointmentsTask(appointment, visits));
+            // TODO - don't support claims for boarding appointments yet
         } else {
             // add the most recent clinical event to the context
             addTask(new GetClinicalEventTask(act.getActivityStartTime()));
@@ -290,26 +294,34 @@ public class CheckOutWorkflow extends WorkflowImpl {
             addTask(new BatchDischargeFromSmartFlowSheetTask(visits, help));
         }
 
-        addTask(new GetInvoiceTask());
+        addTask(new GetCheckOutInvoiceTask());
+        // populate the context with an invoice, if one is present. This may return a POSTED invoice
+
         addTask(new ConditionalCreateTask(CustomerAccountArchetypes.INVOICE));
-        addTask(createChargeTask(visits));
+        // create a new invoice if no invoice is available
+
+        addTask(new InvoiceTask(getHelpContext()));
+        // perform invoicing
 
         // on save, determine if the user wants to post the invoice, but only if its not already posted
         addTask(when(ne(CustomerAccountArchetypes.INVOICE, "status", ActStatus.POSTED), getPostTask()));
 
-        // if the invoice is posted and the customer has a positive balance: prompt to pay the account
-        PaymentWorkflow payWorkflow = createPaymentWorkflow(initial);
-        payWorkflow.setRequired(false);
-
         Tasks tasks = new Tasks(help);
         if (policy != null && gapClaim) {
-            // gap claims need to be submitted for unpaid invoices
-            tasks.addTask(when(new PositiveBalance(), new InsuranceClaimTask(policy, true, help)));
+            // gap claims need to be submitted for unpaid invoices that haven't already been claimed
+            tasks.addTask(when(new UnclaimedUnpaidInvoice(), new InsuranceClaimTask(policy, true, help)));
         }
+
+        // if the invoice is posted and the customer has a positive balance, prompt to pay the account.
+        // Need to reload the invoice to get the updated allocation
+        PaymentWorkflow payWorkflow = createPaymentWorkflow(initial);
+        payWorkflow.addTask(new ReloadTask(CustomerAccountArchetypes.INVOICE));
+        payWorkflow.setRequired(false);
+
         tasks.addTask(when(new PositiveBalance(), payWorkflow));
-        if (policy != null && !gapClaim) {
+        if (policy != null) {
             // standard claims need to be submitted for paid invoices
-            tasks.addTask(new InsuranceClaimTask(policy, false, help));
+            tasks.addTask(when(new UnclaimedPaidInvoice(), new InsuranceClaimTask(policy, false, help)));
         }
 
         addTask(when(eq(CustomerAccountArchetypes.INVOICE, "status", ActStatus.POSTED), tasks));
@@ -442,6 +454,106 @@ public class CheckOutWorkflow extends WorkflowImpl {
     }
 
     /**
+     * Task to return an invoice for the customer.
+     * <p/>
+     * This will choose:
+     * <ul>
+     * <li>the invoice associated with the current event, if any; else</li>
+     * <li>the invoice associated with any other events being checked out, if any; else</li>
+     * <li>an IN_PROGRESS or COMPLETED invoice for the customer</li>
+     * </ul>
+     */
+    private class GetCheckOutInvoiceTask extends GetConsultInvoiceTask {
+
+        @Override
+        public void execute(TaskContext context) {
+            Act invoice = null;
+            Act defaultEvent = (Act) context.getObject(PatientArchetypes.CLINICAL_EVENT);
+            if (defaultEvent != null) {
+                invoice = getInvoice(defaultEvent, context);
+            }
+            if (invoice == null || ActStatus.POSTED.equals(invoice.getStatus())) {
+                // select a non-POSTED invoice associated with one of the other visits, if any
+                for (Visit visit : visits) {
+                    if (defaultEvent == null || !defaultEvent.equals(visit.getEvent())) {
+                        Act act = getInvoice(visit.getEvent(), context);
+                        if (act != null) {
+                            if (invoice == null) {
+                                invoice = act;
+                            }
+                            if (!ActStatus.POSTED.equals(act.getStatus())) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (invoice != null) {
+                context.addObject(invoice);
+            } else {
+                super.execute(context);
+            }
+        }
+    }
+
+    /**
+     * A task to perform invoicing. If the current invoice is finalised, it will be displayed in a dialog for viewing,
+     * with a New button provided to create a new invoice.
+     * If the current invoice isn't finalised, an edit dialog will be displayed.
+     */
+    private class InvoiceTask extends Tasks {
+
+        InvoiceTask(HelpContext help) {
+            super(help);
+        }
+
+        @Override
+        public void start(TaskContext context) {
+            FinancialAct invoice = (FinancialAct) context.getObject(CustomerAccountArchetypes.INVOICE);
+            if (invoice == null) {
+                notifyCancelled();
+            } else if (ActStatus.POSTED.equals(invoice.getStatus())) {
+                InvoiceViewerDialog dialog = new InvoiceViewerDialog(invoice, visits, context,
+                                                                     context.getHelpContext());
+                dialog.addWindowPaneListener(new PopupDialogListener() {
+                    @Override
+                    public void onAction(String action) {
+                        if (InvoiceViewerDialog.NEW_ID.equals(action)) {
+                            onNew(context);
+                        }
+                    }
+
+                    @Override
+                    public void onOK() {
+                        notifyCompleted();
+                    }
+
+                    @Override
+                    public void onCancel() {
+                        notifyCancelled();
+                    }
+                });
+                dialog.show();
+            } else {
+                addTask(createChargeTask(visits));
+                super.start(context);
+            }
+        }
+
+        /**
+         * Create a new invoice and display an editor.
+         *
+         * @param context the task context
+         */
+        private void onNew(TaskContext context) {
+            FinancialAct invoice = (FinancialAct) service.create(CustomerAccountArchetypes.INVOICE);
+            context.addObject(invoice);
+            addTask(createChargeTask(visits));
+            InvoiceTask.super.start(context);
+        }
+    }
+
+    /**
      * Task to post an invoice.
      * <p>
      * This uses an editor to ensure that any HL7 Pharmacy Orders associated with the invoice are discontinued.
@@ -523,6 +635,41 @@ public class CheckOutWorkflow extends WorkflowImpl {
         @Override
         protected ConfirmationDialog createConfirmationDialog(TaskContext context, HelpContext help) {
             return new UndispensedOrderDialog(checker.getUndispensedItems(), help);
+        }
+    }
+
+    /**
+     * Task to determine if the invoice is POSTED, has no payments allocated and is not claimed.
+     */
+    private class UnclaimedUnpaidInvoice extends EvalTask<Boolean> {
+        @Override
+        public void start(TaskContext context) {
+            FinancialAct invoice = (FinancialAct) context.getObject(CustomerAccountArchetypes.INVOICE);
+            boolean value = false;
+            if (invoice != null && ActStatus.POSTED.equals(invoice.getStatus())
+                && !MathRules.isZero(invoice.getTotal()) && MathRules.isZero(invoice.getAllocatedAmount())) {
+                InsuranceRules rules = ServiceHelper.getBean(InsuranceRules.class);
+                value = !rules.isClaimed(invoice);
+            }
+            setValue(value);
+        }
+    }
+
+    /**
+     * Task to determine if the invoice is fully paid and unclaimed.
+     */
+    private class UnclaimedPaidInvoice extends EvalTask<Boolean> {
+        @Override
+        public void start(TaskContext context) {
+            FinancialAct invoice = (FinancialAct) context.getObject(CustomerAccountArchetypes.INVOICE);
+            boolean value = false;
+            if (invoice != null && ActStatus.POSTED.equals(invoice.getStatus())
+                && !MathRules.isZero(invoice.getTotal())
+                && MathRules.equals(invoice.getTotal(), invoice.getAllocatedAmount())) {
+                InsuranceRules rules = ServiceHelper.getBean(InsuranceRules.class);
+                value = !rules.isClaimed(invoice);
+            }
+            setValue(value);
         }
     }
 
@@ -775,7 +922,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
          */
         @Override
         public void execute(TaskContext context) {
-            for (final Visit event : visits) {
+            for (Visit event : visits) {
                 Retryable action = new AbstractRetryable() {
                     @Override
                     protected boolean runFirst() {
@@ -796,21 +943,17 @@ public class CheckOutWorkflow extends WorkflowImpl {
         /**
          * Updates an event.
          *
-         * @param first  if {@code true} this is the first time it is being updated.
-         * @param event  the event
+         * @param visit the visit
          * @param toSave collects objects to save
-         * @return {@code true} if the object exists, otherwise {@code false}
+         * @return {@code true} if the event still exists, otherwise {@code false}
          */
-        private boolean updateEvent(boolean first, Act event, List<Act> toSave) {
-            if (!first) {
-                event = IMObjectHelper.reload(event);
-            }
-            if (event != null) {
-                if (ActStatus.IN_PROGRESS.equals(event.getStatus())) {
-                    event.setStatus(ActStatus.COMPLETED);
-                    event.setActivityEndTime(new Date());
-                    toSave.add(event);
-                }
+        private boolean updateEvent(Visit visit, List<Act> toSave) {
+            Act event = visit.reloadEvent();
+            // reload the event, as it has most likely changed as a result of invoicing
+            if (event != null && ActStatus.IN_PROGRESS.equals(event.getStatus())) {
+                event.setStatus(ActStatus.COMPLETED);
+                event.setActivityEndTime(new Date());
+                toSave.add(event);
             }
             return event != null;
         }
@@ -825,7 +968,7 @@ public class CheckOutWorkflow extends WorkflowImpl {
         private boolean update(boolean first, Visit event) {
             List<Act> toSave = new ArrayList<>();
             boolean result = updateAppointment(first, event.getAppointment(), toSave);
-            result |= updateEvent(first, event.getEvent(), toSave);
+            result |= updateEvent(event, toSave);
             if (!toSave.isEmpty()) {
                 ServiceHelper.getArchetypeService().save(toSave);
             }
