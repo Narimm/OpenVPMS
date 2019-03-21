@@ -34,7 +34,11 @@
         <constructor-arg ref="bookingLocations"/>
     </bean>
 
-    <bean class="org.openvpms.booking.impl.LocationServiceImpl">
+    <!-- ========================================================================================================== -->
+    <!-- V2 API                                                                                                     -->
+    <!-- ========================================================================================================== -->
+
+    <bean name="locationService" class="org.openvpms.booking.impl.LocationServiceImpl">
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="bookingLocations"/>
         <constructor-arg ref="bookingUsers"/>
@@ -53,11 +57,24 @@
         <constructor-arg ref="bookingUsers"/>
     </bean>
 
-    <bean class="org.openvpms.booking.impl.BookingServiceImpl">
+    <bean name="bookingService" class="org.openvpms.booking.impl.BookingServiceImpl">
         <constructor-arg ref="archetypeRuleService"/>
         <constructor-arg ref="customerRules"/>
         <constructor-arg ref="appointmentRules"/>
         <constructor-arg ref="userRules"/>
         <constructor-arg ref="txnManager"/>
     </bean>
+
+    <!-- ========================================================================================================== -->
+    <!-- V1 API                                                                                                     -->
+    <!-- ========================================================================================================== -->
+
+    <bean class="org.openvpms.booking.impl.v1.LocationServiceImplV1">
+        <constructor-arg ref="locationService"/>
+    </bean>
+
+    <bean class="org.openvpms.booking.impl.v1.BookingServiceImplV1">
+        <constructor-arg ref="bookingService"/>
+    </bean>
+
 </beans>
